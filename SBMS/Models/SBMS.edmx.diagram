@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+ <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <edmx:Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <!-- Diagram content (shape and connector positions) -->
+    <edmx:Diagrams>
+      <Diagram DiagramId="b5b950073c7746a0935aa80d04d1b620" Name="Diagram1" ZoomLevel="108">
+        <EntityTypeShape EntityType="SBMSModel.BOMHeader" Width="1.5" PointX="2" PointY="0.5" IsExpanded="true" />
+        <EntityTypeShape EntityType="SBMSModel.BOMLine" Width="1.5" PointX="4.75" PointY="0.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="SBMSModel.DelivMethod" Width="1.5" PointX="0.75" PointY="5.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="SBMSModel.DocHeader" Width="1.5" PointX="6.75" PointY="0.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="SBMSModel.DocLine" Width="1.5" PointX="8.75" PointY="0.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="SBMSModel.DocType" Width="1.5" PointX="0.75" PointY="8.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="SBMSModel.ForCastHeader" Width="1.5" PointX="8.75" PointY="9.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="SBMSModel.ForCastLine" Width="1.5" PointX="10.75" PointY="0.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="SBMSModel.ItemBarCodeLink" Width="1.875" PointX="2.75" PointY="10.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="SBMSModel.ItemsMaster" Width="1.5" PointX="10.75" PointY="4.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="SBMSModel.ItemsReorderLevel" Width="1.5" PointX="4.75" PointY="10.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="SBMSModel.ItemStoreLinkMaster" Width="1.5" PointX="12.75" PointY="0.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="SBMSModel.ItemTransaction" Width="1.5" PointX="12.75" PointY="3.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="SBMSModel.JobCardLine" Width="1.5" PointX="12.75" PointY="10.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="SBMSModel.JobTransaction" Width="1.5" PointX="14.75" PointY="0.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="SBMSModel.KitHeader" Width="1.5" PointX="14.75" PointY="4.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="SBMSModel.KitLine" Width="1.5" PointX="6.75" PointY="14.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="SBMSModel.LastCallLog" Width="1.5" PointX="8.75" PointY="14.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="SBMSModel.LotTrackingMaster" Width="1.5" PointX="14.75" PointY="9.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="SBMSModel.PickSlipLine" Width="1.5" PointX="16.75" PointY="0.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="SBMSModel.PickSlipProcess" Width="1.5" PointX="16.75" PointY="5.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="SBMSModel.PickSlipTransaction" Width="1.5" PointX="16.75" PointY="8.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="SBMSModel.ProdPlanLine" Width="1.5" PointX="16.75" PointY="12.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="SBMSModel.ProdTransaction" Width="1.5" PointX="8.75" PointY="17.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="SBMSModel.Store" Width="1.5" PointX="12.625" PointY="19" IsExpanded="true" />
+        <EntityTypeShape EntityType="SBMSModel.TempDocLine" Width="1.5" PointX="18.75" PointY="0.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="SBMSModel.UsersMaster" Width="1.5" PointX="4.75" PointY="18.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="SBMSModel.WorkStation" Width="1.5" PointX="14.75" PointY="18.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="SBMSModel.Notification" Width="1.5" PointX="17.375" PointY="18.75" />
+        <EntityTypeShape EntityType="SBMSModel.RolesMaster" Width="1.5" PointX="19.375" PointY="18.75" />
+        <EntityTypeShape EntityType="SBMSModel.StockCountLine" Width="1.5" PointX="21.75" PointY="0.75" />
+        <EntityTypeShape EntityType="SBMSModel.StockCountMaster" Width="1.5" PointX="0.75" PointY="21.75" />
+        <EntityTypeShape EntityType="SBMSModel.BundlesHeader" Width="1.5" PointX="21.375" PointY="5.75" />
+        <EntityTypeShape EntityType="SBMSModel.BundlesLine" Width="1.5" PointX="7.375" PointY="21.75" />
+        <EntityTypeShape EntityType="SBMSModel.JobCardsMaster" Width="1.5" PointX="0.75" PointY="13.75" />
+        <EntityTypeShape EntityType="SBMSModel.PickingSlipMaster" Width="1.5" PointX="9.75" PointY="21.75" />
+        <EntityTypeShape EntityType="SBMSModel.DocHeaderAttachment" Width="1.5" PointX="21.375" PointY="12.75" />
+        <EntityTypeShape EntityType="SBMSModel.AvCostChangeLog" Width="1.5" PointX="21.375" PointY="21.75" />
+        <EntityTypeShape EntityType="SBMSModel.WorksOrderHeader" Width="1.5" PointX="12.375" PointY="22.75" />
+        <EntityTypeShape EntityType="SBMSModel.WorksOrderRMLine" Width="1.5" PointX="14.375" PointY="22.75" />
+        <EntityTypeShape EntityType="SBMSModel.WorksOrderLine" Width="1.5" PointX="16.375" PointY="22.75" />
+        <EntityTypeShape EntityType="SBMSModel.ReceivingAddCost" Width="1.5" PointX="3.375" PointY="23.75" />
+        <EntityTypeShape EntityType="SBMSModel.AccountsMaster" Width="1.5" PointX="21.375" PointY="16.75" />
+        <EntityTypeShape EntityType="SBMSModel.TaxTypesMaster" Width="1.5" PointX="3.375" PointY="5.75" />
+        <EntityTypeShape EntityType="SBMSModel.CompanyMaster" Width="1.5" PointX="23.375" PointY="5.75" />
+        <EntityTypeShape EntityType="SBMSModel.ReceivingOutstanding" Width="1.5" PointX="23.375" PointY="13.75" />
+        <AssociationConnector Association="SBMSModel.FK_ReceivingOutstanding_ReceivingOutstanding" />
+        <EntityTypeShape EntityType="SBMSModel.DynamicReport" Width="1.5" PointX="3.375" PointY="15.75" />
+        <AssociationConnector Association="SBMSModel.FK_DocHeaderAttachments_DocHeaderAttachments" />
+        <EntityTypeShape EntityType="SBMSModel.DITransactionsTbl" Width="1.5" PointX="25.375" PointY="5.75" />
+        <EntityTypeShape EntityType="SBMSModel.DIUpdateLog" Width="1.5" PointX="26.75" PointY="17.375" />
+        <EntityTypeShape EntityType="SBMSModel.ItemTransferLine" Width="1.5" PointX="23.375" PointY="19.75" />
+        <AssociationConnector Association="SBMSModel.FK_ItemTransferLines_ItemTransferLines" />
+        <EntityTypeShape EntityType="SBMSModel.ItemTransferHeader" Width="1.5" PointX="24.375" PointY="0.75" />
+      </Diagram>
+    </edmx:Diagrams>
+  </edmx:Designer>
+</edmx:Edmx>

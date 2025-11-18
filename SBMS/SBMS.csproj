@@ -1,0 +1,1952 @@
+﻿<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\EntityFramework.6.5.1\build\EntityFramework.props" Condition="Exists('..\packages\EntityFramework.6.5.1\build\EntityFramework.props')" />
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>
+    </ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{92AFC2C6-8D37-4501-B9FF-97067FF5874D}</ProjectGuid>
+    <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>SBMS</RootNamespace>
+    <AssemblyName>SBMS</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <UseIISExpress>true</UseIISExpress>
+    <Use64BitIISExpress>false</Use64BitIISExpress>
+    <IISExpressSSLPort />
+    <IISExpressAnonymousAuthentication />
+    <IISExpressWindowsAuthentication />
+    <IISExpressUseClassicPipelineMode />
+    <UseGlobalApplicationHostFile />
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <TypeScriptTarget>ES2015</TypeScriptTarget>
+    <TypeScriptJSXEmit>Preserve</TypeScriptJSXEmit>
+    <TypeScriptModuleKind>ES6</TypeScriptModuleKind>
+    <TypeScriptCompileOnSaveEnabled>True</TypeScriptCompileOnSaveEnabled>
+    <TypeScriptNoImplicitAny>False</TypeScriptNoImplicitAny>
+    <TypeScriptRemoveComments>False</TypeScriptRemoveComments>
+    <TypeScriptOutFile />
+    <TypeScriptOutDir />
+    <TypeScriptGeneratesDeclarations>False</TypeScriptGeneratesDeclarations>
+    <TypeScriptNoEmitOnError>True</TypeScriptNoEmitOnError>
+    <TypeScriptSourceMap>True</TypeScriptSourceMap>
+    <TypeScriptMapRoot />
+    <TypeScriptSourceRoot />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="AjaxControlToolkit, Version=20.1.0.0, Culture=neutral, PublicKeyToken=28f01b0e84b6d53e, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\AjaxControlToolkit.dll</HintPath>
+    </Reference>
+    <Reference Include="Antlr3.Runtime, Version=3.5.0.2, Culture=neutral, PublicKeyToken=eb42632606e9261f, processorArchitecture=MSIL">
+      <HintPath>..\packages\Antlr.3.5.0.2\lib\Antlr3.Runtime.dll</HintPath>
+    </Reference>
+    <Reference Include="BouncyCastle.Crypto, Version=1.8.9.0, Culture=neutral, PublicKeyToken=0e99375e54769942">
+      <HintPath>..\packages\BouncyCastle.1.8.9\lib\BouncyCastle.Crypto.dll</HintPath>
+    </Reference>
+    <Reference Include="BouncyCastle.Cryptography, Version=2.0.0.0, Culture=neutral, PublicKeyToken=072edcf4a5328938, processorArchitecture=MSIL">
+      <HintPath>..\packages\BouncyCastle.Cryptography.2.4.0\lib\net461\BouncyCastle.Cryptography.dll</HintPath>
+    </Reference>
+    <Reference Include="ClosedXML, Version=0.96.0.0, Culture=neutral, PublicKeyToken=fd1eb21b62ae805b, processorArchitecture=MSIL">
+      <HintPath>..\packages\ClosedXML.0.96.0\lib\net46\ClosedXML.dll</HintPath>
+    </Reference>
+    <Reference Include="CsvHelper, Version=33.0.0.0, Culture=neutral, PublicKeyToken=8c4959082be5c823, processorArchitecture=MSIL">
+      <HintPath>..\packages\CsvHelper.33.0.1\lib\net47\CsvHelper.dll</HintPath>
+    </Reference>
+    <Reference Include="DocumentFormat.OpenXml, Version=2.16.0.0, Culture=neutral, PublicKeyToken=8fb06cb64d019a17, processorArchitecture=MSIL">
+      <HintPath>..\packages\DocumentFormat.OpenXml.2.16.0\lib\net46\DocumentFormat.OpenXml.dll</HintPath>
+    </Reference>
+    <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.5.1\lib\net45\EntityFramework.dll</HintPath>
+    </Reference>
+    <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.5.1\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+    </Reference>
+    <Reference Include="ExcelNumberFormat, Version=1.1.0.0, Culture=neutral, PublicKeyToken=23c6f5d73be07eca, processorArchitecture=MSIL">
+      <HintPath>..\packages\ExcelNumberFormat.1.1.0\lib\net20\ExcelNumberFormat.dll</HintPath>
+    </Reference>
+    <Reference Include="Ionic.Zip, Version=1.9.1.8, Culture=neutral, PublicKeyToken=edbe51ad942a3f5c, processorArchitecture=MSIL">
+      <HintPath>..\packages\Ionic.Zip.1.9.1.8\lib\Ionic.Zip.dll</HintPath>
+    </Reference>
+    <Reference Include="Irony, Version=1.1.11.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Irony.NetCore.1.1.11\lib\netstandard2.0\Irony.dll</HintPath>
+    </Reference>
+    <Reference Include="itextsharp, Version=5.5.13.3, Culture=neutral, PublicKeyToken=8354ae6d2174ddca, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\itextsharp.dll</HintPath>
+    </Reference>
+    <Reference Include="MailKit, Version=4.7.0.0, Culture=neutral, PublicKeyToken=4e064fe7c44a8f1b, processorArchitecture=MSIL">
+      <HintPath>..\packages\MailKit.4.7.1.1\lib\net47\MailKit.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Bcl.AsyncInterfaces, Version=9.0.0.2, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Bcl.AsyncInterfaces.9.0.2\lib\net462\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Bcl.HashCode, Version=6.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Bcl.HashCode.6.0.0\lib\net462\Microsoft.Bcl.HashCode.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Configuration.ConfigurationBuilders.Base, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Configuration.ConfigurationBuilders.Base.2.0.0\lib\Net471\Microsoft.Configuration.ConfigurationBuilders.Base.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Configuration.ConfigurationBuilders.UserSecrets, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Configuration.ConfigurationBuilders.UserSecrets.2.0.0\lib\Net471\Microsoft.Configuration.ConfigurationBuilders.UserSecrets.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="MimeKit, Version=4.7.0.0, Culture=neutral, PublicKeyToken=bede1c8a46c66814, processorArchitecture=MSIL">
+      <HintPath>..\packages\MimeKit.4.7.1\lib\net47\MimeKit.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.13.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="RestSharp, Version=112.1.0.0, Culture=neutral, PublicKeyToken=598062e77f915f75, processorArchitecture=MSIL">
+      <HintPath>..\packages\RestSharp.112.1.0\lib\net471\RestSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="SixLabors.Fonts, Version=1.0.0.0, Culture=neutral, PublicKeyToken=d998eea7b14cab13, processorArchitecture=MSIL">
+      <HintPath>..\packages\SixLabors.Fonts.1.0.0\lib\netstandard2.0\SixLabors.Fonts.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Buffers, Version=4.0.4.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Buffers.4.6.0\lib\net462\System.Buffers.dll</HintPath>
+    </Reference>
+    <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.Data.SqlClient, Version=4.6.1.6, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Data.SqlClient.4.8.6\lib\net461\System.Data.SqlClient.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Formats.Asn1, Version=8.0.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Formats.Asn1.8.0.1\lib\net462\System.Formats.Asn1.dll</HintPath>
+    </Reference>
+    <Reference Include="System.IO, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.IO.4.3.0\lib\net462\System.IO.dll</HintPath>
+      <Private>True</Private>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.IO.Packaging, Version=9.0.0.2, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.IO.Packaging.9.0.2\lib\net462\System.IO.Packaging.dll</HintPath>
+    </Reference>
+    <Reference Include="System.IO.Pipelines, Version=9.0.0.2, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.IO.Pipelines.9.0.2\lib\net462\System.IO.Pipelines.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Linq.Dynamic.Core, Version=1.6.0.2, Culture=neutral, PublicKeyToken=0f07ec44de6ac832, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Linq.Dynamic.Core.1.6.0.2\lib\net46\System.Linq.Dynamic.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Memory, Version=4.0.2.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Memory.4.6.0\lib\net462\System.Memory.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Net.Http, Version=4.1.1.3, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Net.Http.4.3.4\lib\net46\System.Net.Http.dll</HintPath>
+      <Private>True</Private>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Numerics.Vectors, Version=4.1.5.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Numerics.Vectors.4.6.0\lib\net462\System.Numerics.Vectors.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Runtime, Version=4.1.1.1, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Runtime.4.3.1\lib\net462\System.Runtime.dll</HintPath>
+      <Private>True</Private>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=6.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.6.1.0\lib\net462\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Security" />
+    <Reference Include="System.Security.Cryptography.Algorithms, Version=4.2.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Security.Cryptography.Algorithms.4.3.1\lib\net463\System.Security.Cryptography.Algorithms.dll</HintPath>
+      <Private>True</Private>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Security.Cryptography.Encoding, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Security.Cryptography.Encoding.4.3.0\lib\net46\System.Security.Cryptography.Encoding.dll</HintPath>
+      <Private>True</Private>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Security.Cryptography.Primitives, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Security.Cryptography.Primitives.4.3.0\lib\net46\System.Security.Cryptography.Primitives.dll</HintPath>
+      <Private>True</Private>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Security.Cryptography.X509Certificates, Version=4.1.1.2, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Security.Cryptography.X509Certificates.4.3.2\lib\net461\System.Security.Cryptography.X509Certificates.dll</HintPath>
+      <Private>True</Private>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Text.Encodings.Web, Version=9.0.0.2, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Text.Encodings.Web.9.0.2\lib\net462\System.Text.Encodings.Web.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Text.Json, Version=9.0.0.2, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Text.Json.9.0.2\lib\net462\System.Text.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Text.RegularExpressions, Version=4.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Text.RegularExpressions.4.3.1\lib\net463\System.Text.RegularExpressions.dll</HintPath>
+      <Private>True</Private>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Threading.Tasks.Extensions, Version=4.2.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Threading.Tasks.Extensions.4.5.4\lib\net461\System.Threading.Tasks.Extensions.dll</HintPath>
+    </Reference>
+    <Reference Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.ValueTuple.4.5.0\lib\net47\System.ValueTuple.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.DynamicData" />
+    <Reference Include="System.Web.Entity" />
+    <Reference Include="System.Web.ApplicationServices" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Web.Services" />
+    <Reference Include="System.EnterpriseServices" />
+    <Reference Include="WebGrease, Version=1.6.5135.21930, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\WebGrease.1.6.0\lib\WebGrease.dll</HintPath>
+    </Reference>
+    <Reference Include="WindowsBase" />
+    <Reference Include="XLParser, Version=1.7.2.0, Culture=neutral, PublicKeyToken=63397e1e46bb91b4, processorArchitecture=MSIL">
+      <HintPath>..\packages\XLParser.1.7.2\lib\net462\XLParser.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="assets\css\images\overlay.png" />
+    <Content Include="assets\js\buttonDisable.js" />
+    <Content Include="CommonScripts.ascx" />
+    <Content Include="ConfigAccounts.aspx" />
+    <Content Include="ConfigProcesses.aspx" />
+    <Content Include="ConfigMaster.aspx" />
+    <Content Include="ConfigCompany.aspx" />
+    <Content Include="ConfigDelivery.aspx" />
+    <Content Include="ConfigUsers.aspx" />
+    <Content Include="content\toastr.css" />
+    <Content Include="content\toastr.min.css" />
+    <Content Include="DataFusionOnboardFinish.aspx" />
+    <Content Include="DataFusionOnboard.aspx" />
+    <Content Include="dndSupplierInvoices.aspx" />
+    <Content Include="images\datafusionicon.ico" />
+    <Content Include="images\datafusionicon.png" />
+    <Content Include="images\DnD.png" />
+    <Content Include="dndPurchaseOrders.aspx" />
+    <Content Include="images\logo2.png" />
+    <Content Include="images\rmMrp.png" />
+    <Content Include="images\rmMrp2.png" />
+    <Content Include="images\sbcacreds1.png" />
+    <Content Include="images\sbcacreds2.png" />
+    <Content Include="images\settings.PNG" />
+    <Content Include="images\StockCounts.png" />
+    <Content Include="images\WOrdFilling.png" />
+    <Content Include="images\WOrdFilling2.png" />
+    <Content Include="images\WOrdFillingSmall.png" />
+    <Content Include="images\worksord.png" />
+    <Content Include="images\worksord2.png" />
+    <Content Include="images\worksordsmall.png" />
+    <Content Include="ItemQOHSync.aspx" />
+    <Content Include="ItemStoresLink.aspx" />
+    <Content Include="ItemStkAdjustment.aspx" />
+    <Content Include="documents\Privacy_Policy.pdf" />
+    <Content Include="documents\Cookie_Policy.pdf" />
+    <Content Include="documents\Copyright_Notice.pdf" />
+    <Content Include="documents\Disclaimer.pdf" />
+    <Content Include="documents\POPIA_Policy.pdf" />
+    <Content Include="documents\Terms_and_Conditions.pdf" />
+    <Content Include="niceadmin\assets\css\style.css" />
+    <Content Include="niceadmin\assets\img\apple-touch-icon.png" />
+    <Content Include="niceadmin\assets\img\card.jpg" />
+    <Content Include="niceadmin\assets\img\favicon.png" />
+    <Content Include="niceadmin\assets\img\logo.png" />
+    <Content Include="niceadmin\assets\img\messages-1.jpg" />
+    <Content Include="niceadmin\assets\img\messages-2.jpg" />
+    <Content Include="niceadmin\assets\img\messages-3.jpg" />
+    <Content Include="niceadmin\assets\img\news-1.jpg" />
+    <Content Include="niceadmin\assets\img\news-2.jpg" />
+    <Content Include="niceadmin\assets\img\news-3.jpg" />
+    <Content Include="niceadmin\assets\img\news-4.jpg" />
+    <Content Include="niceadmin\assets\img\news-5.jpg" />
+    <Content Include="niceadmin\assets\img\not-found.svg" />
+    <Content Include="niceadmin\assets\img\product-1.jpg" />
+    <Content Include="niceadmin\assets\img\product-2.jpg" />
+    <Content Include="niceadmin\assets\img\product-3.jpg" />
+    <Content Include="niceadmin\assets\img\product-4.jpg" />
+    <Content Include="niceadmin\assets\img\product-5.jpg" />
+    <Content Include="niceadmin\assets\img\profile-img.jpg" />
+    <Content Include="niceadmin\assets\img\slides-1.jpg" />
+    <Content Include="niceadmin\assets\img\slides-2.jpg" />
+    <Content Include="niceadmin\assets\img\slides-3.jpg" />
+    <Content Include="niceadmin\assets\js\main.js" />
+    <Content Include="niceadmin\assets\scss\Readme.txt" />
+    <Content Include="niceadmin\assets\vendor\apexcharts\apexcharts.amd.js" />
+    <Content Include="niceadmin\assets\vendor\apexcharts\apexcharts.common.js" />
+    <Content Include="niceadmin\assets\vendor\apexcharts\apexcharts.css" />
+    <Content Include="niceadmin\assets\vendor\apexcharts\apexcharts.esm.js" />
+    <Content Include="niceadmin\assets\vendor\apexcharts\apexcharts.js" />
+    <Content Include="niceadmin\assets\vendor\apexcharts\apexcharts.min.js" />
+    <Content Include="niceadmin\assets\vendor\bootstrap-icons\bootstrap-icons.css" />
+    <Content Include="niceadmin\assets\vendor\bootstrap-icons\bootstrap-icons.min.css" />
+    <Content Include="niceadmin\assets\vendor\bootstrap\css\bootstrap-grid.css" />
+    <Content Include="niceadmin\assets\vendor\bootstrap\css\bootstrap-grid.min.css" />
+    <Content Include="niceadmin\assets\vendor\bootstrap\css\bootstrap-grid.rtl.css" />
+    <Content Include="niceadmin\assets\vendor\bootstrap\css\bootstrap-grid.rtl.min.css" />
+    <Content Include="niceadmin\assets\vendor\bootstrap\css\bootstrap-reboot.css" />
+    <Content Include="niceadmin\assets\vendor\bootstrap\css\bootstrap-reboot.min.css" />
+    <Content Include="niceadmin\assets\vendor\bootstrap\css\bootstrap-reboot.rtl.css" />
+    <Content Include="niceadmin\assets\vendor\bootstrap\css\bootstrap-reboot.rtl.min.css" />
+    <Content Include="niceadmin\assets\vendor\bootstrap\css\bootstrap-utilities.css" />
+    <Content Include="niceadmin\assets\vendor\bootstrap\css\bootstrap-utilities.min.css" />
+    <Content Include="niceadmin\assets\vendor\bootstrap\css\bootstrap-utilities.rtl.css" />
+    <Content Include="niceadmin\assets\vendor\bootstrap\css\bootstrap-utilities.rtl.min.css" />
+    <Content Include="niceadmin\assets\vendor\bootstrap\css\bootstrap.css" />
+    <Content Include="niceadmin\assets\vendor\bootstrap\css\bootstrap.min.css" />
+    <Content Include="niceadmin\assets\vendor\bootstrap\css\bootstrap.rtl.css" />
+    <Content Include="niceadmin\assets\vendor\bootstrap\css\bootstrap.rtl.min.css" />
+    <Content Include="niceadmin\assets\vendor\bootstrap\css\prb.txt" />
+    <Content Include="niceadmin\assets\vendor\bootstrap\js\bootstrap.bundle.js" />
+    <Content Include="niceadmin\assets\vendor\bootstrap\js\bootstrap.bundle.min.js" />
+    <Content Include="niceadmin\assets\vendor\bootstrap\js\bootstrap.esm.js" />
+    <Content Include="niceadmin\assets\vendor\bootstrap\js\bootstrap.esm.min.js" />
+    <Content Include="niceadmin\assets\vendor\bootstrap\js\bootstrap.js" />
+    <Content Include="niceadmin\assets\vendor\bootstrap\js\bootstrap.min.js" />
+    <Content Include="niceadmin\assets\vendor\boxicons\css\animations.css" />
+    <Content Include="niceadmin\assets\vendor\boxicons\css\boxicons.css" />
+    <Content Include="niceadmin\assets\vendor\boxicons\css\boxicons.min.css" />
+    <Content Include="niceadmin\assets\vendor\boxicons\css\transformations.css" />
+    <Content Include="niceadmin\assets\vendor\boxicons\fonts\boxicons.svg" />
+    <Content Include="niceadmin\assets\vendor\chart.js\chart.cjs" />
+    <Content Include="niceadmin\assets\vendor\chart.js\chart.js" />
+    <Content Include="niceadmin\assets\vendor\chart.js\chart.umd.js" />
+    <Content Include="niceadmin\assets\vendor\chart.js\chunks\helpers.segment.cjs" />
+    <Content Include="niceadmin\assets\vendor\chart.js\chunks\helpers.segment.js" />
+    <Content Include="niceadmin\assets\vendor\chart.js\helpers.cjs" />
+    <Content Include="niceadmin\assets\vendor\chart.js\helpers.js" />
+    <Content Include="niceadmin\assets\vendor\echarts\echarts.common.js" />
+    <Content Include="niceadmin\assets\vendor\echarts\echarts.common.min.js" />
+    <Content Include="niceadmin\assets\vendor\echarts\echarts.esm.js" />
+    <Content Include="niceadmin\assets\vendor\echarts\echarts.esm.min.js" />
+    <Content Include="niceadmin\assets\vendor\echarts\echarts.esm.min.mjs" />
+    <Content Include="niceadmin\assets\vendor\echarts\echarts.esm.mjs" />
+    <Content Include="niceadmin\assets\vendor\echarts\echarts.js" />
+    <Content Include="niceadmin\assets\vendor\echarts\echarts.min.js" />
+    <Content Include="niceadmin\assets\vendor\echarts\echarts.simple.js" />
+    <Content Include="niceadmin\assets\vendor\echarts\echarts.simple.min.js" />
+    <Content Include="niceadmin\assets\vendor\echarts\extension\bmap.js" />
+    <Content Include="niceadmin\assets\vendor\echarts\extension\bmap.min.js" />
+    <Content Include="niceadmin\assets\vendor\echarts\extension\dataTool.js" />
+    <Content Include="niceadmin\assets\vendor\echarts\extension\dataTool.min.js" />
+    <Content Include="niceadmin\assets\vendor\php-email-form\validate.js" />
+    <Content Include="niceadmin\assets\vendor\quill\quill.bubble.css" />
+    <Content Include="niceadmin\assets\vendor\quill\quill.core.css" />
+    <Content Include="niceadmin\assets\vendor\quill\quill.core.js" />
+    <Content Include="niceadmin\assets\vendor\quill\quill.core.js.LICENSE.txt" />
+    <Content Include="niceadmin\assets\vendor\quill\quill.js" />
+    <Content Include="niceadmin\assets\vendor\quill\quill.js.LICENSE.txt" />
+    <Content Include="niceadmin\assets\vendor\quill\quill.snow.css" />
+    <Content Include="niceadmin\assets\vendor\remixicon\remixicon.css" />
+    <Content Include="niceadmin\assets\vendor\remixicon\remixicon.svg" />
+    <Content Include="niceadmin\assets\vendor\remixicon\remixicon.symbol.svg" />
+    <Content Include="niceadmin\assets\vendor\simple-datatables\simple-datatables.js" />
+    <Content Include="niceadmin\assets\vendor\simple-datatables\style.css" />
+    <Content Include="niceadmin\assets\vendor\tinymce\icons\default\icons.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\icons\default\icons.min.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\icons\default\index.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\models\dom\index.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\models\dom\model.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\models\dom\model.min.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\accordion\index.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\accordion\plugin.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\accordion\plugin.min.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\advlist\index.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\advlist\plugin.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\advlist\plugin.min.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\anchor\index.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\anchor\plugin.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\anchor\plugin.min.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\autolink\index.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\autolink\plugin.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\autolink\plugin.min.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\autoresize\index.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\autoresize\plugin.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\autoresize\plugin.min.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\autosave\index.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\autosave\plugin.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\autosave\plugin.min.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\charmap\index.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\charmap\plugin.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\charmap\plugin.min.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\codesample\index.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\codesample\plugin.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\codesample\plugin.min.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\code\index.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\code\plugin.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\code\plugin.min.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\directionality\index.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\directionality\plugin.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\directionality\plugin.min.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\emoticons\index.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\emoticons\js\emojiimages.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\emoticons\js\emojiimages.min.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\emoticons\js\emojis.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\emoticons\js\emojis.min.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\emoticons\plugin.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\emoticons\plugin.min.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\fullscreen\index.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\fullscreen\plugin.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\fullscreen\plugin.min.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\help\index.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\help\js\i18n\keynav\ar.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\help\js\i18n\keynav\bg_BG.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\help\js\i18n\keynav\ca.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\help\js\i18n\keynav\cs.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\help\js\i18n\keynav\da.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\help\js\i18n\keynav\de.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\help\js\i18n\keynav\el.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\help\js\i18n\keynav\en.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\help\js\i18n\keynav\es.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\help\js\i18n\keynav\eu.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\help\js\i18n\keynav\fa.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\help\js\i18n\keynav\fi.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\help\js\i18n\keynav\fr_FR.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\help\js\i18n\keynav\he_IL.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\help\js\i18n\keynav\hi.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\help\js\i18n\keynav\hr.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\help\js\i18n\keynav\hu_HU.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\help\js\i18n\keynav\id.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\help\js\i18n\keynav\it.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\help\js\i18n\keynav\ja.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\help\js\i18n\keynav\kk.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\help\js\i18n\keynav\ko_KR.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\help\js\i18n\keynav\ms.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\help\js\i18n\keynav\nb_NO.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\help\js\i18n\keynav\nl.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\help\js\i18n\keynav\pl.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\help\js\i18n\keynav\pt_BR.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\help\js\i18n\keynav\pt_PT.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\help\js\i18n\keynav\ro.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\help\js\i18n\keynav\ru.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\help\js\i18n\keynav\sk.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\help\js\i18n\keynav\sl_SI.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\help\js\i18n\keynav\sv_SE.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\help\js\i18n\keynav\th_TH.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\help\js\i18n\keynav\tr.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\help\js\i18n\keynav\uk.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\help\js\i18n\keynav\vi.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\help\js\i18n\keynav\zh_CN.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\help\js\i18n\keynav\zh_TW.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\help\plugin.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\help\plugin.min.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\image\index.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\image\plugin.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\image\plugin.min.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\importcss\index.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\importcss\plugin.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\importcss\plugin.min.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\insertdatetime\index.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\insertdatetime\plugin.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\insertdatetime\plugin.min.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\link\index.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\link\plugin.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\link\plugin.min.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\lists\index.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\lists\plugin.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\lists\plugin.min.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\media\index.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\media\plugin.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\media\plugin.min.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\nonbreaking\index.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\nonbreaking\plugin.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\nonbreaking\plugin.min.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\pagebreak\index.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\pagebreak\plugin.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\pagebreak\plugin.min.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\preview\index.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\preview\plugin.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\preview\plugin.min.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\quickbars\index.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\quickbars\plugin.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\quickbars\plugin.min.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\save\index.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\save\plugin.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\save\plugin.min.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\searchreplace\index.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\searchreplace\plugin.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\searchreplace\plugin.min.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\table\index.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\table\plugin.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\table\plugin.min.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\visualblocks\index.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\visualblocks\plugin.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\visualblocks\plugin.min.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\visualchars\index.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\visualchars\plugin.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\visualchars\plugin.min.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\wordcount\index.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\wordcount\plugin.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\plugins\wordcount\plugin.min.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\skins\content\dark\content.css" />
+    <Content Include="niceadmin\assets\vendor\tinymce\skins\content\dark\content.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\skins\content\dark\content.min.css" />
+    <Content Include="niceadmin\assets\vendor\tinymce\skins\content\default\content.css" />
+    <Content Include="niceadmin\assets\vendor\tinymce\skins\content\default\content.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\skins\content\default\content.min.css" />
+    <Content Include="niceadmin\assets\vendor\tinymce\skins\content\document\content.css" />
+    <Content Include="niceadmin\assets\vendor\tinymce\skins\content\document\content.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\skins\content\document\content.min.css" />
+    <Content Include="niceadmin\assets\vendor\tinymce\skins\content\tinymce-5-dark\content.css" />
+    <Content Include="niceadmin\assets\vendor\tinymce\skins\content\tinymce-5-dark\content.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\skins\content\tinymce-5-dark\content.min.css" />
+    <Content Include="niceadmin\assets\vendor\tinymce\skins\content\tinymce-5\content.css" />
+    <Content Include="niceadmin\assets\vendor\tinymce\skins\content\tinymce-5\content.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\skins\content\tinymce-5\content.min.css" />
+    <Content Include="niceadmin\assets\vendor\tinymce\skins\content\writer\content.css" />
+    <Content Include="niceadmin\assets\vendor\tinymce\skins\content\writer\content.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\skins\content\writer\content.min.css" />
+    <Content Include="niceadmin\assets\vendor\tinymce\skins\ui\oxide-dark\content.css" />
+    <Content Include="niceadmin\assets\vendor\tinymce\skins\ui\oxide-dark\content.inline.css" />
+    <Content Include="niceadmin\assets\vendor\tinymce\skins\ui\oxide-dark\content.inline.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\skins\ui\oxide-dark\content.inline.min.css" />
+    <Content Include="niceadmin\assets\vendor\tinymce\skins\ui\oxide-dark\content.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\skins\ui\oxide-dark\content.min.css" />
+    <Content Include="niceadmin\assets\vendor\tinymce\skins\ui\oxide-dark\skin.css" />
+    <Content Include="niceadmin\assets\vendor\tinymce\skins\ui\oxide-dark\skin.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\skins\ui\oxide-dark\skin.min.css" />
+    <Content Include="niceadmin\assets\vendor\tinymce\skins\ui\oxide-dark\skin.shadowdom.css" />
+    <Content Include="niceadmin\assets\vendor\tinymce\skins\ui\oxide-dark\skin.shadowdom.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\skins\ui\oxide-dark\skin.shadowdom.min.css" />
+    <Content Include="niceadmin\assets\vendor\tinymce\skins\ui\oxide\content.css" />
+    <Content Include="niceadmin\assets\vendor\tinymce\skins\ui\oxide\content.inline.css" />
+    <Content Include="niceadmin\assets\vendor\tinymce\skins\ui\oxide\content.inline.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\skins\ui\oxide\content.inline.min.css" />
+    <Content Include="niceadmin\assets\vendor\tinymce\skins\ui\oxide\content.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\skins\ui\oxide\content.min.css" />
+    <Content Include="niceadmin\assets\vendor\tinymce\skins\ui\oxide\skin.css" />
+    <Content Include="niceadmin\assets\vendor\tinymce\skins\ui\oxide\skin.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\skins\ui\oxide\skin.min.css" />
+    <Content Include="niceadmin\assets\vendor\tinymce\skins\ui\oxide\skin.shadowdom.css" />
+    <Content Include="niceadmin\assets\vendor\tinymce\skins\ui\oxide\skin.shadowdom.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\skins\ui\oxide\skin.shadowdom.min.css" />
+    <Content Include="niceadmin\assets\vendor\tinymce\skins\ui\tinymce-5-dark\content.css" />
+    <Content Include="niceadmin\assets\vendor\tinymce\skins\ui\tinymce-5-dark\content.inline.css" />
+    <Content Include="niceadmin\assets\vendor\tinymce\skins\ui\tinymce-5-dark\content.inline.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\skins\ui\tinymce-5-dark\content.inline.min.css" />
+    <Content Include="niceadmin\assets\vendor\tinymce\skins\ui\tinymce-5-dark\content.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\skins\ui\tinymce-5-dark\content.min.css" />
+    <Content Include="niceadmin\assets\vendor\tinymce\skins\ui\tinymce-5-dark\skin.css" />
+    <Content Include="niceadmin\assets\vendor\tinymce\skins\ui\tinymce-5-dark\skin.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\skins\ui\tinymce-5-dark\skin.min.css" />
+    <Content Include="niceadmin\assets\vendor\tinymce\skins\ui\tinymce-5-dark\skin.shadowdom.css" />
+    <Content Include="niceadmin\assets\vendor\tinymce\skins\ui\tinymce-5-dark\skin.shadowdom.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\skins\ui\tinymce-5-dark\skin.shadowdom.min.css" />
+    <Content Include="niceadmin\assets\vendor\tinymce\skins\ui\tinymce-5\content.css" />
+    <Content Include="niceadmin\assets\vendor\tinymce\skins\ui\tinymce-5\content.inline.css" />
+    <Content Include="niceadmin\assets\vendor\tinymce\skins\ui\tinymce-5\content.inline.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\skins\ui\tinymce-5\content.inline.min.css" />
+    <Content Include="niceadmin\assets\vendor\tinymce\skins\ui\tinymce-5\content.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\skins\ui\tinymce-5\content.min.css" />
+    <Content Include="niceadmin\assets\vendor\tinymce\skins\ui\tinymce-5\skin.css" />
+    <Content Include="niceadmin\assets\vendor\tinymce\skins\ui\tinymce-5\skin.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\skins\ui\tinymce-5\skin.min.css" />
+    <Content Include="niceadmin\assets\vendor\tinymce\skins\ui\tinymce-5\skin.shadowdom.css" />
+    <Content Include="niceadmin\assets\vendor\tinymce\skins\ui\tinymce-5\skin.shadowdom.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\skins\ui\tinymce-5\skin.shadowdom.min.css" />
+    <Content Include="niceadmin\assets\vendor\tinymce\themes\silver\index.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\themes\silver\theme.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\themes\silver\theme.min.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\tinymce.js" />
+    <Content Include="niceadmin\assets\vendor\tinymce\tinymce.min.js" />
+    <Content Include="niceadmin\forms\contact.php" />
+    <Content Include="niceadmin\forms\Readme.txt" />
+    <Content Include="niceadmin\index.html" />
+    <Content Include="OSPurchaseOrdersPartial.aspx" />
+    <Content Include="Receiving.aspx" />
+    <Content Include="Reporting.aspx" />
+    <Content Include="PurchaseOrdersIncomplete.aspx" />
+    <Content Include="DashboardSales.aspx" />
+    <Content Include="SalesOrdersIncomplete.aspx" />
+    <Content Include="StockControl.aspx" />
+    <Content Include="prologue\assets\sass\libs\_breakpoints.scss" />
+    <Content Include="prologue\assets\sass\libs\_functions.scss" />
+    <Content Include="prologue\assets\sass\libs\_html-grid.scss" />
+    <Content Include="prologue\assets\sass\libs\_mixins.scss" />
+    <Content Include="prologue\assets\sass\libs\_vars.scss" />
+    <Content Include="prologue\assets\sass\libs\_vendor.scss" />
+    <Content Include="prologue\assets\sass\main.scss" />
+    <Content Include="prologue\assets\webfonts\fa-brands-400.eot" />
+    <Content Include="prologue\assets\webfonts\fa-brands-400.ttf" />
+    <Content Include="prologue\assets\webfonts\fa-brands-400.woff" />
+    <Content Include="prologue\assets\webfonts\fa-brands-400.woff2" />
+    <Content Include="prologue\assets\webfonts\fa-regular-400.eot" />
+    <Content Include="prologue\assets\webfonts\fa-regular-400.ttf" />
+    <Content Include="prologue\assets\webfonts\fa-regular-400.woff" />
+    <Content Include="prologue\assets\webfonts\fa-regular-400.woff2" />
+    <Content Include="prologue\assets\webfonts\fa-solid-900.eot" />
+    <Content Include="prologue\assets\webfonts\fa-solid-900.ttf" />
+    <Content Include="prologue\assets\webfonts\fa-solid-900.woff" />
+    <Content Include="prologue\assets\webfonts\fa-solid-900.woff2" />
+    <Content Include="fonts\Roboto-Regular.ttf" />
+    <Content Include="niceadmin\.bin\node.cmd" />
+    <Content Include="niceadmin\assets\vendor\apexcharts\locales\ar.json" />
+    <Content Include="niceadmin\assets\vendor\apexcharts\locales\be-cyrl.json" />
+    <Content Include="niceadmin\assets\vendor\apexcharts\locales\be-latn.json" />
+    <Content Include="niceadmin\assets\vendor\apexcharts\locales\ca.json" />
+    <Content Include="niceadmin\assets\vendor\apexcharts\locales\cs.json" />
+    <Content Include="niceadmin\assets\vendor\apexcharts\locales\da.json" />
+    <Content Include="niceadmin\assets\vendor\apexcharts\locales\de.json" />
+    <Content Include="niceadmin\assets\vendor\apexcharts\locales\el.json" />
+    <Content Include="niceadmin\assets\vendor\apexcharts\locales\en.json" />
+    <Content Include="niceadmin\assets\vendor\apexcharts\locales\es.json" />
+    <Content Include="niceadmin\assets\vendor\apexcharts\locales\et.json" />
+    <Content Include="niceadmin\assets\vendor\apexcharts\locales\fa.json" />
+    <Content Include="niceadmin\assets\vendor\apexcharts\locales\fi.json" />
+    <Content Include="niceadmin\assets\vendor\apexcharts\locales\fr.json" />
+    <Content Include="niceadmin\assets\vendor\apexcharts\locales\he.json" />
+    <Content Include="niceadmin\assets\vendor\apexcharts\locales\hi.json" />
+    <Content Include="niceadmin\assets\vendor\apexcharts\locales\hr.json" />
+    <Content Include="niceadmin\assets\vendor\apexcharts\locales\hu.json" />
+    <Content Include="niceadmin\assets\vendor\apexcharts\locales\hy.json" />
+    <Content Include="niceadmin\assets\vendor\apexcharts\locales\id.json" />
+    <Content Include="niceadmin\assets\vendor\apexcharts\locales\it.json" />
+    <Content Include="niceadmin\assets\vendor\apexcharts\locales\ja.json" />
+    <Content Include="niceadmin\assets\vendor\apexcharts\locales\ka.json" />
+    <Content Include="niceadmin\assets\vendor\apexcharts\locales\ko.json" />
+    <Content Include="niceadmin\assets\vendor\apexcharts\locales\lt.json" />
+    <Content Include="niceadmin\assets\vendor\apexcharts\locales\lv.json" />
+    <Content Include="niceadmin\assets\vendor\apexcharts\locales\ms.json" />
+    <Content Include="niceadmin\assets\vendor\apexcharts\locales\nb.json" />
+    <Content Include="niceadmin\assets\vendor\apexcharts\locales\nl.json" />
+    <Content Include="niceadmin\assets\vendor\apexcharts\locales\pl.json" />
+    <Content Include="niceadmin\assets\vendor\apexcharts\locales\pt-br.json" />
+    <Content Include="niceadmin\assets\vendor\apexcharts\locales\pt.json" />
+    <Content Include="niceadmin\assets\vendor\apexcharts\locales\rs.json" />
+    <Content Include="niceadmin\assets\vendor\apexcharts\locales\ru.json" />
+    <Content Include="niceadmin\assets\vendor\apexcharts\locales\se.json" />
+    <Content Include="niceadmin\assets\vendor\apexcharts\locales\sk.json" />
+    <Content Include="niceadmin\assets\vendor\apexcharts\locales\sl.json" />
+    <Content Include="niceadmin\assets\vendor\apexcharts\locales\sq.json" />
+    <Content Include="niceadmin\assets\vendor\apexcharts\locales\th.json" />
+    <Content Include="niceadmin\assets\vendor\apexcharts\locales\tr.json" />
+    <Content Include="niceadmin\assets\vendor\apexcharts\locales\ua.json" />
+    <Content Include="niceadmin\assets\vendor\apexcharts\locales\vi.json" />
+    <Content Include="niceadmin\assets\vendor\apexcharts\locales\zh-cn.json" />
+    <Content Include="niceadmin\assets\vendor\apexcharts\locales\zh-tw.json" />
+    <Content Include="niceadmin\assets\vendor\bootstrap-icons\bootstrap-icons.json" />
+    <Content Include="niceadmin\assets\vendor\bootstrap-icons\bootstrap-icons.scss" />
+    <Content Include="niceadmin\assets\vendor\bootstrap-icons\fonts\bootstrap-icons.woff" />
+    <Content Include="niceadmin\assets\vendor\bootstrap-icons\fonts\bootstrap-icons.woff2" />
+    <Content Include="niceadmin\assets\vendor\bootstrap\css\bootstrap-grid.css.map" />
+    <Content Include="niceadmin\assets\vendor\bootstrap\css\bootstrap-grid.min.css.map" />
+    <Content Include="niceadmin\assets\vendor\bootstrap\css\bootstrap-grid.rtl.css.map" />
+    <Content Include="niceadmin\assets\vendor\bootstrap\css\bootstrap-grid.rtl.min.css.map" />
+    <Content Include="niceadmin\assets\vendor\bootstrap\css\bootstrap-reboot.css.map" />
+    <Content Include="niceadmin\assets\vendor\bootstrap\css\bootstrap-reboot.min.css.map" />
+    <Content Include="niceadmin\assets\vendor\bootstrap\css\bootstrap-reboot.rtl.css.map" />
+    <Content Include="niceadmin\assets\vendor\bootstrap\css\bootstrap-reboot.rtl.min.css.map" />
+    <Content Include="niceadmin\assets\vendor\bootstrap\css\bootstrap-utilities.css.map" />
+    <Content Include="niceadmin\assets\vendor\bootstrap\css\bootstrap-utilities.min.css.map" />
+    <Content Include="niceadmin\assets\vendor\bootstrap\css\bootstrap-utilities.rtl.css.map" />
+    <Content Include="niceadmin\assets\vendor\bootstrap\css\bootstrap-utilities.rtl.min.css.map" />
+    <Content Include="niceadmin\assets\vendor\bootstrap\css\bootstrap.css.map" />
+    <Content Include="niceadmin\assets\vendor\bootstrap\css\bootstrap.min.css.map" />
+    <Content Include="niceadmin\assets\vendor\bootstrap\css\bootstrap.rtl.css.map" />
+    <Content Include="niceadmin\assets\vendor\bootstrap\css\bootstrap.rtl.min.css.map" />
+    <Content Include="niceadmin\assets\vendor\bootstrap\js\bootstrap.bundle.js.map" />
+    <Content Include="niceadmin\assets\vendor\bootstrap\js\bootstrap.bundle.min.js.map" />
+    <Content Include="niceadmin\assets\vendor\bootstrap\js\bootstrap.esm.js.map" />
+    <Content Include="niceadmin\assets\vendor\bootstrap\js\bootstrap.esm.min.js.map" />
+    <Content Include="niceadmin\assets\vendor\bootstrap\js\bootstrap.js.map" />
+    <Content Include="niceadmin\assets\vendor\bootstrap\js\bootstrap.min.js.map" />
+    <Content Include="niceadmin\assets\vendor\boxicons\fonts\boxicons.eot" />
+    <Content Include="niceadmin\assets\vendor\boxicons\fonts\boxicons.ttf" />
+    <Content Include="niceadmin\assets\vendor\boxicons\fonts\boxicons.woff" />
+    <Content Include="niceadmin\assets\vendor\boxicons\fonts\boxicons.woff2" />
+    <Content Include="niceadmin\assets\vendor\chart.js\chart.cjs.map" />
+    <Content Include="niceadmin\assets\vendor\chart.js\chart.js.map" />
+    <Content Include="niceadmin\assets\vendor\chart.js\chart.umd.js.map" />
+    <Content Include="niceadmin\assets\vendor\chart.js\chunks\helpers.segment.cjs.map" />
+    <Content Include="niceadmin\assets\vendor\chart.js\chunks\helpers.segment.js.map" />
+    <Content Include="niceadmin\assets\vendor\chart.js\helpers.cjs.map" />
+    <Content Include="niceadmin\assets\vendor\chart.js\helpers.js.map" />
+    <Content Include="niceadmin\assets\vendor\echarts\echarts.common.js.map" />
+    <Content Include="niceadmin\assets\vendor\echarts\echarts.esm.js.map" />
+    <Content Include="niceadmin\assets\vendor\echarts\echarts.esm.mjs.map" />
+    <Content Include="niceadmin\assets\vendor\echarts\echarts.js.map" />
+    <Content Include="niceadmin\assets\vendor\echarts\echarts.simple.js.map" />
+    <Content Include="niceadmin\assets\vendor\echarts\extension\bmap.js.map" />
+    <Content Include="niceadmin\assets\vendor\echarts\extension\dataTool.js.map" />
+    <Content Include="niceadmin\assets\vendor\echarts\package.json" />
+    <Content Include="niceadmin\assets\vendor\quill\quill.bubble.css.map" />
+    <Content Include="niceadmin\assets\vendor\quill\quill.core.css.map" />
+    <Content Include="niceadmin\assets\vendor\quill\quill.core.js.map" />
+    <Content Include="niceadmin\assets\vendor\quill\quill.js.map" />
+    <Content Include="niceadmin\assets\vendor\quill\quill.snow.css.map" />
+    <Content Include="niceadmin\assets\vendor\remixicon\remixicon.eot" />
+    <Content Include="niceadmin\assets\vendor\remixicon\remixicon.glyph.json" />
+    <Content Include="niceadmin\assets\vendor\remixicon\remixicon.less" />
+    <Content Include="niceadmin\assets\vendor\remixicon\remixicon.module.less" />
+    <Content Include="niceadmin\assets\vendor\remixicon\remixicon.scss" />
+    <Content Include="niceadmin\assets\vendor\remixicon\remixicon.styl" />
+    <Content Include="niceadmin\assets\vendor\remixicon\remixicon.ttf" />
+    <Content Include="niceadmin\assets\vendor\remixicon\remixicon.woff" />
+    <Content Include="niceadmin\assets\vendor\remixicon\remixicon.woff2" />
+    <Content Include="niceadmin\assets\vendor\tinymce\bower.json" />
+    <Content Include="niceadmin\assets\vendor\tinymce\CHANGELOG.md" />
+    <Content Include="niceadmin\assets\vendor\tinymce\composer.json" />
+    <Content Include="niceadmin\assets\vendor\tinymce\license.md" />
+    <Content Include="niceadmin\assets\vendor\tinymce\package.json" />
+    <Content Include="niceadmin\assets\vendor\tinymce\README.md" />
+    <None Include="scripts\jquery-3.7.1.intellisense.js" />
+    <Content Include="BundleHeaders.aspx" />
+    <Content Include="BundleDetailed.aspx" />
+    <Content Include="prologue\assets\css\fontawesome-all.min.css" />
+    <Content Include="prologue\assets\css\images\ie\grad0-15.svg" />
+    <Content Include="prologue\assets\css\images\overlay.png" />
+    <Content Include="prologue\assets\css\main.css" />
+    <Content Include="prologue\assets\js\breakpoints.min.js" />
+    <Content Include="prologue\assets\js\browser.min.js" />
+    <Content Include="prologue\assets\js\jquery.min.js" />
+    <Content Include="prologue\assets\js\jquery.scrollex.min.js" />
+    <Content Include="prologue\assets\js\jquery.scrolly.min.js" />
+    <Content Include="prologue\assets\js\main.js" />
+    <Content Include="prologue\assets\js\util.js" />
+    <Content Include="prologue\assets\webfonts\fa-brands-400.svg" />
+    <Content Include="prologue\assets\webfonts\fa-regular-400.svg" />
+    <Content Include="prologue\assets\webfonts\fa-solid-900.svg" />
+    <Content Include="BespokeReports.aspx" />
+    <Content Include="TransferSlip.aspx" />
+    <Content Include="WorksOrderPDFCreate.aspx" />
+    <Content Include="ProdPlanningC.aspx" />
+    <Content Include="scripts\jquery-3.7.1.js" />
+    <Content Include="scripts\jquery-3.7.1.min.js" />
+    <Content Include="scripts\jquery-3.7.1.slim.js" />
+    <Content Include="scripts\jquery-3.7.1.slim.min.js" />
+    <Content Include="StockCountCreate.aspx" />
+    <Content Include="ViewPDF.aspx" />
+    <Content Include="StockCounts.aspx" />
+    <Content Include="StockEnquiry.aspx" />
+    <Content Include="images\SyncfloLogo.ico" />
+    <Content Include="images\SyncfloLogo.png" />
+    <Content Include="Models\SBMS.Context.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <DependentUpon>SBMS.edmx</DependentUpon>
+      <LastGenOutput>SBMS.Context.cs</LastGenOutput>
+    </Content>
+    <Content Include="Models\SBMS.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <DependentUpon>SBMS.edmx</DependentUpon>
+      <LastGenOutput>SBMS1.cs</LastGenOutput>
+    </Content>
+    <Content Include="Notifications.aspx" />
+    <Content Include="ProdLineTrackingHistory.aspx" />
+    <Content Include="JobTrackingStatic.aspx" />
+    <Content Include="js\ProdPlankanbanscript.js" />
+    <Content Include="Login.aspx" />
+    <Content Include="images\fgmrp.png" />
+    <Content Include="images\Forecasta.png" />
+    <Content Include="images\Forecasta2.png" />
+    <Content Include="images\ItemMove.png" />
+    <Content Include="images\JobTrack.png" />
+    <Content Include="images\PickSlips.png" />
+    <Content Include="images\PickSlips2.png" />
+    <Content Include="images\Picksliptrack.png" />
+    <Content Include="images\Picksliptrack2.png" />
+    <Content Include="images\ProdPlanning.png" />
+    <Content Include="images\ProdTracking.png" />
+    <Content Include="images\receiving.png" />
+    <Content Include="images\receiving2.png" />
+    <Content Include="images\WHTrf.png" />
+    <Content Include="ItemsOnHandAnalysis.aspx" />
+    <Content Include="ItemsOnHandByStore.aspx" />
+    <Content Include="js\pickslipkanbanscript.js" />
+    <Content Include="PickingSlipTrackStatic.aspx" />
+    <Content Include="PickingSlipTracking.aspx" />
+    <Content Include="lib\toastr\toastr.css" />
+    <Content Include="lib\toastr\toastr.js" />
+    <Content Include="lib\toastr\toastr.min.css" />
+    <Content Include="lib\toastr\toastr.min.js" />
+    <Content Include="ProductionTrackingStatic.aspx" />
+    <Content Include="ProductionTracking.aspx" />
+    <Content Include="js\kanbanscript.js" />
+    <Content Include="Planning.aspx" />
+    <Content Include="Production.aspx" />
+    <Content Include="ProdPlanning.aspx" />
+    <Content Include="ProductionRMD.aspx" />
+    <Content Include="FGDemands.aspx" />
+    <Content Include="JobTracking.aspx" />
+    <Content Include="JobTrackingHistory.aspx" />
+    <Content Include="content\toastr.scss" />
+    <Content Include="content\toastr.less" />
+    <Content Include="lib\toastr\toastr.less" />
+    <Content Include="lib\toastr\toastr.scss" />
+    <Content Include="KeepAlive.ashx" />
+    <EntityDeploy Include="Models\SBMS.edmx">
+      <Generator>EntityModelCodeGenerator</Generator>
+      <LastGenOutput>SBMS.Designer.cs</LastGenOutput>
+    </EntityDeploy>
+    <Content Include="Models\SBMS.edmx.diagram">
+      <DependentUpon>SBMS.edmx</DependentUpon>
+    </Content>
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <Content Include="ConfigRoles.aspx" />
+    <Content Include="scripts\notifications.js" />
+    <Content Include="scripts\PickSlipRefresh.js" />
+    <Content Include="scripts\sendKeepAlive.js" />
+    <Content Include="scripts\toastr.js" />
+    <Content Include="scripts\toastr.min.js" />
+    <Content Include="SyncfloLogo.ico" />
+    <Content Include="WorksOrdersCloseOff.aspx" />
+    <Content Include="TransferHeaders.aspx" />
+    <Content Include="WorksOrdersManfHeaders.aspx" />
+    <Content Include="WorksOrdersManfDetailed.aspx" />
+    <Content Include="WorksOrdersManf.aspx" />
+    <Content Include="WorksOrdersDetailed.aspx" />
+    <Content Include="ForeCastDetailed.aspx" />
+    <Content Include="WorksOrdersHeaders.aspx" />
+    <Content Include="ForeCastHeaders.aspx" />
+    <Content Include="images\tenorwait.gif" />
+    <Content Include="ItemsHeaders.aspx" />
+    <Content Include="js\script.js" />
+    <Content Include="KitDetailed.aspx" />
+    <Content Include="KitCreate.aspx" />
+    <Content Include="BOMCreate.aspx" />
+    <Content Include="BOMDetailed.aspx" />
+    <Content Include="ItemEdit.aspx" />
+    <Content Include="KitHeaders.aspx" />
+    <Content Include="images\logo.png" />
+    <Content Include="images\SageAcctLogo.jpg" />
+    <Content Include="pivot\pivot.css" />
+    <Content Include="pivot\pivot.js" />
+    <Content Include="pivot\pivot.min.css" />
+    <Content Include="pivot\pivot.min.js" />
+    <Content Include="pivot\plotly_renderers.js" />
+    <Content Include="StoresMaster.aspx" />
+    <Content Include="PickingSlip.aspx" />
+    <Content Include="js\site.js" />
+    <Content Include="lib\bootstrap\dist\css\bootstrap-grid.css" />
+    <Content Include="lib\bootstrap\dist\css\bootstrap-grid.min.css" />
+    <Content Include="lib\bootstrap\dist\css\bootstrap-reboot.css" />
+    <Content Include="lib\bootstrap\dist\css\bootstrap-reboot.min.css" />
+    <Content Include="lib\bootstrap\dist\css\bootstrap.css" />
+    <Content Include="lib\bootstrap\dist\css\bootstrap.min.css" />
+    <Content Include="lib\bootstrap\dist\js\bootstrap.bundle.js" />
+    <Content Include="lib\bootstrap\dist\js\bootstrap.bundle.min.js" />
+    <Content Include="lib\bootstrap\dist\js\bootstrap.js" />
+    <Content Include="lib\bootstrap\dist\js\bootstrap.min.js" />
+    <Content Include="lib\jquery-validation-unobtrusive\jquery.validate.unobtrusive.js" />
+    <Content Include="lib\jquery-validation-unobtrusive\jquery.validate.unobtrusive.min.js" />
+    <Content Include="lib\jquery-validation-unobtrusive\LICENSE.txt" />
+    <Content Include="lib\jquery-validation\dist\additional-methods.js" />
+    <Content Include="lib\jquery-validation\dist\additional-methods.min.js" />
+    <Content Include="lib\jquery-validation\dist\jquery.validate.js" />
+    <Content Include="lib\jquery-validation\dist\jquery.validate.min.js" />
+    <Content Include="lib\jqueryui\jquery-ui.min.js" />
+    <Content Include="lib\jquery\dist\jquery.js" />
+    <Content Include="lib\jquery\dist\jquery.min.js" />
+    <Content Include="lib\jquery\LICENSE.txt" />
+    <Content Include="OSSalesOrders.aspx" />
+    <Content Include="JobCard.aspx" />
+    <Content Include="SalesOrder.aspx" />
+    <Content Include="StockMovement.aspx" />
+    <Content Include="TransferSelect.aspx" />
+    <Content Include="TransferHistory.aspx" />
+    <Content Include="BOMHeaders.aspx" />
+    <Content Include="assets\css\font-awesome.min.css" />
+    <Content Include="assets\css\fontawesome-all.css" />
+    <Content Include="assets\css\ie8.css" />
+    <Content Include="assets\css\ie9.css" />
+    <Content Include="assets\css\jquery-ui.css" />
+    <Content Include="assets\css\main.css" />
+    <Content Include="assets\css\noscript.css" />
+    <Content Include="assets\fonts\fontawesome-webfont.svg" />
+    <Content Include="assets\js\breakpoints.min.js" />
+    <Content Include="assets\js\browser.min.js" />
+    <Content Include="assets\js\jquery.dropotron.min.js" />
+    <Content Include="assets\js\jquery.min.js" />
+    <Content Include="assets\js\jquery.scrollex.min.js" />
+    <Content Include="assets\js\jquery.scrolly.min.js" />
+    <Content Include="assets\js\main.js" />
+    <Content Include="assets\js\site.js" />
+    <Content Include="assets\js\util.js" />
+    <Content Include="assets\webfonts\fa-brands-400.svg" />
+    <Content Include="assets\webfonts\fa-regular-400.svg" />
+    <Content Include="assets\webfonts\fa-solid-900.svg" />
+    <Content Include="Transfer.aspx" />
+    <Content Include="OSPurchaseOrders.aspx" />
+    <Content Include="Global.asax" />
+    <Content Include="Dashboard.aspx" />
+    <Content Include="Web.config" />
+    <Content Include="scripts\jquery-3.7.1.slim.min.map" />
+    <Content Include="scripts\jquery-3.7.1.min.map" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Classes\AlertHelper.cs" />
+    <Compile Include="Classes\Authentication.cs" />
+    <Compile Include="Classes\BasePage.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Classes\csvReader.cs" />
+    <Compile Include="Classes\DataTableHelper.cs" />
+    <Compile Include="Classes\ExcelHelper.cs" />
+    <Compile Include="Classes\CompanyDetails.cs" />
+    <Compile Include="Classes\GetErrorResults.cs" />
+    <Compile Include="Classes\IEnumerableExtensions.cs" />
+    <Compile Include="Classes\KeepAlive.cs" />
+    <Compile Include="Classes\PDFFooter.cs" />
+    <Compile Include="Classes\SessionValidator.cs" />
+    <Compile Include="Classes\UserDetails.cs" />
+    <Compile Include="CommonScripts.ascx.cs">
+      <DependentUpon>CommonScripts.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="CommonScripts.ascx.designer.cs">
+      <DependentUpon>CommonScripts.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="ConfigAccounts.aspx.cs">
+      <DependentUpon>ConfigAccounts.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="ConfigAccounts.aspx.designer.cs">
+      <DependentUpon>ConfigAccounts.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="ConfigProcesses.aspx.cs">
+      <DependentUpon>ConfigProcesses.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="ConfigProcesses.aspx.designer.cs">
+      <DependentUpon>ConfigProcesses.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="ConfigMaster.aspx.cs">
+      <DependentUpon>ConfigMaster.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="ConfigMaster.aspx.designer.cs">
+      <DependentUpon>ConfigMaster.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="ConfigCompany.aspx.cs">
+      <DependentUpon>ConfigCompany.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="ConfigCompany.aspx.designer.cs">
+      <DependentUpon>ConfigCompany.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="ConfigDelivery.aspx.cs">
+      <DependentUpon>ConfigDelivery.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="ConfigDelivery.aspx.designer.cs">
+      <DependentUpon>ConfigDelivery.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="ConfigUsers.aspx.cs">
+      <DependentUpon>ConfigUsers.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="ConfigUsers.aspx.designer.cs">
+      <DependentUpon>ConfigUsers.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="DataFusionOnboardFinish.aspx.cs">
+      <DependentUpon>DataFusionOnboardFinish.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="DataFusionOnboardFinish.aspx.designer.cs">
+      <DependentUpon>DataFusionOnboardFinish.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="DataFusionOnboard.aspx.cs">
+      <DependentUpon>DataFusionOnboard.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="DataFusionOnboard.aspx.designer.cs">
+      <DependentUpon>DataFusionOnboard.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="dndSupplierInvoices.aspx.cs">
+      <DependentUpon>dndSupplierInvoices.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="dndSupplierInvoices.aspx.designer.cs">
+      <DependentUpon>dndSupplierInvoices.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="dndPurchaseOrders.aspx.cs">
+      <DependentUpon>dndPurchaseOrders.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="dndPurchaseOrders.aspx.designer.cs">
+      <DependentUpon>dndPurchaseOrders.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="ItemQOHSync.aspx.cs">
+      <DependentUpon>ItemQOHSync.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="ItemQOHSync.aspx.designer.cs">
+      <DependentUpon>ItemQOHSync.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="BundleHeaders.aspx.cs">
+      <DependentUpon>BundleHeaders.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="BundleHeaders.aspx.designer.cs">
+      <DependentUpon>BundleHeaders.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="BundleDetailed.aspx.cs">
+      <DependentUpon>BundleDetailed.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="BundleDetailed.aspx.designer.cs">
+      <DependentUpon>BundleDetailed.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="ItemStoresLink.aspx.cs">
+      <DependentUpon>ItemStoresLink.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="ItemStoresLink.aspx.designer.cs">
+      <DependentUpon>ItemStoresLink.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Classes\Config.cs" />
+    <Compile Include="Models\AccountsMaster.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\AvCostChangeLog.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\BOMHeader.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\BOMLine.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\BundlesHeader.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\BundlesLine.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\CompanyMaster.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\DashSalesModel.cs" />
+    <Compile Include="Models\DelivMethod.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\DITransactionsTbl.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\DIUpdateLog.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\DocHeader.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\DocHeaderAttachment.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\DocLine.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\DocType.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\DocumentItemList.cs" />
+    <Compile Include="Models\DocumentLineOrigValues.cs" />
+    <Compile Include="Models\DynamicReport.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\ForCastHeader.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\ForCastLine.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\GetActiveLotNumbersLinkedToStores_Result.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\GetAllActiveJobCards_Result.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\GetAllActivePickingSlips_Result.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\GetAllStockLevels_Result.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\GetBOMLinesFromBomCode_Result.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\GetBOMLinesFromBomHeaderID_Result.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\getdoclinestest_Result.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\GetFGDemmandsAll_Result.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\GetFGOpenBalances_Result.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\GetItemsQtyOnHandMaster_Result.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\GetItemTransferHistoryByDate_Result.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\GetJobMovementTransactions_Result.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\GetKitLinesFromKitCode_Result.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\GetLinkedStoredFromItem_Result.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\GetListOfDocHeadersByType_Result.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\GetOneDocHeaderFromDocID_Result.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\GetOneItemFromBarcode_Result.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\GetOneJobCardFromDocHeaderID_Result.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\GetOnePickingSlipFromDocHeaderID_Result.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\GetOpeningBalancesAllStores_Result.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\GetPickSlipMovementTransactions_Result.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\GetProdPlanMovementTransactions_Result.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\GetProdRMDemands_Result.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\GetQtyOnActiveForecasts_Result.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\GetQtyOnActiveJobCards_Result.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\GetQtyOnActivePickSlips_Result.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\GetQtyOnActivePurchaseOrders_Result.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\GetQtyOnActiveWorksOrders_Result.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\GetStckCountDetails_Result.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\GetStockCountList_Result.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\GetUserFromCreds_Result.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\ItemBarCodeLink.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\ItemsMaster.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\ItemsReorderLevel.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\ItemStoreLinkMaster.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\ItemTransaction.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\ItemTransferHeader.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\ItemTransferLine.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\JobCardLine.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\JobCardsMaster.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\JobTransaction.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\KitHeader.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\KitLine.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\LastCallLog.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\LotTrackingMaster.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\Notification.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\PickingSlipMaster.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\PickSlipLine.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\PickSlipProcess.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\PickSlipTransaction.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\ProdPlanLine.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\ProdTransaction.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\ReceivingAddCost.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\ReceivingOutstanding.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\RolesMaster.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\SBMS1.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\StockCountLine.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\StockCountMaster.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\Store.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\SupplierAdjustment.cs" />
+    <Compile Include="Models\TaxTypesMaster.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\TempDocLine.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\UsersMaster.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\WorksOrderHeader.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\WorksOrderLine.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\WorksOrderRMLine.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\WorkStation.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="OSPurchaseOrdersPartial.aspx.cs">
+      <DependentUpon>OSPurchaseOrdersPartial.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="OSPurchaseOrdersPartial.aspx.designer.cs">
+      <DependentUpon>OSPurchaseOrdersPartial.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Receiving.aspx.cs">
+      <DependentUpon>Receiving.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Receiving.aspx.designer.cs">
+      <DependentUpon>Receiving.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Reporting.aspx.cs">
+      <DependentUpon>Reporting.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Reporting.aspx.designer.cs">
+      <DependentUpon>Reporting.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="PurchaseOrdersIncomplete.aspx.cs">
+      <DependentUpon>PurchaseOrdersIncomplete.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="PurchaseOrdersIncomplete.aspx.designer.cs">
+      <DependentUpon>PurchaseOrdersIncomplete.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="DashboardSales.aspx.cs">
+      <DependentUpon>DashboardSales.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="DashboardSales.aspx.designer.cs">
+      <DependentUpon>DashboardSales.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="SalesOrdersIncomplete.aspx.cs">
+      <DependentUpon>SalesOrdersIncomplete.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="SalesOrdersIncomplete.aspx.designer.cs">
+      <DependentUpon>SalesOrdersIncomplete.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="StockControl.aspx.cs">
+      <DependentUpon>StockControl.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="StockControl.aspx.designer.cs">
+      <DependentUpon>StockControl.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="BespokeReports.aspx.cs">
+      <DependentUpon>BespokeReports.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="BespokeReports.aspx.designer.cs">
+      <DependentUpon>BespokeReports.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="TransferSlip.aspx.cs">
+      <DependentUpon>TransferSlip.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="TransferSlip.aspx.designer.cs">
+      <DependentUpon>TransferSlip.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="WorksOrderPDFCreate.aspx.cs">
+      <DependentUpon>WorksOrderPDFCreate.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="WorksOrderPDFCreate.aspx.designer.cs">
+      <DependentUpon>WorksOrderPDFCreate.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Models\SageSalesOrder.cs" />
+    <Compile Include="ItemStkAdjustment.aspx.cs">
+      <DependentUpon>ItemStkAdjustment.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="ItemStkAdjustment.aspx.designer.cs">
+      <DependentUpon>ItemStkAdjustment.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Models\SalesOrderHeader.cs" />
+    <Compile Include="ProdPlanningC.aspx.cs">
+      <DependentUpon>ProdPlanningC.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="ProdPlanningC.aspx.designer.cs">
+      <DependentUpon>ProdPlanningC.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="StockCountCreate.aspx.cs">
+      <DependentUpon>StockCountCreate.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="StockCountCreate.aspx.designer.cs">
+      <DependentUpon>StockCountCreate.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="ViewPDF.aspx.cs">
+      <DependentUpon>ViewPDF.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="ViewPDF.aspx.designer.cs">
+      <DependentUpon>ViewPDF.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="StockCounts.aspx.cs">
+      <DependentUpon>StockCounts.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="StockCounts.aspx.designer.cs">
+      <DependentUpon>StockCounts.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="StockEnquiry.aspx.cs">
+      <DependentUpon>StockEnquiry.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="StockEnquiry.aspx.designer.cs">
+      <DependentUpon>StockEnquiry.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Models\SBMS.Context.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>SBMS.Context.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\SBMS.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\SBMS.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>SBMS.edmx</DependentUpon>
+    </Compile>
+    <Compile Include="Notifications.aspx.cs">
+      <DependentUpon>Notifications.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Notifications.aspx.designer.cs">
+      <DependentUpon>Notifications.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="ProdLineTrackingHistory.aspx.cs">
+      <DependentUpon>ProdLineTrackingHistory.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="ProdLineTrackingHistory.aspx.designer.cs">
+      <DependentUpon>ProdLineTrackingHistory.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="JobTrackingStatic.aspx.cs">
+      <DependentUpon>JobTrackingStatic.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="JobTrackingStatic.aspx.designer.cs">
+      <DependentUpon>JobTrackingStatic.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Login.aspx.cs">
+      <DependentUpon>Login.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Login.aspx.designer.cs">
+      <DependentUpon>Login.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="ItemsOnHandAnalysis.aspx.cs">
+      <DependentUpon>ItemsOnHandAnalysis.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="ItemsOnHandAnalysis.aspx.designer.cs">
+      <DependentUpon>ItemsOnHandAnalysis.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="ItemsOnHandByStore.aspx.cs">
+      <DependentUpon>ItemsOnHandByStore.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="ItemsOnHandByStore.aspx.designer.cs">
+      <DependentUpon>ItemsOnHandByStore.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="PickingSlipTrackStatic.aspx.cs">
+      <DependentUpon>PickingSlipTrackStatic.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="PickingSlipTrackStatic.aspx.designer.cs">
+      <DependentUpon>PickingSlipTrackStatic.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="PickingSlipTracking.aspx.cs">
+      <DependentUpon>PickingSlipTracking.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="PickingSlipTracking.aspx.designer.cs">
+      <DependentUpon>PickingSlipTracking.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="ProductionTrackingStatic.aspx.cs">
+      <DependentUpon>ProductionTrackingStatic.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="ProductionTrackingStatic.aspx.designer.cs">
+      <DependentUpon>ProductionTrackingStatic.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="ProductionTracking.aspx.cs">
+      <DependentUpon>ProductionTracking.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="ProductionTracking.aspx.designer.cs">
+      <DependentUpon>ProductionTracking.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Models\Document.cs" />
+    <Compile Include="Models\ItemAdjustment.cs" />
+    <Compile Include="Models\SupplierInvoiceHeader.cs" />
+    <Compile Include="Models\DocumentLine.cs" />
+    <Compile Include="Planning.aspx.cs">
+      <DependentUpon>Planning.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Planning.aspx.designer.cs">
+      <DependentUpon>Planning.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Production.aspx.cs">
+      <DependentUpon>Production.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Production.aspx.designer.cs">
+      <DependentUpon>Production.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="ProdPlanning.aspx.cs">
+      <DependentUpon>ProdPlanning.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="ProdPlanning.aspx.designer.cs">
+      <DependentUpon>ProdPlanning.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="ProductionRMD.aspx.cs">
+      <DependentUpon>ProductionRMD.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="ProductionRMD.aspx.designer.cs">
+      <DependentUpon>ProductionRMD.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="FGDemands.aspx.cs">
+      <DependentUpon>FGDemands.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="FGDemands.aspx.designer.cs">
+      <DependentUpon>FGDemands.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="JobTracking.aspx.cs">
+      <DependentUpon>JobTracking.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="JobTracking.aspx.designer.cs">
+      <DependentUpon>JobTracking.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="JobTrackingHistory.aspx.cs">
+      <DependentUpon>JobTrackingHistory.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="JobTrackingHistory.aspx.designer.cs">
+      <DependentUpon>JobTrackingHistory.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <DependentUpon>Settings.settings</DependentUpon>
+    </Compile>
+    <Compile Include="ConfigRoles.aspx.cs">
+      <DependentUpon>ConfigRoles.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="ConfigRoles.aspx.designer.cs">
+      <DependentUpon>ConfigRoles.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="WorksOrdersCloseOff.aspx.cs">
+      <DependentUpon>WorksOrdersCloseOff.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="WorksOrdersCloseOff.aspx.designer.cs">
+      <DependentUpon>WorksOrdersCloseOff.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="TransferHeaders.aspx.cs">
+      <DependentUpon>TransferHeaders.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="TransferHeaders.aspx.designer.cs">
+      <DependentUpon>TransferHeaders.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="WorksOrdersManfHeaders.aspx.cs">
+      <DependentUpon>WorksOrdersManfHeaders.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="WorksOrdersManfHeaders.aspx.designer.cs">
+      <DependentUpon>WorksOrdersManfHeaders.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="WorksOrdersManfDetailed.aspx.cs">
+      <DependentUpon>WorksOrdersManfDetailed.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="WorksOrdersManfDetailed.aspx.designer.cs">
+      <DependentUpon>WorksOrdersManfDetailed.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="WorksOrdersManf.aspx.cs">
+      <DependentUpon>WorksOrdersManf.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="WorksOrdersManf.aspx.designer.cs">
+      <DependentUpon>WorksOrdersManf.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="WorksOrdersDetailed.aspx.cs">
+      <DependentUpon>WorksOrdersDetailed.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="WorksOrdersDetailed.aspx.designer.cs">
+      <DependentUpon>WorksOrdersDetailed.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="ForeCastDetailed.aspx.cs">
+      <DependentUpon>ForeCastDetailed.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="ForeCastDetailed.aspx.designer.cs">
+      <DependentUpon>ForeCastDetailed.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="WorksOrdersHeaders.aspx.cs">
+      <DependentUpon>WorksOrdersHeaders.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="WorksOrdersHeaders.aspx.designer.cs">
+      <DependentUpon>WorksOrdersHeaders.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="ForeCastHeaders.aspx.cs">
+      <DependentUpon>ForeCastHeaders.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="ForeCastHeaders.aspx.designer.cs">
+      <DependentUpon>ForeCastHeaders.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="ItemsHeaders.aspx.cs">
+      <DependentUpon>ItemsHeaders.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="ItemsHeaders.aspx.designer.cs">
+      <DependentUpon>ItemsHeaders.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="KitDetailed.aspx.cs">
+      <DependentUpon>KitDetailed.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="KitDetailed.aspx.designer.cs">
+      <DependentUpon>KitDetailed.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="KitCreate.aspx.cs">
+      <DependentUpon>KitCreate.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="KitCreate.aspx.designer.cs">
+      <DependentUpon>KitCreate.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="BOMCreate.aspx.cs">
+      <DependentUpon>BOMCreate.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="BOMCreate.aspx.designer.cs">
+      <DependentUpon>BOMCreate.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="BOMDetailed.aspx.cs">
+      <DependentUpon>BOMDetailed.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="BOMDetailed.aspx.designer.cs">
+      <DependentUpon>BOMDetailed.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="ItemEdit.aspx.cs">
+      <DependentUpon>ItemEdit.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="ItemEdit.aspx.designer.cs">
+      <DependentUpon>ItemEdit.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="KitHeaders.aspx.cs">
+      <DependentUpon>KitHeaders.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="KitHeaders.aspx.designer.cs">
+      <DependentUpon>KitHeaders.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Classes\ApiUrlCall.cs" />
+    <Compile Include="Classes\DataTableToJson.cs" />
+    <Compile Include="Classes\emailer.cs" />
+    <Compile Include="Classes\Simple3Des.cs" />
+    <Compile Include="StoresMaster.aspx.cs">
+      <DependentUpon>StoresMaster.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="StoresMaster.aspx.designer.cs">
+      <DependentUpon>StoresMaster.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="PickingSlip.aspx.cs">
+      <DependentUpon>PickingSlip.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="PickingSlip.aspx.designer.cs">
+      <DependentUpon>PickingSlip.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="OSSalesOrders.aspx.cs">
+      <DependentUpon>OSSalesOrders.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="OSSalesOrders.aspx.designer.cs">
+      <DependentUpon>OSSalesOrders.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="JobCard.aspx.cs">
+      <DependentUpon>JobCard.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="JobCard.aspx.designer.cs">
+      <DependentUpon>JobCard.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="SalesOrder.aspx.cs">
+      <DependentUpon>SalesOrder.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="SalesOrder.aspx.designer.cs">
+      <DependentUpon>SalesOrder.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="StockMovement.aspx.cs">
+      <DependentUpon>StockMovement.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="StockMovement.aspx.designer.cs">
+      <DependentUpon>StockMovement.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="TransferSelect.aspx.cs">
+      <DependentUpon>TransferSelect.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="TransferSelect.aspx.designer.cs">
+      <DependentUpon>TransferSelect.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="TransferHistory.aspx.cs">
+      <DependentUpon>TransferHistory.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="TransferHistory.aspx.designer.cs">
+      <DependentUpon>TransferHistory.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="BOMHeaders.aspx.cs">
+      <DependentUpon>BOMHeaders.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="BOMHeaders.aspx.designer.cs">
+      <DependentUpon>BOMHeaders.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Transfer.aspx.cs">
+      <DependentUpon>Transfer.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Transfer.aspx.designer.cs">
+      <DependentUpon>Transfer.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="OSPurchaseOrders.aspx.cs">
+      <DependentUpon>OSPurchaseOrders.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="OSPurchaseOrders.aspx.designer.cs">
+      <DependentUpon>OSPurchaseOrders.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Global.asax.cs">
+      <DependentUpon>Global.asax</DependentUpon>
+    </Compile>
+    <Compile Include="Dashboard.aspx.cs">
+      <DependentUpon>Dashboard.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Dashboard.aspx.designer.cs">
+      <DependentUpon>Dashboard.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="App_Data\" />
+    <Folder Include="images\CoImages\" />
+    <Folder Include="imported_data\" />
+    <Folder Include="inputcsv\" />
+    <Folder Include="PDFs\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="assets\fonts\fontawesome-webfont.eot" />
+    <Content Include="assets\fonts\fontawesome-webfont.ttf" />
+    <Content Include="assets\fonts\fontawesome-webfont.woff" />
+    <Content Include="assets\fonts\fontawesome-webfont.woff2" />
+    <Content Include="assets\fonts\FontAwesome.otf" />
+    <Content Include="assets\sass\libs\_breakpoints.scss" />
+    <Content Include="assets\sass\libs\_functions.scss" />
+    <Content Include="assets\sass\libs\_html-grid.scss" />
+    <Content Include="assets\sass\libs\_mixins.scss" />
+    <Content Include="assets\sass\libs\_vars.scss" />
+    <Content Include="assets\sass\libs\_vendor.scss" />
+    <Content Include="assets\sass\main.scss" />
+    <Content Include="assets\sass\noscript.scss" />
+    <Content Include="assets\webfonts\fa-brands-400.eot" />
+    <Content Include="assets\webfonts\fa-brands-400.ttf" />
+    <Content Include="assets\webfonts\fa-brands-400.woff" />
+    <Content Include="assets\webfonts\fa-brands-400.woff2" />
+    <Content Include="assets\webfonts\fa-regular-400.eot" />
+    <Content Include="assets\webfonts\fa-regular-400.ttf" />
+    <Content Include="assets\webfonts\fa-regular-400.woff" />
+    <Content Include="assets\webfonts\fa-regular-400.woff2" />
+    <Content Include="assets\webfonts\fa-solid-900.eot" />
+    <Content Include="assets\webfonts\fa-solid-900.ttf" />
+    <Content Include="assets\webfonts\fa-solid-900.woff" />
+    <Content Include="assets\webfonts\fa-solid-900.woff2" />
+    <Content Include="lib\bootstrap\dist\css\bootstrap-grid.css.map" />
+    <Content Include="lib\bootstrap\dist\css\bootstrap-grid.min.css.map" />
+    <Content Include="lib\bootstrap\dist\css\bootstrap-reboot.css.map" />
+    <Content Include="lib\bootstrap\dist\css\bootstrap-reboot.min.css.map" />
+    <Content Include="lib\bootstrap\dist\css\bootstrap.css.map" />
+    <Content Include="lib\bootstrap\dist\css\bootstrap.min.css.map" />
+    <Content Include="lib\bootstrap\dist\js\bootstrap.bundle.js.map" />
+    <Content Include="lib\bootstrap\dist\js\bootstrap.bundle.min.js.map" />
+    <Content Include="lib\bootstrap\dist\js\bootstrap.js.map" />
+    <Content Include="lib\bootstrap\dist\js\bootstrap.min.js.map" />
+    <Content Include="lib\bootstrap\LICENSE" />
+    <Content Include="lib\jquery-validation\LICENSE.md" />
+    <Content Include="lib\jquery\dist\jquery.min.map" />
+    <None Include="packages.config" />
+    <Content Include="pivot\pivot.js.map" />
+    <Content Include="pivot\pivot.min.js.map" />
+    <Content Include="pivot\plotly_renderers.js.map" />
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{4A0DDDB5-7A95-4FBF-97CC-616D07737A77}" />
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+  </ItemGroup>
+  <ItemGroup>
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\controllers\controller.bar.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\controllers\controller.bubble.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\controllers\controller.doughnut.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\controllers\controller.line.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\controllers\controller.pie.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\controllers\controller.polarArea.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\controllers\controller.radar.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\controllers\controller.scatter.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\controllers\index.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\core\core.adapters.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\core\core.animation.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\core\core.animations.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\core\core.animations.defaults.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\core\core.animator.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\core\core.config.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\core\core.controller.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\core\core.datasetController.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\core\core.defaults.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\core\core.element.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\core\core.interaction.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\core\core.layouts.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\core\core.layouts.defaults.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\core\core.plugins.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\core\core.registry.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\core\core.scale.autoskip.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\core\core.scale.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\core\core.scale.defaults.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\core\core.ticks.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\core\core.typedRegistry.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\core\index.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\elements\element.arc.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\elements\element.bar.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\elements\element.line.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\elements\element.point.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\elements\index.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\helpers\helpers.canvas.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\helpers\helpers.collection.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\helpers\helpers.color.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\helpers\helpers.config.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\helpers\helpers.config.types.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\helpers\helpers.core.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\helpers\helpers.curve.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\helpers\helpers.dom.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\helpers\helpers.easing.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\helpers\helpers.extras.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\helpers\helpers.interpolation.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\helpers\helpers.intl.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\helpers\helpers.math.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\helpers\helpers.options.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\helpers\helpers.rtl.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\helpers\helpers.segment.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\helpers\index.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\index.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\index.umd.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\platform\index.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\platform\platform.base.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\platform\platform.basic.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\platform\platform.dom.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\plugins\index.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\plugins\plugin.colors.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\plugins\plugin.decimation.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\plugins\plugin.filler\filler.drawing.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\plugins\plugin.filler\filler.helper.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\plugins\plugin.filler\filler.options.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\plugins\plugin.filler\filler.segment.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\plugins\plugin.filler\filler.target.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\plugins\plugin.filler\filler.target.stack.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\plugins\plugin.filler\index.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\plugins\plugin.filler\simpleArc.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\plugins\plugin.legend.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\plugins\plugin.subtitle.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\plugins\plugin.title.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\plugins\plugin.tooltip.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\scales\index.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\scales\scale.category.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\scales\scale.linear.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\scales\scale.linearbase.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\scales\scale.logarithmic.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\scales\scale.radialLinear.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\scales\scale.time.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\scales\scale.timeseries.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\types.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\types\animation.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\types\basic.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\types\color.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\types\geometric.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\types\index.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\types\layout.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\types\utils.d.ts" />
+    <TypeScriptCompile Include="niceadmin\assets\vendor\tinymce\tinymce.d.ts" />
+  </ItemGroup>
+  <ItemGroup>
+    <COMReference Include="PasSDK">
+      <Guid>{DB9E3444-F323-4046-940E-F4D3878E7A0F}</Guid>
+      <VersionMajor>2</VersionMajor>
+      <VersionMinor>4</VersionMinor>
+      <Lcid>0</Lcid>
+      <WrapperTool>tlbimp</WrapperTool>
+      <Isolated>False</Isolated>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </COMReference>
+  </ItemGroup>
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>SyncfloLogo.ico</ApplicationIcon>
+  </PropertyGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(VSToolsPath)\WebApplications\Microsoft.WebApplication.targets" Condition="'$(VSToolsPath)' != ''" />
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" Condition="false" />
+  <ProjectExtensions>
+    <VisualStudio>
+      <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
+        <WebProjectProperties>
+          <UseIIS>True</UseIIS>
+          <AutoAssignPort>True</AutoAssignPort>
+          <DevelopmentServerPort>0</DevelopmentServerPort>
+          <DevelopmentServerVPath>/</DevelopmentServerVPath>
+          <IISUrl>http://localhost:55065/</IISUrl>
+          <NTLMAuthentication>False</NTLMAuthentication>
+          <UseCustomServer>False</UseCustomServer>
+          <CustomServerUrl>
+          </CustomServerUrl>
+          <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
+        </WebProjectProperties>
+      </FlavorProperties>
+    </VisualStudio>
+  </ProjectExtensions>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\EntityFramework.6.5.1\build\EntityFramework.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\EntityFramework.6.5.1\build\EntityFramework.props'))" />
+    <Error Condition="!Exists('..\packages\EntityFramework.6.5.1\build\EntityFramework.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\EntityFramework.6.5.1\build\EntityFramework.targets'))" />
+  </Target>
+  <Import Project="..\packages\EntityFramework.6.5.1\build\EntityFramework.targets" Condition="Exists('..\packages\EntityFramework.6.5.1\build\EntityFramework.targets')" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

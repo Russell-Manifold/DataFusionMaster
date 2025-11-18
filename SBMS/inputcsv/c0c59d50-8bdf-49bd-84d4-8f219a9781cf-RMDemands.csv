@@ -1,0 +1,19 @@
+WONum,LinkedDocumentNum,Reference,Status,ItemCode,Category,Description,Qty,Year_Mth_Week,Due_Date,Trn,UseQty,ScrapQty,RejectQty
+0,PO0000004,WEI001 : Weifang Antai Chemical Co Ltd,,PAC,,Poly Aluminium Chloride (Powder),58.0000,2025-09 Week38,18 Sep 2025,PO,0.0000,0.0000,0.0000
+0,PO0000010,STRA01 : STRATA CHEMICACLS,,DAD001,,Dadmac,7700.0000,2025-10 Week40,02 Oct 2025,PO,0.0000,0.0000,0.0000
+0,,On Hand,QOH,26%DADMAC,,Polydadmac26%,2750.0000,0n Hand,06 Oct 2025,OH,0.0000,0.0000,0.0000
+0,,On Hand,QOH,4015SF,,AF415,0.0000,0n Hand,06 Oct 2025,OH,0.0000,0.0000,0.0000
+0,,On Hand,QOH,ACH,,ACH,176.0000,0n Hand,06 Oct 2025,OH,0.0000,0.0000,0.0000
+0,,On Hand,QOH,DAD001,,Dadmac,17700.0100,0n Hand,06 Oct 2025,OH,0.0000,0.0000,0.0000
+0,,On Hand,QOH,PAC,,Poly Aluminium Chloride (Powder),51950.4000,0n Hand,06 Oct 2025,OH,0.0000,0.0000,0.0000
+0,,On Hand,QOH,PACS,,PAC Liquid Solution,14950.0000,0n Hand,06 Oct 2025,OH,0.0000,0.0000,0.0000
+0,,On Hand,QOH,WAT001,,Water,10000.0100,0n Hand,06 Oct 2025,OH,0.0000,0.0000,0.0000
+0, ,Min Level,Min,26%DADMAC,,Polydadmac26%,0.0000,0n Hand,06 Oct 2025,Min,0.0000,0.0000,0.0000
+0, ,Min Level,Min,4015SF,,AF415,0.0000,0n Hand,06 Oct 2025,Min,0.0000,0.0000,0.0000
+0, ,Min Level,Min,ACH,,ACH,0.0000,0n Hand,06 Oct 2025,Min,0.0000,0.0000,0.0000
+0, ,Min Level,Min,DAD001,,Dadmac,0.0000,0n Hand,06 Oct 2025,Min,0.0000,0.0000,0.0000
+0, ,Min Level,Min,PAC,,Poly Aluminium Chloride (Powder),0.0000,0n Hand,06 Oct 2025,Min,0.0000,0.0000,0.0000
+0, ,Min Level,Min,PACS,,PAC Liquid Solution,0.0000,0n Hand,06 Oct 2025,Min,0.0000,0.0000,0.0000
+0, ,Min Level,Min,WAT001,,Water,0.0000,0n Hand,06 Oct 2025,Min,0.0000,0.0000,0.0000
+7,PS0000004,Document No 866,NEW,26%DADMAC,,Polydadmac26%,-8400.0000,2025-10 Week42,16 Oct 2025,WO,0.0000,0.0000,0.0000
+7,PS0000004,Document No 866,NEW,PACS,,PAC Liquid Solution,-47600.0000,2025-10 Week42,16 Oct 2025,WO,0.0000,0.0000,0.0000

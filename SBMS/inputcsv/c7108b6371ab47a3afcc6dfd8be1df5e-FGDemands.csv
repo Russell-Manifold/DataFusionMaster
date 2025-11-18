@@ -1,0 +1,51 @@
+Document,ItemCode,Category,Trn,Description,Qty,Year_Mth_Week,Due_Date
+QOH,BB0001,Bikes,OH,Big Bike with 2 wheels,100.0000,0n Hand,16 Sep 2024
+QOH,BBK001,Bikes,OH,Big Bike DIY Kit,0.0000,0n Hand,16 Sep 2024
+QOH,GR0012,Bikes,OH,Green Bike with small fromt wheel,152.0000,0n Hand,16 Sep 2024
+QOH,BBWheels-S,Spares,OH,Silver Wheels for Big Bike,158.0000,0n Hand,16 Sep 2024
+QOH,SEAT-U,Spares,OH,Universal Seat,61.0000,0n Hand,16 Sep 2024
+QOH,TRI001B,Bikes,OH,Kiddies tricycle blue and white,25.0000,0n Hand,16 Sep 2024
+QOH,HSPBIG,Play houses and accessories,OH,Big play house,44.0000,0n Hand,16 Sep 2024
+QOH,HSBDIY,Play houses and accessories,OH,DIY Big play house Kit,12.0000,0n Hand,16 Sep 2024
+QOH,BBFRAMER,Spares,OH,Big Bike Frame Red,11.0000,0n Hand,16 Sep 2024
+QOH,WID001,Widgets,OH,Widget Simple 1,39.0000,0n Hand,16 Sep 2024
+QOH,WIDC002,Widgets,OH,Widget component 2,199.0000,0n Hand,16 Sep 2024
+QOH,WIDC003,Widgets,OH,Another Widget Bundle component,147.0000,0n Hand,16 Sep 2024
+QOH,BBFRAMEB,Spares,OH,Big Bike Frame Blue,20.0000,0n Hand,16 Sep 2024
+QOH,DOLLTALL,Play houses and accessories,OH,Tall Doll,93.0000,0n Hand,16 Sep 2024
+QOH,DOLLMED,Play houses and accessories,OH,Doll - Medium,34.0000,0n Hand,16 Sep 2024
+QOH,ADDC001,,OH,Additional costs Item 1,75.0000,0n Hand,16 Sep 2024
+MIN,BB0001,Bikes,Min,Big Bike with 2 wheels,-5.0000,Min Level,16 Sep 2024
+MIN,BBK001,Bikes,Min,Big Bike DIY Kit,-6.0000,Min Level,16 Sep 2024
+MIN,GR0012,Bikes,Min,Green Bike with small fromt wheel,-1.0000,Min Level,16 Sep 2024
+MIN,BBWheels-S,Spares,Min,Silver Wheels for Big Bike,-2.0000,Min Level,16 Sep 2024
+MIN,SEAT-U,Spares,Min,Universal Seat,-3.0000,Min Level,16 Sep 2024
+MIN,TRI001B,Bikes,Min,Kiddies tricycle blue and white,-4.0000,Min Level,16 Sep 2024
+MIN,HSPBIG,Play houses and accessories,Min,Big play house,-2.0000,Min Level,16 Sep 2024
+MIN,HSBDIY,Play houses and accessories,Min,DIY Big play house Kit,-8.0000,Min Level,16 Sep 2024
+MIN,BBFRAMER,Spares,Min,Big Bike Frame Red,-5.0000,Min Level,16 Sep 2024
+MIN,WID001,Widgets,Min,Widget Simple 1,-31.0000,Min Level,16 Sep 2024
+MIN,WIDC002,Widgets,Min,Widget component 2,0.0000,Min Level,16 Sep 2024
+MIN,WIDC003,Widgets,Min,Another Widget Bundle component,0.0000,Min Level,16 Sep 2024
+MIN,BBFRAMEB,Spares,Min,Big Bike Frame Blue,-11.0000,Min Level,16 Sep 2024
+MIN,DOLLTALL,Play houses and accessories,Min,Tall Doll,-4.0000,Min Level,16 Sep 2024
+MIN,DOLLMED,Play houses and accessories,Min,Doll - Medium,-7.0000,Min Level,16 Sep 2024
+MIN,ADDC001,,Min,Additional costs Item 1,-9.0000,Min Level,16 Sep 2024
+Joe,BB0001,Bikes,FC,Big Bike with 2 wheels,-15.0000,2024-10 Week40,03 Oct 2024
+Ed,HSPBIG,Play houses and accessories,FC,Big play house,-17.0000,2024-10 Week40,02 Oct 2024
+JC0000002,WID001,Widgets,JC,Widget Simple 1,-1.0000,2024-09 Week40,30 Sep 2024
+JC0000002,WIDC003,Widgets,JC,Another Widget Bundle component,-3.0000,2024-09 Week40,30 Sep 2024
+JC0000002,WIDC002,Widgets,JC,Widget component 2,-1.0000,2024-09 Week40,30 Sep 2024
+PO0000001,DOLLMED,Play houses and accessories,PO,Doll - Medium,5.0000,2024-09 Week40,30 Sep 2024
+PO0000001,DOLLTALL,Play houses and accessories,PO,Tall Doll,3.0000,2024-09 Week40,30 Sep 2024
+PO0000001,HSPBIG,Play houses and accessories,PO,Big play house,2.0000,2024-09 Week40,30 Sep 2024
+PO0000002,ADDC001,,PO,Additional costs Item 1,10.0000,2024-09 Week40,30 Sep 2024
+PO0000003,ADDC001,,PO,Additional costs Item 1,5.0000,2024-09 Week40,30 Sep 2024
+PO0000004,ADDC001,,PO,Additional costs Item 1,10.0000,2024-09 Week40,30 Sep 2024
+PO0000005,ADDC001,,PO,Additional costs Item 1,10.0000,2024-09 Week40,30 Sep 2024
+PO0000006,BBFRAMEB,Spares,PO,Big Bike Frame Blue,5.0000,2024-09 Week40,30 Sep 2024
+PO0000007,SEAT-U,Spares,PO,Universal Seat,20.0000,2024-10 Week41,09 Oct 2024
+PO0000008,WID001,Widgets,PO,Widget Simple 1,30.0000,2024-10 Week42,15 Oct 2024
+PO0000008,WIDC002,Widgets,PO,Widget component 2,7.0000,2024-10 Week42,15 Oct 2024
+PO0000009,DOLLTALL,Play houses and accessories,PO,Tall Doll,12.0000,2024-09 Week40,30 Sep 2024
+PO0000010,DOLLTALL,Play houses and accessories,PO,Tall Doll,7.0000,2024-09 Week40,30 Sep 2024

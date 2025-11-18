@@ -1,0 +1,4 @@
+WONum,LinkedDocumentNum,Reference,Status,ItemCode,Category,Description,Qty,Year_Mth_Week,Due_Date,Trn,UseQty,ScrapQty,RejectQty
+1,PF 1234567,Joes Bikes,NEW,643044,,Green universal cushions,-2.0000,2025-03 Week11,10 Mar 2025,WO,0.0000,0.0000,0.0000
+1,PF 1234567,Joes Bikes,NEW,AFUL100,,6009880532575 - BCAA/EAA Pwd 455g Oran Tang,-5.0000,2025-03 Week11,10 Mar 2025,WO,0.0000,0.0000,0.0000
+1,PF 1234567,Joes Bikes,NEW,AFUL120,,6009880532582 - BCAA/EAA Pwd 455g Tropic,-7.0000,2025-03 Week11,10 Mar 2025,WO,0.0000,0.0000,0.0000

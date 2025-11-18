@@ -1,0 +1,7 @@
+FGItemCode,FGGDescription,FGCategory,FGPlanQty,Year_Mth_Week,Due_Date,RMItemCode,RMItemdescription,DemandQty,BalanceQty,QtyOnPO
+,,,0,On Hand,27 May 2024,618127,Green chair with brown piping,0,0.0000,0
+,,,0,On Hand,27 May 2024,149553,Yellow stroller with green wheels,0,75.0000,0
+,,,0,On Hand,27 May 2024,311066,Stroller cover - Blue,0,180.0000,0
+149553,Yellow stroller with green wheels,,350.0000,2024-06 Week23,03 Jun 2024,149553,Yellow stroller with green wheels,-350.00,-350.00,0
+618127,Green chair with brown piping,,20.0000,2024-06 Week23,05 Jun 2024,618127,Green chair with brown piping,-20.00,-20.00,0
+311066,Stroller cover - Blue,,3.0000,2024-06 Week23,06 Jun 2024,311066,Stroller cover - Blue,-3.00,-3.00,0

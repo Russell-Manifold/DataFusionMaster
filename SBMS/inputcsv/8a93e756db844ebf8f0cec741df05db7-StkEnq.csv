@@ -1,0 +1,11 @@
+ItemCode,Description,CategoryDescript,Sum_Qty,StoreCode,Unit_Cost,Value_On_Hand,TextUserField1,TextUserField2,TextUserField3,NumericUserField1,NumericUserField2,NumericUserField3
+REG10LPC,10kg LP Inline 2nd Stage Regulator Cav,Regulators/Pigtails,1,GEO,221.4000,221.4000,,,,0.0000,0.0000,0.0000
+REG10LPC,10kg LP Inline 2nd Stage Regulator Cav,Regulators/Pigtails,8,GEO,601.9044,4815.2352,,,,0.0000,0.0000,0.0000
+REG10LPC,10kg LP Inline 2nd Stage Regulator Cav,Regulators/Pigtails,-8,GEO,601.9044,-4815.2352,,,,0.0000,0.0000,0.0000
+REG10LPC,10kg LP Inline 2nd Stage Regulator Cav,Regulators/Pigtails,5,JHB,221.4000,1107.0000,,,,0.0000,0.0000,0.0000
+REG10LPM,10kg LP Inline Regulator Mondial,Regulators/Pigtails,-8,GEO,63.8875,-511.1000,,,,0.0000,0.0000,0.0000
+REG10LPM,10kg LP Inline Regulator Mondial,Regulators/Pigtails,14,GEO,255.5500,3577.7000,,,,0.0000,0.0000,0.0000
+REG10LPM,10kg LP Inline Regulator Mondial,Regulators/Pigtails,-2,GEO,63.8875,-127.7750,,,,0.0000,0.0000,0.0000
+REG10LPM,10kg LP Inline Regulator Mondial,Regulators/Pigtails,-2,GEO,255.5500,-511.1000,,,,0.0000,0.0000,0.0000
+REG10LPM,10kg LP Inline Regulator Mondial,Regulators/Pigtails,17,JHB,255.5500,4344.3500,,,,0.0000,0.0000,0.0000
+REG10LPM,10kg LP Inline Regulator Mondial,Regulators/Pigtails,-10,JHB,255.5500,-2555.5000,,,,0.0000,0.0000,0.0000

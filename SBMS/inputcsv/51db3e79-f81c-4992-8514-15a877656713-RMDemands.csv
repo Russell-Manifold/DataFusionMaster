@@ -1,0 +1,37 @@
+WONum,LinkedDocumentNum,Reference,Status,ItemCode,Category,Description,Qty,Year_Mth_Week,Due_Date,Trn,UseQty,ScrapQty,RejectQty
+0,PO0000011,Billy Bob shoes,,AFUL100,Vitamins,6009880532575 - BCAA/EAA Pwd 455g Oran Tang,10.0000,2024-06 Week26,30 Jun 2024,PO,0.0000,0.0000,0.0000
+0,PO0000011,Billy Bob shoes,,AFUL120,Vitamins,6009880532582 - BCAA/EAA Pwd 455g Tropic,1.0000,2024-06 Week26,30 Jun 2024,PO,0.0000,0.0000,0.0000
+20,PS0000011,,,SeatR,,Red Seat,-1.0000,2024-10 Week44,31 Oct 2024,WO,1.0000,0.0000,0.0000
+20,PS0000011,,,WheelS,,Silver Wheels,-2.0000,2024-10 Week44,31 Oct 2024,WO,2.0000,1.0000,0.0000
+20,PS0000011,,,GripB1,,Black Grips - Pair,-1.0000,2024-10 Week44,31 Oct 2024,WO,0.0000,0.0000,3.0000
+20,PS0000011,,,FrameB1,,Blue bike frame for kit,-1.0000,2024-10 Week44,31 Oct 2024,WO,1.0000,0.0000,0.0000
+2,,Joes Bikes,,639801,,Multi purpose wipes,-7.0000,2024-11 Week48,29 Nov 2024,WO,0.0000,0.0000,0.0000
+2,,Joes Bikes,,149553,,Yellow stroller with green wheels,-3.0000,2024-11 Week48,29 Nov 2024,WO,3.0000,0.0000,0.0000
+2,,Joes Bikes,,618127,,Green chair with brown piping,-3.0000,2024-11 Week48,29 Nov 2024,WO,0.0000,0.0000,0.0000
+2,,Joes Bikes,,171226,,Sport push chair,-3.0000,2024-11 Week48,29 Nov 2024,WO,0.0000,0.0000,0.0000
+2,,Joes Bikes,,6009880532407,,YCC- No Sugar Coconut Ice 50g,-11.0000,2024-11 Week48,29 Nov 2024,WO,0.0000,0.0000,0.0000
+2,,Joes Bikes,,AFUL100,,6009880532575 - BCAA/EAA Pwd 455g Oran Tang,-5.0000,2024-11 Week48,29 Nov 2024,WO,0.0000,0.0000,0.0000
+2,,Joes Bikes,,AFUL100,,6009880532575 - BCAA/EAA Pwd 455g Oran Tang,-20.0000,2024-11 Week48,29 Nov 2024,WO,0.0000,0.0000,0.0000
+2,,Joes Bikes,,AFUL120,,6009880532582 - BCAA/EAA Pwd 455g Tropic,-28.0000,2024-11 Week48,29 Nov 2024,WO,0.0000,0.0000,0.0000
+2,,Joes Bikes,,SeatR,,Red Seat,-2.0000,2024-11 Week48,29 Nov 2024,WO,0.0000,0.0000,0.0000
+2,,Joes Bikes,,WheelS,,Silver Wheels,-4.2300,2024-11 Week48,29 Nov 2024,WO,0.0000,0.0000,0.0000
+2,,Joes Bikes,,GripB1,,Black Grips - Pair,-2.0000,2024-11 Week48,29 Nov 2024,WO,0.0000,0.0000,0.0000
+1,,qwertyuiop,Captured,311066,,Stroller cover - Blue,-7.0000,2024-11 Week48,29 Nov 2024,WO,0.0000,0.0000,0.0000
+1,,qwertyuiop,Captured,311073,,Chair cushion Orange,-9.0000,2024-11 Week48,29 Nov 2024,WO,9.0000,0.0000,0.0000
+10,JC0000011,qqqqqq,Assembly,643044,,Green universal cushions,-2.0000,2024-12 Week49,04 Dec 2024,WO,0.0000,0.0000,0.0000
+10,JC0000011,qqqqqq,Assembly,311066,,Stroller cover - Blue,-7.0000,2024-12 Week49,04 Dec 2024,WO,0.0000,0.0000,0.0000
+10,JC0000011,qqqqqq,Assembly,AFUL120,,6009880532582 - BCAA/EAA Pwd 455g Tropic,-1.0000,2024-12 Week49,04 Dec 2024,WO,0.0000,0.0000,0.0000
+10,JC0000011,qqqqqq,Assembly,AFUL452,,6009880532995 - Pure Whey Protein 1.82Kg Van Choc Variety,-1.0000,2024-12 Week49,04 Dec 2024,WO,0.0000,0.0000,0.0000
+8,PS0000007,qwertyuiop,Captured,SeatR,,Red Seat,-2.0000,2024-12 Week49,05 Dec 2024,WO,0.0000,0.0000,0.0000
+8,PS0000007,qwertyuiop,Captured,WheelS,,Silver Wheels,-4.0000,2024-12 Week49,05 Dec 2024,WO,0.0000,0.0000,0.0000
+8,PS0000007,qwertyuiop,Captured,GripB1,,Black Grips - Pair,-2.0000,2024-12 Week49,05 Dec 2024,WO,0.0000,0.0000,0.0000
+8,PS0000007,qwertyuiop,Captured,FrameB1,,Blue bike frame for kit,-2.0000,2024-12 Week49,05 Dec 2024,WO,0.0000,0.0000,0.0000
+11,SO0000013 ,qwertyuiop,Cutting,643044,,Green universal cushions,-1.0000,2024-12 Week49,05 Dec 2024,WO,0.0000,0.0000,0.0000
+19,PS0000014,,NEW,IBR1800,,IBR Sheeting 1800 mm long,-10.0000,2024-12 Week53,31 Dec 2024,WO,0.0000,0.0000,0.0000
+19,PS0000014,,NEW,IBRSPEC,,IBR Sheeting - Special Size - Length 1357mm,-20.3550,2024-12 Week53,31 Dec 2024,WO,0.0000,0.0000,0.0000
+0,,On Hand,QOH,AFUL100,Vitamins,6009880532575 - BCAA/EAA Pwd 455g Oran Tang,8.0000,0n Hand,14 Feb 2025,OH,0.0000,0.0000,0.0000
+0,,On Hand,QOH,AFUL120,Vitamins,6009880532582 - BCAA/EAA Pwd 455g Tropic,127.0000,0n Hand,14 Feb 2025,OH,0.0000,0.0000,0.0000
+0,,On Hand,QOH,IBRCoil,Coil Raw Materials,IBR Coil 686 wide,250.0000,0n Hand,14 Feb 2025,OH,0.0000,0.0000,0.0000
+0, ,Min Level,Min,AFUL100,Vitamins,6009880532575 - BCAA/EAA Pwd 455g Oran Tang,-100.0000,0n Hand,14 Feb 2025,Min,0.0000,0.0000,0.0000
+0, ,Min Level,Min,AFUL120,Vitamins,6009880532582 - BCAA/EAA Pwd 455g Tropic,-50.0000,0n Hand,14 Feb 2025,Min,0.0000,0.0000,0.0000
+0, ,Min Level,Min,IBRCoil,Coil Raw Materials,IBR Coil 686 wide,0.0000,0n Hand,14 Feb 2025,Min,0.0000,0.0000,0.0000

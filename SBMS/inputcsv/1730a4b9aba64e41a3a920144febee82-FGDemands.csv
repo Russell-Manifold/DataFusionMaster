@@ -1,0 +1,26 @@
+Document,ItemCode,Category,Trn,Description,Qty,Year_Mth_Week,Due_Date
+QOH,009,,OH,BMS Firelighters,4280.0000,On Hand,02 Mar 2025
+QOH,014,,OH,To Rebag,0.0000,On Hand,02 Mar 2025
+QOH,019,,OH,BMS EMPTY BAGS FROM BLAZE PRODUCTS,0.0000,On Hand,02 Mar 2025
+QOH,051,,OH,FIREWOOD 7KG,-27.0000,On Hand,02 Mar 2025
+QOH,085,,OH,Restaurant Grade Charcoal [4kg],1979.0000,On Hand,02 Mar 2025
+QOH,086,,OH,Bluff Charcoal,722.0000,On Hand,02 Mar 2025
+QOH,087,,OH,Bluff Briquettes,1773.0000,On Hand,02 Mar 2025
+QOH,018,,OH,Bluff Instant Light,1023.0000,On Hand,02 Mar 2025
+QOH,PALLET,,OH,Local Pallets,390.0000,On Hand,02 Mar 2025
+QOH,031,,OH,Quench Water (5ltr),4.0000,On Hand,02 Mar 2025
+MIN,009,,Min,BMS Firelighters,0.0000,Min Level,02 Mar 2025
+MIN,014,,Min,To Rebag,0.0000,Min Level,02 Mar 2025
+MIN,019,,Min,BMS EMPTY BAGS FROM BLAZE PRODUCTS,0.0000,Min Level,02 Mar 2025
+MIN,051,,Min,FIREWOOD 7KG,0.0000,Min Level,02 Mar 2025
+MIN,085,,Min,Restaurant Grade Charcoal [4kg],0.0000,Min Level,02 Mar 2025
+MIN,086,,Min,Bluff Charcoal,0.0000,Min Level,02 Mar 2025
+MIN,087,,Min,Bluff Briquettes,0.0000,Min Level,02 Mar 2025
+MIN,018,,Min,Bluff Instant Light,0.0000,Min Level,02 Mar 2025
+MIN,PALLET,,Min,Local Pallets,0.0000,Min Level,02 Mar 2025
+MIN,031,,Min,Quench Water (5ltr),0.0000,Min Level,02 Mar 2025
+PO-12-250111-00005,087,,JC,Bluff Briquettes,-100.0000,2025-01 Week4,20 Jan 2025
+PO-12-250111-00005,018,,JC,Bluff Instant Light,-130.0000,2025-01 Week4,20 Jan 2025
+PO-12-250111-00004,018,,PS,Bluff Instant Light,-50.0000,2025-01 Week4,20 Jan 2025
+PO-12-250111-00004,087,,PS,Bluff Briquettes,-30.0000,2025-01 Week4,20 Jan 2025
+PO-12-250111-00004,009,,PS,BMS Firelighters,-40.0000,2025-01 Week4,20 Jan 2025

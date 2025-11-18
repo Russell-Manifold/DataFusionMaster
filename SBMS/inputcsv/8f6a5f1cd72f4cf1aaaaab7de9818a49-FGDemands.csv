@@ -1,0 +1,110 @@
+Document,ItemCode,Category,Trn,Description,Qty,Year_Mth_Week,Due_Date
+QOH,643044,,OH,Green universal cushions,122.0000,0n Hand,28 Feb 2025
+QOH,639795,Chairs and Cushions,OH,High chair cover,61.0000,0n Hand,28 Feb 2025
+QOH,639801,,OH,Multi purpose wipes,150.0000,0n Hand,28 Feb 2025
+QOH,149554,Bicycles,OH,Orange bicycle,127.0000,0n Hand,28 Feb 2025
+QOH,149553,,OH,Yellow stroller with green wheels,75.0000,0n Hand,28 Feb 2025
+QOH,311066,Chairs and Cushions,OH,Stroller cover - Blue,179.0000,0n Hand,28 Feb 2025
+QOH,311073,Chairs and Cushions,OH,Chair cushion Orange,50.0000,0n Hand,28 Feb 2025
+QOH,618127,Chairs and Cushions,OH,Green chair with brown piping,10.0000,0n Hand,28 Feb 2025
+QOH,31040,,OH,Ultimate chair with wheels,21.0000,0n Hand,28 Feb 2025
+QOH,608920,Bicycles,OH,Plastic bike with big wheels,68.0000,0n Hand,28 Feb 2025
+QOH,152669,,OH,Silver ball with yellow dots,177.0000,0n Hand,28 Feb 2025
+QOH,171226,Chairs and Cushions,OH,Sport push chair,21.0000,0n Hand,28 Feb 2025
+QOH,6009880532407,Vitamins,OH,YCC- No Sugar Coconut Ice 50g,200.0000,0n Hand,28 Feb 2025
+QOH,AFUL100,Vitamins,OH,6009880532575 - BCAA/EAA Pwd 455g Oran Tang,8.0000,0n Hand,28 Feb 2025
+QOH,AFUL120,Vitamins,OH,6009880532582 - BCAA/EAA Pwd 455g Tropic,127.0000,0n Hand,28 Feb 2025
+QOH,AFUL160,Vitamins,OH,6009880532568 - Creatine Pwd 455g,16.0000,0n Hand,28 Feb 2025
+QOH,AFUL240,Vitamins,OH,6009880532551 - L-Glutamine Pwd 455g,97.0000,0n Hand,28 Feb 2025
+QOH,AFUL452,,OH,6009880532995 - Pure Whey Protein 1.82Kg Van Choc Variety,3.0000,0n Hand,28 Feb 2025
+QOH,AORG100,,OH,6009880532100 - Virgin Coconut oil 200ml,90.0000,0n Hand,28 Feb 2025
+QOH,ItemT1,Bicycles,OH,Testing Item 1 for quantities,220.0000,0n Hand,28 Feb 2025
+QOH,ItemT2,,OH,Testing Item 2 for quantities,99.0000,0n Hand,28 Feb 2025
+QOH,ITM3Test,,OH,Testing Item 3 for quantities,88.0000,0n Hand,28 Feb 2025
+QOH,ITM4Test,,OH,Item 4 Testing Quantities,50.0000,0n Hand,28 Feb 2025
+QOH,ITM5Test,,OH,Item 5 Testing Quantities,88.0000,0n Hand,28 Feb 2025
+QOH,SeatR,Spares and Accessories,OH,Red Seat,123.0000,0n Hand,28 Feb 2025
+QOH,WheelS,Spares and Accessories,OH,Silver Wheels,0.0000,0n Hand,28 Feb 2025
+QOH,GripB1,Spares and Accessories,OH,Black Grips - Pair,100.0000,0n Hand,28 Feb 2025
+QOH,FrameB1,Spares and Accessories,OH,Blue bike frame for kit,15.0000,0n Hand,28 Feb 2025
+QOH,BikeKit1,Bicycles,OH,Bike made from Kit,0.0000,0n Hand,28 Feb 2025
+QOH,IBR1800,,OH,IBR Sheeting 1800 mm long,100.0000,0n Hand,28 Feb 2025
+QOH,IBRSPEC,,OH,IBR Sheeting - Special Size,0.0000,0n Hand,28 Feb 2025
+QOH,IBRCoil,Coil Raw Materials,OH,IBR Coil 686 wide,250.0000,0n Hand,28 Feb 2025
+MIN,643044,,Min,Green universal cushions,0.0000,Min Level,28 Feb 2025
+MIN,639795,Chairs and Cushions,Min,High chair cover,0.0000,Min Level,28 Feb 2025
+MIN,639801,,Min,Multi purpose wipes,0.0000,Min Level,28 Feb 2025
+MIN,149554,Bicycles,Min,Orange bicycle,0.0000,Min Level,28 Feb 2025
+MIN,149553,,Min,Yellow stroller with green wheels,0.0000,Min Level,28 Feb 2025
+MIN,311066,Chairs and Cushions,Min,Stroller cover - Blue,0.0000,Min Level,28 Feb 2025
+MIN,311073,Chairs and Cushions,Min,Chair cushion Orange,0.0000,Min Level,28 Feb 2025
+MIN,618127,Chairs and Cushions,Min,Green chair with brown piping,0.0000,Min Level,28 Feb 2025
+MIN,31040,,Min,Ultimate chair with wheels,0.0000,Min Level,28 Feb 2025
+MIN,608920,Bicycles,Min,Plastic bike with big wheels,0.0000,Min Level,28 Feb 2025
+MIN,152669,,Min,Silver ball with yellow dots,0.0000,Min Level,28 Feb 2025
+MIN,171226,Chairs and Cushions,Min,Sport push chair,0.0000,Min Level,28 Feb 2025
+MIN,6009880532407,Vitamins,Min,YCC- No Sugar Coconut Ice 50g,0.0000,Min Level,28 Feb 2025
+MIN,AFUL100,Vitamins,Min,6009880532575 - BCAA/EAA Pwd 455g Oran Tang,0.0000,Min Level,28 Feb 2025
+MIN,AFUL120,Vitamins,Min,6009880532582 - BCAA/EAA Pwd 455g Tropic,0.0000,Min Level,28 Feb 2025
+MIN,AFUL160,Vitamins,Min,6009880532568 - Creatine Pwd 455g,0.0000,Min Level,28 Feb 2025
+MIN,AFUL240,Vitamins,Min,6009880532551 - L-Glutamine Pwd 455g,0.0000,Min Level,28 Feb 2025
+MIN,AFUL452,,Min,6009880532995 - Pure Whey Protein 1.82Kg Van Choc Variety,0.0000,Min Level,28 Feb 2025
+MIN,AORG100,,Min,6009880532100 - Virgin Coconut oil 200ml,0.0000,Min Level,28 Feb 2025
+MIN,ItemT1,Bicycles,Min,Testing Item 1 for quantities,0.0000,Min Level,28 Feb 2025
+MIN,ItemT2,,Min,Testing Item 2 for quantities,0.0000,Min Level,28 Feb 2025
+MIN,ITM3Test,,Min,Testing Item 3 for quantities,0.0000,Min Level,28 Feb 2025
+MIN,ITM4Test,,Min,Item 4 Testing Quantities,0.0000,Min Level,28 Feb 2025
+MIN,ITM5Test,,Min,Item 5 Testing Quantities,0.0000,Min Level,28 Feb 2025
+MIN,SeatR,Spares and Accessories,Min,Red Seat,0.0000,Min Level,28 Feb 2025
+MIN,WheelS,Spares and Accessories,Min,Silver Wheels,0.0000,Min Level,28 Feb 2025
+MIN,GripB1,Spares and Accessories,Min,Black Grips - Pair,0.0000,Min Level,28 Feb 2025
+MIN,FrameB1,Spares and Accessories,Min,Blue bike frame for kit,0.0000,Min Level,28 Feb 2025
+MIN,BikeKit1,Bicycles,Min,Bike made from Kit,0.0000,Min Level,28 Feb 2025
+MIN,IBR1800,,Min,IBR Sheeting 1800 mm long,0.0000,Min Level,28 Feb 2025
+MIN,IBRSPEC,,Min,IBR Sheeting - Special Size,0.0000,Min Level,28 Feb 2025
+MIN,IBRCoil,Coil Raw Materials,Min,IBR Coil 686 wide,0.0000,Min Level,28 Feb 2025
+Joe,618127,Chairs and Cushions,FC,Green chair with brown piping,-50.0000,2024-08 Week34,21 Aug 2024
+JC0000010,171226,Chairs and Cushions,JC,Sport push chair,-2.0000,2024-08 Week35,31 Aug 2024
+PS0000008,149554,Bicycles,PS,Orange bicycle (Bundle Bundle1),-2.0000,2024-07 Week31,31 Jul 2024
+PS0000008,171226,Chairs and Cushions,PS,Sport push chair (Bundle Bundle1),-2.0000,2024-07 Week31,31 Jul 2024
+PS0000014,IBR1800,,PS,IBR Sheeting 1800 mm long,-10.0000,2024-12 Week53,31 Dec 2024
+PS0000014,IBRSPEC,,PS,IBR Sheeting - Special Size - Length 1357mm,-15.0000,2024-12 Week53,31 Dec 2024
+PO0000001,152669,,PO,Silver ball with yellow dots,7.0000,2024-05 Week22,31 May 2024
+PO0000002,149553,,PO,Yellow stroller with green wheels,1.0000,2024-05 Week22,31 May 2024
+PO0000002,149554,Bicycles,PO,Orange bicycle,1.0000,2024-05 Week22,31 May 2024
+PO0000003,149553,,PO,Yellow stroller with green wheels,3.0000,2024-05 Week22,31 May 2024
+PO0000003,149554,Bicycles,PO,Orange bicycle,3.0000,2024-05 Week22,31 May 2024
+PO0000004,149553,,PO,Yellow stroller with green wheels,3.0000,2024-05 Week22,31 May 2024
+PO0000005,152669,,PO,Silver ball with yellow dots,25.0000,2024-05 Week22,31 May 2024
+PO0000006,152669,,PO,Silver ball with yellow dots,12.0000,2024-05 Week22,31 May 2024
+PO0000007,171226,Chairs and Cushions,PO,Sport push chair,4.0000,2024-06 Week23,03 Jun 2024
+PO0000007,31040,,PO,Ultimate chair with wheels,7.0000,2024-06 Week23,03 Jun 2024
+PO0000008,149553,,PO,Yellow stroller with green wheels,15.0000,2024-06 Week26,30 Jun 2024
+PO0000009,618127,Chairs and Cushions,PO,Green chair with brown piping,7.0000,2024-06 Week26,30 Jun 2024
+PO0000009,TR001,Sponges,PO,Transport,1.0000,2024-06 Week26,30 Jun 2024
+PO0000010,639795,Chairs and Cushions,PO,High chair cover,15.0000,2024-06 Week26,30 Jun 2024
+PO0000010,TR001,Sponges,PO,Transport,100.0000,2024-06 Week26,30 Jun 2024
+PO0000011,AFUL100,Vitamins,PO,6009880532575 - BCAA/EAA Pwd 455g Oran Tang,10.0000,2024-06 Week26,30 Jun 2024
+PO0000011,AFUL120,Vitamins,PO,6009880532582 - BCAA/EAA Pwd 455g Tropic,1.0000,2024-06 Week26,30 Jun 2024
+PO0000011,AFUL240,Vitamins,PO,6009880532551 - L-Glutamine Pwd 455g,100.0000,2024-06 Week26,30 Jun 2024
+PO0000012,AFUL160,Vitamins,PO,6009880532568 - Creatine Pwd 455g,20.0000,2024-06 Week26,30 Jun 2024
+PO0000012,AFUL452,,PO,6009880532995 - Pure Whey Protein 1.82Kg Van Choc Variety,5.0000,2024-06 Week26,30 Jun 2024
+PO0000012,AORG100,,PO,6009880532100 - Virgin Coconut oil 200ml,100.0000,2024-06 Week26,30 Jun 2024
+PO0000013,171226,Chairs and Cushions,PO,Sport push chair,7.0000,2024-07 Week31,31 Jul 2024
+PO0000013,TR001,Sponges,PO,Transport,1.0000,2024-07 Week31,31 Jul 2024
+PO0000014,311066,Chairs and Cushions,PO,Stroller cover - Blue,20.0000,2024-07 Week31,31 Jul 2024
+PO0000014,TR001,Sponges,PO,Transport,5.0000,2024-07 Week31,31 Jul 2024
+PO0000015,ItemT1,Bicycles,PO,Testing Item 1 for quantities,20.0000,2024-07 Week31,31 Jul 2024
+PO0000016,ItemT1,Bicycles,PO,Testing Item 1 for quantities,5.0000,2024-07 Week31,31 Jul 2024
+PO0000017,ItemT1,Bicycles,PO,Testing Item 1 for quantities,10.0000,2024-07 Week31,31 Jul 2024
+PO0000018,ItemT2,,PO,Testing Item 2 for quantities,20.0000,2024-07 Week31,31 Jul 2024
+PO0000019,ItemT2,,PO,Testing Item 2 for quantities,5.0000,2024-07 Week31,31 Jul 2024
+PO0000019,TR001,Sponges,PO,Transport,1.0000,2024-07 Week31,31 Jul 2024
+PO0000020,ITM3Test,,PO,Testing Item 3 for quantities,10.0000,2024-07 Week31,31 Jul 2024
+PO0000021,ITM4Test,,PO,Item 4 Testing Quantities,25.0000,2024-07 Week31,31 Jul 2024
+PO0000022,ITM5Test,,PO,Item 5 Testing Quantities,100.0000,2024-07 Week31,31 Jul 2024
+PO0000023,ItemT1,Bicycles,PO,Testing Item 1 for quantities,30.0000,2024-07 Week31,31 Jul 2024
+PO0000027,FrameB1,Spares and Accessories,PO,Blue bike frame for kit,15.0000,2024-10 Week44,31 Oct 2024
+PO0000027,TR001,Sponges,PO,Transport,1.0000,2024-10 Week44,31 Oct 2024
+PO0000028,639795,Chairs and Cushions,PO,High chair cover,1.0000,2025-02 Week9,28 Feb 2025
+PO0000030,643044,,PO,Green universal cushions,20.0000,2025-02 Week9,28 Feb 2025

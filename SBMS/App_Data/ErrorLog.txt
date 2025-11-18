@@ -1,0 +1,187 @@
+08 Aug 2024 8:50:19: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context) in H:\Manifold\SBMS\SBMS\SBMS\Classes\KeepAlive.cs:line 34
+29 Aug 2024 2:16:37: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context) in H:\Manifold\SBMS\SBMS\SBMS\Classes\KeepAlive.cs:line 37
+05 Feb 2025 5:07:05: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context) in H:\Manifold\SBMS\SBMS\SBMS\Classes\KeepAlive.cs:line 38
+05 Feb 2025 5:08:06: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context) in H:\Manifold\SBMS\SBMS\SBMS\Classes\KeepAlive.cs:line 38
+05 Feb 2025 5:09:06: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context) in H:\Manifold\SBMS\SBMS\SBMS\Classes\KeepAlive.cs:line 38
+25 Feb 2025 5:46:02: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context) in H:\Manifold\SBMS\SBMS\SBMS\Classes\KeepAlive.cs:line 38
+25 Feb 2025 5:47:01: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context) in H:\Manifold\SBMS\SBMS\SBMS\Classes\KeepAlive.cs:line 38
+25 Feb 2025 5:48:30: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context) in H:\Manifold\SBMS\SBMS\SBMS\Classes\KeepAlive.cs:line 38
+25 Feb 2025 6:12:49: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context) in H:\Manifold\SBMS\SBMS\SBMS\Classes\KeepAlive.cs:line 38
+25 Feb 2025 6:13:49: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context) in H:\Manifold\SBMS\SBMS\SBMS\Classes\KeepAlive.cs:line 38
+25 Feb 2025 6:14:49: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context) in H:\Manifold\SBMS\SBMS\SBMS\Classes\KeepAlive.cs:line 38
+25 Feb 2025 6:15:49: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context) in H:\Manifold\SBMS\SBMS\SBMS\Classes\KeepAlive.cs:line 38
+25 Feb 2025 6:16:49: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context) in H:\Manifold\SBMS\SBMS\SBMS\Classes\KeepAlive.cs:line 38
+25 Feb 2025 6:17:49: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context) in H:\Manifold\SBMS\SBMS\SBMS\Classes\KeepAlive.cs:line 38
+25 Feb 2025 6:18:49: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context) in H:\Manifold\SBMS\SBMS\SBMS\Classes\KeepAlive.cs:line 38
+25 Feb 2025 6:19:49: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context) in H:\Manifold\SBMS\SBMS\SBMS\Classes\KeepAlive.cs:line 38
+25 Feb 2025 6:20:49: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context) in H:\Manifold\SBMS\SBMS\SBMS\Classes\KeepAlive.cs:line 38
+25 Feb 2025 6:29:14: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context) in H:\Manifold\SBMS\SBMS\SBMS\Classes\KeepAlive.cs:line 38
+25 Feb 2025 6:36:32: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context) in H:\Manifold\SBMS\SBMS\SBMS\Classes\KeepAlive.cs:line 38
+25 Feb 2025 6:37:31: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context) in H:\Manifold\SBMS\SBMS\SBMS\Classes\KeepAlive.cs:line 38
+25 Feb 2025 6:40:39: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context)
+25 Feb 2025 6:42:40: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context)
+25 Feb 2025 6:43:40: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context)
+25 Feb 2025 6:47:42: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context)
+25 Feb 2025 6:49:03: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context)
+26 Feb 2025 4:12:43: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context) in H:\Manifold\SBMS\SBMS\SBMS\Classes\KeepAlive.cs:line 38
+26 Feb 2025 4:14:10: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context) in H:\Manifold\SBMS\SBMS\SBMS\Classes\KeepAlive.cs:line 38
+26 Feb 2025 4:37:15: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context) in H:\Manifold\SBMS\SBMS\SBMS\Classes\KeepAlive.cs:line 38
+26 Feb 2025 4:41:10: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context) in H:\Manifold\SBMS\SBMS\SBMS\Classes\KeepAlive.cs:line 38
+26 Feb 2025 5:03:23: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context) in H:\Manifold\SBMS\SBMS\SBMS\Classes\KeepAlive.cs:line 38
+26 Feb 2025 5:04:22: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context) in H:\Manifold\SBMS\SBMS\SBMS\Classes\KeepAlive.cs:line 38
+26 Feb 2025 5:05:22: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context)
+26 Feb 2025 5:06:22: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context)
+26 Feb 2025 5:07:22: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context)
+26 Feb 2025 5:08:23: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context)
+26 Feb 2025 5:09:22: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context)
+26 Feb 2025 5:10:22: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context)
+26 Feb 2025 5:11:22: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context)
+26 Feb 2025 5:12:22: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context)
+26 Feb 2025 5:13:22: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context)
+26 Feb 2025 5:14:22: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context)
+26 Feb 2025 5:15:22: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context)
+26 Feb 2025 5:16:22: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context)
+26 Feb 2025 5:17:22: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context)
+26 Feb 2025 5:18:22: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context)
+26 Feb 2025 5:19:22: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context)
+26 Feb 2025 5:20:22: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context)
+26 Feb 2025 5:21:22: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context)
+26 Feb 2025 5:22:22: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context)
+26 Feb 2025 6:21:00: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context)
+26 Feb 2025 6:33:00: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context) in H:\Manifold\SBMS\SBMS\SBMS\Classes\KeepAlive.cs:line 38
+26 Feb 2025 6:34:00: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context) in H:\Manifold\SBMS\SBMS\SBMS\Classes\KeepAlive.cs:line 38
+26 Feb 2025 6:46:43: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context) in H:\Manifold\SBMS\SBMS\SBMS\Classes\KeepAlive.cs:line 38
+26 Feb 2025 6:47:43: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context) in H:\Manifold\SBMS\SBMS\SBMS\Classes\KeepAlive.cs:line 38
+26 Feb 2025 6:48:27: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context) in H:\Manifold\SBMS\SBMS\SBMS\Classes\KeepAlive.cs:line 38
+26 Feb 2025 6:48:43: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context) in H:\Manifold\SBMS\SBMS\SBMS\Classes\KeepAlive.cs:line 38
+26 Feb 2025 6:49:27: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context) in H:\Manifold\SBMS\SBMS\SBMS\Classes\KeepAlive.cs:line 38
+27 Feb 2025 8:39:41: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context) in H:\Manifold\SBMS\SBMS\SBMS\Classes\KeepAlive.cs:line 38
+27 Feb 2025 8:40:42: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context) in H:\Manifold\SBMS\SBMS\SBMS\Classes\KeepAlive.cs:line 38
+27 Feb 2025 8:41:42: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context) in H:\Manifold\SBMS\SBMS\SBMS\Classes\KeepAlive.cs:line 38
+27 Feb 2025 8:42:42: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context) in H:\Manifold\SBMS\SBMS\SBMS\Classes\KeepAlive.cs:line 38
+27 Feb 2025 8:43:42: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context) in H:\Manifold\SBMS\SBMS\SBMS\Classes\KeepAlive.cs:line 38
+27 Feb 2025 9:11:14: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context) in H:\Manifold\SBMS\SBMS\SBMS\Classes\KeepAlive.cs:line 38
+27 Feb 2025 9:12:14: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context) in H:\Manifold\SBMS\SBMS\SBMS\Classes\KeepAlive.cs:line 38
+27 Feb 2025 9:24:51: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context) in H:\Manifold\SBMS\SBMS\SBMS\Classes\KeepAlive.cs:line 38
+27 Feb 2025 9:25:51: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context) in H:\Manifold\SBMS\SBMS\SBMS\Classes\KeepAlive.cs:line 38
+27 Feb 2025 9:26:09: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context) in H:\Manifold\SBMS\SBMS\SBMS\Classes\KeepAlive.cs:line 38
+27 Feb 2025 9:26:52: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context) in H:\Manifold\SBMS\SBMS\SBMS\Classes\KeepAlive.cs:line 38
+27 Feb 2025 9:27:51: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context) in H:\Manifold\SBMS\SBMS\SBMS\Classes\KeepAlive.cs:line 38
+27 Feb 2025 9:28:51: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context) in H:\Manifold\SBMS\SBMS\SBMS\Classes\KeepAlive.cs:line 38
+27 Feb 2025 9:29:51: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context) in H:\Manifold\SBMS\SBMS\SBMS\Classes\KeepAlive.cs:line 38
+27 Feb 2025 9:30:51: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context)
+27 Feb 2025 9:46:07: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context) in H:\Manifold\SBMS\SBMS\SBMS\Classes\KeepAlive.cs:line 38
+27 Feb 2025 9:47:08: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context) in H:\Manifold\SBMS\SBMS\SBMS\Classes\KeepAlive.cs:line 38
+27 Feb 2025 9:52:10: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context) in H:\Manifold\SBMS\SBMS\SBMS\Classes\KeepAlive.cs:line 38
+27 Feb 2025 9:53:10: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context) in H:\Manifold\SBMS\SBMS\SBMS\Classes\KeepAlive.cs:line 38
+27 Feb 2025 9:54:10: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context) in H:\Manifold\SBMS\SBMS\SBMS\Classes\KeepAlive.cs:line 38
+27 Feb 2025 9:55:10: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context) in H:\Manifold\SBMS\SBMS\SBMS\Classes\KeepAlive.cs:line 38
+27 Feb 2025 9:56:10: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context) in H:\Manifold\SBMS\SBMS\SBMS\Classes\KeepAlive.cs:line 38
+27 Feb 2025 9:57:10: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context) in H:\Manifold\SBMS\SBMS\SBMS\Classes\KeepAlive.cs:line 38
+27 Feb 2025 9:58:10: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context) in H:\Manifold\SBMS\SBMS\SBMS\Classes\KeepAlive.cs:line 38
+28 Feb 2025 11:16:37: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context)
+01 Mar 2025 9:07:49: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context)
+01 Mar 2025 9:08:49: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context) in H:\Manifold\SBMS\SBMS\SBMS\Classes\KeepAlive.cs:line 38
+01 Mar 2025 9:12:49: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context) in H:\Manifold\SBMS\SBMS\SBMS\Classes\KeepAlive.cs:line 38
+01 Mar 2025 9:14:08: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context) in H:\Manifold\SBMS\SBMS\SBMS\Classes\KeepAlive.cs:line 38
+01 Mar 2025 9:16:47: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context) in H:\Manifold\SBMS\SBMS\SBMS\Classes\KeepAlive.cs:line 38
+01 Mar 2025 9:17:47: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context) in H:\Manifold\SBMS\SBMS\SBMS\Classes\KeepAlive.cs:line 38
+01 Mar 2025 9:21:58: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context) in H:\Manifold\SBMS\SBMS\SBMS\Classes\KeepAlive.cs:line 38
+01 Mar 2025 9:23:50: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context) in H:\Manifold\SBMS\SBMS\SBMS\Classes\KeepAlive.cs:line 38
+01 Mar 2025 9:24:38: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context) in H:\Manifold\SBMS\SBMS\SBMS\Classes\KeepAlive.cs:line 38
+01 Mar 2025 9:25:48: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context) in H:\Manifold\SBMS\SBMS\SBMS\Classes\KeepAlive.cs:line 38
+01 Mar 2025 9:28:18: System.Exception: UserID not found in session or session object is null.
+   at SBMS.KeepAlive.ProcessRequest(HttpContext context) in H:\Manifold\SBMS\SBMS\SBMS\Classes\KeepAlive.cs:line 38
+2025-09-04 14:15:42 - 04/09/2025 2:15:38 pm + CoID: 11961 + Load Items testing error message

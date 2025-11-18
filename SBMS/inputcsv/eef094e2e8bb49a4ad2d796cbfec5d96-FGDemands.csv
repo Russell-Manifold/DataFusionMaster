@@ -1,0 +1,108 @@
+Document,ItemCode,Category,Trn,Description,Qty,Year_Mth_Week,Due_Date
+QOH,643044,,OH,Green universal cushions,211.0000,On Hand,20 Oct 2025
+QOH,639795,Chairs and Cushions,OH,High chair cover,115.0000,On Hand,20 Oct 2025
+QOH,639801,,OH,Multi purpose wipes,100.0000,On Hand,20 Oct 2025
+QOH,149554,Bicycles,OH,Orange bicycle,146.0000,On Hand,20 Oct 2025
+QOH,149553ZZ,,OH,Yellow stroller with green wheels,234.0000,On Hand,20 Oct 2025
+QOH,311066,Chairs and Cushions,OH,Stroller cover - Blue,10282.0000,On Hand,20 Oct 2025
+QOH,311073,Chairs and Cushions,OH,Chair cushion Orange,95.0000,On Hand,20 Oct 2025
+QOH,618127,Chairs and Cushions,OH,Green chair with brown piping,52.0000,On Hand,20 Oct 2025
+QOH,31040,,OH,Ultimate chair with wheels,16.0000,On Hand,20 Oct 2025
+QOH,608920,Bicycles,OH,Plastic bike with big wheels,43.0000,On Hand,20 Oct 2025
+QOH,152669,,OH,Silver ball with yellow dots,178.0000,On Hand,20 Oct 2025
+QOH,171226,Chairs and Cushions,OH,Sport push chair,63.0000,On Hand,20 Oct 2025
+QOH,6009880532407,Vitamins,OH,YCC- No Sugar Coconut Ice 50g,200.0000,On Hand,20 Oct 2025
+QOH,AFUL100,Vitamins,OH,6009880532575 - BCAA/EAA Pwd 455g Oran Tang,100.0000,On Hand,20 Oct 2025
+QOH,AFUL120,Vitamins,OH,6009880532582 - BCAA/EAA Pwd 455g Tropic,130.0000,On Hand,20 Oct 2025
+QOH,AFUL160,Vitamins,OH,6009880532568 - Creatine Pwd 455g,-72.0000,On Hand,20 Oct 2025
+QOH,AFUL240,Vitamins,OH,6009880532551 - L-Glutamine Pwd 455g,20.4100,On Hand,20 Oct 2025
+QOH,AFUL452,,OH,6009880532995 - Pure Whey Protein 1.82Kg Van Choc Variety,993.0000,On Hand,20 Oct 2025
+QOH,AORG100,,OH,6009880532100 - Virgin Coconut oil 200ml,1333.0000,On Hand,20 Oct 2025
+QOH,ItemT1,Bicycles,OH,Testing Item 1 for quantities,120.0000,On Hand,20 Oct 2025
+QOH,ItemT2,,OH,Testing Item 2 for quantities,99.0000,On Hand,20 Oct 2025
+QOH,ITM3Test,,OH,Testing Item 3 for quantities,88.0000,On Hand,20 Oct 2025
+QOH,ITM4Test,,OH,Item 4 Testing Quantities,225.0000,On Hand,20 Oct 2025
+QOH,ITM5Test,,OH,Item 5 Testing Quantities,988.0000,On Hand,20 Oct 2025
+QOH,SeatR,Spares and Accessories,OH,Red Seat,183.0000,On Hand,20 Oct 2025
+QOH,WheelS,Spares and Accessories,OH,Silver Wheels,0.0000,On Hand,20 Oct 2025
+QOH,GripB1,Spares and Accessories,OH,Black Grips - Pair,100.0000,On Hand,20 Oct 2025
+QOH,FrameB1,Spares and Accessories,OH,Blue bike frame for kit,15.0000,On Hand,20 Oct 2025
+QOH,BikeKit1,Bicycles,OH,Bike made from Kit,54.0000,On Hand,20 Oct 2025
+QOH,IBR1800,,OH,IBR Sheeting 1800 mm long,100.0000,On Hand,20 Oct 2025
+QOH,IBRSPEC,,OH,IBR Sheeting - Special Size,136.0000,On Hand,20 Oct 2025
+QOH,IBRCoil,Coil Raw Materials,OH,IBR Coil 686 wide,210.0000,On Hand,20 Oct 2025
+QOH,ACItem1,,OH,AdditionalCostItem1,20.0000,On Hand,20 Oct 2025
+QOH,ACItem2,,OH,AddCostsItem2,77.0000,On Hand,20 Oct 2025
+QOH,AddC3,,OH,AddCostsItem 3,0.0000,On Hand,20 Oct 2025
+QOH,AddCost4,,OH,Additional Item costs 4,46.0000,On Hand,20 Oct 2025
+QOH,ERPNext1,Bicycles,OH,New Item for erpnext test,100.0000,On Hand,20 Oct 2025
+QOH,CON0081.PALL,,OH,Cannon Ball zzzz,20.0000,On Hand,20 Oct 2025
+QOH,TEST-ITEM-001,Bicycles,OH,Test Item for API Sync,0.0000,On Hand,20 Oct 2025
+QOH,TEST-ITEM-002,Bicycles,OH,Test Item for API2 Sync,0.0000,On Hand,20 Oct 2025
+QOH,TEST-ITEM-003,Bicycles,OH,Test Item for API3 Sync,0.0000,On Hand,20 Oct 2025
+QOH,TEST-ITEM-005,,OH,Test Item for API5 Sync,0.0000,On Hand,20 Oct 2025
+QOH,DemoCode1,Buckets,OH,Item for demo purposes,200.0000,On Hand,20 Oct 2025
+QOH,TEST-ITEM-006,,OH,Test Item for API5 Sync,0.0000,On Hand,20 Oct 2025
+QOH,TEST-ITEM-007,,OH,Test Item for API7 Sync,-11.0000,On Hand,20 Oct 2025
+QOH,TEST-ITEM-008,,OH,Test Item for API8 Sync,0.0000,On Hand,20 Oct 2025
+QOH,TEST-ITEM-009,,OH,Test Item for API9 Sync,0.0000,On Hand,20 Oct 2025
+QOH,TEST-ITEM-0010,,OH,Test Item for API10 Sync,0.0000,On Hand,20 Oct 2025
+QOH,TEST-ITEM-0011,,OH,Test Item for API11 Sync,0.0000,On Hand,20 Oct 2025
+QOH,TEST-ITEM-0012,,OH,Test Item for API12 Sync,0.0000,On Hand,20 Oct 2025
+QOH,TEST-ITEM-0014,,OH,Test Item for API14 Sync,0.0000,On Hand,20 Oct 2025
+QOH,TEST-ITEM-0017,,OH,Test Item for API17 Sync,0.0000,On Hand,20 Oct 2025
+QOH,TEST-ITEM-0018,,OH,Test Item for API18 Sync,0.0000,On Hand,20 Oct 2025
+MIN,643044,,Min,Green universal cushions,0.0000,Min Level,20 Oct 2025
+MIN,639795,Chairs and Cushions,Min,High chair cover,0.0000,Min Level,20 Oct 2025
+MIN,639801,,Min,Multi purpose wipes,0.0000,Min Level,20 Oct 2025
+MIN,149554,Bicycles,Min,Orange bicycle,0.0000,Min Level,20 Oct 2025
+MIN,149553ZZ,,Min,Yellow stroller with green wheels,0.0000,Min Level,20 Oct 2025
+MIN,311066,Chairs and Cushions,Min,Stroller cover - Blue,0.0000,Min Level,20 Oct 2025
+MIN,311073,Chairs and Cushions,Min,Chair cushion Orange,0.0000,Min Level,20 Oct 2025
+MIN,618127,Chairs and Cushions,Min,Green chair with brown piping,0.0000,Min Level,20 Oct 2025
+MIN,31040,,Min,Ultimate chair with wheels,0.0000,Min Level,20 Oct 2025
+MIN,608920,Bicycles,Min,Plastic bike with big wheels,0.0000,Min Level,20 Oct 2025
+MIN,152669,,Min,Silver ball with yellow dots,0.0000,Min Level,20 Oct 2025
+MIN,171226,Chairs and Cushions,Min,Sport push chair,0.0000,Min Level,20 Oct 2025
+MIN,6009880532407,Vitamins,Min,YCC- No Sugar Coconut Ice 50g,0.0000,Min Level,20 Oct 2025
+MIN,AFUL100,Vitamins,Min,6009880532575 - BCAA/EAA Pwd 455g Oran Tang,0.0000,Min Level,20 Oct 2025
+MIN,AFUL120,Vitamins,Min,6009880532582 - BCAA/EAA Pwd 455g Tropic,0.0000,Min Level,20 Oct 2025
+MIN,AFUL160,Vitamins,Min,6009880532568 - Creatine Pwd 455g,0.0000,Min Level,20 Oct 2025
+MIN,AFUL240,Vitamins,Min,6009880532551 - L-Glutamine Pwd 455g,0.0000,Min Level,20 Oct 2025
+MIN,AFUL452,,Min,6009880532995 - Pure Whey Protein 1.82Kg Van Choc Variety,0.0000,Min Level,20 Oct 2025
+MIN,AORG100,,Min,6009880532100 - Virgin Coconut oil 200ml,0.0000,Min Level,20 Oct 2025
+MIN,ItemT1,Bicycles,Min,Testing Item 1 for quantities,0.0000,Min Level,20 Oct 2025
+MIN,ItemT2,,Min,Testing Item 2 for quantities,0.0000,Min Level,20 Oct 2025
+MIN,ITM3Test,,Min,Testing Item 3 for quantities,0.0000,Min Level,20 Oct 2025
+MIN,ITM4Test,,Min,Item 4 Testing Quantities,0.0000,Min Level,20 Oct 2025
+MIN,ITM5Test,,Min,Item 5 Testing Quantities,0.0000,Min Level,20 Oct 2025
+MIN,SeatR,Spares and Accessories,Min,Red Seat,0.0000,Min Level,20 Oct 2025
+MIN,WheelS,Spares and Accessories,Min,Silver Wheels,0.0000,Min Level,20 Oct 2025
+MIN,GripB1,Spares and Accessories,Min,Black Grips - Pair,0.0000,Min Level,20 Oct 2025
+MIN,FrameB1,Spares and Accessories,Min,Blue bike frame for kit,0.0000,Min Level,20 Oct 2025
+MIN,BikeKit1,Bicycles,Min,Bike made from Kit,0.0000,Min Level,20 Oct 2025
+MIN,IBR1800,,Min,IBR Sheeting 1800 mm long,0.0000,Min Level,20 Oct 2025
+MIN,IBRSPEC,,Min,IBR Sheeting - Special Size,0.0000,Min Level,20 Oct 2025
+MIN,IBRCoil,Coil Raw Materials,Min,IBR Coil 686 wide,0.0000,Min Level,20 Oct 2025
+MIN,ACItem1,,Min,AdditionalCostItem1,0.0000,Min Level,20 Oct 2025
+MIN,ACItem2,,Min,AddCostsItem2,0.0000,Min Level,20 Oct 2025
+MIN,AddC3,,Min,AddCostsItem 3,0.0000,Min Level,20 Oct 2025
+MIN,AddCost4,,Min,Additional Item costs 4,0.0000,Min Level,20 Oct 2025
+MIN,ERPNext1,Bicycles,Min,New Item for erpnext test,0.0000,Min Level,20 Oct 2025
+MIN,CON0081.PALL,,Min,Cannon Ball zzzz,0.0000,Min Level,20 Oct 2025
+MIN,TEST-ITEM-001,Bicycles,Min,Test Item for API Sync,0.0000,Min Level,20 Oct 2025
+MIN,TEST-ITEM-002,Bicycles,Min,Test Item for API2 Sync,0.0000,Min Level,20 Oct 2025
+MIN,TEST-ITEM-003,Bicycles,Min,Test Item for API3 Sync,0.0000,Min Level,20 Oct 2025
+MIN,TEST-ITEM-005,,Min,Test Item for API5 Sync,0.0000,Min Level,20 Oct 2025
+MIN,DemoCode1,Buckets,Min,Item for demo purposes,0.0000,Min Level,20 Oct 2025
+MIN,TEST-ITEM-006,,Min,Test Item for API5 Sync,0.0000,Min Level,20 Oct 2025
+MIN,TEST-ITEM-007,,Min,Test Item for API7 Sync,0.0000,Min Level,20 Oct 2025
+MIN,TEST-ITEM-008,,Min,Test Item for API8 Sync,0.0000,Min Level,20 Oct 2025
+MIN,TEST-ITEM-009,,Min,Test Item for API9 Sync,0.0000,Min Level,20 Oct 2025
+MIN,TEST-ITEM-0010,,Min,Test Item for API10 Sync,0.0000,Min Level,20 Oct 2025
+MIN,TEST-ITEM-0011,,Min,Test Item for API11 Sync,0.0000,Min Level,20 Oct 2025
+MIN,TEST-ITEM-0012,,Min,Test Item for API12 Sync,0.0000,Min Level,20 Oct 2025
+MIN,TEST-ITEM-0014,,Min,Test Item for API14 Sync,0.0000,Min Level,20 Oct 2025
+MIN,TEST-ITEM-0017,,Min,Test Item for API17 Sync,0.0000,Min Level,20 Oct 2025
+MIN,TEST-ITEM-0018,,Min,Test Item for API18 Sync,0.0000,Min Level,20 Oct 2025
+PS0000027,149553,,PS,Yellow stroller with green wheels,-2.0000,2025-08 Week35,28 Aug 2025

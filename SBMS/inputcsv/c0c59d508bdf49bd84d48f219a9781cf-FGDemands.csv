@@ -1,0 +1,134 @@
+Document,ItemCode,Category,Trn,Description,Qty,Year_Mth_Week,Due_Date
+QOH,26%DADMAC,,OH,Polydadmac26%,2750.0000,On Hand,06 Oct 2025
+QOH,30%DADMAC,,OH,Polydadmac30%,0.0000,On Hand,06 Oct 2025
+QOH,4010SF,,OH,AF401,500.0000,On Hand,06 Oct 2025
+QOH,40155SF,,OH,AF4155,0.0000,On Hand,06 Oct 2025
+QOH,4015SF,,OH,AF415,0.0000,On Hand,06 Oct 2025
+QOH,40255SF,,OH,AF4255,0.0000,On Hand,06 Oct 2025
+QOH,4025SF,,OH,AF425,0.0000,On Hand,06 Oct 2025
+QOH,40355SF,,OH,AF3055,0.0000,On Hand,06 Oct 2025
+QOH,4035SF,,OH,AF305,0.0000,On Hand,06 Oct 2025
+QOH,40365SF,,OH,AF3065,0.0000,On Hand,06 Oct 2025
+QOH,4036SF,,OH,AF306,0.0000,On Hand,06 Oct 2025
+QOH,40385SF,,OH,AF3085,0.0000,On Hand,06 Oct 2025
+QOH,4038SF,,OH,AF308,0.0000,On Hand,06 Oct 2025
+QOH,40NSF,,OH,AF402,6000.0000,On Hand,06 Oct 2025
+QOH,40SF,,OH,AF40,0.0000,On Hand,06 Oct 2025
+QOH,ACE001,,OH,Acetic Acid,0.0000,On Hand,06 Oct 2025
+QOH,ACH,,OH,ACH,176.0000,On Hand,06 Oct 2025
+QOH,ACT001,,OH,Activated Carbon,1000.0000,On Hand,06 Oct 2025
+QOH,AL001,,OH,Alcohol Solvent,0.0000,On Hand,06 Oct 2025
+QOH,ALS001,,OH,Aluminium Sulphate Granular,0.0000,On Hand,06 Oct 2025
+QOH,ALS002,,OH,Aluminuim Sulphate Liquid,10000.0000,On Hand,06 Oct 2025
+QOH,AMM001,,OH,Ammonia Solution,0.0000,On Hand,06 Oct 2025
+QOH,BAC001,,OH,Bactallion Enzyme,0.0000,On Hand,06 Oct 2025
+QOH,BL001,,OH,Bleach,0.0000,On Hand,06 Oct 2025
+QOH,CAL001,,OH,Calcium Hypochlorite,33370.0000,On Hand,06 Oct 2025
+QOH,CASH001,,OH,Cash Supplier,0.0000,On Hand,06 Oct 2025
+QOH,CAU001,,OH,Caustic Soda Flakes,0.0000,On Hand,06 Oct 2025
+QOH,CHLO001,,OH,Chlorine (liquid of water),0.0000,On Hand,06 Oct 2025
+QOH,CON001,,OH,Container 5LT,0.0000,On Hand,06 Oct 2025
+QOH,DAD001,,OH,Dadmac,17700.0100,On Hand,06 Oct 2025
+QOH,DEL001,,OH,Delivery Cost,0.0000,On Hand,06 Oct 2025
+QOH,DISH01,,OH,Dishwashing Liquid,0.0000,On Hand,06 Oct 2025
+QOH,DYE001,,OH,Dye (Blue),1.0000,On Hand,06 Oct 2025
+QOH,F001,,OH,Ferric Chloride,1287.0000,On Hand,06 Oct 2025
+QOH,FARM001,,OH,Farmguard,0.0000,On Hand,06 Oct 2025
+QOH,FLO001,,OH,Flobin Deposit,5.0000,On Hand,06 Oct 2025
+QOH,FLOC001,,OH,SF40N - DO NOT USE,0.0000,On Hand,06 Oct 2025
+QOH,FLOC002,,OH,SF4010 - DO NOT USE,0.0000,On Hand,06 Oct 2025
+QOH,FLOC003,,OH,SF4025 - DO NOT USE,0.0000,On Hand,06 Oct 2025
+QOH,FREECHLO001,,OH,FREE CHLORINE REAGENT,0.0000,On Hand,06 Oct 2025
+QOH,HTH001,,OH,Hth Granular,1750.0000,On Hand,06 Oct 2025
+QOH,HYD001,,OH,Hydrochloric Acid,200.0000,On Hand,06 Oct 2025
+QOH,IND001,,OH,Industrial Cap,0.0000,On Hand,06 Oct 2025
+QOH,LIG001,,OH,Lignex Dust Suppressant,0.0000,On Hand,06 Oct 2025
+QOH,LIM001,,OH,Lime,10.0000,On Hand,06 Oct 2025
+QOH,LIQ001,,OH,Liquid Toilet Soap,0.0000,On Hand,06 Oct 2025
+QOH,M6059,,OH,3M 6059 ABEK1 ORG/INORG VAPOUR ACID GAS,0.0000,On Hand,06 Oct 2025
+QOH,M6800,,OH,3M6800 CLASS 1 FULL RESPIRATOR DUAL,0.0000,On Hand,06 Oct 2025
+QOH,MNS001,,OH,Cleaning Material,0.0000,On Hand,06 Oct 2025
+QOH,NIT001,,OH,Nitric Acid 55-60% (per kg),0.0000,On Hand,06 Oct 2025
+QOH,PAC,,OH,Poly Aluminium Chloride (Powder),51950.4000,On Hand,06 Oct 2025
+QOH,PACS,,OH,PAC Liquid Solution,14950.0000,On Hand,06 Oct 2025
+QOH,PAL001,,OH,Pallet woods,6.0000,On Hand,06 Oct 2025
+QOH,POL001,,OH,Polyamine,0.0000,On Hand,06 Oct 2025
+QOH,POLY,,OH,Polycans 30kg,0.0000,On Hand,06 Oct 2025
+QOH,SAMPLE001,,OH,Sample,0.0000,On Hand,06 Oct 2025
+QOH,SDICT,,OH,Halo Klor Tablets,11490.0000,On Hand,06 Oct 2025
+QOH,SEPTI001,,OH,Septic Tablets,0.0000,On Hand,06 Oct 2025
+QOH,SOD001,,OH,Sodium Hypochlorite,8700.0000,On Hand,06 Oct 2025
+QOH,SOD002,,OH,Soda ash,0.0000,On Hand,06 Oct 2025
+QOH,SPO001,,OH,Spotless Soap,0.0000,On Hand,06 Oct 2025
+QOH,SUL001,,OH,Sulphuric Acid,0.0000,On Hand,06 Oct 2025
+QOH,SUPER001,,OH,Super Wash 25lt,0.0000,On Hand,06 Oct 2025
+QOH,TANK001,,OH,Tank with mixer,0.0000,On Hand,06 Oct 2025
+QOH,TOTALCHLO001,,OH,TOTAL CHLORINE REAGENTS,0.0000,On Hand,06 Oct 2025
+QOH,WAT001,,OH,Water,10000.0100,On Hand,06 Oct 2025
+MIN,26%DADMAC,,Min,Polydadmac26%,0.0000,Min Level,06 Oct 2025
+MIN,30%DADMAC,,Min,Polydadmac30%,0.0000,Min Level,06 Oct 2025
+MIN,4010SF,,Min,AF401,0.0000,Min Level,06 Oct 2025
+MIN,40155SF,,Min,AF4155,0.0000,Min Level,06 Oct 2025
+MIN,4015SF,,Min,AF415,0.0000,Min Level,06 Oct 2025
+MIN,40255SF,,Min,AF4255,0.0000,Min Level,06 Oct 2025
+MIN,4025SF,,Min,AF425,0.0000,Min Level,06 Oct 2025
+MIN,40355SF,,Min,AF3055,0.0000,Min Level,06 Oct 2025
+MIN,4035SF,,Min,AF305,0.0000,Min Level,06 Oct 2025
+MIN,40365SF,,Min,AF3065,0.0000,Min Level,06 Oct 2025
+MIN,4036SF,,Min,AF306,0.0000,Min Level,06 Oct 2025
+MIN,40385SF,,Min,AF3085,0.0000,Min Level,06 Oct 2025
+MIN,4038SF,,Min,AF308,0.0000,Min Level,06 Oct 2025
+MIN,40NSF,,Min,AF402,0.0000,Min Level,06 Oct 2025
+MIN,40SF,,Min,AF40,0.0000,Min Level,06 Oct 2025
+MIN,ACE001,,Min,Acetic Acid,0.0000,Min Level,06 Oct 2025
+MIN,ACH,,Min,ACH,0.0000,Min Level,06 Oct 2025
+MIN,ACT001,,Min,Activated Carbon,0.0000,Min Level,06 Oct 2025
+MIN,AL001,,Min,Alcohol Solvent,0.0000,Min Level,06 Oct 2025
+MIN,ALS001,,Min,Aluminium Sulphate Granular,0.0000,Min Level,06 Oct 2025
+MIN,ALS002,,Min,Aluminuim Sulphate Liquid,0.0000,Min Level,06 Oct 2025
+MIN,AMM001,,Min,Ammonia Solution,0.0000,Min Level,06 Oct 2025
+MIN,BAC001,,Min,Bactallion Enzyme,0.0000,Min Level,06 Oct 2025
+MIN,BL001,,Min,Bleach,0.0000,Min Level,06 Oct 2025
+MIN,CAL001,,Min,Calcium Hypochlorite,0.0000,Min Level,06 Oct 2025
+MIN,CASH001,,Min,Cash Supplier,0.0000,Min Level,06 Oct 2025
+MIN,CAU001,,Min,Caustic Soda Flakes,0.0000,Min Level,06 Oct 2025
+MIN,CHLO001,,Min,Chlorine (liquid of water),0.0000,Min Level,06 Oct 2025
+MIN,CON001,,Min,Container 5LT,0.0000,Min Level,06 Oct 2025
+MIN,DAD001,,Min,Dadmac,0.0000,Min Level,06 Oct 2025
+MIN,DEL001,,Min,Delivery Cost,0.0000,Min Level,06 Oct 2025
+MIN,DISH01,,Min,Dishwashing Liquid,0.0000,Min Level,06 Oct 2025
+MIN,DYE001,,Min,Dye (Blue),0.0000,Min Level,06 Oct 2025
+MIN,F001,,Min,Ferric Chloride,0.0000,Min Level,06 Oct 2025
+MIN,FARM001,,Min,Farmguard,0.0000,Min Level,06 Oct 2025
+MIN,FLO001,,Min,Flobin Deposit,0.0000,Min Level,06 Oct 2025
+MIN,FLOC001,,Min,SF40N - DO NOT USE,0.0000,Min Level,06 Oct 2025
+MIN,FLOC002,,Min,SF4010 - DO NOT USE,0.0000,Min Level,06 Oct 2025
+MIN,FLOC003,,Min,SF4025 - DO NOT USE,0.0000,Min Level,06 Oct 2025
+MIN,FREECHLO001,,Min,FREE CHLORINE REAGENT,0.0000,Min Level,06 Oct 2025
+MIN,HTH001,,Min,Hth Granular,0.0000,Min Level,06 Oct 2025
+MIN,HYD001,,Min,Hydrochloric Acid,0.0000,Min Level,06 Oct 2025
+MIN,IND001,,Min,Industrial Cap,0.0000,Min Level,06 Oct 2025
+MIN,LIG001,,Min,Lignex Dust Suppressant,0.0000,Min Level,06 Oct 2025
+MIN,LIM001,,Min,Lime,0.0000,Min Level,06 Oct 2025
+MIN,LIQ001,,Min,Liquid Toilet Soap,0.0000,Min Level,06 Oct 2025
+MIN,M6059,,Min,3M 6059 ABEK1 ORG/INORG VAPOUR ACID GAS,0.0000,Min Level,06 Oct 2025
+MIN,M6800,,Min,3M6800 CLASS 1 FULL RESPIRATOR DUAL,0.0000,Min Level,06 Oct 2025
+MIN,MNS001,,Min,Cleaning Material,0.0000,Min Level,06 Oct 2025
+MIN,NIT001,,Min,Nitric Acid 55-60% (per kg),0.0000,Min Level,06 Oct 2025
+MIN,PAC,,Min,Poly Aluminium Chloride (Powder),0.0000,Min Level,06 Oct 2025
+MIN,PACS,,Min,PAC Liquid Solution,0.0000,Min Level,06 Oct 2025
+MIN,PAL001,,Min,Pallet woods,0.0000,Min Level,06 Oct 2025
+MIN,POL001,,Min,Polyamine,0.0000,Min Level,06 Oct 2025
+MIN,POLY,,Min,Polycans 30kg,0.0000,Min Level,06 Oct 2025
+MIN,SAMPLE001,,Min,Sample,0.0000,Min Level,06 Oct 2025
+MIN,SDICT,,Min,Halo Klor Tablets,0.0000,Min Level,06 Oct 2025
+MIN,SEPTI001,,Min,Septic Tablets,0.0000,Min Level,06 Oct 2025
+MIN,SOD001,,Min,Sodium Hypochlorite,0.0000,Min Level,06 Oct 2025
+MIN,SOD002,,Min,Soda ash,0.0000,Min Level,06 Oct 2025
+MIN,SPO001,,Min,Spotless Soap,0.0000,Min Level,06 Oct 2025
+MIN,SUL001,,Min,Sulphuric Acid,0.0000,Min Level,06 Oct 2025
+MIN,SUPER001,,Min,Super Wash 25lt,0.0000,Min Level,06 Oct 2025
+MIN,TANK001,,Min,Tank with mixer,0.0000,Min Level,06 Oct 2025
+MIN,TOTALCHLO001,,Min,TOTAL CHLORINE REAGENTS,0.0000,Min Level,06 Oct 2025
+MIN,WAT001,,Min,Water,0.0000,Min Level,06 Oct 2025
+PS0000004,4015SF,,PS,AF415,-56000.0000,2025-10 Week42,16 Oct 2025
