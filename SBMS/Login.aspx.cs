@@ -1,10 +1,8 @@
-﻿using Microsoft.Ajax.Utilities;
-using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json.Linq;
 using SBMS.Classes;
 using SBMS.Models;
 using System;
 using System.Collections.Generic;
-using System.EnterpriseServices;
 using System.Linq;
 using System.Text;
 using System.Web.Security;
@@ -21,6 +19,21 @@ namespace SBMS
         protected void Page_Load(object sender, EventArgs e)
         {
             lblErr.Text = "";
+            // Mobile device detection (server-side)
+            //string userAgent = Request.UserAgent ?? "";
+            //bool isMobile = userAgent.ToLower().Contains("iphone") ||
+            //                userAgent.ToLower().Contains("android") ||
+            //                userAgent.ToLower().Contains("ipad") ||
+            //                userAgent.ToLower().Contains("mobile");
+
+            //if (isMobile && !Request.Url.AbsolutePath.ToLower().Contains("loginm.aspx"))
+            //{
+            //    Response.Redirect("~/SBMSMobile/LoginM.aspx", true);
+            //    return;
+            //}
+            //// for mobile testing
+            //Response.Redirect("~/SBMSMobile/LoginM.aspx", true);
+
             if (!IsPostBack)
             {
                 chkRememberMe.Checked = false;

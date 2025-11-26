@@ -718,7 +718,7 @@ namespace SBMS
                                 ItemTrans.DocumentType = 10;
                                 ItemTrans.PriceExclusive = ItmR.PriceExclusive;
                                 ItemTrans.TotalUnitPriceExclInclAdd = ItmR.TotalUnitPriceExclInclAdd;
-
+                                ItemTrans.ExchRate = 1;
                                 if (NewJCLine.IsLotTracked == true)
                                 {
                                     var ItmT = _db.ItemTransactions.Where(x => x.CompanyID == CurrentUser.CoID && x.ItemID == NewJCLine.SelectionId && x.ToID == FrmStorid && x.LotNumber == DDlotNum.SelectedValue).OrderByDescending(x => x.TrnID);
@@ -771,6 +771,7 @@ namespace SBMS
                             ItemTrans.ToID = FrmStorid;
                             ItemTrans.Qty = Convert.ToDecimal(NewJCLine.Quantity) * -1;
                             ItemTrans.DocumentType = 7;
+                            ItemTrans.ExchRate = 1;
                             // get latest ItemTransaction Line with Unit costs
                             if (!DDlotNum.SelectedValue.ToLower().Contains("number"))
                             {
@@ -1095,7 +1096,7 @@ namespace SBMS
                             ItemTrans.ToID = _db.Stores.FirstOrDefault(x => x.CompanyID == CurrentUser.CoID && x.StoreCode == JCLn.StoreCodeFrom).StoreID;
                             ItemTrans.Qty = Convert.ToDecimal(JCLn.Quantity);
                             ItemTrans.DocumentType = 7;
-
+                            ItemTrans.ExchRate = 1;
                             ItemTrans.PriceExclusive = JCLn.UnitPriceExclusive;
                             ItemTrans.TotalUnitPriceExclInclAdd = JCLn.UnitPriceExclusive;
 
@@ -2028,7 +2029,7 @@ namespace SBMS
                             ItemTrans.ToID = _db.Stores.FirstOrDefault(x => x.CompanyID == CurrentUser.CoID && x.StoreCode == jcln.StoreCodeFrom).StoreID;
                             ItemTrans.Qty = Convert.ToDecimal(jcln.Quantity) * -1;
                             ItemTrans.DocumentType = 7;
-
+                            ItemTrans.ExchRate = 1;
                             ItemTrans.PriceExclusive = jcln.UnitPriceExclusive;
                             ItemTrans.TotalUnitPriceExclInclAdd = jcln.UnitPriceExclusive;
 

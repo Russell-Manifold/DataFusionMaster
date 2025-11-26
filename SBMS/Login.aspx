@@ -15,16 +15,11 @@
         <div class="content">
            <div class="container"> 
                 <div class="row 150%">
-                    <div class="2u 12u$(medium)"><a href="https://mydatafusion.online" title="My Data Fusion website"><img src="images/logo.png" style="float:left" class="logoImg"/></a></div>
-                            <div class="8u 12u$(medium)">
-                                <asp:LinkButton ID="lbtnNewProfile" runat="server" class="buttonC icon fa-edit"  style="float:right;" ToolTip="Create a new profile, (No Credit Card details required)" OnClick="lbtnNewProfile_Click">&nbsp;New Profile&nbsp;</asp:LinkButton>
-                                <table style="width:100%">
-                                     <tr>
-                                        <td><h2 style="padding-top:1em">Data Fusion <span style="font-size:.5em" >By Syncflo</span></h2></td>
-                                    </tr>
-                                    </table>
+                            <div class="12u 12u$(medium)">  
+                                <a href="https://mydatafusion.online" title="My Data Fusion website"><img src="images/logo.png" style="float:left" class="logoImg"/></a>
+                                 <a href="https://mydatafusion.online" title="My Data Fusion website"><img src="images/logo.png" style="float:right" class="logoImg"/></a>
+                                 <br /><asp:LinkButton ID="lbtnNewProfile" runat="server" class="buttonC icon fa-edit"  style="float:right; font-size:small" ToolTip="Create a new profile, (No Credit Card details required)" OnClick="lbtnNewProfile_Click">&nbsp;New Profile&nbsp;</asp:LinkButton>
                              </div>
-                    <div class="2u 12u$(medium)"><a href="https://mydatafusion.online" title="My Data Fusion website"><img src="images/logo.png" style="float:left" class="logoImg"/></a></div>
                     </div>
                  <div class="row 150%">
                      <div class="4u 12u$(medium)">&nbsp;</div>
@@ -35,7 +30,8 @@
                                    </div>
                             </div>
                             <asp:Panel ID="Panel1" runat="server" DefaultButton="lbtnlogin">
-                                <h2>Log In</h2>
+                                
+                                <h2>Data Fusion <span style="font-size:.5em" >By Syncflo</span><br />Log In</h2>
                                 Username: <br /><asp:TextBox ID="txtUsername" runat="server" style="width:20em;" placeholder ="Sage Login Username"></asp:TextBox><br />
                                 Password: <br /><asp:TextBox ID="txtPwd" runat="server" style="width:20em" TextMode="Password" placeholder="Sage Password"></asp:TextBox><br />
                                 <br /><asp:CheckBox ID="chkRememberMe" runat="server" Text="Keep me logged in today" /><br/>

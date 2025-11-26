@@ -81,7 +81,7 @@ namespace SBMS
                             if (thispo.Complete == true)
                             {
                                 chkReceiveComplete.Checked = (Boolean)thispo.Complete;
-                                lbtnReset.Style.Add("display", "none");
+                                //lbtnReset.Style.Add("display", "none");
                                 lbtnReceiveFinish.Style.Add("display", "none");
                                 lbtnRecAll.Style.Add("display", "none");
                                 PnlAddCosts.Style.Add("display", "none");
@@ -234,8 +234,8 @@ namespace SBMS
                     StoreCode = line.StoreCode,
                     LotNumber = line.LotNumber,
                     ItemType = line.ItemType, 
-                    LineTaxTypeID = line.LineTaxTypeID
-                    
+                    LineTaxTypeID = line.LineTaxTypeID,
+                    ExchRate = (decimal) line.ExchRate,
                 }).ToList();
 
                 // Insert the new list of entities into the TempDocLines table
@@ -584,21 +584,22 @@ namespace SBMS
                     // 3) Save supplier Invoice in SBCA.
                     Document Doc = new Document();
                     // add document header
-                    SupplierInvoiceHeader DocH = new SupplierInvoiceHeader
-                    {
-                        //ID = Head.DocID,
-                        DueDate = DateTime.Now,
-                        SupplierId = (long)Head.CustSuppID,
-                        SupplierName = Head.CustSupName.ToString(),
-                        StatusId = 1,
-                        Date = DateTime.Now,
-                        Inclusive = (bool)Head.Inclusive,
-                        DiscountPercentage = (decimal)Head.DiscountPercentage,
-                        TaxReference = Head.TaxReference.ToString(),
-                        Reference = SuppInvN.ToString(),
-                        Message = Head.Message.ToString(),
-                        FromDocument = Head.DocumentNumber.ToString(),
-                    };
+                    SupplierInvoiceHeader DocH = new SupplierInvoiceHeader();
+
+                    //ID = Head.DocID,
+                    DocH.DueDate = DateTime.Now;
+                    DocH.SupplierId = (long)Head.CustSuppID;
+                    DocH.SupplierName = Head.CustSupName.ToString();
+                    DocH.StatusId = 1;
+                    DocH.Date = DateTime.Now;
+                    DocH.Inclusive = (bool)Head.Inclusive;
+                    DocH.DiscountPercentage = (decimal)Head.DiscountPercentage;
+                    DocH.TaxReference = Head.TaxReference.ToString();
+                    DocH.Reference = SuppInvN.ToString();
+                    DocH.Message = Head.Message.ToString();
+                    DocH.FromDocument = Head.DocumentNumber.ToString();
+                    if (Head.Supplier_ExchangeRate != 1) DocH.Supplier_ExchangeRate = (decimal)Head.Supplier_ExchangeRate;
+                    if (Head.Supplier_CurrencyId != null) DocH.Supplier_CurrencyId = (long)Head.Supplier_CurrencyId;
 
                     List<DocumentLine> documentLines = new List<DocumentLine>();
                     List<DocumentItemList> dil = new List<DocumentItemList>();
@@ -689,22 +690,48 @@ namespace SBMS
                     {
                         Doc.Header = DocH;
                         Doc.Lines = documentLines;
-                        var jsonObject = new
+                        object jsonObject;
+
+                        if (Doc.Header.Supplier_ExchangeRate != 1)
                         {
-                            //Doc.Header.ID,
-                            Doc.Header.DueDate,
-                            Doc.Header.SupplierId,
-                            Doc.Header.SupplierName,
-                            Doc.Header.StatusId,
-                            Doc.Header.Date,
-                            Doc.Header.Inclusive,
-                            Doc.Header.DiscountPercentage,
-                            Doc.Header.TaxReference,
-                            Doc.Header.Reference,
-                            Doc.Header.Message,
-                            Doc.Header.FromDocument,
-                            Doc.Lines
-                        };
+                            jsonObject = new
+                            {
+                                //Doc.Header.ID,
+                                Doc.Header.DueDate,
+                                Doc.Header.SupplierId,
+                                Doc.Header.SupplierName,
+                                Doc.Header.StatusId,
+                                Doc.Header.Date,
+                                Doc.Header.Inclusive,
+                                Doc.Header.DiscountPercentage,
+                                Doc.Header.TaxReference,
+                                Doc.Header.Reference,
+                                Doc.Header.Message,
+                                Doc.Header.FromDocument,
+                                Doc.Lines
+                            };
+                        }
+                        else
+                        {
+                            jsonObject = new
+                            {
+                                //Doc.Header.ID,
+                                Doc.Header.DueDate,
+                                Doc.Header.SupplierId,
+                                Doc.Header.SupplierName,
+                                Doc.Header.StatusId,
+                                Doc.Header.Date,
+                                Doc.Header.Inclusive,
+                                Doc.Header.DiscountPercentage,
+                                Doc.Header.TaxReference,
+                                Doc.Header.Reference,
+                                Doc.Header.Message,
+                                Doc.Header.FromDocument,
+                                Doc.Header.Supplier_ExchangeRate,
+                                Doc.Header.Supplier_CurrencyId,
+                                Doc.Lines
+                            };
+                        }
                         jsonBody = JsonConvert.SerializeObject(jsonObject, Formatting.Indented);
                         SupInv = await SendSupplierInvoice(jsonBody);
 
@@ -837,6 +864,7 @@ namespace SBMS
                                     tempLine.LineTaxTypeID = dl.LineTaxTypeID;
                                     tempLine.AddCostsAmount = AddCostPropValue;
                                     tempLine.AddCostsReason = txtAddCostsReason.Text.ToString();
+                                    tempLine.ExchRate = dl.ExchRate;
 
                                     // 1) Create transaction to move items from supplier into the selected warehouse.
                                     ItemTransaction ItemTrans = new ItemTransaction();
@@ -860,6 +888,7 @@ namespace SBMS
                                     // Additional costs ????
                                     ItemTrans.TransactionDate = DateTime.Now;
                                     ItemTrans.ByRoleID = CurrentUser.RoleID; // roleid
+                                    ItemTrans.ExchRate = dl.ExchRate;
                                     _db.ItemTransactions.Add(ItemTrans);
 
                                     if (dl.LotNumber != null)
@@ -1007,6 +1036,7 @@ namespace SBMS
                                 tempLine.AddCostsAmount = linevalAddCosts;
                                 tempLine.AddCostsReason = dl.AddCostsReason;
                                 tempLine.ReceiveTotalExcl = dl.Exclusive - dl.Discount + linevalAddCosts;
+                                tempLine.ExchRate = dl.ExchRate;
                                 if (dl.ItemType == 0)
                                 {
                                     // 1) Create transaction to move items from supplier into the selected warehouse.
@@ -1031,6 +1061,7 @@ namespace SBMS
                                     // Additional costs ????
                                     ItemTrans.TransactionDate = DateTime.Now;
                                     ItemTrans.ByRoleID = CurrentUser.RoleID; // roleid
+                                    ItemTrans.ExchRate = tempLine.ExchRate;
                                     _db.ItemTransactions.Add(ItemTrans);
 
                                     if (dl.LotNumber != null)
@@ -1151,7 +1182,7 @@ namespace SBMS
                     _db.SaveChanges();
 
                     chkReceiveComplete.Checked = (Boolean)Head.Complete;
-                    lbtnReset.Style.Add("display", "none");
+                    //lbtnReset.Style.Add("display", "none");
                     lbtnReceiveFinish.Style.Add("display", "none");
                     LbtnAddCosts.Style.Add("display", "none");
                     lbtnRecAll.Style.Add("display", "none");
@@ -1247,6 +1278,12 @@ namespace SBMS
             docid = Convert.ToInt64(lblDocID.Text);
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {
+                var DocHeaderDelete = _db.DocHeaders.Where(x => x.DocID == docid).ToList();
+                DocHeaderDelete.ForEach(x => x.Active = false);
+                DocHeaderDelete.ForEach(x => x.Started = false);
+                DocHeaderDelete.ForEach(x => x.Complete = false);
+                DocHeaderDelete.ForEach(x => x.Status = "Deleted");
+
                 // Retrieve the records to be deleted
                 var tempLinesToDelete = _db.TempDocLines.Where(x => x.DocID == docid).ToList();
                 _db.TempDocLines.RemoveRange(tempLinesToDelete);

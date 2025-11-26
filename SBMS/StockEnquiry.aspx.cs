@@ -149,14 +149,6 @@ namespace SBMS
                 {
                     CurrStock = CurrStock.Where(x => x.ItemCode.ToLower().Contains(txtfind.Text.Trim().ToLower()) || (x.Description != null && x.Description.ToLower().Contains(txtfind.Text.Trim().ToLower()))).ToList();
                 }
-                foreach (var dr in CurrStock)
-                {
-                    if (dr.Sum_Qty != null)
-                    {
-                        dr.Sum_Qty = Convert.ToDecimal(ApiUrlCall.NumberToDecimal(dr.Sum_Qty.ToString(), CurrentUser.CompanyDecPlaces));
-                    }
-                    dr.Value_On_Hand = (dr.Sum_Qty * dr.Unit_Cost).ToString();
-                }
                 WriteToCsv(CurrStock, filePath);
             }
             return "OK";

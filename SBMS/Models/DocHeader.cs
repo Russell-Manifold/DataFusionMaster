@@ -59,10 +59,11 @@ namespace SBMS.Models
         public Nullable<long> LinkedDocID { get; set; }
         public Nullable<long> DefaultPriceListId { get; set; }
         public string DefaultPriceListName { get; set; }
-        public Nullable<long> CurrencyID { get; set; }
-        public Nullable<decimal> ExchRate { get; set; }
-        public Nullable<decimal> localCurrLineVal { get; set; }
         public Nullable<long> LinkedWOID { get; set; }
         public Nullable<long> SalesRepresentativeId { get; set; }
+        public Nullable<decimal> Supplier_ExchangeRate { get; set; }
+        public Nullable<long> Supplier_CurrencyId { get; set; }
+        public Nullable<decimal> Customer_ExchangeRate { get; set; }
+        public Nullable<long> Customer_CurrencyId { get; set; }
     }
 }

@@ -94,7 +94,8 @@
                                         <asp:BoundField DataField="PriceExclusive" ReadOnly="True" HeaderText="Unit Excl" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right" ItemStyle-Width="5em" DataFormatString="{0:N2}" />
                                         <asp:BoundField DataField="AdditionalCosts" ReadOnly="True" HeaderText="Add Costs" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right" FooterStyle-HorizontalAlign="Right" ItemStyle-Width="7em" DataFormatString="{0:N2}" />
                                         <asp:BoundField DataField="TotalLineValExcl" ReadOnly="True" HeaderText="Line Value" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right" FooterStyle-HorizontalAlign="Right" ItemStyle-Width="7em" DataFormatString="{0:N2}" />
-                                          <asp:BoundField DataField="Store" ReadOnly="True" HeaderText="Store" ItemStyle-HorizontalAlign="Center" HeaderStyle-HorizontalAlign="Center" />
+                                        <asp:BoundField DataField="ExchRate" ReadOnly="True" HeaderText="Exch_Rate" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right" FooterStyle-HorizontalAlign="Right" ItemStyle-Width="4em" DataFormatString="{0:N2}" />
+                                          <asp:BoundField DataField="Store" ReadOnly="True" HeaderText="Store" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center"  />
                                          <asp:BoundField DataField="TransactionDate" ReadOnly="True" HeaderText="Date" DataFormatString="{0:dd MMM}" />
                                          <asp:BoundField DataField="ByRole" ReadOnly="True" HeaderText="By"/>
                                          <asp:BoundField DataField="TransactionReference" ReadOnly="True" HeaderText="Reference" />       

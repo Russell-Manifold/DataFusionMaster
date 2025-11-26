@@ -300,11 +300,12 @@
           <Property Name="LinkedDocID" Type="bigint" />
           <Property Name="DefaultPriceListId" Type="bigint" />
           <Property Name="DefaultPriceListName" Type="varchar" MaxLength="50" />
-          <Property Name="CurrencyID" Type="bigint" />
-          <Property Name="ExchRate" Type="decimal" Precision="12" Scale="4" />
-          <Property Name="localCurrLineVal" Type="decimal" Precision="18" Scale="4" />
           <Property Name="LinkedWOID" Type="bigint" />
           <Property Name="SalesRepresentativeId" Type="bigint" />
+          <Property Name="Supplier_ExchangeRate" Type="decimal" Precision="18" Scale="4" />
+          <Property Name="Supplier_CurrencyId" Type="bigint" />
+          <Property Name="Customer_ExchangeRate" Type="decimal" Precision="18" Scale="4" />
+          <Property Name="Customer_CurrencyId" Type="bigint" />
         </EntityType>
         <EntityType Name="DocHeaderAttachment">
           <Key>
@@ -363,6 +364,9 @@
           <Property Name="isKitLine" Type="bit" />
           <Property Name="isBundleLine" Type="bit" />
           <Property Name="CompanyID" Type="bigint" />
+          <Property Name="CurrencyID" Type="bigint" />
+          <Property Name="ExchRate" Type="decimal" Precision="18" Scale="4" />
+          <Property Name="localCurrLineVal" Type="decimal" Precision="18" Scale="4" />
         </EntityType>
         <EntityType Name="DocTypes">
           <Key>
@@ -537,6 +541,7 @@
           <Property Name="TransactionDate" Type="datetime" />
           <Property Name="ByRoleID" Type="int" />
           <Property Name="TransactionReference" Type="varchar" MaxLength="100" />
+          <Property Name="ExchRate" Type="decimal" Precision="18" Scale="4" />
         </EntityType>
         <EntityType Name="ItemTransferHeaders">
           <Key>
@@ -886,7 +891,7 @@
           <Property Name="SupplierID" Type="bigint" />
           <Property Name="ItemCode" Type="varchar" MaxLength="50" />
           <Property Name="SelectionId" Type="bigint" />
-          <Property Name="ItemDescription" Type="varchar" MaxLength="50" />
+          <Property Name="ItemDescription" Type="varchar" MaxLength="100" />
           <Property Name="OrigQty" Type="decimal" Precision="18" Scale="4" />
           <Property Name="RecQty" Type="decimal" Precision="18" Scale="4" />
           <Property Name="QtyLeft" Type="decimal" Precision="18" Scale="4" />
@@ -941,7 +946,7 @@
           <Property Name="CompanyID" Type="bigint" Nullable="false" />
           <Property Name="ItemID" Type="bigint" Nullable="false" />
           <Property Name="ItemCode" Type="varchar" MaxLength="50" />
-          <Property Name="ItemDescription" Type="varchar" MaxLength="50" />
+          <Property Name="ItemDescription" Type="varchar" MaxLength="100" />
           <Property Name="LotNumber" Type="varchar" MaxLength="50" />
           <Property Name="StoreID" Type="int" />
           <Property Name="QtyOnHand" Type="decimal" Precision="18" Scale="2" />
@@ -1036,6 +1041,7 @@
           <Property Name="LineTaxTypeID" Type="int" />
           <Property Name="AddCostsAmount" Type="decimal" Precision="18" Scale="2" Nullable="false" />
           <Property Name="AddCostsReason" Type="varchar" MaxLength="100" />
+          <Property Name="ExchRate" Type="decimal" Precision="18" Scale="4" />
         </EntityType>
         <EntityType Name="UsersMaster">
           <Key>
@@ -1489,11 +1495,12 @@
           <Property Name="LinkedDocID" Type="Int64" />       
           <Property Name="DefaultPriceListId" Type="Int64" />
           <Property Name="DefaultPriceListName" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
-          <Property Name="CurrencyID" Type="Int64" />
-          <Property Name="ExchRate" Type="Decimal" Precision="12" Scale="4" />
-          <Property Name="localCurrLineVal" Type="Decimal" Precision="18" Scale="4" />
           <Property Name="LinkedWOID" Type="Int64" />
           <Property Name="SalesRepresentativeId" Type="Int64" />
+          <Property Name="Supplier_ExchangeRate" Type="Decimal" Precision="18" Scale="4" />
+          <Property Name="Supplier_CurrencyId" Type="Int64" />
+          <Property Name="Customer_ExchangeRate" Type="Decimal" Precision="18" Scale="4" />
+          <Property Name="Customer_CurrencyId" Type="Int64" />
         </EntityType>
         <EntityType Name="DocLine">
           <Key>
@@ -1540,6 +1547,9 @@
           <Property Name="isKitLine" Type="Boolean" />
           <Property Name="isBundleLine" Type="Boolean" />
           <Property Name="CompanyID" Type="Int64" />
+          <Property Name="CurrencyID" Type="Int64" />
+          <Property Name="ExchRate" Type="Decimal" Precision="18" Scale="4" />
+          <Property Name="localCurrLineVal" Type="Decimal" Precision="18" Scale="4" />
         </EntityType>
         <EntityType Name="DocType">
           <Key>
@@ -1703,6 +1713,7 @@
           <Property Name="TransactionDate" Type="DateTime" Precision="3" />
           <Property Name="ByRoleID" Type="Int32" />
           <Property Name="TransactionReference" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
+          <Property Name="ExchRate" Type="Decimal" Precision="18" Scale="4" />
         </EntityType>
         <EntityType Name="JobCardLine">
           <Key>
@@ -1959,6 +1970,7 @@
           <Property Name="LineTaxTypeID" Type="Int32" />
           <Property Name="AddCostsAmount" Type="Decimal" Precision="18" Scale="2" Nullable="false" />
           <Property Name="AddCostsReason" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
+          <Property Name="ExchRate" Type="Decimal" Precision="18" Scale="4" />
         </EntityType>
         <EntityType Name="UsersMaster">
           <Key>
@@ -2187,6 +2199,7 @@
           <Property Type="Int64" Name="ItemId" Nullable="true" />
           <Property Type="String" Name="StoreCode" Nullable="true" MaxLength="6" />
           <Property Type="Decimal" Name="QtyHandToStore" Nullable="false" />
+          <Property Type="Decimal" Name="TotalUnitPriceExclInclAdd" Nullable="false" />
         </ComplexType>
         <ComplexType Name="getdoclinestest_Result">
           <Property Type="Decimal" Name="POQty" Nullable="true" Precision="38" Scale="4" />
@@ -2655,6 +2668,10 @@
           <Property Type="String" Name="PSStatus" Nullable="true" MaxLength="20" />
           <Property Type="String" Name="LinkedPSNum" Nullable="true" MaxLength="10" />
           <Property Type="Int32" Name="PSIssuedTo" Nullable="true" />
+          <Property Type="Int64" Name="Supplier_CurrencyId" Nullable="true" />
+          <Property Type="Decimal" Name="Supplier_ExchangeRate" Nullable="true" Precision="18" Scale="4" />
+          <Property Type="Int64" Name="Customer_CurrencyId" Nullable="true" />
+          <Property Type="Decimal" Name="Customer_ExchangeRate" Nullable="true" Precision="18" Scale="4" />
         </ComplexType>
         <ComplexType Name="GetAllStockLevels_Result">
           <Property Type="String" Name="ItemCode" Nullable="true" MaxLength="50" />
@@ -2664,13 +2681,14 @@
           <Property Type="String" Name="StoreCode" Nullable="true" MaxLength="6" />
           <Property Type="String" Name="LotNumber" Nullable="true" MaxLength="50" />
           <Property Type="Decimal" Name="Unit_Cost" Nullable="true" Precision="18" Scale="4" />
-          <Property Type="String" Name="Value_On_Hand" Nullable="false" MaxLength="100" />
+          <Property Type="Decimal" Name="Local_Curr_Value" Nullable="true" Precision="18" Scale="4" />
           <Property Type="String" Name="TextUserField1" Nullable="false" MaxLength="100" />
           <Property Type="String" Name="TextUserField2" Nullable="false" MaxLength="100" />
           <Property Type="String" Name="TextUserField3" Nullable="false" MaxLength="100" />
           <Property Type="Decimal" Name="NumericUserField1" Nullable="true" />
           <Property Type="Decimal" Name="NumericUserField2" Nullable="true" />
           <Property Type="Decimal" Name="NumericUserField3" Nullable="true" />   
+          <Property Type="Decimal" Name="ExchRate" Nullable="true" />   
         </ComplexType>
         <EntityType Name="DocHeaderAttachment">
           <Key>
@@ -3319,11 +3337,12 @@
                 <ScalarProperty Name="DNNum" ColumnName="DNNum" />
                 <ScalarProperty Name="DefaultPriceListId" ColumnName="DefaultPriceListId" />
                 <ScalarProperty Name="DefaultPriceListName" ColumnName="DefaultPriceListName" />
-                <ScalarProperty Name="CurrencyID" ColumnName="CurrencyID" />
-                <ScalarProperty Name="ExchRate" ColumnName="ExchRate" />
-                <ScalarProperty Name="localCurrLineVal" ColumnName="localCurrLineVal" />
                 <ScalarProperty Name="LinkedWOID" ColumnName="LinkedWOID" />
                 <ScalarProperty Name="SalesRepresentativeId" ColumnName="SalesRepresentativeId" />
+                <ScalarProperty Name="Supplier_ExchangeRate" ColumnName="Supplier_ExchangeRate" />
+                <ScalarProperty Name="Supplier_CurrencyId" ColumnName="Supplier_CurrencyId" />
+                <ScalarProperty Name="Customer_ExchangeRate" ColumnName="Customer_ExchangeRate" />
+                <ScalarProperty Name="Customer_CurrencyId" ColumnName="Customer_CurrencyId" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
@@ -3371,6 +3390,9 @@
                 <ScalarProperty Name="LineTaxTypeID" ColumnName="LineTaxTypeID" />
                 <ScalarProperty Name="AddCostsAmount" ColumnName="AddCostsAmount" />
                 <ScalarProperty Name="AddCostsReason" ColumnName="AddCostsReason" />
+                <ScalarProperty Name="CurrencyID" ColumnName="CurrencyID" />
+                <ScalarProperty Name="ExchRate" ColumnName="ExchRate" />
+                <ScalarProperty Name="localCurrLineVal" ColumnName="localCurrLineVal" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
@@ -3542,6 +3564,7 @@
                 <ScalarProperty Name="TransactionDate" ColumnName="TransactionDate" />
                 <ScalarProperty Name="ByRoleID" ColumnName="ByRoleID" />
                 <ScalarProperty Name="TransactionReference" ColumnName="TransactionReference" />
+                <ScalarProperty Name="ExchRate" ColumnName="ExchRate" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
@@ -3811,6 +3834,7 @@
                 <ScalarProperty Name="LineTaxTypeID" ColumnName="LineTaxTypeID" />
                 <ScalarProperty Name="AddCostsAmount" ColumnName="AddCostsAmount" />
                 <ScalarProperty Name="AddCostsReason" ColumnName="AddCostsReason" />
+                <ScalarProperty Name="ExchRate" ColumnName="ExchRate" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
@@ -3852,6 +3876,7 @@
                 <ScalarProperty Name="ItemId" ColumnName="ItemId" />
                 <ScalarProperty Name="StoreCode" ColumnName="StoreCode" />
                 <ScalarProperty Name="QtyHandToStore" ColumnName="QtyHandToStore" />
+                <ScalarProperty Name="TotalUnitPriceExclInclAdd" ColumnName="TotalUnitPriceExclInclAdd" />
               </ComplexTypeMapping>
             </ResultMapping>
           </FunctionImportMapping>
@@ -4413,12 +4438,17 @@
                 <ScalarProperty Name="DelAddress2" ColumnName="DelAddress2" />
                 <ScalarProperty Name="DelAddress4" ColumnName="DelAddress4" />
                 <ScalarProperty Name="DelAddress5" ColumnName="DelAddress5" />
+                <ScalarProperty Name="Supplier_CurrencyId" ColumnName="Supplier_CurrencyId" />
+                <ScalarProperty Name="Supplier_ExchangeRate" ColumnName="Supplier_ExchangeRate" />
+                <ScalarProperty Name="Customer_CurrencyId" ColumnName="Customer_CurrencyId" />
+                <ScalarProperty Name="Customer_ExchangeRate" ColumnName="Customer_ExchangeRate" />
                 <ScalarProperty Name="LinkedJCNum" ColumnName="LinkedJCNum" />
                 <ScalarProperty Name="JCStatus" ColumnName="JCStatus" />
                 <ScalarProperty Name="JCIssuedTo" ColumnName="JCIssuedTo" />
                 <ScalarProperty Name="PSStatus" ColumnName="PSStatus" />
                 <ScalarProperty Name="LinkedPSNum" ColumnName="LinkedPSNum" />
                 <ScalarProperty Name="PSIssuedTo" ColumnName="PSIssuedTo" />
+                
               </ComplexTypeMapping>
             </ResultMapping>
           </FunctionImportMapping>
@@ -4432,13 +4462,14 @@
                 <ScalarProperty Name="StoreCode" ColumnName="StoreCode" />
                 <ScalarProperty Name="LotNumber" ColumnName="LotNumber" />
                 <ScalarProperty Name="Unit_Cost" ColumnName="Unit_Cost" />
-                <ScalarProperty Name="Value_On_Hand" ColumnName="Value_On_Hand" />
+                <ScalarProperty Name="Local_Curr_Value" ColumnName="Local_Curr_Value" />
                 <ScalarProperty Name="TextUserField1" ColumnName="TextUserField1" />
                 <ScalarProperty Name="TextUserField2" ColumnName="TextUserField2" />
                 <ScalarProperty Name="TextUserField3" ColumnName="TextUserField3" />
                 <ScalarProperty Name="NumericUserField1" ColumnName="NumericUserField1" />
                 <ScalarProperty Name="NumericUserField2" ColumnName="NumericUserField2" />
                 <ScalarProperty Name="NumericUserField3" ColumnName="NumericUserField3" />
+                <ScalarProperty Name="ExchRate" ColumnName="ExchRate" />
               </ComplexTypeMapping>
             </ResultMapping>
           </FunctionImportMapping>

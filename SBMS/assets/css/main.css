@@ -2771,11 +2771,11 @@ input[type="radio"] {
 			border: 1px solid rgba(255, 255, 255, 0.15); /* Lighter border */
 			color: white;
 			font-size: 1.25em;
-			padding: 0.3em 0.2em 4.5em 0.6em;
+			padding: 0.3em 0.2em 0.7em 0.6em;
 			margin: 0.3em;
 			width: 10em;
 			font-weight: 400;
-			height: 5.8em;
+			/*height: 5.8em;*/
 			border-radius: 0.2em;
 			box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25); /* Softer shadow */
 			transition: all 0.3s ease-in-out;
@@ -3309,27 +3309,27 @@ input[type="radio"] {
             }
 
 
-		/*#header nav {
+		#header nav {
 			position: absolute;
 			right: 1em;
 			top: 0;
-            color:rgba(0, 0, 0, 0.25);*/
-            /*margin-top:.6em;*/
-            /*vertical-align:middle;
-		}*/
+            color:rgba(0, 0, 0, 0.25);
+            margin-top:.6em;
+            vertical-align:middle;
+		}
 
-			/*#header nav ul {
+			#header nav ul {
 				margin: 0;
-                color:rgba(0, 0, 0, 0.25);*/
-                /*margin-bottom:5em;*/
-            	/*}
+                color:rgba(0, 0, 0, 0.25);
+                margin-bottom:5em;
+            	}
             
             #header nav ul li {
 					display: inline-block;
 					margin-left: .5em;
-                    color:darkgrey;*/
-                    /*padding-bottom:5em;*/
-                    /*vertical-align:middle;
+                    color:darkgrey;
+                    padding-bottom:5em;
+                    vertical-align:middle;
                     padding:0;
                     font-size:.9em;
 				}
@@ -3355,9 +3355,9 @@ input[type="radio"] {
 							margin-right: 0.5em;
                         }
 
-					#header nav ul li.active > a, #header nav ul li.active > span {*/
-						/*color: #e44c65;*/
-                        /*color: red;
+					#header nav ul li.active > a, #header nav ul li.active > span {
+						color: #e44c65;
+                        color: red;
                         
 					}
 
@@ -3368,7 +3368,7 @@ input[type="radio"] {
 
                 #header nav ul li:after {
                 color: red;
-                }*/
+                }
 
                 #header nav a.current-page-item {
 				    background-image: -moz-linear-gradient(top, #007b99, #007897);
@@ -3758,13 +3758,20 @@ input[type="radio"] {
 
 		.hidecolumn {
 			display: none;
+			font-size: 1.2em;
 		}
 		/* Basic */
 
 			body, input, select, textarea {
-				font-size: .9em;
+				font-size: 1.2em;
                 }
 
+		.buttonSage {
+			width: 100%;
+			padding:1em;
+			color:white;
+		}
+		
 		/* Spotlight */
 
 			.spotlight {
@@ -3865,13 +3872,18 @@ input[type="radio"] {
 		}
 		/* Basic */
 
-			html, body {
-				overflow-x: hidden;
-			}
+		html, body {
+			overflow-x: hidden;
+			font-size: 1.2em;
+		}
 
 			body, input, select, textarea {
-				/*font-size: .85em;*/
+				font-size: 1.2em;
 			}
+
+		.buttonSage {
+			font-size: 2em;
+		}
 
 		h2 {
 			/*font-family: FontAwesome;*/

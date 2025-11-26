@@ -20,12 +20,13 @@ namespace SBMS.Models
         public string StoreCode { get; set; }
         public string LotNumber { get; set; }
         public Nullable<decimal> Unit_Cost { get; set; }
-        public string Value_On_Hand { get; set; }
+        public Nullable<decimal> Local_Curr_Value { get; set; }
         public string TextUserField1 { get; set; }
         public string TextUserField2 { get; set; }
         public string TextUserField3 { get; set; }
         public Nullable<decimal> NumericUserField1 { get; set; }
         public Nullable<decimal> NumericUserField2 { get; set; }
         public Nullable<decimal> NumericUserField3 { get; set; }
+        public Nullable<decimal> ExchRate { get; set; }
     }
 }

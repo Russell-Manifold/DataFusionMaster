@@ -17,8 +17,11 @@ namespace SBMS.Models
     
     public partial class SBMSEntities : DbContext
     {
+        //public SBMSEntities()
+        //    : base("name=SBMSEntities")
+        //{
+        //}
         public SBMSEntities(string connectionString) : base(connectionString) { }
-
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
             throw new UnintentionalCodeFirstException();

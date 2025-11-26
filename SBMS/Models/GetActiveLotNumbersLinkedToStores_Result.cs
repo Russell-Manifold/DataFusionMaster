@@ -17,5 +17,6 @@ namespace SBMS.Models
         public Nullable<long> ItemId { get; set; }
         public string StoreCode { get; set; }
         public decimal QtyHandToStore { get; set; }
+        public decimal TotalUnitPriceExclInclAdd { get; set; }
     }
 }

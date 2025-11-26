@@ -11,6 +11,7 @@ using System.Data;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.Remoting.Metadata.W3cXsd2001;
 using System.Security.Cryptography.Pkcs;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
@@ -66,10 +67,10 @@ namespace SBMS
                     {
                         lbtnPost.Style.Add("display", "none");
                         lblErr.Text =  "Sales Order updated in Sage."; 
-                        lbtnTaxInv.Attributes.Add("display", "none");
+                        lbtnTaxInv.Style.Add("display", "none");
                         if (CurrentUser.AutoGenTaxInvoice)
                         {
-                            lbtnTaxInv.Attributes.Add("display", "inline-block");
+                            lbtnTaxInv.Style.Add("display", "inline-block");
                         }
                     }
                 }
@@ -100,22 +101,23 @@ namespace SBMS
                     lblCustID.Text = thispo.CustSuppID.ToString();
                     lblDocNum.Text = (thispo.DocumentNumber ?? "").ToString();
                     lblSOStatus.Text = "(" + (thispo.Status ?? "").ToString() + ")";
+                    lbtnTaxInv.Style.Add("display", "none");
                     if (CurrentUser.AutoGenTaxInvoice == true)
                     {
-                        lbtnTaxInv.Attributes.Add("display", "inline-block");
+                        lbtnTaxInv.Style.Add("display", "inline-block");
                     }
                     if (thispo.Status == "Invoiced")
                     {
                         lblSOStatus.ForeColor = System.Drawing.Color.Red;
                         lbtnPost.Style.Add("display", "none");
                         lbtnUndo.Style.Add("display", "none");
-                        lbtnTaxInv.Attributes.Add("display", "none");
+                        lbtnTaxInv.Style.Add("display", "none");
                     }
                     else
                     if (thispo.Status == "Cancelled")
                     {
                         lblSOStatus.ForeColor = System.Drawing.Color.Orange;
-                        lbtnTaxInv.Attributes.Add("display", "none");
+                        lbtnTaxInv.Style.Add("display", "none");
                     }
 
                     txtRef.Text = (thispo.Reference ?? "").ToString();
@@ -259,7 +261,8 @@ namespace SBMS
                         ReceiveComplete = line.ReceiveComplete,
                         StoreCode = line.StoreCode,
                         LotNumber = line.LotNumber,
-                        LineTaxTypeID = line.LineTaxTypeID
+                        LineTaxTypeID = line.LineTaxTypeID, 
+                        ExchRate = (decimal) line.ExchRate
                     }).ToList();
 
                     // Insert the new list of entities into the TempDocLines table
@@ -1007,7 +1010,7 @@ namespace SBMS
 
         protected async Task<string> PostOrder()
         {
-            string retStr = "OK";
+            string retStr = "OK";long RepID = 0;
             ApiUrlCall api = new ApiUrlCall();
             docid = Convert.ToInt64(lblDocID.Text);
             string jsonBody = "";
@@ -1017,19 +1020,24 @@ namespace SBMS
                 List<DocumentLine> documentLines = new List<DocumentLine>();
                 DateTime DueDt = Convert.ToDateTime(txtPODate.Text);
                 DateTime DocDT = Convert.ToDateTime(txtCaptDate.Text);
-                SageSalesOrder SO = new SageSalesOrder();
-                SalesOrderHeader SOH = new SalesOrderHeader
+                if (lblRepID.Text != null && lblRepID.Text != "")
                 {
-                    DeliveryDate = DueDt,
-                    CustomerId = Convert.ToInt64(lblCustID.Text),
-                    ID = docid,
-                    DocumentNumber = lblDocNum.Text.ToString(),
-                    Date = DocDT,
-                    Message = txtMsg.Text.ToString().Trim(),
-                    Reference = txtRef.Text.ToString().Trim() ?? "",
-                    SalesRepresentativeId = Convert.ToInt64(lblRepID.Text),
+                    RepID = Convert.ToInt64(lblRepID.Text);
                 }
-            ;
+                else
+                {
+                    RepID = 0;
+                }
+                SageSalesOrder SO = new SageSalesOrder();
+                SalesOrderHeader SOH = new SalesOrderHeader();
+                SOH.DeliveryDate = DueDt;
+                SOH.CustomerId = Convert.ToInt64(lblCustID.Text);
+                SOH.ID = docid;
+                SOH.DocumentNumber = lblDocNum.Text.ToString();
+                SOH.Date = DocDT;
+                SOH.Message = txtMsg.Text.ToString().Trim();
+                SOH.Reference = txtRef.Text.ToString().Trim() ?? "";
+                if (RepID > 0) SOH.SalesRepresentativeId = RepID;
 
                 // check for unpicked lines
                 foreach (var dl in SOLines)
@@ -1094,6 +1102,7 @@ namespace SBMS
                         ItemTrans.TotalLineValExcl = ItemTrans.PriceExclusive * ItemTrans.Qty;
                         ItemTrans.TransactionReference = lblDocNum.Text + " Complete - Issued to Sage";
                         ItemTrans.LotNumber = dl.LotNumber;
+                        ItemTrans.ExchRate = dl.ExchRate;
                         _db.ItemTransactions.Add(ItemTrans);
 
                         Itm.QuantityOnHand = Itm.QuantityOnHand + ItemTrans.Qty;
@@ -1242,20 +1251,38 @@ namespace SBMS
                 {
                     SO.Header = SOH;
                     SO.Lines = documentLines;
-                    var jsonObject = new
+                    object jsonObject;
+                    if (SO.Header.SalesRepresentativeId > 0)
                     {
-                        SO.Header.DeliveryDate,
-                        SO.Header.CustomerId,
-                        SO.Header.ID,
-                        SO.Header.DocumentNumber,
-                        SO.Header.Date,
-                        SO.Header.Message,
-                        SO.Header.Reference,
-                        SO.Header.SalesRepresentativeId,
-                        SO.Lines
-                    };
+                        jsonObject = new
+                        {
+                            SO.Header.DeliveryDate,
+                            SO.Header.CustomerId,
+                            SO.Header.ID,
+                            SO.Header.DocumentNumber,
+                            SO.Header.Date,
+                            SO.Header.Message,
+                            SO.Header.Reference,
+                            SO.Header.SalesRepresentativeId,
+                            SO.Lines
+                        };
+                    }
+                    else
+                    {
+                        jsonObject = new
+                        {
+                            SO.Header.DeliveryDate,
+                            SO.Header.CustomerId,
+                            SO.Header.ID,
+                            SO.Header.DocumentNumber,
+                            SO.Header.Date,
+                            SO.Header.Message,
+                            SO.Header.Reference,
+                            SO.Lines
+                        };
+                    }
                     jsonBody = JsonConvert.SerializeObject(jsonObject, Formatting.Indented);
-               
+
                     string SupInv = await SendSalesOrder(jsonBody);
                     string SuppInvNum = "";
                     long SuppDocID = 0;
@@ -1277,8 +1304,11 @@ namespace SBMS
                         string jsonBodyN = JsonConvert.SerializeObject(Dnt, Formatting.Indented);
                         string DocN = await SendDocHeaderNote(jsonBodyN);
                     }
+                    else
+                    {
+                        return SupInv;
+                    }
                 }
-                              
                     var DH = _db.DocHeaders.Where(x => x.DocID == docid).FirstOrDefault();
                     if (DH != null)
                     {
@@ -1356,6 +1386,7 @@ namespace SBMS
             string doctype = "";
             doctype = "SalesOrder";
             ApiUrlCall Api = new ApiUrlCall();
+           var RetJson = await Api.APIUpdateSalesOrderAsync(doctype, Doc, CurrentUser);
             JObject parsedJSON = await Api.APIUpdateSalesOrderAsync(doctype, Doc, CurrentUser);
             if (parsedJSON.HasValues)
             {
@@ -1729,7 +1760,7 @@ namespace SBMS
                         cell4.BorderColor = new BaseColor(211, 211, 211);
                         table4.AddCell(cell4);
 
-                        string Barcode = _db.ItemsMasters.Where(x => x.ID == DL.SelectionId).Select(x => x.BarCode).FirstOrDefault() ?? "";
+                        string Barcode = _db.ItemBarCodeLinks.Where(x => x.ItemID == DL.SelectionId && x.QtyPerBarcode == 1).Select(x => x.BarCode).FirstOrDefault() ?? "";
                         cell4 = new PdfPCell(new Phrase(Barcode, regfont));
                         cell4.HorizontalAlignment = 0;
                         cell4.VerticalAlignment = Element.ALIGN_MIDDLE;

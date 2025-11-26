@@ -282,10 +282,10 @@ namespace SBMS
 
                 var itm = _db.ItemsMasters.FirstOrDefault(x => x.CompanyID == CurrentUser.CoID && x.ID == itmid);
 
-                if (UnitC != (decimal)itm.AverageCost) UnitC = ThisAvCost;
+                
                 // calculate new average cost
                 decimal CurrVal = (decimal)itm.QuantityOnHand * (decimal)itm.AverageCost;
-                decimal LotMoveVal = UnitC * Convert.ToDecimal(txtAdjQty.Text);
+                decimal LotMoveVal = ThisAvCost * Convert.ToDecimal(txtAdjQty.Text);
                 decimal NewStckTotVal = CurrVal + LotMoveVal;
                 decimal NewStckQty = Convert.ToDecimal(txtAdjQty.Text) + QOH;
                 decimal NewAvCost = NewStckTotVal / NewStckQty;
@@ -319,14 +319,21 @@ namespace SBMS
                 ItemTrans.DocumentType = 1;
                 ItemTrans.TransactionDate = DateTime.Now;
                 ItemTrans.ByRoleID = CurrentUser.RoleID; // roleid
-                ItemTrans.PriceExclusive = NewAvCost;
+                ItemTrans.PriceExclusive = ThisAvCost;
                 ItemTrans.AdditionalCosts = 0;
-                ItemTrans.TotalUnitPriceExclInclAdd = NewAvCost;
-                ItemTrans.TotalLineValExcl = ItemTrans.PriceExclusive * ItemTrans.Qty;
+                ItemTrans.TotalUnitPriceExclInclAdd = ThisAvCost;
+                ItemTrans.TotalLineValExcl = LotMoveVal;
                 ItemTrans.TransactionReference = txtAdjReason.Text.ToString().Trim().Replace("'", "''");
-                  
+                ItemTrans.ExchRate = 1; 
                 _db.ItemTransactions.Add(ItemTrans);
-                _db.SaveChanges();
+                try
+                {
+                    _db.SaveChanges();
+                } catch (Exception ex)
+                {
+                    string str = ex.Message;
+                }
+               
 
                 if (DDAdjYesNo.SelectedValue == "0")
                 {
@@ -334,7 +341,7 @@ namespace SBMS
                     ItemAdjustment iAdj = new ItemAdjustment();
                     iAdj.Date = DateTime.Now;
                     iAdj.ItemID = itmid;
-                    iAdj.AverageCost = (decimal)ItemTrans.TotalUnitPriceExclInclAdd;
+                    iAdj.AverageCost = (decimal)NewAvCost;
                     iAdj.Quantity = (decimal)ItemTrans.Qty;
                     iAdj.Reason = "Adjustment: " + DateTime.Today + " - " + txtAdjReason.Text.ToString();
                     iAdj.Created = DateTime.Now;

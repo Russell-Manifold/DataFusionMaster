@@ -382,6 +382,7 @@ namespace SBMS
                                 ItemTrans.TotalLineValExcl = ItemTrans.TotalUnitPriceExclInclAdd * ItemTrans.Qty;
                                 ItemTrans.TransactionReference = lblDocNum.Text + " Reversal";
                                 ItemTrans.LotNumber = ItmR.LotNumber;
+                                ItemTrans.ExchRate = 1;
                                 _db.ItemTransactions.Add(ItemTrans);
                                 _db.SaveChanges();
                             }
@@ -422,6 +423,7 @@ namespace SBMS
                         {
                             ItemTrans.LotNumber = NewPSLine.LotNumber;
                         }
+                        ItemTrans.ExchRate = 1;
                         _db.ItemTransactions.Add(ItemTrans);
                         _db.SaveChanges();
                         NewPSLine.ItemTransLineID = ItemTrans.TrnID;
@@ -1277,7 +1279,8 @@ namespace SBMS
                         cell4.BorderColor = new BaseColor(211, 211, 211);  // RGB values for light gray
                         table4.AddCell(cell4);
 
-                        cell4 = new PdfPCell(new Phrase(DL.BarCode ?? "", regfont));
+                        string Barcode = _db.ItemBarCodeLinks.Where(x => x.ItemID == DL.SelectionId && x.QtyPerBarcode == 1).Select(x => x.BarCode).FirstOrDefault() ?? "";
+                        cell4 = new PdfPCell(new Phrase(Barcode ?? "", regfont));
                         cell4.HorizontalAlignment = 1;
                         cell4.VerticalAlignment = Element.ALIGN_MIDDLE;
                         cell4.BorderColor = new BaseColor(211, 211, 211);  // RGB values for light gray
@@ -1463,88 +1466,48 @@ namespace SBMS
                 var PSH = _db.PickingSlipMasters.Where(x => x.CustomerID == CurrentUser.CoID && x.PSID == psid).FirstOrDefault();
                 _db.PickingSlipMasters.Remove(PSH);
 
-                var PSL = _db.PickSlipLines.Where(x => x.PSID == psid).OrderBy(x => x.LineID).ToList();
-                // item transactions to replace stock - cannot delete lines as stock will then be out of balance
-                foreach (var jcln in PSL)
+                var PSL = _db.PickSlipLines.Where(x => x.PSID == psid).OrderBy(x => x.LineID).ToList();       
+                _db.PickSlipLines.RemoveRange(PSL);
+
+                var JCT = _db.PickSlipTransactions.Where(x => x.CompanyID == CurrentUser.CoID && x.PSID == psid).ToList();
+                _db.PickSlipTransactions.RemoveRange(JCT);
+
+                var ItmTC = _db.ItemTransactions.Where(x => x.CompanyID == CurrentUser.CoID && x.DocumentID == psid).ToList();
+                _db.ItemTransactions.RemoveRange(ItmTC);
+
+                var DH = _db.DocHeaders.Where(x => x.LinkedPSID == psid).FirstOrDefault();
+                DH.LinkedPSID = null;
+                DH.Complete = false;
+
+                long Docid = Convert.ToInt64(lblDocID.Text);
+                // delete add lines not in SB
+                var DelLines = _db.DocLines.Where(x => x.DocID == Docid && x.SBCALineID == 0).ToList();
+                _db.DocLines.RemoveRange(DelLines);
+
+               var DelQtyPicked = _db.DocLines.Where(x => x.DocID == Docid).ToList();
+               foreach(var dl in DelQtyPicked)
                 {
-                    if (jcln.PickComplete == true)
+                    dl.ReceiveQty = 0;
+                    if (dl.LotNumber != null && dl.LotNumber != "")
                     {
-                        if (jcln.Quantity != null && jcln.Quantity > 0 && jcln.ItemCode != null && jcln.ItemCode.Length > 0)
-                        {
-                            // add record to item movement table to update on hand balances   
-                            ItemTransaction ItemTrans = new ItemTransaction();
-                            ItemTrans.CompanyID = CurrentUser.CoID;
-                            ItemTrans.DocumentID = Convert.ToInt64(lblPSid.Text);
-                            ItemTrans.TransactionType = "PSC";
-                            ItemTrans.ItemID = Convert.ToInt64(jcln.SelectionId);
-                            ItemTrans.ItemCode = jcln.ItemCode ?? "";
-                            ItemTrans.ItemDescription = jcln.ItemDescription ?? "";
-                            ItemTrans.Unit = jcln.Unit;
-                            ItemTrans.FromID = 0;
-                            ItemTrans.ToID = _db.Stores.FirstOrDefault(x => x.CompanyID == CurrentUser.CoID && x.StoreCode == jcln.StoreCodeFrom).StoreID;
-                            ItemTrans.Qty = Convert.ToDecimal(jcln.Quantity);
-                            ItemTrans.DocumentType = 7;
-                            decimal qoh;
-                            if (jcln.LotNumber != null && !jcln.LotNumber.ToLower().Contains("number"))
-                            {
-                                var ItmT = _db.ItemTransactions.Where(x => x.CompanyID == CurrentUser.CoID && x.ItemID == jcln.SelectionId && x.ToID == ItemTrans.ToID && x.LotNumber == jcln.LotNumber).OrderByDescending(x => x.TrnID);
-                                qoh = (decimal)ItmT.Sum(x => x.Qty);
-                                var lastTrn = ItmT.OrderByDescending(x => x.TrnID).FirstOrDefault();
-                                ItemTrans.PriceExclusive = lastTrn.PriceExclusive;
-                                ItemTrans.TotalUnitPriceExclInclAdd = lastTrn.TotalUnitPriceExclInclAdd;
-                            }
-                            else
-                            {
-                                var ItmT = _db.ItemTransactions.Where(x => x.CompanyID == CurrentUser.CoID && x.ItemID == jcln.SelectionId && x.ToID == ItemTrans.ToID).OrderByDescending(x => x.TrnID);
-                                qoh = (decimal)ItmT.Sum(x => x.Qty);
-                                var lastTrn = ItmT.OrderByDescending(x => x.TrnID).FirstOrDefault();
-                                ItemTrans.PriceExclusive = lastTrn.PriceExclusive;
-                                ItemTrans.TotalUnitPriceExclInclAdd = lastTrn.TotalUnitPriceExclInclAdd;
-                            }
-                            ItemTrans.TransactionDate = DateTime.Now;
-                            ItemTrans.ByRoleID = CurrentUser.RoleID; // roleid     
-                            ItemTrans.AdditionalCosts = 0;
-                            ItemTrans.TotalLineValExcl = ItemTrans.TotalUnitPriceExclInclAdd * ItemTrans.Qty;
-                            ItemTrans.TransactionReference = lblDocNum.Text;
-                            ItemTrans.LotNumber = string.Empty;
-                            if (jcln.IsLotTracked == true)
-                            {
-                                ItemTrans.LotNumber = jcln.LotNumber;
-                            }       
-                            _db.ItemTransactions.Add(ItemTrans);
-                        }
-                    }
-                    _db.PickSlipLines.RemoveRange(PSL);
-
-                    var JCT = _db.PickSlipTransactions.Where(x => x.CompanyID == CurrentUser.CoID && x.PSID == psid).ToList();
-                    _db.PickSlipTransactions.RemoveRange(JCT);
-
-                    var ItmTC = _db.ItemTransactions.Where(x => x.CompanyID == CurrentUser.CoID && x.DocumentID == psid).ToList();
-                    _db.ItemTransactions.RemoveRange(ItmTC);
-
-                    var DH = _db.DocHeaders.Where(x => x.LinkedPSID == psid).FirstOrDefault();
-                    DH.LinkedPSID = null;
-                    DH.Complete = false;
-
-                    long Docid = Convert.ToInt64(lblDocID.Text);
-                    // delete add lines not in SB
-                    var DelLines = _db.DocLines.Where(x => x.DocID == Docid && x.SBCALineID == 0).ToList();
-                    _db.DocLines.RemoveRange(DelLines);
-                    _db.SaveChanges();
-
-                    GridPSLines.DataSource = null;
-                    GridPSLines.DataBind();
-                    string script = @"
-                        Swal.fire({
-                            title: 'Success!',
-                            text: 'Picking Slip successfully deleted.',
-                            icon: 'success'
-                        }).then(function() {
-                            window.location.href = '" + ResolveUrl("~/SalesOrder.aspx?docid=" + docguid.ToString()) + @"';
-                        }); ";
-                    ScriptManager.RegisterStartupScript(this, this.GetType(), "DeleteSuccess", script, true);
-                    return;
+                        dl.LotNumber = null;
+                    }   
                 }
+
+                _db.SaveChanges();
+
+                GridPSLines.DataSource = null;
+                GridPSLines.DataBind();
+                string script = @"
+                    Swal.fire({
+                        title: 'Success!',
+                        text: 'Picking Slip successfully deleted.',
+                        icon: 'success'
+                    }).then(function() {
+                        window.location.href = '" + ResolveUrl("~/SalesOrder.aspx?docid=" + docguid.ToString()) + @"';
+                    }); ";
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "DeleteSuccess", script, true);
+                return;
             }
         }
 

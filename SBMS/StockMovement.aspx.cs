@@ -222,6 +222,7 @@ namespace SBMS
                     TransLine TL = new TransLine();
                     TL.Code = Trn.ItemCode;
                     TL.TransactionType = Trn.TransactionType;
+                    TL.ExchRate = (decimal)Trn.ExchRate;
                     if (Trn.DocumentID.ToString() != "0" && Trn.DocumentID != null)
                     {
                         long Docid = (long)Trn.DocumentID;
@@ -254,6 +255,7 @@ namespace SBMS
                     TL.LotNumber = Trn.LotNumber;
 
                    TL.Qty = (decimal)Trn.Qty;
+                   
                     if (Trn.PriceExclusive != null)TL.PriceExclusive = (decimal)Trn.PriceExclusive;
                     if (Trn.AdditionalCosts != null) TL.AdditionalCosts = (decimal)Trn.AdditionalCosts;
                    if (Trn.TotalLineValExcl != null)  TL.TotalLineValExcl = (decimal)Trn.TotalLineValExcl;
@@ -292,10 +294,13 @@ namespace SBMS
             public decimal PriceExclusive { get; set; }
             public decimal AdditionalCosts { get; set; }
             public decimal TotalLineValExcl { get; set; }
+            public decimal ExchRate { get; set; }
+            public decimal LocalCurrValue { get; set; }
             public string Store { get; set; }
             public DateTime TransactionDate { get; set; }
             public string ByRole { get; set; }
             public string TransactionReference { get; set; }
+            
         }
 
         protected void ShowMessage(object sender, EventArgs e, string msg)

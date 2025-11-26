@@ -1,5 +1,5 @@
 @import url("fontawesome-all.min.css");
-/*@import url("https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,300italic,400,600");*/
+@import url("https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,300italic,400,600");
 @import url('https://fonts.googleapis.com/css?family=Roboto');
 
 /*
@@ -2000,6 +2000,7 @@ button,
 	display: inline;
 }
 
+
 .buttonJC {
 	position: relative;
 	display: inline-block;
@@ -2015,7 +2016,7 @@ button,
 	backdrop-filter: blur(10px); /* Softer blur */
 	-webkit-backdrop-filter: blur(10px);
 	font-size: 0.7em;
-	/*padding: 0.3em 0.6em 4.5em 0.6em;*/
+	padding: 0.3em 0.6em 0.5em 0.6em;
 	margin: 0.3em;
 	/*width: 6em;*/
 	/*height: 3em;*/
@@ -2034,7 +2035,7 @@ button,
 	position: relative;
 	display: inline-block;
 	border-radius: 0.25em;
-	color: white;
+	color: darkslategrey;
 	text-decoration: none;
 	background-color: transparent;
 	border: 0;
@@ -2042,8 +2043,8 @@ button,
 	/*background-image: linear-gradient(135deg, rgba(58, 99, 127, 0.95), rgba(34, 38, 41, 0.85)), url("images/overlay.png");*/
 	/*backdrop-filter: blur(10px);*/ /* Softer blur */
 	-webkit-backdrop-filter: blur(10px);
-	font-size: 0.7em;
-	/*padding: 0.3em 0.6em 4.5em 0.6em;*/
+	/*font-size: 0.7em;*/
+	padding: 0.3em 0.6em 0.5em 0.6em;
 	margin: 0.3em;
 	/*width: 6em;*/
 	/*height: 3em;*/
@@ -2711,7 +2712,6 @@ input[type="checkbox"] {
 				top: 0;
 				width: 200px;
 				z-index: 10002;
-				width: 2px;
 				background: #222729 url("images/overlay.png");
 				box-shadow: inset -0.25em 0 0.25em 0 rgba(0, 0, 0, 0.125);
 			}

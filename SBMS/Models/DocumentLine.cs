@@ -30,5 +30,9 @@ namespace SBMS.Models
 		public long AnalysisCategoryId2 { get; set; }
 		public long AnalysisCategoryId3 { get; set; }
 		public int ItemType { get; set; }
-	}
+        public long CurrencyId { get; set; }
+        public decimal ExchRate { get; set; }
+        public decimal localCurrLineVal { get; set; }
+
+    }
 }

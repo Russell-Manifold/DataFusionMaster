@@ -95,11 +95,11 @@
                          <table style="margin:auto">
                              <tr>
                                 <td colspan="2"></td>
-                                <td style="text-align:left">From Warehouse:</td>
+                                <td style="text-align:left">From Warehouse: &nbsp;</td>
                                 <td><asp:DropDownList ID="ddlFromWarehouse" runat="server" AutoPostBack="true" OnSelectedIndexChanged="ddlFromWarehouse_SelectedIndexChanged" style="width:10em; margin-top:0.25em"/></td>
-                                <td>To Warehouse:</td>
+                                <td>To Warehouse:&nbsp;</td>
                                 <td><asp:DropDownList ID="ddlToWarehouse" runat="server" style="width:10em; margin-top:0.25em" /></td>
-                                <td>Status</td>
+                                <td>Status:&nbsp;</td>
                                  <td><asp:DropDownList ID="DDStatus" runat="server" style="width:10em" Enabled="false">
                                      <asp:ListItem>New</asp:ListItem>
                                      <asp:ListItem>Started</asp:ListItem>
@@ -109,19 +109,22 @@
                             </tr>
                              <tr>
                                  <td></td>
-                                 <td>Reference</td>
-                                 <td colspan="2" style="text-align:right"><asp:TextBox ID="txtxTrfRef" runat="server" style="width:20em; margin-top:0.25em"></asp:TextBox></td>
+                                 <td></td>
                                  <td>Date</td>
-                                 <td><asp:TextBox ID="txtDate" runat="server" style="width:10em;"></asp:TextBox>
+                                 <td><asp:TextBox ID="txtDate" runat="server" style="width:10em;margin-top:0.25em"></asp:TextBox>
                                      <cci:CalendarExtender ID="CalendarExtender1" runat="server" Enabled="True" TargetControlID="txtDate" Format="dd MMM yyyy"></cci:CalendarExtender>
                                  </td>
-                                 <td>Complete_Date</td>
-                                 <td><asp:TextBox ID="txtCompleteDate" runat="server" style="width:10em;" Enabled="false"></asp:TextBox></td>
+                                 <td>Complete_Date:&nbsp;</td>
+                                 <td><asp:TextBox ID="txtCompleteDate" runat="server" style="width:10em; margin-top:0.25em" Enabled="false"></asp:TextBox></td>
                              </tr>
-                             
                              <tr>
                                 <td colspan="2"></td>
-                                <td>Notes:</td>
+                                <td>Reference:&nbsp;</td>
+                                <td colspan="5" ><asp:TextBox ID="txtxTrfRef" runat="server" style="width:100%; margin-top:0.25em"></asp:TextBox></td>
+                            </tr>
+                             <tr>
+                                <td colspan="2"></td>
+                                <td>Notes:&nbsp;</td>
                                 <td colspan="5"><asp:TextBox ID="txtNotes" runat="server" style="width:100%; margin-top:0.25em" TextMode="MultiLine"></asp:TextBox></td>
                             </tr>
                          </table>

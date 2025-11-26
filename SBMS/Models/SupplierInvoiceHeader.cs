@@ -30,8 +30,7 @@ namespace SBMS.Models
 		public string DeliveryAddress05 { get; set; }
 		public string FromDocument { get; set; }
 		public string DocumentNumber { get; set; }
-
-
-
-	}
+        public decimal Supplier_ExchangeRate { get; set; }
+        public long Supplier_CurrencyId { get; set; }
+    }
 }

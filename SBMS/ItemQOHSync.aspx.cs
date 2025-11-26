@@ -286,6 +286,7 @@ namespace SBMS
                             ItemTrans.TotalUnitPriceExclInclAdd = itm.AverageCost;
                             ItemTrans.TotalLineValExcl = ItemTrans.PriceExclusive * ItemTrans.Qty;
                             ItemTrans.TransactionReference = "Opening Balance";
+                            ItemTrans.ExchRate = 1;
                             // create Lot Number
                             if (itm.IsLotTracked == true)
                             {
@@ -439,6 +440,7 @@ namespace SBMS
                         ItemTrans.TotalUnitPriceExclInclAdd = itm.AverageCost;
                         ItemTrans.TotalLineValExcl = ItemTrans.PriceExclusive * ItemTrans.Qty;
                         ItemTrans.TransactionReference = "Transfer To Initial Bin";
+                        ItemTrans.ExchRate = 1;
                         // create Lot Number
                         if (itm.IsLotTracked == true)
                         {

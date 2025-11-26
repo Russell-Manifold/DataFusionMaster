@@ -122,32 +122,43 @@ namespace SBMS
                 uselotTrack = chkLotTrack.Checked;
             }
 
-                using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+            using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+            {
+                var Comp = _db.CompanyMasters.FirstOrDefault(x => x.SBCACoID == CurrentUser.CoID);
                 {
-                    var Comp = _db.CompanyMasters.FirstOrDefault(x => x.SBCACoID == CurrentUser.CoID);
-                    {
-                        Comp.CompanyName = lblCoName.Text;
-                        //Comp.CoGenericLoginEmail = lblGenEmail.Text.ToString();
-                        //Comp.CoGenericLoginPwd = lblGenPwd.Text.ToString();
-                        Comp.Contact = txtContPerson.Text.ToString();
-                        Comp.Contactemail = txtContemail.Text.ToString();
-                        Comp.SendMessages = chkNotifs.Checked;
-                        Comp.UATMode = chkUAT.Checked;
-                        Comp.UseLotTracking = uselotTrack;
-                        Comp.ItemQtyDecPlaces = Convert.ToInt32(DDecPlaces.Text.ToString());
-                        Comp.UseModule2 = chkMod2.Checked;
-                        Comp.UseModule3 = chkMod3.Checked;
-                        Comp.UseAutoManf = chkAutoManf.Checked;
-                        Comp.UsePickSlipTracking = chkPickSlip.Checked;
-                        Comp.UseBarcodes = chkBarCodes.Checked;
-                        Comp.AutoUpdateSageSOs = chkPSAuto.Checked;
-                        Comp.AutoGenTaxInvoice = chkTaxInvAuto.Checked;
-                        Comp.UsePacks = chkUsePacks.Checked;
-                        _db.SaveChanges();
-                    string message = "Successfully Saved";
-                    AlertHelper.ShowSweetAlert(this, message, "success");
-                    }
+                    Comp.CompanyName = lblCoName.Text;
+                    //Comp.CoGenericLoginEmail = lblGenEmail.Text.ToString();
+                    //Comp.CoGenericLoginPwd = lblGenPwd.Text.ToString();
+                    Comp.Contact = txtContPerson.Text.ToString();
+                    Comp.Contactemail = txtContemail.Text.ToString();
+                    Comp.SendMessages = chkNotifs.Checked;
+                    CurrentUser.SendMessages = Comp.SendMessages;
+                    Comp.UATMode = chkUAT.Checked;
+                    Comp.UseLotTracking = uselotTrack;
+                    CurrentUser.CompanyUseLotNumbers = uselotTrack;
+                    Comp.ItemQtyDecPlaces = Convert.ToInt32(DDecPlaces.Text.ToString());
+                    CurrentUser.CompanyDecPlaces = Convert.ToInt32(DDecPlaces.Text.ToString());
+                    Comp.UseModule2 = chkMod2.Checked;
+                    CurrentUser.UseModule2 = Comp.UseModule2;
+                    Comp.UseModule3 = chkMod3.Checked;
+                    CurrentUser.UseModule3 = Comp.UseModule3;
+                    Comp.UseAutoManf = chkAutoManf.Checked;
+                    CurrentUser.UseAutoManf = Comp.UseAutoManf;
+                    Comp.UsePickSlipTracking = chkPickSlip.Checked;
+                    CurrentUser.UsePickSlipTracking = Comp.UsePickSlipTracking;
+                    Comp.UseBarcodes = chkBarCodes.Checked;
+                    CurrentUser.UseBarcodes = Comp.UseBarcodes;
+                    Comp.AutoUpdateSageSOs = chkPSAuto.Checked;
+                    CurrentUser.AutoUpdateSageSOs = Comp.AutoUpdateSageSOs;
+                    Comp.AutoGenTaxInvoice = chkTaxInvAuto.Checked;
+                    CurrentUser.AutoGenTaxInvoice = Comp.AutoGenTaxInvoice;
+                    Comp.UsePacks = chkUsePacks.Checked;
+                    CurrentUser.UsePacks = Comp.UsePacks;
+                    _db.SaveChanges();
+                string message = "Successfully Saved";
+                AlertHelper.ShowSweetAlert(this, message, "success");
                 }
+            }
         }
         
         protected void btnUpload_Click(object sender, EventArgs e)
@@ -229,7 +240,5 @@ namespace SBMS
                 chkAutoManf.Enabled = true;
             }
         }
-
-        
     }
 }

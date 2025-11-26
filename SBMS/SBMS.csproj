@@ -248,17 +248,32 @@
     <Content Include="DataFusionOnboardFinish.aspx" />
     <Content Include="DataFusionOnboard.aspx" />
     <Content Include="dndSupplierInvoices.aspx" />
+    <Content Include="images\BinTrfM.png" />
     <Content Include="images\datafusionicon.ico" />
     <Content Include="images\datafusionicon.png" />
     <Content Include="images\DnD.png" />
     <Content Include="dndPurchaseOrders.aspx" />
+    <Content Include="images\DnD2.png" />
+    <Content Include="images\fgmrp2.png" />
+    <Content Include="images\ItemMove2.png" />
+    <Content Include="images\JobTrack2.png" />
     <Content Include="images\logo2.png" />
+    <Content Include="images\LotTrack.png" />
+    <Content Include="images\PickSlipsM.png" />
+    <Content Include="images\ProdPlanning2.png" />
+    <Content Include="images\ProdRecording.png" />
+    <Content Include="images\ProdRecording2.png" />
+    <Content Include="images\ProdTracking2.png" />
+    <Content Include="images\receivingM.png" />
     <Content Include="images\rmMrp.png" />
     <Content Include="images\rmMrp2.png" />
     <Content Include="images\sbcacreds1.png" />
     <Content Include="images\sbcacreds2.png" />
     <Content Include="images\settings.PNG" />
     <Content Include="images\StockCounts.png" />
+    <Content Include="images\StockCounts2.png" />
+    <Content Include="images\StockCountsM.png" />
+    <Content Include="images\WHTrf2.png" />
     <Content Include="images\WOrdFilling.png" />
     <Content Include="images\WOrdFilling2.png" />
     <Content Include="images\WOrdFillingSmall.png" />
@@ -585,6 +600,19 @@
     <Content Include="PurchaseOrdersIncomplete.aspx" />
     <Content Include="DashboardSales.aspx" />
     <Content Include="SalesOrdersIncomplete.aspx" />
+    <Content Include="SBMSMobile\css\font-awesome.min.css" />
+    <Content Include="SBMSMobile\css\fontawesome-all.css" />
+    <Content Include="SBMSMobile\css\ie8.css" />
+    <Content Include="SBMSMobile\css\ie9.css" />
+    <Content Include="SBMSMobile\css\images\overlay.png" />
+    <Content Include="SBMSMobile\css\jquery-ui.css" />
+    <Content Include="SBMSMobile\css\main.css" />
+    <Content Include="SBMSMobile\css\noscript.css" />
+    <Content Include="SBMSMobile\DashboardM.aspx" />
+    <Content Include="SBMSMobile\icons\icon-192.png" />
+    <Content Include="SBMSMobile\icons\icon-512.png" />
+    <Content Include="SBMSMobile\install.html" />
+    <Content Include="SBMSMobile\OSPurchaseOrdersM.aspx" />
     <Content Include="StockControl.aspx" />
     <Content Include="prologue\assets\sass\libs\_breakpoints.scss" />
     <Content Include="prologue\assets\sass\libs\_functions.scss" />
@@ -716,6 +744,7 @@
     <Content Include="niceadmin\assets\vendor\tinymce\license.md" />
     <Content Include="niceadmin\assets\vendor\tinymce\package.json" />
     <Content Include="niceadmin\assets\vendor\tinymce\README.md" />
+    <Content Include="SBMSMobile\manifest.json" />
     <None Include="scripts\jquery-3.7.1.intellisense.js" />
     <Content Include="BundleHeaders.aspx" />
     <Content Include="BundleDetailed.aspx" />
@@ -1320,6 +1349,20 @@
     </Compile>
     <Compile Include="SalesOrdersIncomplete.aspx.designer.cs">
       <DependentUpon>SalesOrdersIncomplete.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="SBMSMobile\DashboardM.aspx.cs">
+      <DependentUpon>DashboardM.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="SBMSMobile\DashboardM.aspx.designer.cs">
+      <DependentUpon>DashboardM.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="SBMSMobile\OSPurchaseOrdersM.aspx.cs">
+      <DependentUpon>OSPurchaseOrdersM.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="SBMSMobile\OSPurchaseOrdersM.aspx.designer.cs">
+      <DependentUpon>OSPurchaseOrdersM.aspx</DependentUpon>
     </Compile>
     <Compile Include="StockControl.aspx.cs">
       <DependentUpon>StockControl.aspx</DependentUpon>

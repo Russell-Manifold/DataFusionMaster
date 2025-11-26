@@ -55,5 +55,8 @@ namespace SBMS.Models
         public Nullable<bool> isKitLine { get; set; }
         public Nullable<bool> isBundleLine { get; set; }
         public Nullable<long> CompanyID { get; set; }
+        public Nullable<long> CurrencyID { get; set; }
+        public Nullable<decimal> ExchRate { get; set; }
+        public Nullable<decimal> localCurrLineVal { get; set; }
     }
 }

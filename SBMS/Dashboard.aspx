@@ -42,15 +42,13 @@
                     </div>
                         <div class="row 150%">
                             <div class="1u 12u$(medium)">&nbsp;</div>
-                            <div class="10u 12u$(medium)" style="text-align: center">
-                                
+                            <div class="10u 12u$(medium)" style="text-align: center">    
                                 <div id='myHiddenDiv' runat="server" style='display: none'>
                                          <div style="padding: .5em;">
                                          <img src="images/tenorwait.gif" id='myAnimatedImage' align='absmiddle' class="funkygif" style="border-radius:.5em"  />
                                         </div>
                                  </div>
-                                <asp:Panel ID="pnlButtons" runat="server">
-                                    
+                                <asp:Panel ID="pnlButtons" runat="server">  
                                     <h5>Module 1 - Multi Stores, Receiving, Item Transfers & Picking Slip Management,
                                         <br />
                                         Stock Counts, Lot/Batch Tracking & Item Movement Reporting</h5>
@@ -77,6 +75,7 @@
                         </div>
                         </div>
             <section id="footer" class="wrapper">
+                 <a href="SBMSMobile/DashboardM.aspx" class="button icon fa-mobile" target="_blank">Mobile</a>
                 <a href="https://mydatafusion.online/learningCenter.aspx" class="button special icon fa-lightbulb" target="_blank"> Learn more from the Learning Hub >></a>
             </section>
                 </div>

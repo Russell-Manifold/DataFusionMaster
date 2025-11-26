@@ -27,9 +27,9 @@ namespace SBMS.Models
         public Nullable<bool> Complete { get; set; }
         public string Message { get; set; }
         public string SalesRepName { get; set; }
-        public Nullable<long> CustSuppID { get; set; }
-        public bool Active { get; set; }
         public Nullable<long> SalesRepresentativeId { get; set; }
+        public bool Active { get; set; }
+        public Nullable<long> CustSuppID { get; set; }
         public Nullable<System.DateTime> DocDate { get; set; }
         public string DelAddress1 { get; set; }
         public string DelAddress2 { get; set; }
@@ -41,5 +41,9 @@ namespace SBMS.Models
         public string PSStatus { get; set; }
         public string LinkedPSNum { get; set; }
         public Nullable<int> PSIssuedTo { get; set; }
+        public Nullable<long> Supplier_CurrencyId { get; set; }
+        public Nullable<decimal> Supplier_ExchangeRate { get; set; }
+        public Nullable<long> Customer_CurrencyId { get; set; }
+        public Nullable<decimal> Customer_ExchangeRate { get; set; }
     }
 }

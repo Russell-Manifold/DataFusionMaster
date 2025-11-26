@@ -150,15 +150,6 @@ namespace SBMS
         protected global::System.Web.UI.WebControls.DropDownList DDStatus;
 
         /// <summary>
-        /// txtxTrfRef control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtxTrfRef;
-
-        /// <summary>
         /// txtDate control.
         /// </summary>
         /// <remarks>
@@ -184,6 +175,15 @@ namespace SBMS
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.TextBox txtCompleteDate;
+
+        /// <summary>
+        /// txtxTrfRef control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtxTrfRef;
 
         /// <summary>
         /// txtNotes control.

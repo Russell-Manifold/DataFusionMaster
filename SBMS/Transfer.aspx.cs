@@ -343,6 +343,8 @@ namespace SBMS
 
                  ItemTrans.TotalLineValExcl = ItemTrans.TotalUnitPriceExclInclAdd * trfQty;
                 ItemTrans.TransactionReference = trfitem.ItemCode + " Trf " + trfQty + " From " + lblFromStore.Text + " To " + lblToStore.Text;
+                ItemTrans.ExchRate = 1;
+
                 _db.ItemTransactions.Add(ItemTrans);
 
                 // check for itemstore link
@@ -385,6 +387,7 @@ namespace SBMS
                 ItemTrans.TotalUnitPriceExclInclAdd = TrfUnitCost;
                 ItemTrans.TotalLineValExcl = ItemTrans.TotalUnitPriceExclInclAdd * (trfQty * -1);
                 ItemTrans.TransactionReference = trfitem.ItemCode + " Trf " + trfQty + " From " + lblFromStore.Text + " To " + lblToStore.Text;
+                ItemTrans.ExchRate = 1;
                 _db.ItemTransactions.Add(ItemTrans);
                 _db.SaveChanges();
 
