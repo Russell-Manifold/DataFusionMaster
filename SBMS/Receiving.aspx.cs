@@ -328,14 +328,18 @@ namespace SBMS
                 DDStore.DataSource = stores;
                 DDStore.DataTextField = "StoreDescript";
                 DDStore.DataValueField = "StoreCode";
-                DDStore.DataBind();
-                DDStore.Items.Insert(0, "-Select-");
-
+                DDStore.DataBind(); 
+                
                 DDStoreEdit.DataSource = stores;
                 DDStoreEdit.DataTextField = "StoreDescript";
                 DDStoreEdit.DataValueField = "StoreCode";
                 DDStoreEdit.DataBind();
-                DDStoreEdit.Items.Insert(0, "-Select-");
+                
+                if (stores.Count > 1)
+                {
+                    DDStore.Items.Insert(0, "-Select-");
+                    DDStoreEdit.Items.Insert(0, "-Select-");
+                }
             }
         }
 
@@ -455,16 +459,32 @@ namespace SBMS
 
             if (DDStore.Enabled == true)
             {
-                if (DDStoreEdit.SelectedIndex == 0)
+                if (DDStore.Items.Count > 1)
+                {
+                    if (DDStoreEdit.SelectedIndex == 0)
+                    {
+                        string message = "Invalid Store Selected, Unable to continue.";
+                        AlertHelper.ShowSweetAlert(this, message, "error");
+                        return;
+                    }
+                }
+                else
+                if (DDStore.Items.Count == 1)
+                {
+                    if (DDStoreEdit.SelectedItem.Text == "-Select-")
+                    {
+                        string message = "Invalid Store Selected, Unable to continue.";
+                        AlertHelper.ShowSweetAlert(this, message, "error");
+                        return;
+                    }
+                }
+                else
                 {
                     string message = "Invalid Store Selected, Unable to continue.";
                     AlertHelper.ShowSweetAlert(this, message, "error");
                     return;
                 }
             }
-
-           
-
           
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {
@@ -732,7 +752,24 @@ namespace SBMS
                                 Doc.Lines
                             };
                         }
-                        jsonBody = JsonConvert.SerializeObject(jsonObject, Formatting.Indented);
+
+                        // First serialize your anonymous object
+                        var rawJson = JsonConvert.SerializeObject(jsonObject);
+
+                        // Parse as JObject so we can modify it dynamically
+                        var jObjT = JObject.Parse(rawJson);
+
+                        // Remove unwanted properties from each line
+                        foreach (var line in jObjT["Lines"])
+                        {
+                            //line["ItemType"]?.Parent.Remove();
+                            line["CurrencyId"]?.Parent.Remove();
+                            line["ExchRate"]?.Parent.Remove();
+                            line["localCurrLineVal"]?.Parent.Remove();
+                        }
+                        jsonBody = jObjT.ToString(Formatting.Indented);
+                        //jsonBody = JsonConvert.SerializeObject(jsonObject, Formatting.Indented);
+
                         SupInv = await SendSupplierInvoice(jsonBody);
 
                         if (long.TryParse(SupInv.Split('|')[0], out long parsedValue))
@@ -1301,8 +1338,6 @@ namespace SBMS
             }
         }
 
-        
-
         protected void lbtnItmC_Click(object sender, EventArgs e)
         {
             chkAddLotNum.Checked = false;
@@ -1377,6 +1412,8 @@ namespace SBMS
             else
             {
                 ModalPopupExtender1.Show();
+                txtQtyReceive.Text = null;
+                txtQtyReceive.Focus();
             }        
         }
 

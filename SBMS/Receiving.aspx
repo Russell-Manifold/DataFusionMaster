@@ -15,15 +15,13 @@
         <div class="content">
             <asp:UpdatePanel ID="UpdatePanel2" runat="server">
                 <ContentTemplate>
-                <asp:UpdateProgress ID="UpdateProgress1" runat="server" AssociatedUpdatePanelID="UpdatePanel1">
+                <asp:UpdateProgress ID="UpdateProgress1" runat="server" AssociatedUpdatePanelID="UpdatePanel2">
                     <ProgressTemplate>
                         <div style="position: fixed; text-align: center; height: 100%; width: 100%; top: 0; right: 0; left: 0; z-index: 9999999; background-color: #000000; opacity: 0.7;">
                             <div style="position: relative; top: 40%; background: white; padding: 20px; border-radius: 10px; display: inline-block;">
-                                <asp:Image ID="imgUpdateProgress" runat="server" ImageUrl="~/images/tenorwait.gif" AlternateText="Processing ..." />
+                                <asp:Image ID="imgUpdateProgress2" runat="server" ImageUrl="~/images/tenorwait.gif" AlternateText="Processing ..." />
                                 <br />
-                                <strong>Processing Transfers - Please Wait</strong>
-                                <br />
-                                <span style="font-size: 12px; color: #666;">Do not close or refresh the page</span>
+                                <strong>Processing: Please Wait</strong>
                             </div>
                         </div>
                     </ProgressTemplate>
@@ -34,7 +32,7 @@
                     <div class="8u 12u$(medium)">
                         <asp:LinkButton ID="lbtnHome" runat="server" class="buttonC icon fa-home" onclick="lbtnHome_Click">&nbsp;&nbsp;</asp:LinkButton>
                         <asp:LinkButton ID="lbtnPOs" runat="server" class="buttonC icon fa-arrow-left" PostBackUrl="~/OSPurchaseOrders.aspx" >&nbsp;OS Purchase Orders</asp:LinkButton>                        
-                        <h2 style="padding-top:0; line-height:1em">Receiving</h2>    
+                        <h3 style="padding-top:0; line-height:1em; width:100%">Receiving </h3>    
                     </div>
                     <div class="2u 12u$(medium)"><asp:Image ID="imgCoImg" runat="server"  style="float:right" class="logoImg" /></div>
                     </div>
@@ -44,7 +42,7 @@
                     <div class="10u 12u$(medium)">
                         <table style="width:100%">
                             <tr>
-                                <td colspan="4"><h6>Purchase Order Details&nbsp;<asp:LinkButton ID="lbtnAtt" runat="server" class="buttonTransparent icon fa-paperclip" ToolTip="Attachments" OnClick="lbtnAtt_Click"></asp:LinkButton></h6></td>
+                                <td colspan="4"><h6><asp:LinkButton ID="lbtnAtt" runat="server" class="buttonTransparent icon fa-paperclip" ToolTip="Attachments" OnClick="lbtnAtt_Click"></asp:LinkButton> Purchase Order Details</h6></td>
                             </tr>
                             <tr>
                                 <td style="width:10em">Supplier </td>
@@ -275,10 +273,22 @@
                             </div>
                         </div>
                     </asp:Panel>
-
+                    <asp:UpdateProgress ID="UpdateProgress2" runat="server" AssociatedUpdatePanelID="UpdatePanel1">
+                        <ProgressTemplate>
+                            <div style="position: fixed; text-align: center; height: 100%; width: 100%; top: 0; right: 0; left: 0; z-index: 9999999; background-color: #000000; opacity: 0.7;">
+                                <div style="position: relative; top: 40%; background: white; padding: 20px; border-radius: 10px; display: inline-block;">
+                                    <asp:Image ID="imgUpdateProgress" runat="server" ImageUrl="~/images/tenorwait.gif" AlternateText="Processing ..." />
+                                    <br />
+                                    <strong>Processing Transfers - Please Wait</strong>
+                                    <br />
+                                    <span style="font-size: 12px; color: #666;">Do not close or refresh the page</span>
+                                </div>
+                            </div>
+                        </ProgressTemplate>
+                    </asp:UpdateProgress>
             <asp:LinkButton ID="LinkButton2" runat="server" style="display:none">LinkButton</asp:LinkButton>
            <cci:ModalPopupExtender ID="ModalPopupExtender1" runat="server" BackgroundCssClass="ModalPopupBG" CancelControlID="lbtnCancelP" Drag="true" OkControlID="lbtnReceiveA" PopupControlID="PnlReceive" PopupDragHandleControlID="PopupHeader" TargetControlID="LinkButton2"></cci:ModalPopupExtender>                           
-            <asp:Panel ID="PnlReceive" runat="server" Style="display: none">        
+            <asp:Panel ID="PnlReceive" runat="server" Style="display: none" DefaultButton="lbtnReceive">        
                                     <div class="HellowWorldPopup" style="text-align:center; font-size:.8em">
                                          <asp:LinkButton ID="lbtnCancelP" runat="server" CssClass="fa fa-times" style="float:right" ToolTip="Cancel" OnClick="lbtnCancelP_Click" > </asp:LinkButton>
                                         <div id="Div5" class="PopupHeader">
@@ -287,50 +297,54 @@
                                         <div class="PopupBody">
                                             <asp:UpdatePanel ID="UpdatePanel1" runat="server">
                                               <ContentTemplate>       
-                                            <table style="width:100%">
+                                            <table style="margin:auto; text-align:left">
                                                 <tr>
-                                                    <td colspan="3"><asp:Label ID="lblItemdescr" runat="server" Text=""></asp:Label><asp:CheckBox ID="chkEdit" runat="server" Text="Editing" Enabled="false" /><asp:CheckBox ID="chkAddLotNum" runat="server" Text="Add Lot Number" Enabled="false" />
+                                                    <td style="vertical-align:top"><asp:Label ID="lblItemdescr" runat="server" Text=""></asp:Label>
                                                         <asp:Label ID="lblLineID" runat="server" Text="" style="display:none"></asp:Label>
                                                     </td>
+                                                    <td style="text-align:left"><asp:CheckBox ID="chkEdit" runat="server" Text="Editing" Enabled="false" Visible="false" /><br /><asp:CheckBox ID="chkAddLotNum" runat="server" Text="Add Lot Number" Enabled="false" Visible="false" /></td>
                                                 </tr>
-                                                <tr><td colspan="3"><hr /></td>
+                                                 <tr><td colspan="2"><hr /></td></tr>
+                                                <tr>
+                                                    <td colspan="2"><span style="font-size:0.8em; text-align:center">The layout of this pop-up has been re-modelled, </br> in preparation for the barcode scanning receiving,</br> which is due to be release before the end of 2025.</span></td>
                                                 </tr>
+                                                <tr><td colspan="2"><hr /></td></tr>
                                                 <tr>
                                                      <td>Ordered Qty</td>
-                                                    <td>Received Qty</td>
-                                                    <td>Variation</td>
+                                                    <td><asp:textbox id="txtordqty" runat="server" readonly="true" Enabled="false" style="width:6em; text-align:center" ClientIDMode="Static" onblur="startCalc()" Text="" TabIndex="99"></asp:textbox></td>      
                                                  </tr> 
                                                 <tr>
-                                                    <td><asp:textbox id="txtordqty" runat="server" readonly="true" style="width:6em; text-align:center" ClientIDMode="Static" onblur="startCalc()" Text="" TabIndex="99"></asp:textbox></td>
-                                                    <td><asp:textbox id="txtQtyReceive" runat="server" style="width:6em; text-align:center" Text="" ClientIDMode="Static" onblur="startCalc()" TabIndex="1"></asp:textbox>
-                                                        <cci:FilteredTextBoxExtender ID="ftbe" runat="server" TargetControlID="txtQtyReceive" FilterType="Custom, Numbers" ValidChars="." />
-                                                    </td>
+                                                    <td>Received Qty</td>
+                                                    <td><asp:textbox id="txtQtyReceive" runat="server" style="width:6em; text-align:center" Text="" ClientIDMode="Static" onblur="startCalc()" TabIndex="0"></asp:textbox>
+                                                            <cci:FilteredTextBoxExtender ID="ftbe" runat="server" TargetControlID="txtQtyReceive" FilterType="Custom, Numbers" ValidChars="." /></td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Variation</td>
                                                     <td> <asp:textbox id="txtBalQty" runat="server" style="width:6em; text-align:center; color:red" Text="" ClientIDMode="Static" onblur="startCalc()" ReadOnly="true"></asp:textbox></td>
                                                 </tr>
                                                  <tr>
-                                                    <td colspan="3"><h4>Into Store</h4></td>
-                                                </tr>
-                                                <tr>
-                                                    <td colspan="3" style="text-align:center; margin:auto">
-                                                        <asp:DropDownList ID="DDStoreEdit" runat="server" AutoPostBack="true" OnSelectedIndexChanged="DDStoreEdit_SelectedIndexChanged" style="width:10em; text-align:center"></asp:DropDownList>
-                                                        </td>
+                                                    <td>Into Store</td>
+                                                    <td><asp:DropDownList ID="DDStoreEdit" runat="server" AutoPostBack="true" OnSelectedIndexChanged="DDStoreEdit_SelectedIndexChanged" style="width:10em; text-align:center" TabIndex="1"></asp:DropDownList></td>
                                                 </tr>
                                                </table> 
-                                                  <asp:Panel ID="PnlLotTracking" runat="server">
-                                                <table style="width:100%">
+                                                  <asp:Panel ID="PnlLotTracking" runat="server" style="text-align:center">
+                                                <table style="margin:auto;"">
                                                       <tr>
-                                                    <td colspan="3"><h4><asp:Label ID="lblLotNumH" runat="server" Text="Lot Number"></asp:Label> </h4></td>
+                                                    <td><asp:Label ID="lblLotNumH" runat="server" Text="Lot Number"></asp:Label></td>
                                                 </tr>
                                                 <tr>
-                                                    <td colspan="3"><asp:TextBox ID="lblLotNum" runat="server" style="width:80%; margin-left:10%; margin-right:10%; text-align:center" OnTextChanged="lblLotNum_TextChanged" MaxLength="50" onkeyup="countCharacters(this)" onblur="convertToUpper(this)"></asp:TextBox><br />
+                                                    <td><asp:TextBox ID="lblLotNum" runat="server" style="width:80%; margin-left:10%; margin-right:10%; text-align:center" OnTextChanged="lblLotNum_TextChanged" MaxLength="50" onkeyup="countCharacters(this)" onblur="convertToUpper(this)"></asp:TextBox><br />
                                                         <cci:FilteredTextBoxExtender ID="FilteredTextBoxExtender3" runat="server" TargetControlID="lblLotNum" FilterType="Numbers, UppercaseLetters, LowercaseLetters, Custom" ValidChars=".-/\:*" />
-                                                        <asp:HiddenField ID="hfOriginalLotNumber" runat="server" />
+                                                        <asp:HiddenField ID="hfOriginalLotNumber" runat="server" /></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>
                                                         <span style="font-size:.8em">(Max 50 Characters:  <asp:Label ID="lblCharacterCount" runat="server" Text="Remaining: 50"></asp:Label> )</span><br />
                                                         <span style="font-size:.8em">(Limited to:- Numbers, UppercaseLetters and ONLY these special characters  - / \ : * )</span>
                                                     </td>
                                                 </tr>
                                                 <tr>
-                                                    <td colspan="3"><hr /></td>
+                                                    <td><hr /></td>
                                                 </tr>
                                                </table>
                                                         <asp:Panel ID="PnlLotAdditions" runat="server">
@@ -367,7 +381,7 @@
                                                     <td colspan="3" style="text-align:center;"><span id="errpop" runat="server" style="color:red" ></span></td>
                                                 </tr>
                                                    <tr>
-                                                     <td colspan="3" style="text-align:center;"><asp:CheckBox ID="chkAccept" runat="server" Text="I accept the variation, continue" style="display:none" /></td>
+                                                     <td colspan="3" style="text-align:center;"><asp:CheckBox ID="chkAccept" runat="server" Text="I accept the variation, continue"  /></td>
                                                  </tr>
                                             </table>
                                                   </ContentTemplate>
@@ -376,7 +390,7 @@
                                         <div class="Controls">
                                             <input id="lbtnCancelA" type="button" class="button2" value="CANCEL" runat="server" style="display:none" />
                                             <input id="lbtnReceiveA" type="button" class="buttonYellow" value="OK" runat="server" style="display:none"/>
-                                            <asp:LinkButton ID="lbtnReceive" runat="server" CssClass="icon fa-upload buttonSage" OnClick="lbtnReceive_Click" > Save Receiving Line</asp:LinkButton>                                            
+                                            <asp:LinkButton ID="lbtnReceive" runat="server" CssClass="icon fa-upload buttonSage" OnClick="lbtnReceive_Click" > Save Line</asp:LinkButton>                                            
                                         </div>
                                     </div>      
                          </asp:Panel>
@@ -451,12 +465,12 @@
 
                 if (RecQty >= minqty && RecQty <= maxqty) {
                     document.getElementById("errpop").innerHTML = "";
-                    document.getElementById("lbtnReceive").style.display = "inline-block";
+                    //document.getElementById("lbtnReceive").style.display = "inline-block";
                     document.getElementById("chkAccept").style.display = "none";
                 } else {
                     document.getElementById("errpop").innerHTML = "Warning - Quantity variation of 5% or more being received";
                     document.getElementById("chkAccept").style.display = "inline-block";
-                    document.getElementById("lbtnReceive").style.display = "none"; // Hide receive button in this case
+                    //document.getElementById("lbtnReceive").style.display = "none"; // Hide receive button in this case
                 }
             }
         </script>

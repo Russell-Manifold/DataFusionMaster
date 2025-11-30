@@ -100,20 +100,19 @@
                                     <table style="margin:auto">
                                        <tr>
                                            <td>Barcode</td>
-                                           <td>Qty of items represented</td>
+                                           <td><asp:Label ID="lblBCodeQty" runat="server" Text="Qty of items represented"></asp:Label></td>
                                        </tr>
                                         <tr>
-                                            <td><asp:TextBox ID="txtBarcode1" runat="server" style="width:15em" MaxLength="15" placeholder="Barcode 1"></asp:TextBox></td>
+                                            <td><asp:TextBox ID="txtBarcode1" runat="server" style="width:25em" placeholder="Barcode 1"></asp:TextBox></td>
                                             <td><asp:TextBox ID="txtBQty1" runat="server" style="width:5em; text-align:center" TextMode="Number" placeholder="Qty 1"></asp:TextBox></td>
                                         </tr>
-                                    
                                         <tr>
-                                            <td><asp:TextBox ID="txtBarcode2" runat="server" style="width:15em" MaxLength="15" placeholder="Barcode 2"></asp:TextBox></td>
+                                            <td><asp:TextBox ID="txtBarcode2" runat="server" style="width:25em" placeholder="Barcode 2"></asp:TextBox></td>
                                             <td><asp:TextBox ID="txtBQty2" runat="server" style="width:5em; text-align:center" TextMode="Number" placeholder="Qty 2"></asp:TextBox></td>
                                         </tr>
                                     
                                         <tr>
-                                            <td><asp:TextBox ID="txtBarcode3" runat="server" style="width:15em" MaxLength="15" placeholder="Barcode 3"></asp:TextBox></td>
+                                            <td><asp:TextBox ID="txtBarcode3" runat="server" style="width:25em" placeholder="Barcode 3"></asp:TextBox></td>
                                             <td><asp:TextBox ID="txtBQty3" runat="server" style="width:5em; text-align:center" TextMode="Number" placeholder="Qty 3"></asp:TextBox></td>
                                         </tr>
                                     </table> 

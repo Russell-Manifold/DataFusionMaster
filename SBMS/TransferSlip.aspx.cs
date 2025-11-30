@@ -68,7 +68,7 @@ namespace SBMS
             if (!IsPostBack)
             {
                 LoadWarehouses();
-                LoadActiveItems();
+                //LoadActiveItems();
                 LoadTransfer();
             }
         }
@@ -254,6 +254,7 @@ namespace SBMS
 
                 if (ddlGridItem != null)
                 {
+                    LoadActiveItems();
                     // Use distinct items by ItemID and Item
                     ddlGridItem.DataSource = _itemDropDownList
                         .Where(x => x.StoreID == Storeid)

@@ -368,6 +368,38 @@ namespace SBMS
                     gridRMs.DataSource = MLines;
                     gridRMs.DataBind();
 
+                    ////`````````````````````````````````````````````````````````````````````````````````
+                    foreach (GridViewRow row in gridRMs.Rows)
+                    {
+                        if (row.RowType != DataControlRowType.DataRow)
+                            continue;
+
+                        long id = Convert.ToInt64(row.Cells[0].Text);
+                        var lineR = _db.WorksOrderRMLines.First(x => x.LineID == id);
+
+                        // FIND CONTROLS
+                        DropDownList ddlStore = row.FindControl("DDStore") as DropDownList;
+                        DropDownList ddlLotNum = row.FindControl("DDlotNum") as DropDownList;
+                        TextBox txtUseQty = row.FindControl("txtUseQty") as TextBox;
+                        Label txtUnitCost = row.FindControl("txtUnitCost") as Label;
+
+                        // APPLY AUTOFILLED VALUES
+                        if (ddlStore != null)
+                            lineR.StoreCodeFrom = ddlStore.SelectedItem?.Text;
+
+                        if (ddlLotNum != null)
+                            lineR.LotNumber = ddlLotNum.SelectedValue;
+
+                        if (txtUseQty != null)
+                            lineR.UseQty = Convert.ToDecimal(txtUseQty.Text);
+
+                        if (txtUnitCost != null)
+                            lineR.UnitCost = string.IsNullOrWhiteSpace(txtUnitCost.Text)
+                                ? 0m
+                                : Convert.ToDecimal(txtUnitCost.Text);
+                    }
+                    _db.SaveChanges();
+
                     // Add the GridView to the ContentContainer
                     pane.ContentContainer.Controls.Add(gridRMs);
                     AccordionWOLines.Panes.Add(pane);
@@ -440,7 +472,7 @@ namespace SBMS
                         if (useqty != 0)
                         {
                             DropDownList DDStore = row.FindControl("DDStore") as DropDownList;
-                            if (DDStore.SelectedIndex == 0)
+                            if (DDStore.SelectedItem.Text.ToString() == "-?-")
                             {
                                 chk.Checked = false;
                                 AlertHelper.ShowSweetAlert(this, "Please select a valid store for each item", "error");
@@ -1057,13 +1089,20 @@ namespace SBMS
                 if (ddlStore != null)
                 {
                     LoadItemStores();
-                    var storeList = _itemST.Where(x => x.ItemID == itemID && x.StoreCode != "CoR" && x.StoreCode != "CoD").ToList();
+                    var storeList = _itemST.Where(x => x.ItemID == itemID && x.StoreCode != "CoR" && x.StoreCode != "CoD" && x.StoreCode != "SCR").ToList();
                     ddlStore.DataSource = storeList;
                     ddlStore.DataTextField = "StoreCode";
                     ddlStore.DataValueField = "StoreID";
                     ddlStore.DataBind();
-                    ddlStore.Items.Insert(0, "-?-");
-
+                    if (storeList.Count > 1)
+                    {
+                        ddlStore.Items.Insert(0, "-?-");
+                    }
+                    if (storeList.Count == 1)
+                    {
+                        Label txtUnitCostP = e.Row.FindControl("txtUnitCost") as Label;
+                        txtUnitCostP.Text = Convert.ToDecimal(storeList[0].TotalUnitPriceExclInclAdd).ToString("N2");
+                    }
                     // Set selected value only if it exists in the list
                     string storeValue = item.StoreCodeFrom;
                     ListItem foundByText = !string.IsNullOrEmpty(storeValue) ? ddlStore.Items.FindByText(storeValue) : null;
@@ -1092,10 +1131,10 @@ namespace SBMS
                         ddlLotNum.Attributes.Add("style", "display:inline-block");
                         LoadActiveLotNums();
                         var lotNums = _ActiveLotNums.Where(x => x.StoreCode == ddlStore.SelectedItem.Text && x.ItemId == itemID).Select(x => new
-                            {
-                                LotNum = x.LotNumber,
-                                LotDisplay = $"{x.LotNumber} ({x.QtyHandToStore:N2})"
-                            })
+                        {
+                            LotNum = x.LotNumber,
+                            LotDisplay = $"{x.LotNumber} ({x.QtyHandToStore:N2})"
+                        })
                             .ToList();
 
                         ddlLotNum.DataSource = lotNums;
@@ -1122,12 +1161,11 @@ namespace SBMS
                 TextBox txtUseQty = e.Row.FindControl("txtUseQty") as TextBox;
                 txtUseQty.Text = item.UseQty.ToString();
 
-                Label txtUnitCost = e.Row.FindControl("txtUnitCost") as Label;
-                txtUnitCost.Text = string.IsNullOrEmpty(item.UnitCost?.ToString()) ? "0.00" : Convert.ToDecimal(item.UnitCost).ToString("N2");
-
-                //Label txtLineCost = e.Row.FindControl("txtLineCost") as Label;
-                //txtLineCost.Text = string.IsNullOrEmpty(item.LineCost?.ToString()) ? "0.00" : Convert.ToDecimal(item.UnitCost).ToString("N2");
-
+                if (item.UnitCost != null) 
+                {
+                    Label txtUnitCost = e.Row.FindControl("txtUnitCost") as Label;
+                    txtUnitCost.Text = string.IsNullOrEmpty(item.UnitCost?.ToString()) ? "0.00" : Convert.ToDecimal(item.UnitCost).ToString("N2");
+                }
                 TextBox txtScrapQty = e.Row.FindControl("txtScrapQty") as TextBox;
                 txtScrapQty.Text = item.ScrapQty.ToString();
 
@@ -1140,7 +1178,6 @@ namespace SBMS
                     Enabled = true // Enable the extender
                 };
 
-                // Add the ConfirmButtonExtender to the same container as the LinkButton
                 if (CurrentUser.CompanyUseLotNumbers == true)
                 {
                     e.Row.Cells[10].Controls.Add(confirmExtender);
@@ -1365,9 +1402,16 @@ namespace SBMS
                     {
                         LoadActiveLotNums();
                         var LotNums = _ActiveLotNums.Where(x => x.ItemId == ItemID && x.StoreCode == StoreCode).ToList();
-
-                        txtUnitCost.Text = Convert.ToDouble(LotNums[0].TotalUnitPriceExclInclAdd).ToString("N2");
-                        WOLine.UnitCost = Convert.ToDecimal(LotNums[0].TotalUnitPriceExclInclAdd.ToString());
+                        if (LotNums.Count > 0)
+                        {
+                            txtUnitCost.Text = Convert.ToDouble(LotNums[0].TotalUnitPriceExclInclAdd).ToString("N2");
+                            WOLine.UnitCost = Convert.ToDecimal(LotNums[0].TotalUnitPriceExclInclAdd.ToString());
+                        }
+                        else
+                        {
+                            txtUnitCost.Text = "0.00";
+                            WOLine.UnitCost = 0; 
+                        }
                     }
                     _db.SaveChanges();
                 }
@@ -1452,18 +1496,43 @@ namespace SBMS
                 decimal ItemQty = Convert.ToDecimal(row.Cells[5].Text);
                 LoadActiveLotNums();
                 var LotNums = _ActiveLotNums.Where(x => x.StoreCode == DDStore.SelectedItem.ToString() && x.ItemId == ItemID && x.LotNumber == LotNum).ToList();
-                txtUnitCost.Text = LotNums.Where(x => x.LotNumber == LotNum).Select(x=>x.TotalUnitPriceExclInclAdd).FirstOrDefault().ToString();
-                if (LotNums.Sum(x=>x.QtyHandToStore) < ItemQty)
+                
+                if (LotNums.Count > 0)
                 {
-                    AlertHelper.ShowSweetAlert(this, "Insufficient quantity available.", "error");
-                    return;
+                    txtUnitCost.Text = LotNums.Where(x => x.LotNumber == LotNum).Select(x => x.TotalUnitPriceExclInclAdd).FirstOrDefault().ToString();
+                    if (LotNums.Sum(x => x.QtyHandToStore) < ItemQty)
+                    {
+                        AlertHelper.ShowSweetAlert(this, "Insufficient quantity available.", "error");
+                        return;
+                    }
+                    else
+                    {
+                        long LineID = Convert.ToInt64(row.Cells[0].Text);
+                        using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+                        {
+                            try
+                            {
+                                var WOLine = _db.WorksOrderRMLines.Where(x => x.LineID == LineID).FirstOrDefault();
+                                WOLine.UseQty = Convert.ToDecimal(txtuseQty.Text);
+                                var costText = txtUnitCost.Text?.Trim();
+                                WOLine.UnitCost = string.IsNullOrEmpty(costText)
+                                    ? 0m
+                                    : Convert.ToDecimal(costText);
+                                txtUnitCost.Text = Convert.ToDecimal(WOLine.UnitCost).ToString("N2");
+                                WOLine.ScrapQty = Convert.ToDecimal(txtScrapQty.Text);
+                                WOLine.LotNumber = LotNum;
+                                _db.SaveChanges();
+                            }
+                            catch { }                           
+                        }
+                    }
                 }
                 else
                 {
-                    
                     long LineID = Convert.ToInt64(row.Cells[0].Text);
                     using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
                     {
+                        try { 
                         var WOLine = _db.WorksOrderRMLines.Where(x => x.LineID == LineID).FirstOrDefault();
                         WOLine.UseQty = Convert.ToDecimal(txtuseQty.Text);
                         var costText = txtUnitCost.Text?.Trim();
@@ -1472,26 +1541,11 @@ namespace SBMS
                             : Convert.ToDecimal(costText);
                         txtUnitCost.Text = Convert.ToDecimal(WOLine.UnitCost).ToString("N2");
                         WOLine.ScrapQty = Convert.ToDecimal(txtScrapQty.Text);
-                        WOLine.LotNumber = LotNum;
+                        WOLine.LotNumber = "";
                         _db.SaveChanges();
+                        }
+                        catch { }
                     }
-                }
-            }
-            else
-            {
-                long LineID = Convert.ToInt64(row.Cells[0].Text);
-                using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
-                {
-                    var WOLine = _db.WorksOrderRMLines.Where(x => x.LineID == LineID).FirstOrDefault();
-                    WOLine.UseQty = Convert.ToDecimal(txtuseQty.Text);
-                    var costText = txtUnitCost.Text?.Trim();
-                    WOLine.UnitCost = string.IsNullOrEmpty(costText)
-                        ? 0m
-                        : Convert.ToDecimal(costText);
-                    txtUnitCost.Text = Convert.ToDecimal(WOLine.UnitCost).ToString("N2");
-                    WOLine.ScrapQty = Convert.ToDecimal(txtScrapQty.Text);
-                    WOLine.LotNumber = "";
-                    _db.SaveChanges();
                 }
             }
         }
@@ -1665,7 +1719,7 @@ namespace SBMS
                                     DropDownList DDStore = row.FindControl("DDStore") as DropDownList;
                                     DropDownList DDlotNum = row.FindControl("DDlotNum") as DropDownList;
 
-                                    if (DDStore.SelectedIndex < 1)
+                                    if (DDStore.SelectedItem.ToString() == "-?-")
                                     {
                                         cont = false;
                                         AlertHelper.ShowSweetAlert(this, $"Invalid store selected in BOM items for {row.Cells[2].Text.ToString()} . Unable to continue.", "error");
@@ -1746,9 +1800,9 @@ namespace SBMS
                                         (from h in _db.WorksOrderHeaders
                                          join l in _db.WorksOrderLines on h.ID equals l.WOID
                                          join r in _db.WorksOrderRMLines on h.ID equals r.WOID
-                                         where l.LineID == 11162
-                                            && l.SelectionId == 42
-                                            && h.CompanyID == 11961
+                                         where l.LineID == Lid
+                                            && l.SelectionId == ItemID
+                                            && h.CompanyID == CurrentUser.CoID
                                          group new { r.Quantity, r.UnitCost } by l.SelectionId into g
                                          select g.Sum(x => x.Quantity * x.UnitCost)
                                         ).FirstOrDefault();

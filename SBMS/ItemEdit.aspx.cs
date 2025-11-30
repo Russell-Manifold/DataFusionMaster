@@ -67,7 +67,22 @@ namespace SBMS
                     chkIsFromBom.Style.Add("visibility", "hidden");
                     lbtnBOM.Visible = false;
                 }
-
+                if (CurrentUser.UsePacks == false)
+                {
+                    txtBQty1.Text = "1";
+                    txtBQty2.Text = "1";
+                    txtBQty3.Text = "1";
+                    txtBQty1.Visible = false; txtBQty2.Visible = false; txtBQty3.Visible = false; lblBCodeQty.Visible = false;
+                    txtBQty1.Enabled = false; txtBQty2.Enabled = false; txtBQty3.Enabled = false;
+                }
+                else
+                {
+                    txtBQty1.Text = "0";
+                    txtBQty2.Text = "0";
+                    txtBQty3.Text = "0";
+                    txtBQty1.Visible = true; txtBQty2.Visible = true; txtBQty3.Visible = true; lblBCodeQty.Visible = true;
+                    txtBQty1.Enabled = true; txtBQty2.Enabled = true; txtBQty3.Enabled = true;
+                }
                 LoadAllStores();
                 LoadItems();
                 LoadHistory();
@@ -288,7 +303,9 @@ namespace SBMS
                 if (txtBarcode1.Text.ToString().Trim().Length > 0 && txtBQty1.Text != "")
                 {
                     ItemBarCodeLink Blink = new ItemBarCodeLink();
-                    Blink.BarCode = txtBarcode1.Text.ToString().Trim();
+                    string BCode1 = txtBarcode1.Text.ToString().Trim();
+                    if (txtBarcode1.Text.ToString().Trim().Length > 50) BCode1 = txtBarcode1.Text.Substring(txtBarcode1.Text.Trim().Length - 50, 50);
+                    Blink.BarCode = BCode1;
                     Blink.CompanyID = CurrentUser.CoID;
                     Blink.ItemID = itmid;
                     Blink.QtyPerBarcode = Convert.ToInt32(txtBQty1.Text.ToString().Trim());
@@ -297,7 +314,9 @@ namespace SBMS
                 if (txtBarcode2.Text.ToString().Trim().Length > 0 && txtBQty2.Text != "")
                 {
                     ItemBarCodeLink Blink2 = new ItemBarCodeLink();
-                    Blink2.BarCode = txtBarcode2.Text.ToString().Trim();
+                    string BCode2 = txtBarcode2.Text.ToString().Trim();
+                    if (txtBarcode2.Text.ToString().Trim().Length > 50) BCode2 = txtBarcode2.Text.Substring(txtBarcode2.Text.Trim().Length - 50, 50);
+                    Blink2.BarCode = BCode2;
                     Blink2.CompanyID = CurrentUser.CoID;
                     Blink2.ItemID = itmid;
                     Blink2.QtyPerBarcode = Convert.ToInt32(txtBQty2.Text.ToString().Trim());
@@ -306,7 +325,9 @@ namespace SBMS
                 if (txtBarcode3.Text.ToString().Trim().Length > 0 && txtBQty3.Text != "")
                 {
                     ItemBarCodeLink Blink3 = new ItemBarCodeLink();
-                    Blink3.BarCode = txtBarcode3.Text.ToString().Trim();
+                    string BCode3 = txtBarcode3.Text.ToString().Trim();
+                    if (txtBarcode3.Text.ToString().Trim().Length > 50) BCode3 = txtBarcode2.Text.Substring(txtBarcode3.Text.Trim().Length - 50, 50);
+                    Blink3.BarCode = BCode3;
                     Blink3.CompanyID = CurrentUser.CoID;
                     Blink3.ItemID = itmid;
                     Blink3.QtyPerBarcode = Convert.ToInt32(txtBQty3.Text.ToString().Trim());

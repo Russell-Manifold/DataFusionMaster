@@ -72,7 +72,7 @@
                                     <hr />
                                          <h4 style="text-align:center">Movement</h4>
                                         <asp:LinkButton ID="imgbTrf" runat="server" OnClick="imgbTrf_Click" CssClass="button buttonLarge" ToolTip="Carry out an inter-store transfer" >Quick Inter-Store Transfer</asp:LinkButton><br /><br />
-                                     <asp:LinkButton ID="imgbTrfB" runat="server" OnClick="imgbTrfB_Click" CssClass="button buttonLarge" ToolTip="Carry out an inter-store transfer" >Bulk Item Transfer Slip</asp:LinkButton><br /><br />
+                                     <asp:LinkButton ID="imgbTrfB" runat="server" OnClick="imgbTrfB_Click" CssClass="button buttonLarge" ToolTip="Carry out an inter-store transfer" >Bulk Item Transfer</asp:LinkButton><br /><br />
                                         <asp:LinkButton ID="imgItemAdjust" runat="server" OnClick="imgItemAdjust_Click" CssClass="button buttonLarge" ToolTip="Carry out an item adjustment with the option of updating Sage Accounting" >Item Adjustment</asp:LinkButton><br /><br />
                                     
                                             <h4 style="text-align:center">Analysis</h4>

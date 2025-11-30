@@ -555,6 +555,15 @@ namespace SBMS
         protected global::System.Web.UI.WebControls.LinkButton lbtnAdCSave;
 
         /// <summary>
+        /// UpdateProgress2 control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.UpdateProgress UpdateProgress2;
+
+        /// <summary>
         /// LinkButton2 control.
         /// </summary>
         /// <remarks>
@@ -609,6 +618,15 @@ namespace SBMS
         protected global::System.Web.UI.WebControls.Label lblItemdescr;
 
         /// <summary>
+        /// lblLineID control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblLineID;
+
+        /// <summary>
         /// chkEdit control.
         /// </summary>
         /// <remarks>
@@ -625,15 +643,6 @@ namespace SBMS
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.CheckBox chkAddLotNum;
-
-        /// <summary>
-        /// lblLineID control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblLineID;
 
         /// <summary>
         /// txtordqty control.

@@ -39,7 +39,7 @@
                                 <td colspan="6"><h6>Picking Slip Details: <asp:Label ID="lblDocNum" runat="server" Text=""></asp:Label><asp:Label ID="lblPSid" runat="server" Text="" style="display:none" ></asp:Label><asp:Label ID="lblDocID" runat="server" Text="" Style="display: none"></asp:Label></h6></td>
                             </tr>
                             <tr>
-                                <td style="width:10em">Customer </td>
+                                <td style="width: 10em">Customer </td>
                                 <td><asp:TextBox ID="txtCustName" runat="server" style="width:95%" ReadOnly="true"></asp:TextBox></td>
                                 <td style="width:10em">Address</td>
                                 <td><asp:TextBox ID="txtAddress1" runat="server" style="width:95%" ReadOnly="true"></asp:TextBox></td>
@@ -267,6 +267,8 @@
                                                 </div>
                                             </div>
                                         </asp:Panel>
+
+                                 
                                   </ContentTemplate>
                             </asp:UpdatePanel>
                  </div>

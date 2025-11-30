@@ -18,5 +18,6 @@ namespace SBMS.Models
         public string StoreDescript { get; set; }
         public Nullable<long> ItemID { get; set; }
         public bool AllowPicking { get; set; }
+        public Nullable <decimal> TotalUnitPriceExclInclAdd { get; set; }
     }
 }
