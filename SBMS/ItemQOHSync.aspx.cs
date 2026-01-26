@@ -219,7 +219,7 @@ namespace SBMS
         {
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {
-                var Stores = _db.Stores.Where(x => x.CompanyID == CurrentUser.CoID && x.StoreActive == true && x.StoreCode != "CoD" && x.StoreCode != "CoR").ToList();
+                var Stores = _db.Stores.Where(x => x.CompanyID == CurrentUser.CoID && x.StoreActive == true && x.StoreCode != "CoD" && x.StoreCode != "CoR" && x.StoreCode.ToLower() != "scr").ToList();
                 DDStoreTo.DataSource = Stores;
                 DDStoreTo.DataTextField = "StoreDescript";
                 DDStoreTo.DataValueField = "StoreCode";

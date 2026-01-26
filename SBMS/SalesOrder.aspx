@@ -121,29 +121,29 @@
                                                 <asp:BoundField HeaderText="SO Total" DataField="Total" ReadOnly="True" DataFormatString="{0:N2}" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" ItemStyle-Width="10em" />        
                                             </Columns>
                            </asp:GridView>
-                        <asp:Panel ID="PnlMsg" runat="server" style="max-width:48%; vertical-align:top; float:left">
-                         <h5>Message</h5>
-                         <asp:TextBox ID="txtMsg" runat="server" ReadOnly="true" Rows="5" Columns="50" TextMode="MultiLine"></asp:TextBox>
-                            </asp:Panel>
+                         <asp:Panel ID="PnlMsg" runat="server" Style="max-width: 48%; vertical-align: top; float: left">
+                             <h5>Message</h5>
+                             <asp:TextBox ID="txtMsg" runat="server" ReadOnly="true" Rows="5" Columns="50" TextMode="MultiLine"></asp:TextBox>
+                         </asp:Panel>
 
-                         <asp:Panel ID="PnlTotals" runat="server" style="float:right; border:1px gray solid; margin-top:1em; max-width:48%;margin-right:1em">
+                         <asp:Panel ID="PnlTotals" runat="server" style="float:right; border:1px gray solid; margin-top:1em; max-width:48%;margin-right:1em; font-size:0.8em">
                              <table>
                                   <tr>
-                                     <td colspan="2"><hr /></td>
+                                     <td colspan="4"><hr /></td>
                                  </tr>
                                  <tr>
                                      <td>Total Exclusive</td>
                                        <td><asp:Label ID="lblSubTotal" runat="server" Text="" Width="150px" style="text-align:right"></asp:Label></td>
                                  </tr>
                                  <tr>
-                                     <td colspan="2"><hr /></td>
+                                     <td colspan="4"><hr /></td>
                                  </tr>
                                  <tr>
-                                     <td>Total Vat</td>
+                                      <td>Total Vat</td>
                                        <td><asp:Label ID="lblTotVat" runat="server" Text="" Width="150px" style="text-align:right"></asp:Label></td>
                                  </tr>
                                   <tr>
-                                     <td colspan="2"><hr /></td>
+                                     <td colspan="4"><hr /></td>
                                  </tr>
                                  <tr>
                                      <td>Total</td>
@@ -152,6 +152,10 @@
                                   <tr>
                                      <td colspan="2"><hr /></td>
                                  </tr>
+                                 <tr>
+                                    <td style="text-align:left">Cost: <asp:Label ID="lblDocCost" runat="server" Text=""></asp:Label></td>
+                                      <td style="text-align:right">GP: <asp:Label ID="lblDocGP" runat="server" Text=""></asp:Label></td>
+                                </tr>
                              </table>
                          </asp:Panel>
                          </div>

@@ -63,7 +63,7 @@
                 <asp:UpdatePanel ID="UpdatePanel1" runat="server" UpdateMode="Conditional">
                     <ContentTemplate>
                         <div class="row 150%">
-                            <div class="col-12 col-12-wide" style="text-align: center;">
+                            <div class="col-6 col-12-wide" style="text-align: center;">
                                 <div>
                                      <h4 style="text-align:center">Stock Tracking</h4>
                                         <asp:LinkButton ID="LinkButton1" runat="server" PostBackUrl="~/PurchaseOrdersIncomplete.aspx"   CssClass="button buttonLarge" ToolTip="View SBCA Purchase Orders with lines " >Purchase Orders By Lines</asp:LinkButton><br /><br />
@@ -74,12 +74,6 @@
                                         <asp:LinkButton ID="imgbTrf" runat="server" OnClick="imgbTrf_Click" CssClass="button buttonLarge" ToolTip="Carry out an inter-store transfer" >Quick Inter-Store Transfer</asp:LinkButton><br /><br />
                                      <asp:LinkButton ID="imgbTrfB" runat="server" OnClick="imgbTrfB_Click" CssClass="button buttonLarge" ToolTip="Carry out an inter-store transfer" >Bulk Item Transfer</asp:LinkButton><br /><br />
                                         <asp:LinkButton ID="imgItemAdjust" runat="server" OnClick="imgItemAdjust_Click" CssClass="button buttonLarge" ToolTip="Carry out an item adjustment with the option of updating Sage Accounting" >Item Adjustment</asp:LinkButton><br /><br />
-                                    
-                                            <h4 style="text-align:center">Analysis</h4>
-                                    <asp:LinkButton ID="lbtnStockMove" runat="server" OnClick="lbtnStockMove_Click" CssClass="button buttonLarge" ToolTip="View and logs of items and lot number transactions." >Stock/Lot Movement</asp:LinkButton><br /><br />
-                                    <asp:LinkButton ID="lbtnSOH" runat="server" OnClick="lbtnSOH_Click" CssClass="button buttonLarge" ToolTip="View stock balances by store"  >Stock/Lot Balances</asp:LinkButton><br /><br />
-                                    
-                                    
                                     <hr />
                                      <h4 style="text-align:center">Counts</h4>
                                     <asp:LinkButton ID="lbtnStckCount" runat="server" CssClass="button buttonLarge" OnClick="lbtnStckCount_Click" ToolTip="Plan and record stock takes." >Stock Counts</asp:LinkButton><br /><br />   
@@ -89,6 +83,13 @@
                                         <asp:LinkButton ID="lbtnCustom" runat="server" CssClass="button buttonLarge" OnClick="lbtnCustom_Click"  ToolTip="View custom reports created for you." >My Customised</asp:LinkButton><br /><br />           
                                 </div>     
                             </div>
+                                <div class="col-6 col-12-wide" style="text-align: center;">
+                                    <h4 style="text-align:center">Analysis</h4>
+                                    <asp:LinkButton ID="lbtnStockMove" runat="server" OnClick="lbtnStockMove_Click" CssClass="button buttonLarge" ToolTip="View and logs of items and lot number transactions." >Stock/Lot Movement</asp:LinkButton><br /><br />
+                                    <asp:LinkButton ID="lbtnSOH" runat="server" OnClick="lbtnSOH_Click" CssClass="button buttonLarge" ToolTip="View stock balances by store"  >Stock/Lot Balances</asp:LinkButton><br /><br />
+                                     <asp:LinkButton ID="lbtnPickGP" runat="server" OnClick="lbtnPickGP_Click" CssClass="button buttonLarge" ToolTip="Analyse picking slips and view GP per each one"  >Picking Slip GP Analysis</asp:LinkButton><br /><br />
+                                     <asp:LinkButton ID="lbtnItemGP" runat="server" OnClick="lbtnItemGP_Click" CssClass="button buttonLarge" ToolTip="Analyse item sale and view GP per item"  >Item Sales GP Analysis</asp:LinkButton><br /><br />
+                                </div>
                             </div>                   
                         </div>
                       </ContentTemplate>

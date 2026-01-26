@@ -107,8 +107,8 @@
                                                         <asp:BoundField HeaderText="Order_Qty" DataField="Quantity" ReadOnly="True" ItemStyle-Width="4em" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center"  />
                                                        <asp:TemplateField HeaderText="Pick_Qty" HeaderStyle-HorizontalAlign="Center" HeaderStyle-Width="4em" >
                                                             <ItemTemplate>
-                                                                <asp:TextBox ID="txtPickQty" runat="server" Text='<%# Eval("PickQty" , "{0:F0}") %>' style="width:4em; text-align:center" ></asp:TextBox>
-                                                                 <cci:FilteredTextBoxExtender ID="ftbeP" runat="server" TargetControlID="txtPickQty" FilterType="Numbers" ValidChars="." />
+                                                                <asp:TextBox ID="txtPickQty" runat="server" Text='<%# Eval("PickQty") %>' style="width:4em; text-align:center" ></asp:TextBox>
+                                                                 <cci:FilteredTextBoxExtender ID="ftbeP" runat="server" TargetControlID="txtPickQty" FilterType="Numbers,Custom" ValidChars="." />
                                                          </ItemTemplate>
                                                         </asp:TemplateField>
                                                        <asp:TemplateField HeaderText="Store (QOH)" ItemStyle-HorizontalAlign="Center" HeaderStyle-HorizontalAlign="Center" ItemStyle-Width="4em">

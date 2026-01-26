@@ -116,6 +116,7 @@
                                  </td>
                                  <td>Complete_Date:&nbsp;</td>
                                  <td><asp:TextBox ID="txtCompleteDate" runat="server" style="width:10em; margin-top:0.25em" Enabled="false"></asp:TextBox></td>
+                                 <td colspan="2"></td>
                              </tr>
                              <tr>
                                 <td colspan="2"></td>
@@ -186,10 +187,37 @@
                              <asp:LinkButton ID="lbtnStart" runat="server" class="buttonIndex icon fa-upload" Width="220px" OnClick="lbtnStart_Click" ToolTip="Start Transfer">&nbsp;Start Transfer</asp:LinkButton>
                              <cci:ConfirmButtonExtender ID="ConfirmButtonExtender3" runat="server" ConfirmText="Confirm, Start Item Transfer?" Enabled="True" TargetControlID="lbtnStart"></cci:ConfirmButtonExtender>  
                              <asp:LinkButton ID="lbtnCompleteTrf" runat="server" class="buttonSage icon fa-download" Width="220px" OnClick="lbtnCompleteTrf_Click" ToolTip="Complete Transfer">&nbsp;Complete Transfer</asp:LinkButton>
-                             <cci:ConfirmButtonExtender ID="ConfirmButtonExtender1" runat="server" ConfirmText="Confirm, Complete Item Transfer?" Enabled="True" TargetControlID="lbtnCompleteTrf"></cci:ConfirmButtonExtender>    
+                             <cci:ConfirmButtonExtender ID="ConfirmButtonExtender1" runat="server" ConfirmText="Confirm, Complete Item Transfer?" Enabled="True" TargetControlID="lbtnCompleteTrf"></cci:ConfirmButtonExtender>
+                             <asp:LinkButton ID="lbtnAddShip" CssClass="icon fa-truck buttonTransparent" runat="server"  ToolTip="Added shipping costs will be split accross each line item and the stock on hand value in the receiving warehouse will be adjusted accordingly." OnClick="lbtnAddShip_Click" Style="margin-right: 2em"> Add Shipping Costs</asp:LinkButton>
                          </asp:Panel>
                     </div>
                  </div>
+                  <cci:ModalPopupExtender ID="Button25_ModalPopupExtender" runat="server" BackgroundCssClass="ModalPopupBG" CancelControlID="btnCancel5" Drag="true" OkControlID="btnOkay5" PopupControlID="PnlConf" PopupDragHandleControlID="PopupHeader" TargetControlID="lbtnAddShip"></cci:ModalPopupExtender>
+                     <asp:Panel ID="PnlConf" runat="server" Style="display: none">
+                         <asp:LinkButton ID="lbtnCancel" runat="server" CssClass="fa fa-times" Style="float: right" ToolTip="Cancel" OnClick="lbtnCancel_Click"> </asp:LinkButton>
+                         <div class="HellowWorldPopup">
+                             <div id="Div4" class="PopupHeader">
+                                 <h4>Add Shipping/Additional Costs<asp:Label ID="lblTpe" runat="server" Text=""></asp:Label></h4>
+                             </div>
+                             <div class="PopupBody" style="text-align: center">
+                                 <span style="font-size:0.8em">Costs captured will be allocated across all items on this Transfer Slip.<br /> The stock value in the receiving warehouse will be adjusted accordingly. <br /><br /> Attention ! Sage average unit is NOT updated. </span><br /><br />
+                                 <table style="width: 250px; margin: auto; font-size: .8em; text-align: left">
+                                     <tr>
+                                         <td>Additional Cost *</td>
+                                         <td style="padding: .5em">
+                                             <asp:TextBox ID="txtAddCost" runat="server" Width="100px" Style="padding: .5em; text-align:center"></asp:TextBox></td>
+                                     </tr>
+                                 </table>
+                                 <cci:FilteredTextBoxExtender ID="ftbe" runat="server" TargetControlID="txtAddCost" FilterType="Custom, Numbers" ValidChars="." />
+                             </div>
+                             <div class="Controls">
+                                 <input id="btnCancel5" type="button" class="fa fa-times-circle" value="" runat="server" style="display: none" />
+                                 <input id="btnOkay5" type="button" class="buttonYellow" value="OK" runat="server" style="display: none" />
+                                 <asp:LinkButton ID="btnSaveConfirm" runat="server" CssClass="icon fa-save buttonCancel" OnClick="btnSaveConfirm_Click"> Save</asp:LinkButton><br />
+                             </div>
+                         </div>
+                     </asp:Panel>
+
              </ContentTemplate>
          </asp:UpdatePanel>
      </div>

@@ -4528,13 +4528,12 @@ height:16px;
 }
 
 .gridViewHeader {
-   background-color:lightgray;
-   /*color:green;*/
-   text-align: left;
-   border-bottom: groove 3px lightgray;
-   font-size:1em;
-   font-weight:800;
-   
+	background-color: #E8E8E8;
+	/*color:green;*/
+	text-align: left;
+	border: groove 1px #A9A9A9;
+	font-size: 1em;
+	font-weight: 800;
 }
 
 .gridViewRow {
@@ -5318,6 +5317,7 @@ accordionFooterSelected {
 
 .accordionHeader2 {
 	border: 1px solid lightgray;
+	/*border-top:2px double lightgray;*/
 	color: #000;
 	background-color: gray;
 	/*font-family: Arial, Sans-Serif;*/
@@ -5330,17 +5330,18 @@ accordionFooterSelected {
 }
 
 .accordionHeader {
-	border: 1px solid lightgray;
-	color: #4282C1;
-	background-color:white;
+	border: 1px groove #A9A9A9;
+	color: #000;
+	border-radius:0.25em;
+	/*background-color: #4282C1;*/
 	/*font-family: Arial, Sans-Serif;*/
 	font-size: .9em;
-	font-weight: bold;
+	/*font-weight: bold;*/
 	padding: .5em;
 	/*margin-top: 5px;*/
 	cursor: pointer;
 	text-align: left;
-	height:3em;
+	height: 3em;
 }
 
 	.accordionHeader:hover {
@@ -5391,11 +5392,103 @@ accordionFooterSelected {
 		box-shadow: 0 0 5px rgba(90, 155, 213, 0.5);
 	}
 
+.ticker-tape-wrapper {
+	width: 100%;
+	overflow: hidden;
+	background: #fff;
+	color: #000;
+	font-size: 1em;
+	/*border-bottom: 2px solid #0078d7;*/
+	height: 2em;
+	line-height: 2em;
+}
 
-	.iframe{
-		width: 1600px;
+.ticker-tape {
+	display: inline-block;
+	white-space: nowrap;
+	padding-left: 100%;
+	animation: ticker-tape-scroll 20s linear infinite;
+}
+
+@keyframes ticker-tape-scroll {
+	0% {
+		transform: translateX(0);
+	}
+
+	100% {
+		transform: translateX(-100%);
+	}
 
 	}
+
+
+
+/* Cost Calculation Styles */
+.cost-updated {
+	animation: costUpdateFlash 0.5s ease;
+	font-weight: bold;
+}
+
+@keyframes costUpdateFlash {
+	0% {
+		background-color: transparent;
+	}
+
+	50% {
+		background-color: #ffffcc;
+	}
+
+	100% {
+		background-color: transparent;
+	}
+}
+
+/*.use-qty-input:focus {
+	border-color: #5bc0de;
+	box-shadow: 0 0 5px rgba(91, 192, 222, 0.5);
+}*/
+
+/*.lblThisCost {
+	font-weight: bold;
+	color: #0275d8;
+	min-width: 80px;
+	display: inline-block;
+	text-align: right;
+	padding: 2px 5px;
+}*/
+
+.calculation-error {
+	display: block;
+	margin-top: 2px;
+	color: #d9534f;
+	font-size: 0.8em;
+	font-style: italic;
+}
+/* Add this to your CSS file */
+.unit-cost-label {
+	font-weight: bold;
+	color: #0275d8;
+	min-width: 80px;
+	display: inline-block;
+	text-align: right;
+}
+
+.lblThisCost {
+	font-weight: bold;
+	color: #d9534f;
+	font-size: 1.1em;
+}
+
+.use-qty-input {
+	text-align: right;
+	width: 80px;
+	padding: 2px 5px;
+}
+
+.ajax__accordion_panel .use-qty-input:focus {
+	outline: 2px solid #0275d8;
+	outline-offset: -2px;
+}
 
 
 

@@ -276,6 +276,15 @@ namespace SBMS
         protected global::System.Web.UI.WebControls.DropDownList DDSOStatus;
 
         /// <summary>
+        /// DDueDate control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.DropDownList DDueDate;
+
+        /// <summary>
         /// chkCompl control.
         /// </summary>
         /// <remarks>
@@ -283,6 +292,15 @@ namespace SBMS
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.CheckBox chkCompl;
+
+        /// <summary>
+        /// lbtnDownload control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton lbtnDownload;
 
         /// <summary>
         /// GridPOs control.

@@ -33,10 +33,10 @@ namespace SBMS.Classes
         //public SBMSEntities(string connectionString) : base(connectionString) { }
 
        //  for demo version data
-      // public static string dbName = $"MyDataFusionDemo2";
+       public static string dbName = $"MyDataFusionDemo2";
        // LIVE data
       /// <summary>
-      public static string dbName = $"MyDataFusion";
+      //public static string dbName = $"MyDataFusion";
       /// </summary>
 
         public static string constr = $"Data Source=MANIFOLDSERVER\\SQL2022;Initial Catalog={dbName};Persist Security Info=True;User ID=sa;Password=M@nif0LD";
@@ -46,11 +46,11 @@ namespace SBMS.Classes
         static DateTime CustDT = Convert.ToDateTime("01 Jan 2015"), SuppDT = Convert.ToDateTime("01 Jan 2015"), ItemDT = Convert.ToDateTime("01 Jan 2015"), PODT = Convert.ToDateTime("01 Jan 2015"), InvoiceDT = Convert.ToDateTime("01 Jan 2015"), CNoteDT = Convert.ToDateTime("01 Jan 2015");
         static DateTime SuppInvDT = Convert.ToDateTime("01 Jan 2015"), SuppRetDT = Convert.ToDateTime("01 Jan 2015"), JrnlDT = Convert.ToDateTime("01 Jan 2015"), QuoteDT = Convert.ToDateTime("01 Jan 2015"), SOrdDT = Convert.ToDateTime("01 Jan 2015"), GLegDT = Convert.ToDateTime("01 Jan 2015");
 
-        public static string sageurl = "https://accounting.sageone.co.za/api/2.0.0/";
-        public static string APIKey = "5850E392-0FE8-43B4-9EEB-18D2B28B115C";
+        //public static string sageurl = "https://accounting.sageone.co.za/api/2.0.0/";
+       //public static string APIKey = "5850E392-0FE8-43B4-9EEB-18D2B28B115C";
         
-        //public static string sageurl = "https://resellers.accounting.sageone.co.za/api/2.0.0/";
-       //public static string APIKey = "2B7B61BA-41B8-4212-B2A2-77B8734BA688";
+        public static string sageurl = "https://resellers.accounting.sageone.co.za/api/2.0.0/";
+        public static string APIKey = "2B7B61BA-41B8-4212-B2A2-77B8734BA688";
 
         // Syncflo SBCA profile - SANDBOX KEY
         //public static string APIKey = "934D4C3F-FF4D-4311-9380-F21ACB54DCBB";
@@ -256,20 +256,31 @@ namespace SBMS.Classes
             try
             {
                 var response = await client.ExecuteAsync(requ);
+
+                // Successful + valid JSON
                 if (response.IsSuccessful && !string.IsNullOrWhiteSpace(response.Content))
                 {
-                    parsedJSON = JObject.Parse(response.Content);
+                    return JObject.Parse(response.Content);
                 }
-                else
+
+                // Failed request, return error JSON
+                return new JObject
                 {
-                    Console.WriteLine($"Request failed: {response.StatusCode} - {response.Content}");
-                }
+                    ["Success"] = false,
+                    ["StatusCode"] = response.StatusCode.ToString(),
+                    ["Message"] = response.Content ?? "Empty response"
+                };
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error: {ex.Message}");
+                // Exception, return error JSON
+                return new JObject
+                {
+                    ["Success"] = false,
+                    ["StatusCode"] = "Exception",
+                    ["Message"] = ex.Message
+                };
             }
-
             return parsedJSON;
         }
 
@@ -939,13 +950,13 @@ namespace SBMS.Classes
                 {
                     if (LastItmCall != null)
                     {
-                        LastItmCall.LastPODate = (DateTime)LastCallDt;
+                        LastItmCall.LastPODate = Convert.ToDateTime(LastCallDt.ToString("yyyy-MM-ddTHH:mm:ss.fff", CultureInfo.InvariantCulture));
                     }
                     else
                     {
                         LastCallLog newlog = new LastCallLog();
                         newlog.CompanyID = Userdetails.CoID;
-                        newlog.LastPODate = (DateTime)LastCallDt;
+                        newlog.LastPODate = Convert.ToDateTime(LastCallDt.ToString("yyyy-MM-ddTHH:mm:ss.fff", CultureInfo.InvariantCulture));
                         _db.LastCallLogs.Add(newlog);
                     }
                     try
@@ -1114,158 +1125,180 @@ namespace SBMS.Classes
                 }
                 LastCallDt = DateTime.Now;
                 do
+                {
+                    DateTime requestStart = DateTime.Now;
+                    string requestUrl = sageurl + "Item/GET?apikey={" + APIKey + "}&CompanyID=" + Userdetails.CoID + "&$skip=" + skipQty + FiltDate(ItemDT.ToString()) + " and Active eq true)&includeAdditionalItemPrices=true&includeAttachments=false";
+                    JObject parsedJSON = await ApiCallAsync(requestUrl, Userdetails);
+                    if (parsedJSON.Count > 0)
                     {
-                        DateTime requestStart = DateTime.Now;
-                        string requestUrl = sageurl + "Item/GET?apikey={" + APIKey + "}&CompanyID=" + Userdetails.CoID + "&$skip=" + skipQty + FiltDate(ItemDT.ToString()) + " and Active eq true)&includeAdditionalItemPrices=false&includeAttachments=false";
-                        JObject parsedJSON = await ApiCallAsync(requestUrl, Userdetails);
-                        if (parsedJSON.Count > 0)
+                        JArray items = (JArray)parsedJSON["Results"];
+                        TotQty = Convert.ToInt32(parsedJSON["TotalResults"]);
+                        RetQty = Convert.ToInt32(parsedJSON["ReturnedResults"]);
+                        if (items != null)
                         {
-                            JArray items = (JArray)parsedJSON["Results"];
-                            TotQty = Convert.ToInt32(parsedJSON["TotalResults"]);
-                            RetQty = Convert.ToInt32(parsedJSON["ReturnedResults"]);
-                            if (items != null)
+                            foreach (var item in items)
                             {
-                                foreach (var item in items)
+                                string Categ = string.Empty; int CategID = 0;
+                                if (item.ToString().Contains("Category"))
                                 {
-                                    string Categ = string.Empty; int CategID = 0;
-                                    if (item.ToString().Contains("Category"))
+                                    Categ = item?["Category"]?["Description"]?.ToString() ?? "";
+                                    if (Categ.Length > 50)
                                     {
-                                        Categ = item?["Category"]?["Description"]?.ToString() ?? "";
-                                        if (Categ.Length > 50)
-                                        {
-                                            Categ = Categ.Substring(0, 50);
-                                        }
-                                        CategID = item?["Category"]?["ID"] != null ? Convert.ToInt32(item["Category"]["ID"].ToString()) : 0;
+                                        Categ = Categ.Substring(0, 50);
                                     }
-                                    string unt = "EACH";
-                                    if (item["Unit"] != null) unt = item?["Unit"]?.ToString();
+                                    CategID = item?["Category"]?["ID"] != null ? Convert.ToInt32(item["Category"]["ID"].ToString()) : 0;
+                                }
+                                string unt = "EACH";
+                                if (item["Unit"] != null) unt = item?["Unit"]?.ToString();
 
-                                    long itemid = Convert.ToInt64(item["ID"] ?? 0);
-                                    var itm = _db.ItemsMasters.Where(x => x.ID == itemid).FirstOrDefault();
-                                    if (itm != null)
-                                    {
-                                        if (item["Active"] != null) itm.Active = Convert.ToBoolean(item["Active"].ToString() ?? "");
-                                        itm.AverageCost = Convert.ToDecimal(item["AverageCost"] ?? "", CultureInfo.InvariantCulture);
-                                        itm.CategoryDescript = Categ;
-                                        itm.CategoryID = CategID;
-                                        itm.CompanyID = Userdetails.CoID;
-                                        itm.Code = item?["Code"]?.ToString() ?? "";
-                                        if (itm.Code.Length > 50) { itm.Code = itm.Code.Substring(0, 50); }
-                                        itm.Description = item?["Description"]?.ToString() ?? ""; if (itm.Description.Length > 100) { itm.Description = itm.Description.Substring(0, 100); }
-                                        itm.LastCost = Convert.ToDecimal(item?["LastCost"] ?? 0, CultureInfo.InvariantCulture);
-                                        itm.NumericUserField1 = Convert.ToDecimal(item?["NumericUserField1"] ?? 0, CultureInfo.InvariantCulture);
-                                        itm.NumericUserField2 = Convert.ToDecimal(item?["NumericUserField2"] ?? 0, CultureInfo.InvariantCulture);
-                                        itm.NumericUserField3 = Convert.ToDecimal(item?["NumericUserField3"] ?? 0, CultureInfo.InvariantCulture);
-                                        itm.Physical = Convert.ToBoolean(item?["Physical"]?.ToString() ?? "");
-                                        itm.PriceExclusive = Convert.ToDecimal(item["PriceExclusive"] ?? 0, CultureInfo.InvariantCulture);
-                                        itm.PriceInclusive = Convert.ToDecimal(item["PriceInclusive"] ?? 0, CultureInfo.InvariantCulture);
-                                        itm.QuantityOnHand = Convert.ToDecimal(item["QuantityOnHand"] ?? 0, CultureInfo.InvariantCulture);
-                                        itm.QuantityOnHand = ApiUrlCall.NumberToDecimal(Convert.ToDecimal(itm.QuantityOnHand, CultureInfo.InvariantCulture), Userdetails.CompanyDecPlaces);
-                                        itm.QuantityReserved = Convert.ToDecimal(item["QuantityReserved"] ?? 0, CultureInfo.InvariantCulture);
-                                        itm.QuantityReserved = ApiUrlCall.NumberToDecimal(Convert.ToDecimal(itm.QuantityReserved, CultureInfo.InvariantCulture), Userdetails.CompanyDecPlaces);
-                                        itm.TextUserField1 = item?["TextUserField1"]?.ToString() ?? ""; if (itm.TextUserField1.Length > 100) { itm.TextUserField1 = itm.TextUserField1.Substring(0, 100); };
-                                        itm.TextUserField2 = item?["TextUserField2"]?.ToString() ?? ""; if (itm.TextUserField1.Length > 100) { itm.TextUserField2 = itm.TextUserField2.Substring(0, 100); };
-                                        itm.TextUserField3 = item?["TextUserField3"]?.ToString() ?? ""; if (itm.TextUserField3.Length > 100) { itm.TextUserField3 = itm.TextUserField3.Substring(0, 100); };
-                                        string unit = item?["Unit"]?.ToString() ?? "";
-                                        itm.Unit = unit.Length > 10 ? unit.Substring(0, 10) : unit;
+                                long itemid = Convert.ToInt64(item["ID"] ?? 0);
+                                var itm = _db.ItemsMasters.Where(x => x.ID == itemid).FirstOrDefault();
+                                if (itm != null)
+                                {
+                                    if (item["Active"] != null) itm.Active = Convert.ToBoolean(item["Active"].ToString() ?? "");
+                                    itm.AverageCost = Convert.ToDecimal(item["AverageCost"] ?? "", CultureInfo.InvariantCulture);
+                                    itm.CategoryDescript = Categ;
+                                    itm.CategoryID = CategID;
+                                    itm.CompanyID = Userdetails.CoID;
+                                    itm.Code = item?["Code"]?.ToString() ?? "";
+                                    if (itm.Code.Length > 50) { itm.Code = itm.Code.Substring(0, 50); }
+                                    itm.Description = item?["Description"]?.ToString() ?? ""; if (itm.Description.Length > 100) { itm.Description = itm.Description.Substring(0, 100); }
+                                    itm.LastCost = Convert.ToDecimal(item?["LastCost"] ?? 0, CultureInfo.InvariantCulture);
+                                    itm.NumericUserField1 = Convert.ToDecimal(item?["NumericUserField1"] ?? 0, CultureInfo.InvariantCulture);
+                                    itm.NumericUserField2 = Convert.ToDecimal(item?["NumericUserField2"] ?? 0, CultureInfo.InvariantCulture);
+                                    itm.NumericUserField3 = Convert.ToDecimal(item?["NumericUserField3"] ?? 0, CultureInfo.InvariantCulture);
+                                    itm.Physical = Convert.ToBoolean(item?["Physical"]?.ToString() ?? "");
+                                    itm.PriceExclusive = Convert.ToDecimal(item["PriceExclusive"] ?? 0, CultureInfo.InvariantCulture);
+                                    itm.PriceInclusive = Convert.ToDecimal(item["PriceInclusive"] ?? 0, CultureInfo.InvariantCulture);
+                                    itm.QuantityOnHand = Convert.ToDecimal(item["QuantityOnHand"] ?? 0, CultureInfo.InvariantCulture);
+                                    itm.QuantityOnHand = ApiUrlCall.NumberToDecimal(Convert.ToDecimal(itm.QuantityOnHand, CultureInfo.InvariantCulture), Userdetails.CompanyDecPlaces);
+                                    itm.QuantityReserved = Convert.ToDecimal(item["QuantityReserved"] ?? 0, CultureInfo.InvariantCulture);
+                                    itm.QuantityReserved = ApiUrlCall.NumberToDecimal(Convert.ToDecimal(itm.QuantityReserved, CultureInfo.InvariantCulture), Userdetails.CompanyDecPlaces);
+                                    itm.TextUserField1 = item?["TextUserField1"]?.ToString() ?? ""; if (itm.TextUserField1.Length > 100) { itm.TextUserField1 = itm.TextUserField1.Substring(0, 100); };
+                                    itm.TextUserField2 = item?["TextUserField2"]?.ToString() ?? ""; if (itm.TextUserField1.Length > 100) { itm.TextUserField2 = itm.TextUserField2.Substring(0, 100); };
+                                    itm.TextUserField3 = item?["TextUserField3"]?.ToString() ?? ""; if (itm.TextUserField3.Length > 100) { itm.TextUserField3 = itm.TextUserField3.Substring(0, 100); };
+                                    string unit = item?["Unit"]?.ToString() ?? "";
+                                    itm.Unit = unit.Length > 10 ? unit.Substring(0, 10) : unit;
                                     if (item["YesNoUserField1"] != null) itm.YesNoUserField1 = Convert.ToBoolean(item["YesNoUserField1"].ToString() ?? "");
-                                        if (item["YesNoUserField2"] != null) itm.YesNoUserField2 = Convert.ToBoolean(item["YesNoUserField2"].ToString() ?? "");
-                                        if (item["YesNoUserField3"] != null) itm.YesNoUserField3 = Convert.ToBoolean(item["YesNoUserField3"].ToString() ?? "");
-                                        try
-                                        {
-                                            itm.TotQOH_MDF = _db.ItemTransactions.Where(it => it.CompanyID == Userdetails.CoID && it.ItemID == itemid).Sum(it => it.Qty) ?? 0;
-                                            itm.TotQOH_MDF = ApiUrlCall.NumberToDecimal(Convert.ToDecimal(itm.TotQOH_MDF, CultureInfo.InvariantCulture), Userdetails.CompanyDecPlaces);
-                                        }
-                                        catch { itm.TotQOH_MDF = 0; }
-                                        itm.TaxTypeIdSales = Convert.ToInt32(item["TaxTypeIdSales"] ?? 0);
-                                        try
-                                        {
-                                            itm.TaxTypeSalesPerc = _db.TaxTypesMasters.Where(x => x.CompanyID == Userdetails.CoID && x.TaxTypeID == itm.TaxTypeIdSales).Select(x => x.TaxPerc).FirstOrDefault();
-                                        }
-                                        catch { };
-                                        itm.TaxTypeIdPurchase = Convert.ToInt32(item["TaxTypeIdPurchases"] ?? 0);
-                                        try
-                                        {
-                                            itm.TaxTypePurchPerc = _db.TaxTypesMasters.Where(x => x.CompanyID == Userdetails.CoID && x.TaxTypeID == itm.TaxTypeIdPurchase).Select(x => x.TaxPerc).FirstOrDefault();
-                                        }
-                                        catch { }
-                                        _db.Entry(itm).State = System.Data.Entity.EntityState.Modified;
-                                     }
-                                    else
+                                    if (item["YesNoUserField2"] != null) itm.YesNoUserField2 = Convert.ToBoolean(item["YesNoUserField2"].ToString() ?? "");
+                                    if (item["YesNoUserField3"] != null) itm.YesNoUserField3 = Convert.ToBoolean(item["YesNoUserField3"].ToString() ?? "");
+                                    try
                                     {
-                                        ItemsMaster thisitm = new ItemsMaster();
-                                        if (item["Active"] != null) thisitm.Active = Convert.ToBoolean(item["Active"].ToString() ?? "");
-                                        thisitm.AverageCost = Convert.ToDecimal(item["AverageCost"] ?? "", CultureInfo.InvariantCulture);
-                                        thisitm.CategoryDescript = Categ;
-                                        thisitm.CategoryID = CategID;
-                                        thisitm.CompanyID = Userdetails.CoID;
-                                        thisitm.Code = item?["Code"]?.ToString() ?? "";
-                                        if (thisitm.Code.Length > 50) { thisitm.Code = thisitm.Code.Substring(0, 50); }
-                                        thisitm.Description = item?["Description"]?.ToString() ?? "";
-                                        if (thisitm.Description.Length > 100) { thisitm.Description = thisitm.Description.Substring(0, 10); }
-                                        thisitm.ID = Convert.ToInt32(item["ID"].ToString());
-                                        thisitm.LastCost = Convert.ToDecimal(item["LastCost"] ?? 0, CultureInfo.InvariantCulture);
-                                        thisitm.NumericUserField1 = Convert.ToDecimal(item["NumericUserField1"] ?? 0, CultureInfo.InvariantCulture);
-                                        thisitm.NumericUserField2 = Convert.ToDecimal(item["NumericUserField2"] ?? 0, CultureInfo.InvariantCulture);
-                                        thisitm.NumericUserField3 = Convert.ToDecimal(item["NumericUserField3"] ?? 0, CultureInfo.InvariantCulture);
-                                        thisitm.Physical = Convert.ToBoolean(item["Physical"].ToString() ?? "");
-                                        thisitm.IsLotTracked = false;
-                                        if (thisitm.Physical == true) {thisitm.IsLotTracked = true;}
-                                        thisitm.PriceExclusive = Convert.ToDecimal(item["PriceExclusive"] ?? 0, CultureInfo.InvariantCulture);
-                                        thisitm.PriceInclusive = Convert.ToDecimal(item["PriceInclusive"] ?? 0, CultureInfo.InvariantCulture);
-                                        thisitm.QuantityOnHand = Convert.ToDecimal(item["QuantityOnHand"] ?? 0, CultureInfo.InvariantCulture);
-                                        thisitm.QuantityOnHand = ApiUrlCall.NumberToDecimal(Convert.ToDecimal(thisitm.QuantityOnHand, CultureInfo.InvariantCulture), Userdetails.CompanyDecPlaces);
-                                        thisitm.QuantityReserved = Convert.ToDecimal(item["QuantityReserved"] ?? 0, CultureInfo.InvariantCulture);
-                                        thisitm.QuantityReserved = ApiUrlCall.NumberToDecimal(Convert.ToDecimal(thisitm.QuantityReserved, CultureInfo.InvariantCulture), Userdetails.CompanyDecPlaces);
-                                        thisitm.TextUserField1 = item?["TextUserField1"]?.ToString() ?? ""; if (thisitm.TextUserField1.Length > 100) { thisitm.TextUserField1 = thisitm.TextUserField1.Substring(0, 100); };
-                                        thisitm.TextUserField2 = item?["TextUserField2"]?.ToString() ?? ""; if (thisitm.TextUserField1.Length > 100) { thisitm.TextUserField2 = thisitm.TextUserField2.Substring(0, 100); };
-                                        thisitm.TextUserField3 = item?["TextUserField3"]?.ToString() ?? ""; if (thisitm.TextUserField3.Length > 100) { thisitm.TextUserField3 = thisitm.TextUserField3.Substring(0, 100); };
-                                        string unit = item?["Unit"]?.ToString() ?? "";
-                                        thisitm.Unit = unit.Length > 10 ? unit.Substring(0, 10) : unit;
-                                        if (item["YesNoUserField1"] != null) thisitm.YesNoUserField1 = Convert.ToBoolean(item["YesNoUserField1"].ToString() ?? "");
-                                        if (item["YesNoUserField2"] != null) thisitm.YesNoUserField2 = Convert.ToBoolean(item["YesNoUserField2"].ToString() ?? "");
-                                        if (item["YesNoUserField3"] != null) thisitm.YesNoUserField3 = Convert.ToBoolean(item["YesNoUserField3"].ToString() ?? "");
-                                        try
-                                        {
-                                            thisitm.TotQOH_MDF = _db.ItemTransactions.Where(it => it.CompanyID == Userdetails.CoID && it.ItemID == itemid).Sum(it => it.Qty) ?? 0;
-                                            thisitm.TotQOH_MDF = ApiUrlCall.NumberToDecimal(Convert.ToDecimal(thisitm.TotQOH_MDF, CultureInfo.InvariantCulture), Userdetails.CompanyDecPlaces);
-                                        }
-                                        catch { thisitm.TotQOH_MDF = 0; }
-                                        thisitm.IsBOMComponent = false;
-                                        thisitm.IsKitComponent = false;
-                                        thisitm.IsFinishedGoods = true;
-                                        thisitm.IsFromBOM = false;
-                                        thisitm.IsFromKit = false;
-                                        thisitm.TaxTypeIdSales = Convert.ToInt32(item["TaxTypeIdSales"] ?? 0);
-                                        try
-                                        {
-                                        thisitm.TaxTypeSalesPerc = _db.TaxTypesMasters.Where(x => x.CompanyID == Userdetails.CoID && x.TaxTypeID == thisitm.TaxTypeIdSales).Select(x => x.TaxPerc).FirstOrDefault();
-                                        }
-                                        catch { }
-                                        thisitm.TaxTypeIdPurchase = Convert.ToInt32(item["TaxTypeIdPurchases"] ?? 0);
-                                        try
-                                        {
-                                        thisitm.TaxTypePurchPerc = _db.TaxTypesMasters.Where(x => x.CompanyID == Userdetails.CoID && x.TaxTypeID == thisitm.TaxTypeIdPurchase).Select(x => x.TaxPerc).FirstOrDefault();
-                                        }
-                                        catch { }
-                                        _db.ItemsMasters.Add(thisitm);
+                                        itm.TotQOH_MDF = _db.ItemTransactions.Where(it => it.CompanyID == Userdetails.CoID && it.ItemID == itemid).Sum(it => it.Qty) ?? 0;
+                                        itm.TotQOH_MDF = ApiUrlCall.NumberToDecimal(Convert.ToDecimal(itm.TotQOH_MDF, CultureInfo.InvariantCulture), Userdetails.CompanyDecPlaces);
                                     }
+                                    catch { itm.TotQOH_MDF = 0; }
+                                try
+                                {
+                                    itm.TaxTypeIdSales = Convert.ToInt32(item["TaxTypeIdSales"] ?? 0);
+                                }
+                                catch { itm.TaxTypeIdSales = 0; }
+                                    
+                                    try
+                                    {
+                                        itm.TaxTypeSalesPerc = _db.TaxTypesMasters.Where(x => x.CompanyID == Userdetails.CoID && x.TaxTypeID == itm.TaxTypeIdSales).Select(x => x.TaxPerc).FirstOrDefault();
+                                    }
+                                    catch { };
+
+                                    itm.TaxTypeIdPurchase = Convert.ToInt32(item["TaxTypeIdPurchases"] ?? 0);
+                                    try
+                                    {
+                                        itm.TaxTypePurchPerc = _db.TaxTypesMasters.Where(x => x.CompanyID == Userdetails.CoID && x.TaxTypeID == itm.TaxTypeIdPurchase).Select(x => x.TaxPerc).FirstOrDefault();
+                                    }
+                                    catch { }
+
+                                    try
+                                    {
+                                        itm.GPPercentage = Math.Round((decimal)(((itm.PriceExclusive - itm.AverageCost) / itm.PriceExclusive) * 100),2);
+                                    }
+                                    catch( Exception ex)
+                                    { itm.GPPercentage = 0; }
+
+                                    _db.Entry(itm).State = System.Data.Entity.EntityState.Modified;
+                                    }
+                                else
+                                {
+                                    ItemsMaster thisitm = new ItemsMaster();
+                                    if (item["Active"] != null) thisitm.Active = Convert.ToBoolean(item["Active"].ToString() ?? "");
+                                    thisitm.AverageCost = Convert.ToDecimal(item["AverageCost"] ?? "", CultureInfo.InvariantCulture);
+                                    thisitm.CategoryDescript = Categ;
+                                    thisitm.CategoryID = CategID;
+                                    thisitm.CompanyID = Userdetails.CoID;
+                                    thisitm.Code = item?["Code"]?.ToString() ?? "";
+                                    if (thisitm.Code.Length > 50) { thisitm.Code = thisitm.Code.Substring(0, 50); }
+                                    thisitm.Description = item?["Description"]?.ToString() ?? "";
+                                    if (thisitm.Description.Length > 100) { thisitm.Description = thisitm.Description.Substring(0, 10); }
+                                    thisitm.ID = Convert.ToInt32(item["ID"].ToString());
+                                    thisitm.LastCost = Convert.ToDecimal(item["LastCost"] ?? 0, CultureInfo.InvariantCulture);
+                                    thisitm.NumericUserField1 = Convert.ToDecimal(item["NumericUserField1"] ?? 0, CultureInfo.InvariantCulture);
+                                    thisitm.NumericUserField2 = Convert.ToDecimal(item["NumericUserField2"] ?? 0, CultureInfo.InvariantCulture);
+                                    thisitm.NumericUserField3 = Convert.ToDecimal(item["NumericUserField3"] ?? 0, CultureInfo.InvariantCulture);
+                                    thisitm.Physical = Convert.ToBoolean(item["Physical"].ToString() ?? "");
+                                    thisitm.IsLotTracked = false;
+                                    if (thisitm.Physical == true) {thisitm.IsLotTracked = true;}
+                                    thisitm.PriceExclusive = Convert.ToDecimal(item["PriceExclusive"] ?? 0, CultureInfo.InvariantCulture);
+                                    thisitm.PriceInclusive = Convert.ToDecimal(item["PriceInclusive"] ?? 0, CultureInfo.InvariantCulture);
+                                    thisitm.QuantityOnHand = Convert.ToDecimal(item["QuantityOnHand"] ?? 0, CultureInfo.InvariantCulture);
+                                    thisitm.QuantityOnHand = ApiUrlCall.NumberToDecimal(Convert.ToDecimal(thisitm.QuantityOnHand, CultureInfo.InvariantCulture), Userdetails.CompanyDecPlaces);
+                                    thisitm.QuantityReserved = Convert.ToDecimal(item["QuantityReserved"] ?? 0, CultureInfo.InvariantCulture);
+                                    thisitm.QuantityReserved = ApiUrlCall.NumberToDecimal(Convert.ToDecimal(thisitm.QuantityReserved, CultureInfo.InvariantCulture), Userdetails.CompanyDecPlaces);
+                                    thisitm.TextUserField1 = item?["TextUserField1"]?.ToString() ?? ""; if (thisitm.TextUserField1.Length > 100) { thisitm.TextUserField1 = thisitm.TextUserField1.Substring(0, 100); };
+                                    thisitm.TextUserField2 = item?["TextUserField2"]?.ToString() ?? ""; if (thisitm.TextUserField1.Length > 100) { thisitm.TextUserField2 = thisitm.TextUserField2.Substring(0, 100); };
+                                    thisitm.TextUserField3 = item?["TextUserField3"]?.ToString() ?? ""; if (thisitm.TextUserField3.Length > 100) { thisitm.TextUserField3 = thisitm.TextUserField3.Substring(0, 100); };
+                                    string unit = item?["Unit"]?.ToString() ?? "";
+                                    thisitm.Unit = unit.Length > 10 ? unit.Substring(0, 10) : unit;
+                                    if (item["YesNoUserField1"] != null) thisitm.YesNoUserField1 = Convert.ToBoolean(item["YesNoUserField1"].ToString() ?? "");
+                                    if (item["YesNoUserField2"] != null) thisitm.YesNoUserField2 = Convert.ToBoolean(item["YesNoUserField2"].ToString() ?? "");
+                                    if (item["YesNoUserField3"] != null) thisitm.YesNoUserField3 = Convert.ToBoolean(item["YesNoUserField3"].ToString() ?? "");
+                                    try
+                                    {
+                                        thisitm.TotQOH_MDF = _db.ItemTransactions.Where(it => it.CompanyID == Userdetails.CoID && it.ItemID == itemid).Sum(it => it.Qty) ?? 0;
+                                        thisitm.TotQOH_MDF = ApiUrlCall.NumberToDecimal(Convert.ToDecimal(thisitm.TotQOH_MDF, CultureInfo.InvariantCulture), Userdetails.CompanyDecPlaces);
+                                    }
+                                    catch { thisitm.TotQOH_MDF = 0; }
+                                    thisitm.IsBOMComponent = false;
+                                    thisitm.IsKitComponent = false;
+                                    thisitm.IsFinishedGoods = true;
+                                    thisitm.IsFromBOM = false;
+                                    thisitm.IsFromKit = false;
+                                    try
+                                    {
+                                        thisitm.TaxTypeIdSales = Convert.ToInt32(item["TaxTypeIdSales"] ?? 0);
+                                    }    catch { thisitm.TaxTypeIdSales = 0; }
+
+                                try
+                                    {
+                                    thisitm.TaxTypeSalesPerc = _db.TaxTypesMasters.Where(x => x.CompanyID == Userdetails.CoID && x.TaxTypeID == thisitm.TaxTypeIdSales).Select(x => x.TaxPerc).FirstOrDefault();
+                                    }
+                                    catch { }
+                                    thisitm.TaxTypeIdPurchase = Convert.ToInt32(item["TaxTypeIdPurchases"] ?? 0);
+                                    try
+                                    {
+                                    thisitm.TaxTypePurchPerc = _db.TaxTypesMasters.Where(x => x.CompanyID == Userdetails.CoID && x.TaxTypeID == thisitm.TaxTypeIdPurchase).Select(x => x.TaxPerc).FirstOrDefault();
+                                    }
+                                    catch { }
+                                try
+                                {
+                                    thisitm.GPPercentage = Math.Round((decimal)(((thisitm.PriceExclusive - thisitm.AverageCost) / thisitm.PriceExclusive) * 100), 2);
+                                }
+                                catch { thisitm.GPPercentage = 0; }
+                                _db.ItemsMasters.Add(thisitm);
                                 }
                             }
-                            UpdateDate = true;
-
                         }
-                        parsedJSON.RemoveAll();
-                        skipQty = skipQty + RetQty;
+                        UpdateDate = true;
 
-                        TimeSpan elapsed = DateTime.Now - requestStart;
-                        if (elapsed.TotalMilliseconds < 1000)
-                        {
-                            await Task.Delay(1000 - (int)elapsed.TotalMilliseconds);
-                        }
+                    }
+                    parsedJSON.RemoveAll();
+                    skipQty = skipQty + RetQty;
 
-                    } while (skipQty < TotQty);
+                    TimeSpan elapsed = DateTime.Now - requestStart;
+                    if (elapsed.TotalMilliseconds < 1000)
+                    {
+                        await Task.Delay(1000 - (int)elapsed.TotalMilliseconds);
+                    }
 
+                    // moved save to here, so it saves ever 100 records. (from **Here** below
                     try
                     {
                         _db.SaveChanges();
@@ -1292,17 +1325,21 @@ namespace SBMS.Classes
                         LogErrorToFile(errMsg);
                     }
 
+                } while (skipQty < TotQty);
+
+                //** Here **  See line 1301 above
+
                 if (UpdateDate)
                 {
                     if (LastItmCall != null)
                     {
-                        LastItmCall.LastItemDate = (DateTime)LastCallDt;
+                        LastItmCall.LastItemDate = Convert.ToDateTime(LastCallDt.ToString("yyyy-MM-ddTHH:mm:ss.fff", CultureInfo.InvariantCulture));
                     }
                     else
                     {
                         LastCallLog newlog = new LastCallLog();
                         newlog.CompanyID = Userdetails.CoID;
-                        newlog.LastItemDate = (DateTime)LastCallDt;
+                        newlog.LastItemDate = Convert.ToDateTime(LastCallDt.ToString("yyyy-MM-ddTHH:mm:ss.fff", CultureInfo.InvariantCulture));
                         _db.LastCallLogs.Add(newlog);
                     }
                     try
@@ -1316,6 +1353,13 @@ namespace SBMS.Classes
                     }
                 }
                 await LoadBundles(false, Userdetails);
+                // update doclines, 
+                string result = ApiUrlCall.SetSQLDataFromString("EXEC Fix_DocLines_ItemCodes @CoID = " + Userdetails.CoID);
+                if (result != "OK")
+                {
+                    ApiUrlCall api = new ApiUrlCall();
+                    api.LogErrorToFile("Ln1345 - Update item codes error:- " + result);
+                }
             }
             return errorList;
         }
@@ -1679,6 +1723,89 @@ namespace SBMS.Classes
             return parsedJSON;
         }
 
+        public async Task<string> UpdateSellingPriceOneItem(long ItemID, decimal newUnitPriceExclusive, UserDetails Userdetails)
+        {
+            try
+            {
+                // Get item from API
+                string requestUrl = sageurl + $"Item/GET?includeAdditionalItemPrices=false&includeAttachments=false&apikey={APIKey}&$filter=ID eq {ItemID}&CompanyID={Userdetails.CoID}";
+
+                // Use ConfigureAwait(false) to prevent returning to original context
+                JObject parsedJSON = await ApiCallAsync(requestUrl, Userdetails).ConfigureAwait(false);
+
+                if (parsedJSON == null)
+                {
+                    return "Failed to get item from API: Null response";
+                }
+
+                // Check for error from ApiCallAsync
+                if (parsedJSON["error"] != null)
+                {
+                    return $"API error: {parsedJSON["error"]["message"]}";
+                }
+
+                if (parsedJSON["Results"] == null || !parsedJSON["Results"].HasValues)
+                {
+                    return $"No item found with ID: {ItemID}";
+                }
+
+                // Get the item data
+                JObject itemData = (JObject)parsedJSON["Results"].First;
+
+                // Calculate the VAT/tax percentage from original prices
+                decimal originalPriceExclusive = itemData["PriceExclusive"]?.Value<decimal>() ?? 0;
+                decimal originalPriceInclusive = itemData["PriceInclusive"]?.Value<decimal>() ?? 0;
+
+                decimal vatPercentage = 0;
+                if (originalPriceExclusive > 0)
+                {
+                    vatPercentage = ((originalPriceInclusive / originalPriceExclusive) - 1) * 100;
+                }
+                else
+                {
+                    // Default to 15% VAT if can't calculate
+                    vatPercentage = 15;
+                }
+
+                // Update the prices
+                itemData["PriceExclusive"] = Math.Round(newUnitPriceExclusive, 4);
+                itemData["PriceInclusive"] = Math.Round(newUnitPriceExclusive * (1 + (vatPercentage / 100)), 4);
+
+                // Remove any properties that might cause issues
+                itemData.Remove("Modified");
+                itemData.Remove("Created");
+
+                // Convert to JSON string
+                string jsonPayload = itemData.ToString(Newtonsoft.Json.Formatting.None);
+
+                // Make POST call - also with ConfigureAwait(false)
+                string postUrl = sageurl + $"Item/Save?apikey={{{APIKey}}}&CompanyID={Userdetails.CoID}";
+
+                using (HttpClient client = new HttpClient())
+                {
+                    client.Timeout = TimeSpan.FromSeconds(30);
+
+                    // Add authentication
+                    string auth = Convert.ToBase64String(Encoding.ASCII.GetBytes($"{Userdetails.LoginName}:{Userdetails.LoginPwd}"));
+                    client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", auth);
+
+                    var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
+                    var response = await client.PostAsync(postUrl, content).ConfigureAwait(false);
+
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        string errorContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                        return $"API update failed. Status: {response.StatusCode}, Error: {errorContent}";
+                    }
+
+                    return "OK";
+                }
+            }
+            catch (Exception ex)
+            {
+                return $"Failed to update selling price for item {ItemID}: {ex.Message}";
+            }
+        }
         #endregion
 
         public class POList
@@ -1931,13 +2058,13 @@ namespace SBMS.Classes
                 {
                     if (LastItmCall != null)
                     {
-                        LastItmCall.LastSODate = (DateTime)LastCallDt;
+                        LastItmCall.LastSODate = Convert.ToDateTime(LastCallDt.ToString("yyyy-MM-ddTHH:mm:ss.fff", CultureInfo.InvariantCulture));
                     }
                     else
                     {
                         LastCallLog newlog = new LastCallLog();
                         newlog.CompanyID = Userdetails.CoID;
-                        newlog.LastSODate = (DateTime)LastCallDt;
+                        newlog.LastSODate = Convert.ToDateTime(LastCallDt.ToString("yyyy-MM-ddTHH:mm:ss.fff", CultureInfo.InvariantCulture));
                         _db.LastCallLogs.Add(newlog);
                     }
                     try
@@ -3968,6 +4095,13 @@ namespace SBMS.Classes
             {
                 // Avoid recursive errors if logging fails
             }
+        }
+
+        public async Task<JObject> LoadOneItemJson(string ItmFilter, UserDetails userDetails)
+        { 
+            string requestUrl = $"{sageurl}Item/GET?apikey={APIKey}&CompanyID={userDetails.CoID}&$filter={ItmFilter}";
+            JObject parsedJSON = await ApiCallAsync(requestUrl, userDetails);
+            return parsedJSON; 
         }
     }
 }

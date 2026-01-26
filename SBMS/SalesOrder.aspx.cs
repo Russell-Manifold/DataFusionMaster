@@ -134,6 +134,9 @@ namespace SBMS
                     txtAddress3.Text = thispo.DelAddress3 ?? "";
                     txtAddress4.Text = thispo.DelAddress4 ?? "";
 
+                    lblDocCost.Text = (thispo.DocCost ?? 0m).ToString("N2");
+                    lblDocGP.Text = (thispo.DocGP ?? 0m).ToString("P2");
+
                     DDOptions.Attributes.Add("style", "display:inline-block; color:#4282C1; font-size:1em; border: 1px #4282C1 solid; border-radius:.25em; margin-top:.5em");
                     if (thispo.LinkedJCNum != null || thispo.LinkedPSNum != null) DDOptions.Attributes.Add("style", "display:none");
 
@@ -322,6 +325,7 @@ namespace SBMS
         {
             if (DDOptions.SelectedIndex > 0)
             {
+                loadstores();
                 if (DDOptions.SelectedValue == "0")
                 {
                     lblTpe.Text = "Job Card";
@@ -337,7 +341,6 @@ namespace SBMS
                 {
                     lblTpe.Text = "Picking Slip";
                     pnlJCref.Style.Add("display", "none");
-                    loadstores();
                 }
                 Button2551_ModalPopupExtender.Show();
             }
@@ -1050,7 +1053,7 @@ namespace SBMS
                 }
                     foreach (var dl in SOLines)
                 {
-                    decimal origqty = dl.Quantity ?? 0;
+                    decimal origqty = dl.ReceiveQty ?? 0;
                     //if (dl.ItemType == 0)
                     //{
                     //    if (dl.StoreCode == null || dl.StoreCode.ToString() == "")

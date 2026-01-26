@@ -39,5 +39,6 @@ namespace SBMS.Models
         public Nullable<System.DateTime> ToStoreDate { get; set; }
         public Nullable<int> ToStoreBy { get; set; }
         public bool IsLotTracked { get; set; }
+      
     }
 }

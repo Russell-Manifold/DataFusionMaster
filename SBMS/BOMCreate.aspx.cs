@@ -89,6 +89,7 @@ namespace SBMS
                 if (BomL != null)
                 {
                     BOMLine NewBomLine = new BOMLine();
+                    NewBomLine.BomHID = bomH.BomHID;
                     NewBomLine.CompanyID = CurrentUser.CoID;
                     NewBomLine.BomCode = "NEW";
                     _db.BOMLines.Add(NewBomLine);

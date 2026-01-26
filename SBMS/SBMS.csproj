@@ -289,6 +289,7 @@
     <Content Include="documents\Disclaimer.pdf" />
     <Content Include="documents\POPIA_Policy.pdf" />
     <Content Include="documents\Terms_and_Conditions.pdf" />
+    <Content Include="js\cost-calculation.js" />
     <Content Include="niceadmin\assets\css\style.css" />
     <Content Include="niceadmin\assets\img\apple-touch-icon.png" />
     <Content Include="niceadmin\assets\img\card.jpg" />

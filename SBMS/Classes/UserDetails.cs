@@ -49,5 +49,9 @@ namespace SBMS.Classes
         public bool AutoGenTaxInvoice { get; set; }
         public string LoggedInSessionID { get; set; }
         public bool UsePacks { get; set; }
+        public DateTime ExpiryDate { get; set; }
+
+        public bool ShowManfCosts { get; set; }
+
     }
 } 

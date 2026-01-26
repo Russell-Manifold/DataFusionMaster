@@ -493,7 +493,7 @@ namespace SBMS
                 {
                     GridItemTrans.FooterRow.Cells[0].Text = "Totals";
                     GridItemTrans.FooterRow.Cells[3].Text = TotQty.ToString("N2");
-                    GridItemTrans.FooterRow.Cells[4].Text = totVal.ToString("N2");
+                    GridItemTrans.FooterRow.Cells[5].Text = totVal.ToString("N2");
                 }
             }
         }
@@ -578,6 +578,8 @@ namespace SBMS
             public string ItemDescription { get; set; }
             public string LotNumber { get; set; }
             public decimal Qty { get; set; }
+            public decimal Unit_Cost { get; set; }
+            
             public decimal PriceExclusive { get; set; }
             public decimal AdditionalCosts { get; set; }
             public decimal TotalLineValExcl { get; set; }

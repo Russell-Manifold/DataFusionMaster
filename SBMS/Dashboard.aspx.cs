@@ -1,4 +1,6 @@
-﻿using SBMS.Classes;
+﻿using DocumentFormat.OpenXml.Math;
+using DocumentFormat.OpenXml.Spreadsheet;
+using SBMS.Classes;
 using SBMS.Models;
 using System;
 using System.IO;
@@ -20,6 +22,9 @@ namespace SBMS
                 return;
             }
             lblUserName.Text = $":.. { userDets.UserName} ..:";
+            string expUrl = Request.QueryString["exp"];
+            if (expUrl != null) if (expUrl.ToString() == "true") AlertHelper.ShowSweetAlert(this, "Your subscription has expired, please contact support.", "error", "Subscription Expired");
+
             if (!IsPostBack)
             {
                 string imgname = userDets.CoID + ".png";
@@ -38,6 +43,18 @@ namespace SBMS
                    lblCoName.Text = _db.CompanyMasters.FirstOrDefault(x => x.SBCACoID == userDets.CoID).CompanyName.ToString();
                 }
                 showhidebuttons();
+                if (userDets.ExpiryDate < DateTime.Now)
+                {
+                    AlertHelper.ShowSweetAlert(this, "Your subscription has expired, unable to continue. Please contact support for renewal", "error", "Login Error");
+                    return;
+                }
+                if (userDets.ExpiryDate <= DateTime.Now.AddDays(60))
+                 {
+                   
+                    lblWarn.Text = $"Your subscription expires in {(userDets.ExpiryDate - DateTime.Now).Days} days. Please contact support to renew";
+                    lblWarn.Style.Add("display", "inline-block");
+                    return;
+                }
             }
         }
 
@@ -136,6 +153,11 @@ namespace SBMS
         {
             if (userDets != null)
             {
+                if (userDets.ExpiryDate <= DateTime.Now)
+                {
+                    AlertHelper.ShowSweetAlert(this, "Your subscription has expired, unable to continue. Please contact support for renewal", "error", "Login Error");
+                    return;
+                }
                 Response.Redirect("~/OSPurchaseOrders.aspx?user=" + userDets.UserGuiD, false);
             }
             else
@@ -143,5 +165,159 @@ namespace SBMS
                 Response.Redirect("~/Dashboard.aspx", true);
             }
         }
+
+        protected void ibtnPickSlips_Click(object sender, EventArgs e)
+        {
+            if (userDets != null)
+            {
+                if (userDets.ExpiryDate <= DateTime.Now)
+                {
+                    AlertHelper.ShowSweetAlert(this, "Your subscription has expired, unable to continue. Please contact support for renewal", "error", "Login Error");
+                    return;
+                }
+                Response.Redirect("~/OSSalesOrders.aspx?user=" + userDets.UserGuiD, false);
+            }
+            else
+            {
+                Response.Redirect("~/Dashboard.aspx", true);
+            }
+        }
+        protected void ibtnPickTrack_Click(object sender, EventArgs e)
+        {
+            if (userDets != null)
+            {
+                if (userDets.ExpiryDate <= DateTime.Now)
+                {
+                    AlertHelper.ShowSweetAlert(this, "Your subscription has expired, unable to continue. Please contact support for renewal", "error", "Login Error");
+                    return;
+                }
+                Response.Redirect("~/PickingSlipTracking.aspx?user=" + userDets.UserGuiD, false);
+            }
+            else
+            {
+                Response.Redirect("~/Dashboard.aspx", true);
+            }
+        }
+
+        protected void ibtnStckCtl_Click(object sender, EventArgs e)
+        {
+            if (userDets != null)
+            {
+                if (userDets.ExpiryDate <= DateTime.Now)
+                {
+                    AlertHelper.ShowSweetAlert(this, "Your subscription has expired, unable to continue. Please contact support for renewal", "error", "Login Error");
+                    return;
+                }
+                Response.Redirect("~/StockControl.aspx?user=" + userDets.UserGuiD, false);
+            }
+            else
+            {
+                Response.Redirect("~/Dashboard.aspx", true);
+            }
+        }
+
+        protected void ibtnmrp2_Click(object sender, EventArgs e)
+        {
+            if (userDets != null)
+            {
+                if (userDets.ExpiryDate <= DateTime.Now)
+                {
+                    AlertHelper.ShowSweetAlert(this, "Your subscription has expired, unable to continue. Please contact support for renewal", "error", "Login Error");
+                    return;
+                }
+                Response.Redirect("~/FGDemands.aspx?user=" + userDets.UserGuiD, false);
+            }
+            else
+            {
+                Response.Redirect("~/Dashboard.aspx", true);
+            }
+        }
+
+        protected void ibtnFCasts_Click(object sender, EventArgs e)
+        {
+            if (userDets != null)
+            {
+                if (userDets.ExpiryDate <= DateTime.Now)
+                {
+                    AlertHelper.ShowSweetAlert(this, "Your subscription has expired, unable to continue. Please contact support for renewal", "error", "Login Error");
+                    return;
+                }
+                Response.Redirect("~/ForeCastHeaders.aspx?user=" + userDets.UserGuiD, false);
+            }
+            else
+            {
+                Response.Redirect("~/Dashboard.aspx", true);
+            }
+        }
+
+        protected void ibtnJobTrack_Click(object sender, EventArgs e)
+        {
+            if (userDets != null)
+            {
+                if (userDets.ExpiryDate <= DateTime.Now)
+                {
+                    AlertHelper.ShowSweetAlert(this, "Your subscription has expired, unable to continue. Please contact support for renewal", "error", "Login Error");
+                    return;
+                }
+                Response.Redirect("~/JobTracking.aspx?user=" + userDets.UserGuiD, false);
+            }
+            else
+            {
+                Response.Redirect("~/Dashboard.aspx", true);
+            }
+        }
+
+        protected void ibtmWorksOrders_Click(object sender, EventArgs e)
+        {
+            if (userDets != null)
+            {
+                if (userDets.ExpiryDate <= DateTime.Now)
+                {
+                    AlertHelper.ShowSweetAlert(this, "Your subscription has expired, unable to continue. Please contact support for renewal", "error", "Login Error");
+                    return;
+                }
+                Response.Redirect("~/WorksOrdersHeaders.aspx?user=" + userDets.UserGuiD, false);
+            }
+            else
+            {
+                Response.Redirect("~/Dashboard.aspx", true);
+            }
+        }
+
+        protected void ibtmWOrdMgment_Click(object sender, EventArgs e)
+        {
+            if (userDets != null)
+            {
+                if (userDets.ExpiryDate <= DateTime.Now)
+                {
+                    AlertHelper.ShowSweetAlert(this, "Your subscription has expired, unable to continue. Please contact support for renewal", "error", "Login Error");
+                    return;
+                }
+                Response.Redirect("~/WorksOrdersManfHeaders.aspx?user=" + userDets.UserGuiD, false);
+            }
+            else
+            {
+                Response.Redirect("~/Dashboard.aspx", true);
+            }
+        }
+
+        protected void ibtnRMD_Click(object sender, EventArgs e)
+        {
+            if (userDets != null)
+            {
+                if (userDets.ExpiryDate <= DateTime.Now)
+                {
+                    AlertHelper.ShowSweetAlert(this, "Your subscription has expired, unable to continue. Please contact support for renewal", "error", "Login Error");
+                    return;
+                }
+                Response.Redirect("~/ProductionRMD.aspx?user=" + userDets.UserGuiD, false);
+            }
+            else
+            {
+                Response.Redirect("~/Dashboard.aspx", true);
+            }
+        }
+        // 
+
     }
 }

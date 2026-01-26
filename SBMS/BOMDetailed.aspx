@@ -28,6 +28,13 @@
                 <div class="row 150%">
                       <div class="2u 12u$(medium)">&nbsp;</div>    
                     <div class="8u 12u$(medium)">
+                             <asp:UpdateProgress ID="UpdateProgress1" runat="server" AssociatedUpdatePanelID="UpdatePanel1">
+                                    <ProgressTemplate>
+                                        <div style="position: fixed; text-align: center; height: 100%; width: 100%; top: 0; right: 0; left: 0; z-index: 9999999; background-color: #000000; opacity: 0.5;">
+                                           <asp:Image ID="imgUpdateProgress" runat="server" ImageUrl="~/images/tenorwait.gif" AlternateText="Loading ..." ToolTip="Loading ..." style="padding: 10px; padding-top:15%; border-radius:1.5em" />
+                                        </div>
+                                      </ProgressTemplate>
+                                </asp:UpdateProgress> 
                         <asp:UpdatePanel ID="UpdatePanel1" runat="server">
                             <ContentTemplate>
                                 <div style="display:none">
@@ -87,22 +94,41 @@
                                                 </asp:TemplateField>
                                     </Columns>
                                 </asp:GridView>
-                                 <asp:Panel ID="Panel3" runat="server" style="float:left; margin-top:2em">
-                                         <table style="width:20em">
-                                                 <tr>
-                                                     <td>SBCA Item Cost Price: </td>
+                                 <asp:Panel ID="Panel3" runat="server" style="float:left; margin-top:1em">
+                                         <table style="width:35em; font-size:0.8em">
+                                             <tr>
+                                                <td>This BOM Cost: </td>
+                                                 <td style="text-align:right"><asp:Label ID="lblNewBOMCost" runat="server" Text=""></asp:Label></td> 
+                                             </tr>    
+                                             <tr>
+                                                     <td>Current Sage Item Cost: </td>
                                                      <td  style="text-align:right"><asp:Label ID="lblItemCost" runat="server" Text=""></asp:Label></td> 
                                                   </tr>
+                                             
                                              <tr>
-                                                 <td>This BOM Total Cost Price: </td>
-                                                  <td style="text-align:right"><asp:Label ID="lblNewBOMCost" runat="server" Text=""></asp:Label></td> 
-                                              </tr>
-         
-                                             <tr>
-                                                 <td colspan="2"><br /> <asp:LinkButton ID="lbtnSBCAUpdate" CssClass="icon fa-upload buttonIndex" runat="server" ToolTip="Update Sage with this unit cost?" OnClick="lbtnSBCAUpdate_Click">Update SBCA Average Unit Cost</asp:LinkButton></td>
-                                                 <cci:ConfirmButtonExtender ID="lbtnSBCAUpdate_ConfirmButtonExtender1" runat="server" ConfirmText="Confirm, Update Sage Accounting Average Cost?" Enabled="True" TargetControlID="lbtnSBCAUpdate"></cci:ConfirmButtonExtender>
+                                                 <td>Current Sage Selling Price:</td>
+                                                 <td style="text-align:right"><asp:Label ID="lblSageSell" runat="server" Text=""></asp:Label></td> 
                                              </tr>
-                                             </table>
+                                             <tr>
+                                                <td>Current GP% (This BOM Cost vs Sage Selling Price):</td>
+                                                <td style="text-align:right"><asp:Label ID="lblCurrGP" runat="server" Text=""></asp:Label></td> 
+                                            </tr>
+                                          <tr>
+                                              <td colspan="2"><hr /></td>
+                                          </tr>
+                                                 <tr>
+                                                <td>Required GP%:</td>
+                                                <td style="text-align:right"><asp:TextBox ID="txtNewGP" runat="server" Width="70" style="text-align:right; font-size:1em" oninput="calculateNewSell()" AutoPostBack="false">1.00</asp:TextBox>
+                                                    <cci:FilteredTextBoxExtender ID="FilteredTextBoxExtender3" runat="server" TargetControlID="txtNewGP" FilterType="Custom, Numbers" ValidChars="." />
+                                                </td> 
+                                            </tr>
+                                             <tr>
+                                            <td>New Selling Price:</td>
+                                            <td style="text-align:right"><asp:TextBox ID="txtNewSell" runat="server" Width="70" style="text-align:right; font-size:1em">1.00</asp:TextBox>
+                                                <cci:FilteredTextBoxExtender ID="FilteredTextBoxExtender4" runat="server" TargetControlID="txtNewSell" FilterType="Custom, Numbers" ValidChars="." />
+                                            </td> 
+                                        </tr>
+                                         </table>
                                      </asp:Panel>
                                 <asp:Panel ID="Panel2" runat="server" style="float:right; margin-right:5em">
                                     <table>
@@ -129,7 +155,9 @@
                                     </table>
                                 </asp:Panel><br /><br /><br />
                                 <asp:Panel ID="Pane32" runat="server">
-                                <div style="width:100%; text-align:center; margin-top:5em ">
+                                <div style="width:100%; text-align:center; margin-top:7em ">
+                                     <asp:LinkButton ID="lbtnSBCAUpdate" CssClass="icon fa-upload buttonIndex" runat="server" ToolTip="Update Sage with this BOM cost and new selling price?" OnClick="lbtnSBCAUpdate_Click" style="float:left"> Update Sage</asp:LinkButton>
+                                    <cci:ConfirmButtonExtender ID="lbtnSBCAUpdate_ConfirmButtonExtender1" runat="server" ConfirmText="Confirm, Update Sage Accounting Average Cost?" Enabled="True" TargetControlID="lbtnSBCAUpdate"></cci:ConfirmButtonExtender>
                                 <cci:ConfirmButtonExtender ID="lbtnDeleteBom_ConfirmButtonExtender1" runat="server" ConfirmText="Delete this BOM? Are you sure?" Enabled="True" TargetControlID="lbtnDeleteBom"></cci:ConfirmButtonExtender>
                                 <asp:LinkButton ID="lbtnDeleteBom" runat="server" style="color:red; font-size:.8em; padding-right:2em; float:right" CssClass="icon fa-ban button" OnClick="lbtnDeleteBom_Click" > Delete BOM</asp:LinkButton>
                                 <asp:LinkButton ID="LbtnSaveBOM" runat="server" style="font-size:1em" CssClass="icon fa-save buttonSage" OnClick="LbtnSaveBOM_Click"> SAVE BOM</asp:LinkButton>
@@ -151,6 +179,37 @@
             }
         }
 </script>
+     <script type="text/javascript">
+         window.onload = function () {
+             calculateNewSell();
+         };
+     </script>
+     <script type="text/javascript">
+        function calculateNewSell() {
+            // Get the client IDs for the controls
+            var costLabel = document.getElementById('<%= lblNewBOMCost.ClientID %>');
+            var gpInput = document.getElementById('<%= txtNewGP.ClientID %>');
+            var sellInput = document.getElementById('<%= txtNewSell.ClientID %>');
+
+            if (!costLabel || !gpInput || !sellInput) return;
+
+            // Get values
+            var cost = parseFloat(costLabel.innerText.replace(/,/g, ''));
+            var gp = parseFloat(gpInput.value.replace(/,/g, ''));
+
+            if (isNaN(cost) || isNaN(gp) || gp >= 100) {
+                sellInput.value = '';
+                return;
+            }
+
+            var newSell = cost / (1 - (gp / 100));
+            if (isFinite(newSell)) {
+                sellInput.value = newSell.toFixed(2);
+            } else {
+                sellInput.value = '';
+            }
+        }
+    </script>
      <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </body>
 </html>

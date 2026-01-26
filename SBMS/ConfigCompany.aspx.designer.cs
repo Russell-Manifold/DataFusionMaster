@@ -87,15 +87,6 @@ namespace SBMS
         protected global::System.Web.UI.WebControls.Image imgCoImg;
 
         /// <summary>
-        /// UpdatePanel1 control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.UpdatePanel UpdatePanel1;
-
-        /// <summary>
         /// lblCoName control.
         /// </summary>
         /// <remarks>
@@ -240,6 +231,15 @@ namespace SBMS
         protected global::System.Web.UI.WebControls.Panel pnlLotTrack;
 
         /// <summary>
+        /// chkLotTrackAdd control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.CheckBox chkLotTrackAdd;
+
+        /// <summary>
         /// chkAutoManf control.
         /// </summary>
         /// <remarks>
@@ -303,15 +303,6 @@ namespace SBMS
         protected global::System.Web.UI.WebControls.Panel PnlPSTrack;
 
         /// <summary>
-        /// chkBarCodes control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.CheckBox chkBarCodes;
-
-        /// <summary>
         /// chkUsePacks control.
         /// </summary>
         /// <remarks>
@@ -337,6 +328,15 @@ namespace SBMS
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Panel pnlPack;
+
+        /// <summary>
+        /// chkBarCodes control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.CheckBox chkBarCodes;
 
         /// <summary>
         /// chkMod2 control.
@@ -391,6 +391,15 @@ namespace SBMS
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Panel pnlBOM;
+
+        /// <summary>
+        /// chkManfCosts control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.CheckBox chkManfCosts;
 
         /// <summary>
         /// chkNotifs control.

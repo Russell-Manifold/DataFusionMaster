@@ -7,6 +7,7 @@
     <link id="Link3" runat="server" rel="shortcut icon" href="images/datafusionicon.ico" type="image/x-icon" />
     <link id="Link4" runat="server" rel="icon" href="images/datafusionicon.ico" type="image/ico" />
     <link rel="stylesheet" href="assets/css/main.css" />
+     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
     <form id="form1" runat="server">

@@ -26,6 +26,12 @@ namespace SBMS
             if (CurrentUser.UsePickSlipTracking != true) ibtnPickTrack.Style.Add("display", "none");
             if (CurrentUser == null) Response.Redirect("~/Login.aspx", false); Context.ApplicationInstance.CompleteRequest();
 
+            if (CurrentUser.ExpiryDate <= DateTime.Now)
+            {
+                Response.Redirect("~/Dashboard.aspx?exp=true", false);
+                return;
+            }
+
             CoID = CurrentUser.CoID;
             lblUsername.Text = $":.. {CurrentUser.UserName} ..:";
             string imgname = CurrentUser.CoID + ".png";

@@ -110,7 +110,7 @@
                     <ContentTemplate>
                         <div class="row 150%">
                             <%--<div class="1u 12u$(medium)">&nbsp;</div>--%>
-                            <div class="10u 12u$(medium)">
+                            <div class="12u 12u$(medium)">
                                 <asp:GridView ID="GridJCLines" runat="server" AutoGenerateColumns="false" CssClass="gridviewS" RowStyle-Wrap="true" OnRowDataBound="GridJCLines_RowDataBound" ShowFooter="true" Style="font-size: 1em">
                                     <HeaderStyle CssClass="gridViewHeaderS" />
                                     <RowStyle CssClass="gridViewRowS" />
@@ -199,6 +199,8 @@
                                         </asp:TemplateField>
                                     </Columns>
                                 </asp:GridView>
+                                </div>
+                            <div class="10u 12u$(medium)">
                                 <asp:Panel ID="PnlMsg" runat="server">
                                     <table style="width: 100%">
                                         <tr>
@@ -223,8 +225,9 @@
                                         </tr>
                                     </table>
                                 </asp:Panel>
-                            </div>
-                            <div class="2u 12u$(medium)"><h4><asp:LinkButton ID="lbtnHist" runat="server" class="buttonC  icon fa-search-plus" OnClick="lbtnHist_Click" style="width:100%; color:#4282C1; margin-bottom:0" ToolTip="Open Detailed View">&nbsp;Process Trail</asp:LinkButton></h4>
+                           </div>
+                           
+                            <div class="2u 12u$(medium)"><h4><asp:LinkButton ID="lbtnHist" runat="server" class="buttonC  icon fa-search-plus" OnClick="lbtnHist_Click" style="width:100%; color:#4282C1; margin:0.25em" ToolTip="Open Detailed View">&nbsp;Process Trail</asp:LinkButton></h4>
                                    <asp:GridView ID="GridHistLines" runat="server" AutoGenerateColumns="false" CssClass="gridview" RowStyle-Wrap="true" Style="font-size: .85em">
                                         <HeaderStyle CssClass="gridViewHeader" />
                                         <RowStyle CssClass="gridViewRow" />
@@ -237,6 +240,8 @@
                                         </Columns>
                                     </asp:GridView>
                             </div>
+                            </div>
+                        <div class="row 150%">
                             <div class="12u 12u$(medium)" style="text-align: center">
                                 <asp:Panel ID="PnlButtons" runat="server">
                                 <asp:LinkButton ID="lbtnDelJC" CssClass="icon fa-ban buttonTransparent" runat="server" ForeColor="Red" ToolTip="Delete Job Card" OnClick="lbtnDelJC_Click" Style="margin-right: 2em"> Delete</asp:LinkButton>

@@ -108,7 +108,7 @@ namespace SBMS
                 chkNotifyJCMoveS.Checked = Convert.ToBoolean(SelectedRole.NotifyJCMove);
                 chkNotifyNewSOS.Checked = Convert.ToBoolean(SelectedRole.NotifyNewSO);
                 chkNotifyPSCompleteS.Checked = Convert.ToBoolean(SelectedRole.NotifySOComplete);
-                chkUseGenericLoginS.Checked = Convert.ToBoolean(SelectedRole.UseGenericLogin);
+                //chkUseGenericLoginS.Checked = Convert.ToBoolean(SelectedRole.UseGenericLogin);
                 Button25_ModalPopupExtender.Show();
             }
         }
@@ -126,7 +126,7 @@ namespace SBMS
             chkNotifyJCMoveS.Checked = false;
             chkNotifyNewSOS.Checked = false;
             chkNotifyPSCompleteS.Checked = false;
-            chkUseGenericLoginS.Checked = false;
+            //chkUseGenericLoginS.Checked = false;
         }
 
         protected void btnSaveConfirm_Click(object sender, EventArgs e)
@@ -160,7 +160,7 @@ namespace SBMS
                     ThisRole.NotifyJCMove = chkNotifyJCMoveS.Checked;
                     ThisRole.NotifyNewSO = chkNotifyNewSOS.Checked;
                     ThisRole.NotifySOComplete = chkNotifyPSCompleteS.Checked;
-                    ThisRole.UseGenericLogin = chkUseGenericLoginS.Checked;
+                    //ThisRole.UseGenericLogin = chkUseGenericLoginS.Checked;
                 }
                 else
                 {
@@ -175,7 +175,7 @@ namespace SBMS
                     ThisRole.NotifyJCMove = chkNotifyJCMoveS.Checked;
                     ThisRole.NotifyNewSO = chkNotifyNewSOS.Checked;
                     ThisRole.NotifySOComplete = chkNotifyPSCompleteS.Checked;
-                    ThisRole.UseGenericLogin = chkUseGenericLoginS.Checked;
+                    //ThisRole.UseGenericLogin = chkUseGenericLoginS.Checked;
                     ThisRole.CompanyID = CurrentUser.CoID;
                     _db.RolesMasters.Add(ThisRole);
                 }
@@ -193,7 +193,7 @@ namespace SBMS
                     chkNotifyJCMoveS.Checked = false;
                     chkNotifyNewSOS.Checked = false;
                     chkNotifyPSCompleteS.Checked = false;
-                    chkUseGenericLoginS.Checked = false;
+                    //chkUseGenericLoginS.Checked = false;
                     LoadRoles();
                     string message = "alert('" + "Successfully Saved" + "')";
                     ScriptManager.RegisterClientScriptBlock((sender as Control), this.GetType(), "alert", message, true);

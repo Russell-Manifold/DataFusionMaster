@@ -84,7 +84,7 @@ namespace SBMS
         {
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {
-                var WOLines = _db.WorksOrderLines.Where(x => x.CompanyID == CoID && x.WOID == woid).ToList();
+                var WOLines = _db.WorksOrderLines.Where(x => x.CompanyID == CoID && x.WOID == woid).OrderBy(x=> x.LineID).ToList();
                 if (!WOLines.Any())
                 {
                     WorksOrderLine NewWOLine = new WorksOrderLine();
@@ -142,7 +142,10 @@ namespace SBMS
                     AlertHelper.ShowSweetAlert(this, message, "warning");
                     return;
                 }
-            
+
+            // SAVE LAST FILLED WORK ORDER LINE FIRST
+            SaveLastFilledWOLine();
+
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {
                 var FCHeader = _db.WorksOrderHeaders.Where(x => x.CompanyID == CoID && x.ID == woid).FirstOrDefault();
@@ -705,6 +708,7 @@ namespace SBMS
 
         protected void lbtnWOPrint_Click(object sender, EventArgs e)
         {
+           
             if (lblFCRef.Text.ToString().Trim().Length < 1)
             {
                 string message = "Please capture a Reference before continuing.";
@@ -722,9 +726,45 @@ namespace SBMS
                 AlertHelper.ShowSweetAlert(this, message, "warning");
                 return;
             }
+
+            // SAVE LAST FILLED WORK ORDER LINE FIRST
+            SaveLastFilledWOLine();
+
             LbtnSaveWO_Click(sender, EventArgs.Empty);
             Response.Redirect($"~/WorksOrderPDFCreate.aspx?woid={woid}", true);
         }
 
+        private void SaveLastFilledWOLine()
+        {
+            GridViewRow lastFilledRow = null;
+
+            foreach (GridViewRow row in GridWOLines.Rows)
+            {
+                // Adjust field names exactly as they exist in your grid
+                TextBox txtQty = row.FindControl("txtQty") as TextBox;
+                DropDownList DDItemCode = row.FindControl("DDItemCode") as DropDownList;
+
+                if (txtQty.Text != null && DDItemCode != null)
+                {
+                    bool hasQty = !string.IsNullOrWhiteSpace(txtQty.Text);
+                    bool hasItem = DDItemCode.SelectedIndex > 0;
+
+                    if (hasQty && hasItem)
+                    {
+                        lastFilledRow = row; // keep overwriting until LAST filled row
+                    }
+                }
+            }
+
+            if (lastFilledRow != null)
+            {
+                LinkButton btnSave = lastFilledRow.FindControl("lbtnLineSave") as LinkButton;
+                if (btnSave != null)
+                {
+                    // Fire the SAME logic as an actual Save Line click
+                    lbtnLineSave_Click(btnSave, EventArgs.Empty);
+                }
+            }
+        }
     }
 }

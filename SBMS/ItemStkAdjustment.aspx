@@ -159,7 +159,7 @@
                                                         <div class="Controls">
                                                             <input id="btnCancel5" type="button" class="fa fa-times-circle" value="No" runat="server" style="display:none"/>
                                                             <input id="btnOkay5" type="button" class="buttonYellow" value="OK" runat="server" style="display:none"/>
-                                                            <asp:LinkButton ID="btnAddNewLot" runat="server" CssClass="icon fa-thumbs-up buttonIndex" OnClick="btnAddNewLot_Click"  > Save New Lot Number</asp:LinkButton>
+                                                            <asp:LinkButton ID="btnAddNewLot" runat="server" CssClass="icon fa-thumbs-up buttonRed" OnClick="btnAddNewLot_Click"  > Save New Lot Number</asp:LinkButton>
                                                         </div>
                                                     </div>
                                                 </asp:Panel>

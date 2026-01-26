@@ -18,5 +18,7 @@ namespace SBMS.Models
         public string StoreCode { get; set; }
         public decimal QtyHandToStore { get; set; }
         public decimal TotalUnitPriceExclInclAdd { get; set; }
+       public bool AllowPicking { get; set; }
+       public bool AllowReceiving { get; set; }
     }
 }

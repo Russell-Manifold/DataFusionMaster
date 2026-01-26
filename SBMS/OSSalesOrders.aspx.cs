@@ -7,6 +7,7 @@ using System.Data;
 using System.IO;
 using System.Linq;
 using System.Linq.Dynamic.Core;
+using System.Web.Services.Description;
 using System.Web.UI.WebControls;
 
 namespace SBMS
@@ -28,6 +29,12 @@ namespace SBMS
                 return;
             }
             SessionValidator.ValidateUserSession(CurrentUser);
+
+            if (CurrentUser.ExpiryDate <= DateTime.Now)
+            {
+                Response.Redirect("~/Dashboard.aspx?exp=true", false);
+                return;
+            }
 
             if (CurrentUser.UsePickSlipTracking != true) ibtnPickTrack.Style.Add("display", "none");
             string imgname = CurrentUser.CoID + ".png";
@@ -83,7 +90,10 @@ namespace SBMS
                 {
                     query = query.Where(x => x.LinkedJCStatus == DDStatus.Text || x.LinkedPSStatus == DDStatus.Text);
                 }
-
+                if (DDueDate.SelectedIndex > 0)
+                {
+                    query = query.Where(x => x.DueDelDate < Convert.ToDateTime(DDueDate.SelectedValue.ToString()));
+                }
                 // Apply sorting using dynamic LINQ
                 if (!string.IsNullOrEmpty(sortExpression))
                 {
@@ -312,6 +322,28 @@ namespace SBMS
                 DDStatus.DataTextField = "LinkedStatus";
                 DDStatus.DataBind();
                 DDStatus.Items.Insert(0, "-Select-");
+
+                var dueDelDates = _db.DocHeaders
+                 .Where(d => d.DocType == 5
+                          && d.CompanyID == CurrentUser.CoID
+                          && d.DueDelDate.HasValue
+                          && d.Active == true)
+                 .Select(d => d.DueDelDate.Value)
+                 .Distinct()
+                 .OrderBy(d => d)
+                 .ToList();
+
+                DDueDate.DataSource = dueDelDates.Select(d => new
+                {
+                    Text = d.ToShortDateString(),
+                    Value = d.ToString("yyyy-MM-dd")
+                });
+
+                DDueDate.DataTextField = "Text";
+                DDueDate.DataValueField = "Value";
+                DDueDate.DataBind();
+                DDueDate.Items.Insert(0, "-Select-");
+
             }
         }
 
@@ -469,6 +501,40 @@ namespace SBMS
         protected void lbtnDashSales_Click(object sender, EventArgs e)
         {
             Response.Redirect("~/DashboardSales.aspx?user=" + CurrentUser.UserGuiD, false);
+        }
+
+        protected void lbtnDownload_Click(object sender, EventArgs e)
+        {
+            if (GridPOs.Rows.Count > 0)
+            {
+                string sortExpression = ViewState["SortExpression"] as string ?? "DueDelDate"; // Replace "DefaultColumn" with your default column
+                string sortDirection = ViewState["SortDirection"] as string ?? "ASC";
+
+                var sortedData = GetSortedDocHeaders(sortExpression, sortDirection);
+                foreach (var dl in sortedData)
+                {
+                    if (dl.LinkedJCStatus != null) dl.LinkedStatus = dl.LinkedJCStatus;
+                    if (dl.LinkedPSStatus != null) dl.LinkedStatus = dl.LinkedPSStatus;
+                }
+                DataTable DtD = DataTableHelper.ConvertToDataTable(sortedData);
+
+                if (DtD != null && DtD.Rows.Count > 0)
+                {
+                    string fileName = $"Sales_Orders__{DateTime.Now:yyyyMMdd_HHmmss}";
+                    string wsName = "ItemsData";
+                    DtD.Columns.Remove("DocGUID");
+                    DtD.Columns.Remove("DocID");
+                    DtD.Columns.Remove("LinkedJCID");
+                    DtD.Columns.Remove("LinkedPSID");
+                    DtD.Columns.Remove("SupplierInvNum");
+                    ExcelHelper.ExportToExcel(DtD, fileName, wsName);
+                }
+                else
+                {
+                    string message = "No data available to export.";
+                    AlertHelper.ShowSweetAlert(this, message, "error");
+                }
+            }
         }
     }
 }

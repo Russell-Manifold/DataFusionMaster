@@ -93,11 +93,11 @@
                                             </ItemTemplate>
                                         </asp:TemplateField>
 
-                                    <asp:TemplateField HeaderText ="Use Generic Login" ItemStyle-Width="8em" ItemStyle-BackColor="Wheat" ItemStyle-HorizontalAlign="Center" HeaderStyle-HorizontalAlign="Center">
+                                    <%--<asp:TemplateField HeaderText ="Use Generic Login" ItemStyle-Width="8em" ItemStyle-BackColor="Wheat" ItemStyle-HorizontalAlign="Center" HeaderStyle-HorizontalAlign="Center">
                                            <ItemTemplate>
-                                               <asp:CheckBox ID="chkUseGenericLogin" runat="server" Checked='<%# Eval("UseGenericLogin") %>' Enabled="false" />
+                                               <asp:CheckBox ID="chkUseGenericLogin" runat="server" Checked='<%# Eval("UseGenericLogin") %>' Enabled="false"  />
                                            </ItemTemplate>
-                                       </asp:TemplateField>
+                                       </asp:TemplateField>--%>
                                     </Columns>
                                 </asp:GridView>
                             </div>
@@ -150,10 +150,6 @@
                                      <tr>
                                         <td style="background-color:#dfffdf">Notify SO (Picking) Complete *</td>
                                         <td style="padding:.5em"><asp:CheckBox ID="chkNotifyPSCompleteS" runat="server" Checked="false" /></td>
-                                    </tr>
-                                     <tr>
-                                        <td style="background-color:Wheat">Use Generic Sage Login Profile *</td>
-                                        <td style="padding:.5em"><asp:CheckBox ID="chkUseGenericLoginS" runat="server" Checked="false" /></td>
                                     </tr>
                                 </table>
                                </div>

@@ -108,8 +108,7 @@ namespace SBMS
                 string jsonString = "{ \"Username\": \"" + username + "\", \"Password\": \"" + password + "\" }";
                 ApiUrlCall Api = new ApiUrlCall();
                 string RetStr = await Api.ValidateUserAsync("Company", jsonString, userDets);
-               
-                
+                              
                 bool isValid = true;
                 lnkSage.Visible = false;
                 if (RetStr != "OK")
@@ -309,7 +308,9 @@ namespace SBMS
                             x.UseBarcodes,
                             x.AutoUpdateSageSOs,
                             x.AutoGenTaxInvoice,
-                            x.UsePacks
+                            x.UsePacks,
+                            x.UseEndDate,
+                            x.ShowManfCosts
                         })
                         .FirstOrDefault();
 
@@ -325,6 +326,8 @@ namespace SBMS
                     userDetails.AutoGenTaxInvoice = (bool)GenLogIn.AutoGenTaxInvoice;
                     userDetails.UseAutoManf = GenLogIn.UseAutoManf;
                     userDetails.UsePacks = GenLogIn.UsePacks;
+                    userDetails.ExpiryDate = GenLogIn.UseEndDate != null ? (DateTime)GenLogIn.UseEndDate : DateTime.MaxValue;
+                    userDetails.ShowManfCosts = GenLogIn.ShowManfCosts;
                     if (GenLogIn.UseLotTracking == true)
                     {
                         userDetails.CompanyUseLotNumbers = true;
@@ -335,11 +338,11 @@ namespace SBMS
                     }
 
                     userDetails.CompanyUseLotAddDetails = GenLogIn.UseLotAddDetails;
-                    if (userDetails.UseGenericLogin)
-                    {
-                        userDetails.LoginName = GenLogIn.CoGenericLoginEmail;
-                        userDetails.LoginPwd = GenLogIn.CoGenericLoginPwd;
-                    }
+                    //if (userDetails.UseGenericLogin)
+                    //{
+                    //    userDetails.LoginName = GenLogIn.CoGenericLoginEmail;
+                    //    userDetails.LoginPwd = GenLogIn.CoGenericLoginPwd;
+                    //}
                     userDetails.CompanyDecPlaces = GenLogIn.ItemQtyDecPlaces;
 
                 }

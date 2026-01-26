@@ -49,5 +49,6 @@ namespace SBMS.Models
         public bool AutoUpdateSageSOs { get; set; }
         public bool AutoGenTaxInvoice { get; set; }
         public bool UsePacks { get; set; }
+        public bool ShowManfCosts { get; set; }
     }
 }

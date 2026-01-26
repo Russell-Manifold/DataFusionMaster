@@ -153,6 +153,7 @@
                                 <asp:BoundField DataField="Document" ReadOnly="True" HeaderText="Document" />
                                 <asp:BoundField DataField="LotNumber" ReadOnly="True" HeaderText="Lot Number"/>
                                 <asp:BoundField DataField="Qty" ReadOnly="True" HeaderText="Qty" DataFormatString="{0:N2}" />
+                                  <asp:BoundField DataField="PriceExclusive" ReadOnly="True" HeaderText="Unit Excl" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right" ItemStyle-Width="5em" DataFormatString="{0:N2}" />
                                 <asp:BoundField DataField="TotalLineValExcl" ReadOnly="True" HeaderText="Line Value" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right" FooterStyle-HorizontalAlign="Right" DataFormatString="{0:N2}" />
                                   <asp:BoundField DataField="Store" ReadOnly="True" HeaderText="Store" ItemStyle-HorizontalAlign="Center" HeaderStyle-HorizontalAlign="Center" />
                                  <asp:BoundField DataField="TransactionDate" ReadOnly="True" HeaderText="Date" DataFormatString="{0:dd MMM}" />

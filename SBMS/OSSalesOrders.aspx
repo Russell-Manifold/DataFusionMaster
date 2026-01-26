@@ -48,11 +48,9 @@
 	            </nav>
      </div>
  </div>
-<div id="main">
+            <div id="main">
         <div class="content">
             <div class="container">
-                <%--<asp:UpdatePanel ID="UpdatePanel1" runat="server">--%>
-                    <%--<ContentTemplate>--%>
                         <div class="row 150%">
                             <div class="col-12 col-12-wide" style="text-align: center">
                                 <a href="https://mydatafusion.online" title="My Data Fusion website"><img src="images/Logo.png" style="border-radius: 0.25em; float: left" class="logoImg" /></a>
@@ -78,10 +76,12 @@
                                 <asp:Panel ID="Panel1" runat="server" DefaultButton="lbtnfind" style="width:100%">
                                     <table style="width: 100%">
                                         <tr>
-                                            <td style="padding:3px">Find (Cust/SO#/Ref) &nbsp;<asp:TextBox ID="txtfind" runat="server"></asp:TextBox><asp:LinkButton ID="lbtnfind" runat="server" CssClass="fa fa-search" OnClick="lbtnfind_Click"></asp:LinkButton></td>
+                                            <td style="padding:3px">Find (Cust/SO#/Ref) &nbsp;<asp:TextBox ID="txtfind" runat="server"></asp:TextBox><asp:LinkButton ID="lbtnfind" runat="server" CssClass="fa fa-search buttonRed" OnClick="lbtnfind_Click" ToolTip="Search Sales Orders"></asp:LinkButton></td>
                                             <td style="text-align: center">Status &nbsp;<asp:DropDownList ID="DDStatus" runat="server" Width="100px" AutoPostBack="true" OnSelectedIndexChanged="DDSOStatus_SelectedIndexChanged"></asp:DropDownList></td>
                                             <td style="text-align: center">SO Status &nbsp;<asp:DropDownList ID="DDSOStatus" runat="server" Width="100px" AutoPostBack="true" OnSelectedIndexChanged="DDSOStatus_SelectedIndexChanged"></asp:DropDownList></td>
-                                            <td style="text-align: left; width:18em"><asp:CheckBox ID="chkCompl" runat="server" Text="Show Completed" AutoPostBack="true" OnCheckedChanged="chkCompl_CheckedChanged" /></td>
+                                            <td style="text-align: center">Due Date <= &nbsp;<asp:DropDownList ID="DDueDate" runat="server" Width="100px" AutoPostBack="true" OnSelectedIndexChanged="DDSOStatus_SelectedIndexChanged"></asp:DropDownList></td>
+                                            <td style="text-align: left; margin-top:1em"><asp:CheckBox ID="chkCompl" runat="server" Text=" Show Completed" AutoPostBack="true" OnCheckedChanged="chkCompl_CheckedChanged" /></td>
+                                            <td><asp:LinkButton ID="lbtnDownload" runat="server" CssClass="fa fa-download buttonRed" ToolTip="Download to excel" OnClick="lbtnDownload_Click"></asp:LinkButton></td>
                                         </tr>
                                     </table>   
                                 </asp:Panel>
@@ -120,7 +120,7 @@
                                                 <asp:CheckBox ID="chkstarted" runat="server" Checked='<%# Eval("Started")%>' Enabled="false" Text=" "  />
                                             </ItemTemplate>
                                         </asp:TemplateField>
-                                        <asp:TemplateField HeaderText="Compl" ItemStyle-HorizontalAlign="Left" ItemStyle-Width="3em" HeaderStyle-HorizontalAlign="Right">
+                                        <asp:TemplateField HeaderText="Compl" ItemStyle-HorizontalAlign="Left" ItemStyle-Width="3em" HeaderStyle-HorizontalAlign="Right" ItemStyle-VerticalAlign="Bottom">
                                             <ItemTemplate>
                                                 <asp:CheckBox ID="chkComplete" runat="server" Checked='<%# Eval("Complete") %>' Enabled="false" Text=" " />
                                             </ItemTemplate>
@@ -131,19 +131,19 @@
                                 </asp:GridView>
                             </ContentTemplate>
                             <Triggers>
+                                <asp:PostBackTrigger ControlID="lbtnDownload" />
                                 <asp:PostBackTrigger ControlID="imgbRec" />
                                 <asp:PostBackTrigger ControlID="ibtnPickSlips" />
                             </Triggers>
                         </asp:UpdatePanel>
+                            </div>
+                        </div>
             </div>
- </div>
-     </div>
         </div>
-       
-             <section id="footer" class="wrapper">
-                 &nbsp;
-                 </section>
-       
+
+                <section id="footer" class="wrapper">
+                    &nbsp;
+                </section>
         </div>
     </form>
      <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>

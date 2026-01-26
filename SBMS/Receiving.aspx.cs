@@ -139,6 +139,13 @@ namespace SBMS
                         }
                         LoadStores();
                         LoadAttachments(docid);
+                        if (DDStore.Items.Count == 0)
+                        {
+                            btnApprovYes.Attributes.Add("style", "display:none");
+                            lbtnReceive.Attributes.Add("style", "display:none");
+                            string message = "No stores available for receiving, please go to settings and allow at least 1 store to receive goods";
+                            AlertHelper.ShowSweetAlert(this, message, "error");
+                        }
                     }
                 }
             }
@@ -324,21 +331,27 @@ namespace SBMS
         {
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {
-                var stores = _db.Stores.Where(x => x.CompanyID == CurrentUser.CoID && x.StoreActive == true && x.AllowReceiving == true && x.StoreCode != "CoR" && x.StoreCode != "CoD").ToList(); // && x.StoreCode != "Co"
-                DDStore.DataSource = stores;
-                DDStore.DataTextField = "StoreDescript";
-                DDStore.DataValueField = "StoreCode";
-                DDStore.DataBind(); 
-                
-                DDStoreEdit.DataSource = stores;
-                DDStoreEdit.DataTextField = "StoreDescript";
-                DDStoreEdit.DataValueField = "StoreCode";
-                DDStoreEdit.DataBind();
-                
-                if (stores.Count > 1)
+                var stores = _db.Stores.Where(x => x.CompanyID == CurrentUser.CoID && x.StoreActive == true && x.AllowReceiving == true && x.StoreCode != "CoR" && x.StoreCode != "CoD" && x.StoreCode.ToLower() != "scr").ToList(); // && x.StoreCode != "Co"
+                if (stores.Count > 0)
                 {
-                    DDStore.Items.Insert(0, "-Select-");
+                    DDStore.DataSource = stores;
+                    DDStore.DataTextField = "StoreDescript";
+                    DDStore.DataValueField = "StoreCode";
+                    DDStore.DataBind();
+
+
+                    DDStoreEdit.DataSource = stores;
+                    DDStoreEdit.DataTextField = "StoreDescript";
+                    DDStoreEdit.DataValueField = "StoreCode";
+                    DDStoreEdit.DataBind();
                     DDStoreEdit.Items.Insert(0, "-Select-");
+
+                    if (stores.Count > 1)
+                    {
+                        DDStore.Items.Insert(0, "-Select-");
+                    }
+                    btnApprovYes.Attributes.Add("style", "inline-block");
+                    lbtnReceive.Attributes.Add("style", "inline-block");
                 }
             }
         }
@@ -352,27 +365,27 @@ namespace SBMS
             }
             if (e.Row.RowType == DataControlRowType.DataRow)
             {
-                if (e.Row.Cells[4].Text != e.Row.Cells[11].Text)
+                if (e.Row.Cells[4].Text != e.Row.Cells[9].Text)
                 {
-                    e.Row.Cells[11].BackColor = System.Drawing.Color.AntiqueWhite;
+                    e.Row.Cells[9].BackColor = System.Drawing.Color.AntiqueWhite;
                 }
-                if (Convert.ToDecimal(e.Row.Cells[15].Text.ToString()) > (decimal)1.05 || Convert.ToDecimal(e.Row.Cells[15].Text.ToString()) < (decimal)0.95) e.Row.Cells[9].Style.Add("border", "1px solid red");
-                if (e.Row.Cells[16].Text.ToString() == "2")
+                if (Convert.ToDecimal(e.Row.Cells[13].Text.ToString()) > (decimal)1.05 || Convert.ToDecimal(e.Row.Cells[13].Text.ToString()) < (decimal)0.95) e.Row.Cells[7].Style.Add("border", "1px solid red");
+                if (e.Row.Cells[14].Text.ToString() == "2")
                 {
                     LinkButton lbtn = new LinkButton();
                     lbtn = (LinkButton)e.Row.FindControl("lbtnItmC");
                     lbtn.Enabled = false;
                     lbtn.ForeColor = System.Drawing.Color.DarkGray;
                 }
-                if (e.Row.Cells[12].Visible == true && e.Row.Cells[12].Text.ToString().Trim().Replace("&nbsp;","") != "")
+                if (e.Row.Cells[10].Visible == true && e.Row.Cells[10].Text.ToString().Trim().Replace("&nbsp;","") != "")
                 {
                     LinkButton lbtnLotNumAdd = new LinkButton();
                     lbtnLotNumAdd = (LinkButton)e.Row.FindControl("lbtnLotNumAdd");
                     lbtnLotNumAdd.Visible = true;
                 }
             }
-            e.Row.Cells[15].Visible = false;
-            e.Row.Cells[16].Visible = false;
+            e.Row.Cells[13].Visible = false;
+            e.Row.Cells[14].Visible = false;
         }
 
         protected void lbtnReceive_Click(object sender, EventArgs e)
@@ -401,16 +414,9 @@ namespace SBMS
             }
            
             long lineid = Convert.ToInt64(lblLineID.Text);
-            if (QtyLeft != 0)
+            if (QtyLeft != 0 )
             {
-               if (!chkAccept.Checked)
-                {
-                    string message = "Please accept the variation to continue";
-                    AlertHelper.ShowSweetAlert(this, message, "warning");
-                    ModalPopupExtender1.Show();
-                    return;
-                }
-                // insert row into outstandingReceiving table.
+                 // insert row into outstandingReceiving table.
                 using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
                 {
                     var Docline = _db.TempDocLines.Where(x => x.LineID == lineid).FirstOrDefault();
@@ -1340,6 +1346,15 @@ namespace SBMS
 
         protected void lbtnItmC_Click(object sender, EventArgs e)
         {
+            if (DDStoreEdit.Items.Count == 0)
+            {
+                btnApprovYes.Attributes.Add("style", "display:none");
+                lbtnReceive.Attributes.Add("style", "display:none");
+                string message = "No stores available for receiving, please go to settings and allow at least 1 store to receive goods";
+                AlertHelper.ShowSweetAlert(this, message, "error");
+                return;
+            }
+            
             chkAddLotNum.Checked = false;
             LinkButton lbtnItmC = (LinkButton)sender;
             GridViewRow row = (GridViewRow)lbtnItmC.NamingContainer;
@@ -1395,13 +1410,13 @@ namespace SBMS
                         PnlLotTracking.Style.Add("width", "100%");
                     }
 
-                    if (CurrentUser.CompanyUseLotAddDetails == true)
-                    {
-                        PnlLotAdditions.Style.Add("display", "inline-block");
-                        PnlLotAdditions.Style.Add("width", "100%");
-                    }
+                        if (CurrentUser.CompanyUseLotAddDetails == true)
+                        {
+                            PnlLotAdditions.Style.Add("display", "inline-block");
+                            PnlLotAdditions.Style.Add("width", "100%");
+                        }
                 }
-            }
+                
             DDStoreEdit.SelectedIndex = 0;
             if (chkReceiveComplete.Checked == true)
             {
@@ -1409,8 +1424,8 @@ namespace SBMS
                 AlertHelper.ShowSweetAlert(this, message, "error");
                 return;
             }
-            else
-            {
+            
+                
                 ModalPopupExtender1.Show();
                 txtQtyReceive.Text = null;
                 txtQtyReceive.Focus();
@@ -1543,15 +1558,15 @@ namespace SBMS
                     int recnum = GetLotNum(CurrentUser.CoID);
                     lblLotNum.Text = DateTime.Today.ToString("ddMMyyyy") + DDStoreEdit.SelectedValue.ToString() + recnum.ToString();
                 }
-                chkAccept.Style.Add("display", "none");
+                //chkAccept.Style.Add("display", "none");
                 decimal OrdQty = Convert.ToDecimal(txtordqty.Text);
                 decimal RecQty = Convert.ToDecimal(txtQtyReceive.Text);
                 decimal BalQty = OrdQty - RecQty;
-                if (RecQty >= (OrdQty * 1.05m) || RecQty <= (OrdQty * 0.95m))
-                {
-                    errpop.InnerText = "Warning - Quantity variation of 5% or more being received";
-                    chkAccept.Style.Add("display", "inline-block");
-                }  
+                //if (RecQty >= (OrdQty * 1.05m) || RecQty <= (OrdQty * 0.95m))
+                //{
+                //    errpop.InnerText = "Warning - Quantity variation of 5% or more being received";
+                //    chkAccept.Style.Add("display", "inline-block");
+                //}  
                 ModalPopupExtender1.Show();
             }
         }
@@ -2056,34 +2071,76 @@ namespace SBMS
 
         protected void lbtnLotNumAdd_Click(object sender, EventArgs e)
         {
-            LinkButton lbtnLotNumAdd = (LinkButton)sender;
-            GridViewRow row = (GridViewRow)lbtnLotNumAdd.NamingContainer;
-            if (row.Cells[11].Text.Trim().Replace("&nbsp;", "") != "")
+            LinkButton lbtn = (LinkButton)sender;
+            GridViewRow row = (GridViewRow)lbtn.NamingContainer;
+            LinkButton lbtnItmC = (LinkButton)row.FindControl("lbtnItmC");
+            string code = lbtnItmC.Text;
+            OpenFirstMatchingItemCode(code);
+            //ProcessLotNumAdd(row);
+        }
+
+        private void ProcessLotNumAdd(GridViewRow row)
+        {
+            docid = Convert.ToInt64(lblDocID.Text);
+
+            decimal QtyLeft = 0, QtyOrd = 0, QtyRec = 0;
+
+            if (row.Cells[9].Text.Trim().Replace("&nbsp;", "") != "")
             {
                 chkAddLotNum.Checked = true;
-                LinkButton lbtnItmC = new LinkButton();
-                lbtnItmC = (LinkButton)row.FindControl("lbtnItmC");
+
+                // Get ItemCode link button
+                LinkButton lbtnItmC = (LinkButton)row.FindControl("lbtnItmC");
                 long lineid = Convert.ToInt64(lbtnItmC.CommandArgument);
                 lblLineID.Text = lineid.ToString();
-                
-                //using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
-                //{
-                //    decimal Prerecqty = _db.ReceivingOutstandings
-                //             .Where(x => x.ItemCode == Docline.ItemCode && x.PODocID == docid && x.Archive == false)
-                //             .Sum(x => (decimal?)x.RecQty) ?? 0;
-                //    if (Prerecqty > 0)
-                //    {
-                //        QtyLeft = QtyOrd - (Prerecqty + QtyRec);
-                //    }
-                //}
 
+                using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+                {
+                    var itemL = _db.ReceivingOutstandings
+                        .Where(x => x.CompanyID == CurrentUser.CoID && x.LineID == lineid)
+                        .FirstOrDefault();
+
+                    if (itemL != null)
+                    {
+                        long itmID = (long)itemL.SelectionId;
+
+                        decimal Prerecqty = _db.ReceivingOutstandings
+                            .Where(x => x.SelectionId == itmID && x.PODocID == docid && x.Archive == false)
+                            .Sum(x => (decimal?)x.RecQty) ?? 0;
+
+                        if (Prerecqty > 0)
+                        {
+                            QtyLeft = QtyOrd - (Prerecqty + QtyRec);
+                        }
+                    }
+                }
 
                 lblLotNum.Text = "";
-                txtQtyReceive.Text = "0";
-                DDStoreEdit.SelectedIndex = 0;
+                txtQtyReceive.Text = "1";
             }
-
+            if (DDStoreEdit.Items.Count == 2 && DDStoreEdit.SelectedIndex == 1)
+            {
+                int recnum = GetLotNum(CurrentUser.CoID);
+                lblLotNum.Text = DateTime.Today.ToString("ddMMyyyy") + DDStoreEdit.SelectedValue.ToString() + recnum.ToString();
+            }
             ModalPopupExtender1.Show();
         }
+
+        protected void OpenFirstMatchingItemCode(string itemCode)
+        {
+            foreach (GridViewRow row in GridPOLines.Rows)
+            {
+                LinkButton lbtnItmC = row.FindControl("lbtnItmC") as LinkButton;
+                if (lbtnItmC == null) continue;
+
+                if (lbtnItmC.Text.Trim().Equals(itemCode.Trim(), StringComparison.OrdinalIgnoreCase))
+                {
+                    // RUN EXACT SAME LOGIC AS A CLICK
+                    ProcessLotNumAdd(row);
+                    return;    // found the FIRST matching row
+                }
+            }
+        }
+
     }
 }

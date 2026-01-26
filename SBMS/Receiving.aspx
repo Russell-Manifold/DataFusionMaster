@@ -8,6 +8,7 @@
     <link id="Link4" runat="server" rel="icon" href="images/datafusionicon.ico" type="image/ico" />
     <link rel="stylesheet" href="assets/css/main.css" />
     <script src="assets/js/buttonDisable.js"></script>
+     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
     <form id="form1" runat="server">
@@ -115,8 +116,8 @@
                                                 <asp:BoundField HeaderText="Unit" DataField="Unit" ReadOnly="True" ItemStyle-Width="2em"  />
                                                 <asp:BoundField HeaderText="Order_Qty" DataField="Quantity" ReadOnly="True" ItemStyle-HorizontalAlign="Center"  ItemStyle-Width="7em"/>    
                                                 <asp:BoundField HeaderText="Excl_Price" DataField="UnitPriceExclusive" ReadOnly="True" DataFormatString="{0:N2}" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right"  />
-                                                <asp:BoundField HeaderText="Disc%" DataField="DiscountPercentage" ReadOnly="True" DataFormatString="{0:p}" ItemStyle-HorizontalAlign="Center" ItemStyle-Width="5em"   />
-                                                <asp:BoundField HeaderText="Discount" DataField="Discount" ReadOnly="True" DataFormatString="{0:N2}" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" ItemStyle-Width="5em"  />
+                                                <%--<asp:BoundField HeaderText="Disc%" DataField="DiscountPercentage" ReadOnly="True" DataFormatString="{0:p}" ItemStyle-HorizontalAlign="Center" ItemStyle-Width="5em"   />--%>
+                                                <%--<asp:BoundField HeaderText="Discount" DataField="Discount" ReadOnly="True" DataFormatString="{0:N2}" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" ItemStyle-Width="5em"  />--%>
                                                 <asp:BoundField HeaderText="PO Total" DataField="Total" ReadOnly="True" DataFormatString="{0:N2}" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right"  />    
                                                 <asp:BoundField HeaderText="Receive_Qty" DataField="ReceiveQty" ReadOnly="True" ItemStyle-HorizontalAlign="Center" ItemStyle-Width="7em" />    
                                                 <asp:TemplateField HeaderText="To_Receive" ItemStyle-Width="7em" ItemStyle-HorizontalAlign="Center">
@@ -129,7 +130,6 @@
                                                 <asp:TemplateField HeaderText="" ItemStyle-Width="1em">
                                                     <ItemTemplate>
                                                         <asp:LinkButton ID="lbtnLotNumAdd" runat="server" CssClass="buttonTransparent icon fa-plus" style="font-size:.8em; margin:-1em" CommandArgument='<%# Eval("LineID") %>' ToolTip="Fulfull this line item with more than one Lot Number" OnClick="lbtnLotNumAdd_Click" Visible="false"></asp:LinkButton>
-                                                      <cci:ConfirmButtonExtender ID="lbtnIssue_ConfirmButtonExtender1" runat="server" ConfirmText="Confirm, Add another lot number to the receiving of this item?" Enabled="True" TargetControlID="lbtnLotNumAdd"></cci:ConfirmButtonExtender>
                                                     </ItemTemplate>
                                                 </asp:TemplateField>
                                                 <asp:BoundField HeaderText="Receive_Total" DataField="ReceiveTotal" ReadOnly="True" DataFormatString="{0:N2}" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right"  />   
@@ -311,16 +311,16 @@
                                                 <tr><td colspan="2"><hr /></td></tr>
                                                 <tr>
                                                      <td>Ordered Qty</td>
-                                                    <td><asp:textbox id="txtordqty" runat="server" readonly="true" Enabled="false" style="width:6em; text-align:center" ClientIDMode="Static" onblur="startCalc()" Text="" TabIndex="99"></asp:textbox></td>      
+                                                    <td><asp:textbox id="txtordqty" runat="server" readonly="true" Enabled="false" style="width:6em; text-align:center" ClientIDMode="Static" Text="" onblur="startCalc()" TabIndex="99"></asp:textbox></td>  <%--onblur="startCalc()"--%>   
                                                  </tr> 
                                                 <tr>
                                                     <td>Received Qty</td>
-                                                    <td><asp:textbox id="txtQtyReceive" runat="server" style="width:6em; text-align:center" Text="" ClientIDMode="Static" onblur="startCalc()" TabIndex="0"></asp:textbox>
+                                                    <td><asp:textbox id="txtQtyReceive" runat="server" style="width:6em; text-align:center" Text="" onblur="startCalc()" ClientIDMode="Static"  TabIndex="0"></asp:textbox><%--onblur="startCalc()"--%>
                                                             <cci:FilteredTextBoxExtender ID="ftbe" runat="server" TargetControlID="txtQtyReceive" FilterType="Custom, Numbers" ValidChars="." /></td>
                                                 </tr>
                                                 <tr>
                                                     <td>Variation</td>
-                                                    <td> <asp:textbox id="txtBalQty" runat="server" style="width:6em; text-align:center; color:red" Text="" ClientIDMode="Static" onblur="startCalc()" ReadOnly="true"></asp:textbox></td>
+                                                    <td> <asp:textbox id="txtBalQty" runat="server" style="width:6em; text-align:center; color:red" Text="" onblur="startCalc()" ClientIDMode="Static" ReadOnly="true"></asp:textbox></td><%--onblur="startCalc()"--%>
                                                 </tr>
                                                  <tr>
                                                     <td>Into Store</td>
@@ -376,14 +376,14 @@
                                                </table>
                                              </asp:Panel>
                                                       </asp:Panel>
-                                              <table style="width:100%">
+                                              <%--<table style="width:100%">
                                                 <tr>
                                                     <td colspan="3" style="text-align:center;"><span id="errpop" runat="server" style="color:red" ></span></td>
                                                 </tr>
                                                    <tr>
                                                      <td colspan="3" style="text-align:center;"><asp:CheckBox ID="chkAccept" runat="server" Text="I accept the variation, continue"  /></td>
                                                  </tr>
-                                            </table>
+                                            </table>--%>
                                                   </ContentTemplate>
                                             </asp:UpdatePanel>
                                         </div>
@@ -463,15 +463,15 @@
                 var maxqty = OrdQty * 1.05;
                 var minqty = OrdQty * 0.95;
 
-                if (RecQty >= minqty && RecQty <= maxqty) {
-                    document.getElementById("errpop").innerHTML = "";
-                    //document.getElementById("lbtnReceive").style.display = "inline-block";
-                    document.getElementById("chkAccept").style.display = "none";
-                } else {
-                    document.getElementById("errpop").innerHTML = "Warning - Quantity variation of 5% or more being received";
-                    document.getElementById("chkAccept").style.display = "inline-block";
-                    //document.getElementById("lbtnReceive").style.display = "none"; // Hide receive button in this case
-                }
+                //if (RecQty >= minqty && RecQty <= maxqty) {
+                //    document.getElementById("errpop").innerHTML = "";
+                //    //document.getElementById("lbtnReceive").style.display = "inline-block";
+                //    document.getElementById("chkAccept").style.display = "none";
+                //} else {
+                //    document.getElementById("errpop").innerHTML = "Warning - Quantity variation of 5% or more being received";
+                //    document.getElementById("chkAccept").style.display = "inline-block";
+                //    //document.getElementById("lbtnReceive").style.display = "none"; // Hide receive button in this case
+                //}
             }
         </script>
         <%--<script type="text/javascript">
@@ -491,6 +491,6 @@
             textBox.value = textBox.value.toUpperCase();
         }
     </script>
-     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
 </body>
 </html>

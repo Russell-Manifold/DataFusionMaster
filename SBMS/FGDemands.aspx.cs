@@ -32,6 +32,12 @@ namespace SBMS
                 return;
             }
 
+            if (CurrentUser.ExpiryDate <= DateTime.Now)
+            {
+                Response.Redirect("~/Dashboard.aspx?exp=true", false);
+                return;
+            }
+
             string imgname = CurrentUser.CoID + ".png";
             string imgPath = $"~/images/CoImages/{imgname}";
             if (File.Exists(Server.MapPath(imgPath)))

@@ -81,13 +81,14 @@ namespace SBMS
               // if (Comp.CoGenericLoginPwd != null) lblGenPwd.Text = Comp.CoGenericLoginPwd ?? "";
                if (Comp.Contact!= null) txtContPerson.Text = Comp.Contact ?? "";
                if (Comp.Contactemail != null) txtContemail.Text = Comp.Contactemail ?? "";
-               if (Comp.SendMessages != null) chkNotifs.Checked = (bool)Comp.SendMessages;
-               if (Comp.UATMode != null) chkUAT.Checked = (bool)Comp.UATMode;
-               if (Comp.UsePickSlipTracking != null) chkPickSlip.Checked = (bool)Comp.UsePickSlipTracking;
-               if (Comp.UseBarcodes != null) chkBarCodes.Checked = (bool)Comp.UseBarcodes;
-               if (Comp.AutoUpdateSageSOs != null) chkPSAuto.Checked = (bool)Comp.AutoUpdateSageSOs;
-               if (Comp.AutoGenTaxInvoice != null) chkTaxInvAuto.Checked = (bool)Comp.AutoGenTaxInvoice;
-               if (Comp.UsePacks != null) chkUsePacks.Checked = (bool)Comp.UsePacks;
+               chkNotifs.Checked = (bool)Comp.SendMessages;
+               chkUAT.Checked = (bool)Comp.UATMode;
+               chkPickSlip.Checked = (bool)Comp.UsePickSlipTracking;
+               chkBarCodes.Checked = (bool)Comp.UseBarcodes;
+               chkPSAuto.Checked = (bool)Comp.AutoUpdateSageSOs;
+               chkTaxInvAuto.Checked = (bool)Comp.AutoGenTaxInvoice;
+               chkUsePacks.Checked = (bool)Comp.UsePacks;
+                chkManfCosts.Checked = (bool)Comp.ShowManfCosts;
 
                chkLotTrack.Checked = (bool)Comp.UseLotTracking;
                 chkAutoManf.Checked = (bool)Comp.UseAutoManf;
@@ -112,7 +113,7 @@ namespace SBMS
                 // remove All Stored except FG
                     using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
                     {
-                        var Stores = _db.Stores.Where(x => x.CompanyID == CurrentUser.CoID && x.StoreCode != "FG" && x.StoreCode != "CoR" && x.StoreCode != "CoD" && x.StoreCode != "Scr").ToList(); 
+                        var Stores = _db.Stores.Where(x => x.CompanyID == CurrentUser.CoID && x.StoreCode != "FG" && x.StoreCode != "CoR" && x.StoreCode != "CoD" && x.StoreCode.ToLower() != "scr").ToList(); 
                         _db.Stores.RemoveRange(Stores);
                         _db.SaveChanges();
                        
@@ -154,6 +155,8 @@ namespace SBMS
                     CurrentUser.AutoGenTaxInvoice = Comp.AutoGenTaxInvoice;
                     Comp.UsePacks = chkUsePacks.Checked;
                     CurrentUser.UsePacks = Comp.UsePacks;
+                    Comp.ShowManfCosts = chkManfCosts.Checked;
+                    CurrentUser.ShowManfCosts = Comp.ShowManfCosts;
                     _db.SaveChanges();
                 string message = "Successfully Saved";
                 AlertHelper.ShowSweetAlert(this, message, "success");
@@ -202,12 +205,15 @@ namespace SBMS
                     string imgPath = $"~/images/CoImages/{imgname}";
                     if (File.Exists(Server.MapPath(imgPath)))
                     {
-                        imgCoImgD.ImageUrl = ResolveUrl(imgPath);
+                        imgCoImgD.ImageUrl = ResolveUrl(imgPath + "?v=" + DateTime.Now.Ticks);
                     }
                     else
                     {
                         imgCoImgD.ImageUrl = ResolveUrl("~/images/CoImages/0000.png");
                     }
+
+                    // Reload the page to refresh the image
+                    Response.Redirect(Request.RawUrl);
                 }
                 catch (Exception ex)
                 {

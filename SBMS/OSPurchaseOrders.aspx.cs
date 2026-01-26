@@ -32,6 +32,13 @@ namespace SBMS
                 return;
             }
             SessionValidator.ValidateUserSession(CurrentUser);
+            
+            if (CurrentUser.ExpiryDate <= DateTime.Now)
+            {
+                Response.Redirect("~/Dashboard.aspx?exp=true", false);
+                return;
+            }
+
             if (CurrentUser.UsePickSlipTracking != true) ibtnPickTrack.Style.Add("display", "none");
             string imgname = CurrentUser.CoID + ".png";
             string imgPath = $"~/images/CoImages/{imgname}";

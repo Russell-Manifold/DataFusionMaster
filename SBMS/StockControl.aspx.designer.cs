@@ -240,6 +240,24 @@ namespace SBMS
         protected global::System.Web.UI.WebControls.LinkButton imgItemAdjust;
 
         /// <summary>
+        /// lbtnStckCount control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton lbtnStckCount;
+
+        /// <summary>
+        /// lbtnCustom control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton lbtnCustom;
+
+        /// <summary>
         /// lbtnStockMove control.
         /// </summary>
         /// <remarks>
@@ -258,21 +276,21 @@ namespace SBMS
         protected global::System.Web.UI.WebControls.LinkButton lbtnSOH;
 
         /// <summary>
-        /// lbtnStckCount control.
+        /// lbtnPickGP control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton lbtnStckCount;
+        protected global::System.Web.UI.WebControls.LinkButton lbtnPickGP;
 
         /// <summary>
-        /// lbtnCustom control.
+        /// lbtnItemGP control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton lbtnCustom;
+        protected global::System.Web.UI.WebControls.LinkButton lbtnItemGP;
     }
 }

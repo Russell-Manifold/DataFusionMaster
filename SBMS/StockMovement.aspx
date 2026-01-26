@@ -72,7 +72,7 @@
                                                 <asp:ListItem Value="100">100</asp:ListItem>
                                                 <asp:ListItem Value="1000">1000</asp:ListItem>        
                                             </asp:DropDownList></td>
-                                          <td><br /><asp:LinkButton ID="lbtnsearch" runat="server" CssClass="buttonC fa fa-search" OnClick="lbtnsearch_Click" style="margin:auto; font-size:1em">&nbsp;Search</asp:LinkButton></td>
+                                          <td><asp:LinkButton ID="lbtnsearch" runat="server" CssClass="buttonC fa fa-search" OnClick="lbtnsearch_Click" style="margin:auto; font-size:1em">&nbsp;Search</asp:LinkButton></td>
                                       </tr>
                                   </table>
                                      </asp:Panel>

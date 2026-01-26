@@ -1,4 +1,5 @@
 ﻿using DocumentFormat.OpenXml.Math;
+using DocumentFormat.OpenXml.Spreadsheet;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SBMS.Classes;
@@ -56,8 +57,15 @@ namespace SBMS
                     lblFGID.Text = bomH.FGID.ToString();
                     long fgID = Convert.ToInt64(lblFGID.Text);
                     var item = _db.ItemsMasters.FirstOrDefault(x => x.CompanyID == CurrentUser.CoID && x.ID == fgID);
+                    
                     decimal avgCost = item?.AverageCost ?? 0; // Use 0 as default if null
                     lblItemCost.Text = avgCost.ToString("N2");
+
+                    decimal SageSell = item?.PriceExclusive ?? 0; // Use 0 as default if null
+                    lblSageSell.Text = SageSell.ToString("N2");
+
+                    decimal GPPerc = item?.GPPercentage ?? 0;
+                    txtNewGP.Text = GPPerc.ToString();
 
                     lblBOMCode.Text = bomH.BOMCode.ToString() ?? "";
                     if (bomH.BomDescript != null) lblBOMDescipt.Text = bomH.BomDescript.ToString() ?? "";
@@ -143,7 +151,7 @@ namespace SBMS
 
                     var totalRMQty = BomL.Sum(bomLine => bomLine.RMQty);
                     var totalRMCost = BomL.Sum(bomLine => bomLine.AvRMCost);
-
+                    decimal BOMCost = adc1 + adc2 + adc3 + totalRMCost;
                     if (BomL.Count > 0)
                     {
                         GridBOMLines.DataSource = BomL;
@@ -151,8 +159,24 @@ namespace SBMS
                         GridBOMLines.FooterRow.Cells[2].Text = "Total";
                         GridBOMLines.FooterRow.Cells[3].Text = ApiUrlCall.NumberToDecimal(totalRMQty.ToString(),CurrentUser.CompanyDecPlaces);
                         GridBOMLines.FooterRow.Cells[5].Text = ApiUrlCall.NumberToDecimal(totalRMCost.ToString(), CurrentUser.CompanyDecPlaces);
-                        lblNewBOMCost.Text = ApiUrlCall.NumberToDecimal((adc1 + adc2 + adc3 + totalRMCost).ToString(), CurrentUser.CompanyDecPlaces);
+                        lblNewBOMCost.Text = "0";
+                        if (BOMCost >0)  lblNewBOMCost.Text = ApiUrlCall.NumberToDecimal((BOMCost).ToString(), CurrentUser.CompanyDecPlaces);
                     }
+                    // calculate current GP
+                    lblCurrGP.Text = "0";
+                    if (SageSell > 0 && BOMCost > 0 && SageSell > 0)
+                    {
+                        decimal currgp = ((SageSell - BOMCost) / SageSell) * 100;
+                        lblCurrGP.Text = ApiUrlCall.NumberToDecimal((currgp).ToString(), CurrentUser.CompanyDecPlaces);
+                        if (currgp < 0)
+                        {
+                            lblCurrGP.Text = $"<span style='color:red;font-weight:bold;'>{ApiUrlCall.NumberToDecimal(currgp.ToString(), CurrentUser.CompanyDecPlaces)}% (Loss)</span>";
+                        }
+                        else
+                        {
+                            lblCurrGP.Text = $"{ApiUrlCall.NumberToDecimal(currgp.ToString(), CurrentUser.CompanyDecPlaces)} %";
+                        }
+                    }      
                 }
             }
         }
@@ -417,17 +441,45 @@ namespace SBMS
 
         protected async void lbtnSBCAUpdate_Click(object sender, EventArgs e)
         {
+            
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {
+
+                decimal newSell, bomcost;
+
+                if (!decimal.TryParse(
+                        txtNewSell.Text,
+                        NumberStyles.Any,
+                        CultureInfo.InvariantCulture,
+                        out newSell))
+                {
+                    // Handle invalid input safely
+                    // e.g. show message or default value
+                    AlertHelper.ShowSweetAlert(this, "Invalid number format.", "error");
+                    return;
+                }
+
+                if (!decimal.TryParse(
+                        lblNewBOMCost.Text,
+                        NumberStyles.Any,
+                        CultureInfo.InvariantCulture,
+                        out bomcost))
+                {
+                    // Handle invalid input safely
+                    // e.g. show message or default value
+                    AlertHelper.ShowSweetAlert(this, "Invalid BOM cost.", "error");
+                    return;
+                }
+
                 long bomfgID = Convert.ToInt64(lblFGID.Text);
                 var ThisItem = _db.ItemsMasters.Where(x => x.CompanyID == CurrentUser.CoID && x.ID == bomfgID).FirstOrDefault();
-                ThisItem.AverageCost = Convert.ToDecimal(lblNewBOMCost.Text);
+                ThisItem.AverageCost = bomcost;
                 _db.SaveChanges();
 
                 ItemAdjustment iAdj = new ItemAdjustment();
                 iAdj.Date = DateTime.Now;
                 iAdj.ItemID = Convert.ToInt64(lblFGID.Text);
-                iAdj.AverageCost = Convert.ToDecimal(lblNewBOMCost.Text);
+                iAdj.AverageCost = bomcost;
                 iAdj.Quantity = (decimal)0;
                 iAdj.Reason = "BOM Cost Adjustment Only";
                 iAdj.Created = DateTime.Now;
@@ -436,10 +488,47 @@ namespace SBMS
                 {
                     await SendItemAdjustment(jsonBody);
                 }
+                string filt = $"ID eq {bomfgID}";
+               
+                JObject thisitem = new JObject();
+                ApiUrlCall api = new ApiUrlCall();
+                thisitem = await api.LoadOneItemJson(filt, CurrentUser);
+                JArray arr = (JArray)thisitem["Results"];
+                JObject itemObj = (JObject)arr[0];
+                decimal priceEx = (decimal)itemObj["PriceExclusive"];
+                decimal priceInc = (decimal)itemObj["PriceInclusive"];
+
+                decimal taxRate = (priceInc / priceEx) - 1;   // e.g. 0.15 = 15%
+                decimal newPriceEx = newSell;
+                decimal newPriceInc = newPriceEx * (1 + taxRate);
+                
+                JObject returnPayload = new JObject(itemObj);   // full clone
+
+                returnPayload["PriceExclusive"] = newPriceEx;
+                returnPayload["PriceInclusive"] = newPriceInc;
+
+                JObject parsedJSON = await api.APIPostDocumentAsync("Item", returnPayload.ToString(), CurrentUser);
+
+                // 1 — Check for API/Exception error
+                if (parsedJSON["Success"] != null && parsedJSON["Success"].ToString() == "false")
+                {
+                    string status = parsedJSON["StatusCode"]?.ToString() ?? "Unknown";
+                    string msg = parsedJSON["Message"]?.ToString() ?? "No message returned.";
+
+                    AlertHelper.ShowSweetAlert(this,"API Error ({status}): {msg}", "error'");
+                    return;
+                }
+
+                // 2 — Check if nothing returned at all (edge-case)
+                if (parsedJSON == null || !parsedJSON.HasValues)
+                {
+                    AlertHelper.ShowSweetAlert(this,"No response returned from API. - Item NOT Updated", "warning'");
+                    return;
+                }
+
+                // 3 — SUCCESS
+                AlertHelper.ShowSweetAlert(this,"Item updated successfully.", "success");
             }
-            string message = "Successfully Saved";
-            AlertHelper.ShowSweetAlert(this,message, "success");
-            return;
         }
         public async Task SendItemAdjustment(string Item)
         {

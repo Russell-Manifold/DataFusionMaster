@@ -30,6 +30,13 @@ namespace SBMS
                 Response.Redirect("~/Login.aspx", false); Context.ApplicationInstance.CompleteRequest();
                 return;
             }
+
+            if (CurrentUser.ExpiryDate <= DateTime.Now)
+            {
+                Response.Redirect("~/Dashboard.aspx?exp=true", false);
+                return;
+            }
+
             if (!IsPostBack)
             {
                 if (CurrentUser.UsePickSlipTracking != true) ibtnPickTrack.Style.Add("display", "none");

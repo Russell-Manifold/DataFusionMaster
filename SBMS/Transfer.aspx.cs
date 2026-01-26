@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Org.BouncyCastle.Utilities.Collections;
 using SBMS.Classes;
 using SBMS.Models;
 using System;
@@ -82,7 +83,7 @@ namespace SBMS
         {
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {
-                var Stores = _db.Stores.Where(x => x.CompanyID == CurrentUser.CoID && x.StoreActive==true && x.StoreCode != "CoD" && x.StoreCode != "CoR").OrderBy(x=>x.StoreDescript).ToList();
+                var Stores = _db.Stores.Where(x => x.CompanyID == CurrentUser.CoID && x.StoreActive==true && x.StoreCode != "CoD" && x.StoreCode != "CoR" && x.StoreCode.ToLower() != "scr").OrderBy(x=>x.StoreDescript).ToList();
                 DDStoreFrom.DataSource = Stores;
                 DDStoreFrom.DataTextField = "StoreDescript";
                 DDStoreFrom.DataValueField = "StoreCode";
@@ -103,7 +104,7 @@ namespace SBMS
 
                 using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
                 {
-                    var Stores = _db.Stores.Where(x => x.CompanyID == CurrentUser.CoID && x.StoreActive == true & x.StoreCode != DDStoreFrom.SelectedValue && x.StoreCode != "CoD" && x.StoreCode != "CoR").OrderBy(x => x.StoreDescript).ToList();
+                    var Stores = _db.Stores.Where(x => x.CompanyID == CurrentUser.CoID && x.StoreActive == true & x.StoreCode != DDStoreFrom.SelectedValue && x.StoreCode != "CoD" && x.StoreCode != "CoR" && x.StoreCode.ToLower() != "scr").OrderBy(x => x.StoreDescript).ToList();
                     DDStoreTo.DataSource = Stores;
                     DDStoreTo.DataTextField = "StoreDescript";
                     DDStoreTo.DataValueField = "StoreCode";
@@ -130,7 +131,8 @@ namespace SBMS
                                     x.ItemCode.ToLower().Contains(findstr)))
                         .ToList();
 
-                    foreach (var itm in query)
+                    var Qry2 = query.OrderBy(x => x.ItemCode).ToList();
+                    foreach (var itm in Qry2)
                     {
                         if (string.IsNullOrEmpty(itm.LotNumber))
                             itm.LotNumber = "---Select---";
@@ -139,7 +141,7 @@ namespace SBMS
                             itm.QOH = Convert.ToDecimal(ApiUrlCall.NumberToDecimal(itm.QOH.ToString(), CurrentUser.CompanyDecPlaces));
                     }
 
-                    GridFromItems.DataSource = query.OrderBy(x => x.ItemCode).ToList();
+                    GridFromItems.DataSource = Qry2.ToList() ;
                     GridFromItems.DataBind();
                 }
                 else
@@ -177,50 +179,6 @@ namespace SBMS
             }
         }
 
-        //private void LoadOpeningBalances()
-        //{
-        //    using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
-        //    {
-        //        string storeCode = DDStoreFrom.SelectedValue.ToString();
-        //        string findstr = txtFindFrom.Text.ToLower().ToString();
-
-        //        if (findstr.Trim().Length > 1)
-        //        {
-        //            var query = _db.GetOpeningBalancesAllStores(CurrentUser.CoID).Where(x => x.StoreCode == storeCode && x.ItemDescription.ToLower().Contains(findstr) || x.ItemCode.ToLower().Contains(findstr)).ToList();                
-        //            foreach (var itm in query)
-        //            {
-        //                if (itm.LotNumber == null || itm.LotNumber.ToString() == "")
-        //                {
-        //                    itm.LotNumber = "---Select---";
-        //                }
-        //                if (itm.QOH != null)
-        //                {
-        //                    itm.QOH = Convert.ToDecimal(ApiUrlCall.NumberToDecimal(itm.QOH.ToString(), CurrentUser.CompanyDecPlaces));
-        //                }
-        //            }
-        //            GridFromItems.DataSource = query.OrderBy(x=>x.ItemCode).ToList();
-        //            GridFromItems.DataBind();
-        //        }
-        //        else
-        //        {
-        //            var query = _db.GetOpeningBalancesAllStores(CurrentUser.CoID).Where(x => x.StoreCode == storeCode).ToList();
-        //            foreach (var itm in query)
-        //            {
-        //                if (itm.LotNumber == null || itm.LotNumber.ToString() == "")
-        //                {
-        //                    itm.LotNumber = "---Select---";
-        //                }
-        //                if (itm.QOH != null)
-        //                {
-        //                    itm.QOH = Convert.ToDecimal(ApiUrlCall.NumberToDecimal(itm.QOH.ToString(), CurrentUser.CompanyDecPlaces));
-        //                }
-        //            }
-        //            GridFromItems.DataSource = query.OrderBy(x => x.ItemCode).ToList();
-        //            GridFromItems.DataBind();
-        //        }
-        //    }
-        //}
-
         private void LoadToBalances()
         {
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
@@ -234,7 +192,9 @@ namespace SBMS
                         .Where(x => x.StoreCode == storeCode)
                         .ToList();
 
-                    foreach (var itm in query)
+                    var Qry2 = query.OrderBy(x => x.ItemCode).ToList();
+
+                    foreach (var itm in Qry2)
                     {
                         if (string.IsNullOrEmpty(itm.LotNumber))
                             itm.LotNumber = "---Select---";
@@ -243,7 +203,7 @@ namespace SBMS
                             itm.QOH = Convert.ToDecimal(ApiUrlCall.NumberToDecimal(itm.QOH.ToString(), CurrentUser.CompanyDecPlaces));
                     }
 
-                    GridToItems.DataSource = query.OrderBy(x => x.ItemCode).ToList();
+                    GridToItems.DataSource = Qry2.ToList();
                     GridToItems.DataBind();
                 }
                 else
@@ -287,14 +247,27 @@ namespace SBMS
          protected async void btnApprovYes_Click(object sender, EventArgs e)
         {
             lblerr.Text = "";
-            decimal trfQty = 0, TrfUnitCost = 0; 
+            decimal trfQty = 0; 
             long TranID = Convert.ToInt64(TransID.Text);
             try
             {
                 trfQty = Convert.ToDecimal(txtQtyToTrf.Text);
             }
             catch { }
-            
+
+            decimal AvailQty = 0;
+            try
+            {
+                AvailQty = Convert.ToDecimal(lblMax.Text);
+            }
+            catch { }
+
+            if (trfQty > AvailQty)
+            { 
+                AlertHelper.ShowSweetAlert(this, "Insufficient stock available for this item.", "error");
+                return;
+            }
+
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {  
                 // Record for Receiving store
@@ -313,14 +286,12 @@ namespace SBMS
                 ItemTrans.Qty = trfQty;  
                 ItemTrans.PriceInclusive = trfitem.PriceInclusive;
                 ItemTrans.PriceExclusive = trfitem.TotalUnitPriceExclInclAdd;
-                TrfUnitCost =(decimal)ItemTrans.PriceExclusive;
                 decimal ToBal = trfQty;
                 var QOHIn = (from it2 in _db.ItemTransactions
                              where it2.ItemID == trfitem.ItemID && it2.CompanyID == trfitem.CompanyID && it2.LotNumber == trfitem.LotNumber && it2.ToID == ItemTrans.ToID
                              orderby it2.TransactionDate descending
                              select new 
                              {
-
                                  it2.TotalUnitPriceExclInclAdd
                              }).FirstOrDefault();     
                 if (QOHIn != null)
@@ -342,7 +313,7 @@ namespace SBMS
                 UnitPrInclAddCosts = (decimal)ItemTrans.TotalUnitPriceExclInclAdd;
 
                  ItemTrans.TotalLineValExcl = ItemTrans.TotalUnitPriceExclInclAdd * trfQty;
-                ItemTrans.TransactionReference = trfitem.ItemCode + " Trf " + trfQty + " From " + lblFromStore.Text + " To " + lblToStore.Text;
+                ItemTrans.TransactionReference = trfitem.ItemCode + " Quick Trf " + trfQty + " in from " + lblFromStore.Text;
                 ItemTrans.ExchRate = 1;
 
                 _db.ItemTransactions.Add(ItemTrans);
@@ -362,33 +333,33 @@ namespace SBMS
                     };
                     _db.ItemStoreLinkMasters.Add(isL);
                 }
-                
-                //// Record for Issuing store
-                ItemTrans = new ItemTransaction();
-                ItemTrans.CompanyID = trfitem.CompanyID;
-                ItemTrans.DocumentID = 0;
-                ItemTrans.TransactionType = "TRF";
-                ItemTrans.ItemID = trfitem.ItemID;
-                ItemTrans.ItemCode = trfitem.ItemCode;
-                ItemTrans.ItemDescription = trfitem.ItemDescription;
-                ItemTrans.LotNumber = trfitem.LotNumber ?? null;
-                ItemTrans.Unit = trfitem.Unit;
-                ItemTrans.ToID = getstoreid(lblFromStore.Text);
-                ItemTrans.FromID = getstoreid(lblToStore.Text);
-                ItemTrans.Qty = trfQty * -1;   
-                ItemTrans.DocumentType = 4;
-                ItemTrans.TransactionDate = DateTime.Now;
-                ItemTrans.ByRoleID = CurrentUser.RoleID; // roleid
 
-                // Additional costs ????
-                ItemTrans.AdditionalCosts = 0;
+                //// Record for Issuing store
+                ItemTransaction ItemTransOUT = new ItemTransaction();
+                ItemTransOUT.CompanyID = trfitem.CompanyID;
+                ItemTransOUT.DocumentID = 0;
+                ItemTransOUT.TransactionType = "TRF";
+                ItemTransOUT.ItemID = trfitem.ItemID;
+                ItemTransOUT.ItemCode = trfitem.ItemCode;
+                ItemTransOUT.ItemDescription = trfitem.ItemDescription;
+                ItemTransOUT.LotNumber = trfitem.LotNumber ?? null;
+                ItemTransOUT.Unit = trfitem.Unit;
+                ItemTransOUT.ToID = getstoreid(lblFromStore.Text);
+                ItemTransOUT.FromID = getstoreid(lblToStore.Text);
+                ItemTransOUT.Qty = trfQty * -1;   
+                ItemTransOUT.DocumentType = 4;
+                ItemTransOUT.TransactionDate = DateTime.Now;
+                ItemTransOUT.ByRoleID = CurrentUser.RoleID; // roleid
+
+                ItemTransOUT.AdditionalCosts = 0;
                 //if (AddCosts > 0) { ItemTrans.AdditionalCosts = AddCosts / trfQty; }
-                ItemTrans.PriceExclusive = TrfUnitCost;
-                ItemTrans.TotalUnitPriceExclInclAdd = TrfUnitCost;
-                ItemTrans.TotalLineValExcl = ItemTrans.TotalUnitPriceExclInclAdd * (trfQty * -1);
-                ItemTrans.TransactionReference = trfitem.ItemCode + " Trf " + trfQty + " From " + lblFromStore.Text + " To " + lblToStore.Text;
-                ItemTrans.ExchRate = 1;
-                _db.ItemTransactions.Add(ItemTrans);
+                ItemTransOUT.PriceExclusive = ItemTrans.PriceExclusive;
+                ItemTransOUT.TotalUnitPriceExclInclAdd = ItemTrans.TotalUnitPriceExclInclAdd;
+                ItemTransOUT.TotalLineValExcl = ItemTransOUT.TotalUnitPriceExclInclAdd * (trfQty * -1);
+                ItemTransOUT.TransactionReference = trfitem.ItemCode + " Quick Trf " + trfQty + " out to " + lblToStore.Text;
+                ItemTransOUT.ExchRate = 1;
+
+                _db.ItemTransactions.Add(ItemTransOUT);
                 _db.SaveChanges();
 
                 string itemtransnum = ItemTrans.TrnID.ToString();

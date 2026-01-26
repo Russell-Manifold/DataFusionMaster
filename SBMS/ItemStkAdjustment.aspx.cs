@@ -378,7 +378,7 @@ namespace SBMS
 
                 using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
                 {
-                    var stores = _db.GetLinkedStoredFromItem(CurrentUser.CoID).Where(x => x.ItemID == ItmID && x.StoreCode != "CoR" && x.StoreCode != "CoD").OrderBy(x => x.StoreCode).ToList();
+                    var stores = _db.GetLinkedStoredFromItem(CurrentUser.CoID).Where(x => x.ItemID == ItmID && x.StoreCode != "CoR" && x.StoreCode != "CoD" && x.StoreCode.ToLower() != "scr").OrderBy(x => x.StoreCode).ToList();
                     DDStore.DataSource = stores;
                     DDStore.DataTextField = "StoreCode";
                     DDStore.DataValueField = "StoreCode";
@@ -576,6 +576,13 @@ namespace SBMS
 
         protected void btnAddNewLot_Click(object sender, EventArgs e)
         {
+           if (lblLotNum.Text.ToString().Trim().Length < 5)
+            {
+                string message = "Please add a lot number of at least 5 characters before proceeding";
+                AlertHelper.ShowSweetAlert(this, message, "error");
+                return;
+            }
+            
             if (DDItemList.SelectedIndex == -1)
             {
                 string message = "Please select an Item before creating a new lot number";

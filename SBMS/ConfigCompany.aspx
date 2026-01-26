@@ -28,8 +28,6 @@
                     <div class="2u 12u$(medium)"><asp:Image ID="imgCoImg" runat="server"  style="float:right" class="logoImg" /></div>
                     </div>
                  
-                <asp:UpdatePanel ID="UpdatePanel1" runat="server">
-                        <ContentTemplate>
                 <div class="row 150%">
                      <div class="2u 12u$(medium)">&nbsp</div>   
                      <div class="8u 12u$(medium)" style="text-align:center">
@@ -126,9 +124,15 @@
                                             <asp:Panel ID="pnlLotTrack" runat="server" style="font-size:small">
                                               Use Lot Tracking if your raw materials have a shelf life and you want to be able to track which lot numbers are allocated to which orders.
                                            </asp:Panel>
-
                                     </td>
-                                    <td>Use Auto Manufacture</td>
+                                   <td>Lot Tracking Advanced</td>
+                                  <td><asp:CheckBox ID="chkLotTrackAdd" runat="server"/></td>    
+                                    </tr>     
+                                        <tr>
+                                        <td colspan="4"><hr /></td>
+                                    </tr> 
+                               <tr>
+                                   <td>Use Auto Manufacture</td>
                                     <td><asp:CheckBox ID="chkAutoManf" runat="server" OnCheckedChanged="chkAutoManf_CheckedChanged" AutoPostBack="true" />
                                         <cci:BalloonPopupExtender ID="BalloonPopupExtender4" TargetControlID="chkAutoManf" UseShadow="true"
                                               DisplayOnMouseOver ="true" Position="BottomRight" BalloonPopupControlID="pnlAutoManf" BalloonStyle="Rectangle" 
@@ -137,8 +141,8 @@
                                               Auto manufacturing is useful if you use only 1 warehouse and do not require lot tracking.  Auto Manufacture will simplify and speed up the fulfullment of works orders and adjust your stock accordingly works orders can be auto fulfileld with 1 click.
                                            </asp:Panel>
                                     </td>
-                                    </tr>      
-                               <tr>
+                               </tr>
+                                    <tr>
                                         <td colspan="4"><hr /></td>
                                     </tr> 
                                     <tr>
@@ -161,8 +165,7 @@
                                           If your company does warehousing or straight picking of goods from stock without the need to task lot number, this is a useful tool to switch on. 
                                         </asp:Panel>
                               </td>
-                              <td>Use BarCodes</td>
-                              <td><asp:CheckBox ID="chkBarCodes" runat="server"/></td>
+                              
                               </tr>
                                <tr>
                                      <td colspan="4"><hr /></td>
@@ -175,7 +178,8 @@
                                               If you sell products in different pack sizes, this would be useful. On picking slips, you can enter a pack code and the correct quantity will populate.
                                             </asp:Panel>
                                     </td>
-                                    <td colspan="2"></td>
+                                   <td>Use BarCodes</td>
+                                    <td><asp:CheckBox ID="chkBarCodes" runat="server"/></td>
                                 </tr> 
                                <tr>
                                    <td colspan="4"><hr /></td>
@@ -188,6 +192,11 @@
                                               Module 2 is applicable if you require Sales forcasting and Job Cards. Contact us if you want it switched on or off. 
                                            </asp:Panel>
                                    </td>
+                                   </tr>
+                               <tr>
+                                    <td colspan="4"><hr /></td>
+                                </tr> 
+                               <tr>
                                    <td>Module 3 Active</td>
                                    <td><asp:CheckBox ID="chkMod3" runat="server" />
                                        <cci:BalloonPopupExtender ID="BalloonPopupExtender6" TargetControlID="chkMod3" UseShadow="true" DisplayOnMouseOver ="true" Position="BottomRight" BalloonPopupControlID="pnlBOM" BalloonStyle="Rectangle"  runat="server" />
@@ -195,11 +204,13 @@
                                                Module 3 contains the requirements for Works Orders, prodution recording, BOM and Kits management. Contact us if you want it switched on or off. 
                                             </asp:Panel>
                                    </td>
+                                   <td>Show Manufacturing Costs On Works Orders</td>
+                                   <td><asp:CheckBox ID="chkManfCosts" runat="server"/></td>
                                </tr>           
                                 
                                 <tr>
-      <td colspan="4"><hr /></td>
-  </tr> 
+                                      <td colspan="4"><hr /></td>
+                                  </tr> 
                                 <tr>
                                      <td>Send Notifications</td>
                                      <td><asp:CheckBox ID="chkNotifs" runat="server"/></td>
@@ -213,13 +224,14 @@
                                </tr>
                                 <tr>
                                     <td colspan="4" style="text-align:center">
-                                        <asp:FileUpload ID="fileUpload" runat="server" />
-                                            <asp:LinkButton ID="btnUpload" runat="server" OnClick="btnUpload_Click" CssClass="buttonC icon fa-upload" >Upload</asp:LinkButton>
+                                        <asp:FileUpload ID="fileUpload" runat="server" style="font-size:1.2em" />
+                                            <asp:LinkButton ID="btnUpload" runat="server" OnClick="btnUpload_Click" CssClass="buttonC icon fa-upload" >Upload Image</asp:LinkButton>
                                             <asp:Label ID="lblMessage" runat="server" ForeColor="Red" />
                                         <h4>Image limitations</h4>
                                         <ul>
                                             <li>* Only .png files allowed</li>
                                             <li>* File size limit = 200kb</li>
+                                            <li><span style="font-size:0.7em">(With some browsers, you may need to clear your browser history after successful upload, for you new image to display)</span> </li>
                                         </ul>
                                     </td>
                                 </tr>
@@ -236,8 +248,6 @@
                         </div>
                      <div class="2u 12u$(medium)">&nbsp</div>   
                      </div>
-                        </ContentTemplate>
-                    </asp:UpdatePanel>
                 </div>
         </div>
                 <script type="text/javascript">

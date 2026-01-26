@@ -145,6 +145,7 @@
           <Property Name="AutoUpdateSageSOs" Type="bit" Nullable="false" />
           <Property Name="AutoGenTaxInvoice" Type="bit" Nullable="false" />
           <Property Name="UsePacks" Type="bit" Nullable="false" />
+          <Property Name="ShowManfCosts" Type="bit" Nullable="false" />
         </EntityType>
         <EntityType Name="DelivMethods">
           <Key>
@@ -306,6 +307,8 @@
           <Property Name="Supplier_CurrencyId" Type="bigint" />
           <Property Name="Customer_ExchangeRate" Type="decimal" Precision="18" Scale="4" />
           <Property Name="Customer_CurrencyId" Type="bigint" />
+          <Property Name="DocCost" Type="decimal" Precision="18" Scale="4" />
+          <Property Name="DocGP" Type="decimal" Precision="18" Scale="4" />
         </EntityType>
         <EntityType Name="DocHeaderAttachment">
           <Key>
@@ -1501,6 +1504,8 @@
           <Property Name="Supplier_CurrencyId" Type="Int64" />
           <Property Name="Customer_ExchangeRate" Type="Decimal" Precision="18" Scale="4" />
           <Property Name="Customer_CurrencyId" Type="Int64" />
+          <Property Name="DocCost" Type="Decimal" Precision="18" Scale="4" />
+          <Property Name="DocGP" Type="Decimal" Precision="18" Scale="4" />
         </EntityType>
         <EntityType Name="DocLine">
           <Key>
@@ -2200,6 +2205,8 @@
           <Property Type="String" Name="StoreCode" Nullable="true" MaxLength="6" />
           <Property Type="Decimal" Name="QtyHandToStore" Nullable="false" />
           <Property Type="Decimal" Name="TotalUnitPriceExclInclAdd" Nullable="false" />
+          <Property Type="Boolean" Name="AllowPicking" Nullable="false" />
+          <Property Type="Boolean" Name="AllowReceiving" Nullable="false" />
         </ComplexType>
         <ComplexType Name="getdoclinestest_Result">
           <Property Type="Decimal" Name="POQty" Nullable="true" Precision="38" Scale="4" />
@@ -2673,6 +2680,8 @@
           <Property Type="Decimal" Name="Supplier_ExchangeRate" Nullable="true" Precision="18" Scale="4" />
           <Property Type="Int64" Name="Customer_CurrencyId" Nullable="true" />
           <Property Type="Decimal" Name="Customer_ExchangeRate" Nullable="true" Precision="18" Scale="4" />
+          <Property Type="Decimal" Name="DocCost" Nullable="true" Precision="18" Scale="4" />
+          <Property Type="Decimal" Name="DocGP" Nullable="true" Precision="18" Scale="4" />
         </ComplexType>
         <ComplexType Name="GetAllStockLevels_Result">
           <Property Type="String" Name="ItemCode" Nullable="true" MaxLength="50" />
@@ -3027,6 +3036,7 @@
           <Property Name="AutoUpdateSageSOs" Type="Boolean" Nullable="false" />
           <Property Name="AutoGenTaxInvoice" Type="Boolean" Nullable="false" />
           <Property Name="UsePacks" Type="Boolean" Nullable="false" />
+          <Property Name="ShowManfCosts" Type="Boolean" Nullable="false" />
         </EntityType>
         <EntityType Name="ReceivingOutstanding">
           <Key>
@@ -3344,6 +3354,8 @@
                 <ScalarProperty Name="Supplier_CurrencyId" ColumnName="Supplier_CurrencyId" />
                 <ScalarProperty Name="Customer_ExchangeRate" ColumnName="Customer_ExchangeRate" />
                 <ScalarProperty Name="Customer_CurrencyId" ColumnName="Customer_CurrencyId" />
+                <ScalarProperty Name="DocCost" ColumnName="DocCost" />
+                <ScalarProperty Name="DocGP" ColumnName="DocGP" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
@@ -3878,6 +3890,8 @@
                 <ScalarProperty Name="StoreCode" ColumnName="StoreCode" />
                 <ScalarProperty Name="QtyHandToStore" ColumnName="QtyHandToStore" />
                 <ScalarProperty Name="TotalUnitPriceExclInclAdd" ColumnName="TotalUnitPriceExclInclAdd" />
+                <ScalarProperty Name="AllowPicking" ColumnName="AllowPicking" />
+                <ScalarProperty Name="AllowReceiving" ColumnName="AllowReceiving" />
               </ComplexTypeMapping>
             </ResultMapping>
           </FunctionImportMapping>
@@ -4845,6 +4859,7 @@
                 <ScalarProperty Name="AutoUpdateSageSOs" ColumnName="AutoUpdateSageSOs" />
                 <ScalarProperty Name="AutoGenTaxInvoice" ColumnName="AutoGenTaxInvoice" />
                 <ScalarProperty Name="UsePacks" ColumnName="UsePacks" />
+                <ScalarProperty Name="ShowManfCosts" ColumnName="ShowManfCosts" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>

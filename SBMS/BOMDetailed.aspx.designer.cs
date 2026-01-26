@@ -105,6 +105,15 @@ namespace SBMS
         protected global::System.Web.UI.WebControls.Image imgCoImg;
 
         /// <summary>
+        /// UpdateProgress1 control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.UpdateProgress UpdateProgress1;
+
+        /// <summary>
         /// UpdatePanel1 control.
         /// </summary>
         /// <remarks>
@@ -204,15 +213,6 @@ namespace SBMS
         protected global::System.Web.UI.WebControls.Panel Panel3;
 
         /// <summary>
-        /// lblItemCost control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblItemCost;
-
-        /// <summary>
         /// lblNewBOMCost control.
         /// </summary>
         /// <remarks>
@@ -222,22 +222,67 @@ namespace SBMS
         protected global::System.Web.UI.WebControls.Label lblNewBOMCost;
 
         /// <summary>
-        /// lbtnSBCAUpdate control.
+        /// lblItemCost control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton lbtnSBCAUpdate;
+        protected global::System.Web.UI.WebControls.Label lblItemCost;
 
         /// <summary>
-        /// lbtnSBCAUpdate_ConfirmButtonExtender1 control.
+        /// lblSageSell control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::AjaxControlToolkit.ConfirmButtonExtender lbtnSBCAUpdate_ConfirmButtonExtender1;
+        protected global::System.Web.UI.WebControls.Label lblSageSell;
+
+        /// <summary>
+        /// lblCurrGP control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblCurrGP;
+
+        /// <summary>
+        /// txtNewGP control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtNewGP;
+
+        /// <summary>
+        /// FilteredTextBoxExtender3 control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::AjaxControlToolkit.FilteredTextBoxExtender FilteredTextBoxExtender3;
+
+        /// <summary>
+        /// txtNewSell control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtNewSell;
+
+        /// <summary>
+        /// FilteredTextBoxExtender4 control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::AjaxControlToolkit.FilteredTextBoxExtender FilteredTextBoxExtender4;
 
         /// <summary>
         /// Panel2 control.
@@ -319,6 +364,24 @@ namespace SBMS
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Panel Pane32;
+
+        /// <summary>
+        /// lbtnSBCAUpdate control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton lbtnSBCAUpdate;
+
+        /// <summary>
+        /// lbtnSBCAUpdate_ConfirmButtonExtender1 control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::AjaxControlToolkit.ConfirmButtonExtender lbtnSBCAUpdate_ConfirmButtonExtender1;
 
         /// <summary>
         /// lbtnDeleteBom_ConfirmButtonExtender1 control.

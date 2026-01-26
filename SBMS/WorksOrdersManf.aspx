@@ -7,6 +7,7 @@
     <link id="Link3" runat="server" rel="shortcut icon" href="images/datafusionicon.ico" type="image/x-icon" />
     <link id="Link4" runat="server" rel="icon" href="images/datafusionicon.ico" type="image/ico" />
     <link rel="stylesheet" href="assets/css/main.css" />
+    <script src="js/cost-calculation.js" type="text/javascript"></script>
      <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> <!-- Simple button disable script -->
     <script type="text/javascript">
         function disableButtonsDuringProcess() {
@@ -72,6 +73,21 @@
                        <asp:Image ID="imgCoImg" runat="server"  style="float:right" class="logoImg" />
                     </div>
                 </div>
+                <asp:UpdateProgress ID="UpdateProgress1" runat="server" AssociatedUpdatePanelID="UpdatePanel1">
+                    <ProgressTemplate>
+                        <div style="position: fixed; text-align: center; height: 100%; width: 100%; top: 0; right: 0; left: 0; z-index: 9999999; background-color: #000000; opacity: 0.7;">
+                            <div style="position: relative; top: 40%; background: white; padding: 20px; border-radius: 10px; display: inline-block;">
+                                <asp:Image ID="imgUpdateProgress" runat="server" ImageUrl="~/images/tenorwait.gif" AlternateText="Processing ..." />
+                                <br />
+                                <strong>Processing - Please Wait</strong>
+                                <br />
+                                <span style="font-size: 12px; color: #666;">Do not close or refresh the page</span>
+                            </div>
+                        </div>
+                    </ProgressTemplate>
+                </asp:UpdateProgress>
+            <asp:UpdatePanel ID="UpdatePanel1" runat="server">
+                <ContentTemplate>
                 <div class="row 150%">
                     <div class="1u 12u$(medium)">&nbsp;</div>
                     <div class="10u 12u$(medium)">
@@ -98,7 +114,11 @@
                                         <asp:TextBox ID="lblCreatedBy" runat="server" Text="" Enabled="false"></asp:TextBox></td>
                                     <td>Status</td>
                                     <td>
-                                        <asp:DropDownList ID="DDStatus" runat="server" Style="width: 100%" Enabled="false">
+                                        <asp:DropDownList ID="DDStatus" runat="server" Style="width: 100%">
+                                            <asp:ListItem>New</asp:ListItem>
+                                            <asp:ListItem>Planned</asp:ListItem>
+                                            <asp:ListItem>In Progress</asp:ListItem>
+                                            <asp:ListItem>Complete</asp:ListItem>
                                         </asp:DropDownList></td>
                                 </tr>
                                 <tr>
@@ -114,21 +134,7 @@
                     </div>
                     <div class="1u 12u$(medium)">&nbsp;</div>
                 </div>
-                <asp:UpdateProgress ID="UpdateProgress1" runat="server" AssociatedUpdatePanelID="UpdatePanel1">
-                    <ProgressTemplate>
-                        <div style="position: fixed; text-align: center; height: 100%; width: 100%; top: 0; right: 0; left: 0; z-index: 9999999; background-color: #000000; opacity: 0.7;">
-                            <div style="position: relative; top: 40%; background: white; padding: 20px; border-radius: 10px; display: inline-block;">
-                                <asp:Image ID="imgUpdateProgress" runat="server" ImageUrl="~/images/tenorwait.gif" AlternateText="Processing ..." />
-                                <br />
-                                <strong>Processing Transfers - Please Wait</strong>
-                                <br />
-                                <span style="font-size: 12px; color: #666;">Do not close or refresh the page</span>
-                            </div>
-                        </div>
-                    </ProgressTemplate>
-                </asp:UpdateProgress>
-<asp:UpdatePanel ID="UpdatePanel1" runat="server">
-    <ContentTemplate>
+                
                 <div class="row 150%">
                     <div class="1u 12u$(medium)">&nbsp;</div>
                     <div class="10u 12u$(medium)">
@@ -136,12 +142,13 @@
                         <h3>Works Order Details <asp:CheckBox ID="chkCompl" runat="server" Text="Complete" Enabled="false" Font-Size="Small" /> </h3>
                         <cci:Accordion ID="AccordionWOLines" runat="server" CssClass="accordion" 
                                 HeaderCssClass="accordionHeader" 
-                                ContentCssClass="accordionContent" 
+                                ContentCssClass="accordionContent"    
                                 FadeTransitions="true" 
                                 TransitionDuration="250"
                                 tooltip="Click to select">
-                            </cci:Accordion>
-                        </div>
+                            </cci:Accordion>          
+                    </div>
+
                     <div class="1u 12u$(medium)">&nbsp;</div>
                      </div>
                     <div class="row 150%">
@@ -282,8 +289,7 @@
             }
             return true;
         }
-</script>
-
+    </script>
     <script type="text/javascript">
         function triggerSaveOnEnter(event, saveButtonId) {
             if (event.key === "Enter") {
@@ -292,5 +298,26 @@
             }
         }
     </script>
+    <script type="text/javascript">
+        function calculateNewSell(txtNewGPId, lblThisCostId, txtNewSellId) {
+            var txtNewGP = document.getElementById(txtNewGPId);
+            var lblThisCost = document.getElementById(lblThisCostId);
+            var txtNewSell = document.getElementById(txtNewSellId);
+
+            if (!lblThisCost || !txtNewSell || !txtNewGP) return;
+
+            var cost = parseFloat(lblThisCost.textContent || lblThisCost.innerText);
+            var gp = parseFloat(txtNewGP.value);
+
+            if (isNaN(cost) || isNaN(gp) || gp >= 100) {
+                txtNewSell.value = '';
+                return;
+            }
+
+            var newSell = cost / (1 - (gp / 100));
+            txtNewSell.value = newSell.toFixed(2);
+        }
+    </script>
+     <script src="<%= ResolveUrl("~/js/cost-calculation.js") %>"></script>
 </body>
 </html>

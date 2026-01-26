@@ -98,7 +98,7 @@ namespace SBMS
                     ApiUrlCall api = new ApiUrlCall();
                     await api.LoadSalesOrders(currentUser);
                     await api.LoadPurchaseOrders(currentUser);
-                    var errors = await api.LoadItems(currentUser);
+                   var errors = await api.LoadItems(currentUser);
                     return "Success";
                 }
                 catch (Exception ex)

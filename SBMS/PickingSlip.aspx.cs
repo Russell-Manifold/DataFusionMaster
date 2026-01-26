@@ -773,6 +773,8 @@ namespace SBMS
                             SOLine.Total = SOLine.Exclusive - SOLine.Discount + SOLine.Tax;
                             SOLine.Tax = (SOLine.UnitPriceExclusive * pickQty) * SOLine.TaxPercentage;
                             SOLine.LotNumber = PsL.LotNumber;
+                            SOLine.ExchRate = 1;
+                            SOLine.localCurrLineVal = SOLine.Exclusive - SOLine.Discount;
                         }
                     }
                     else
@@ -793,7 +795,7 @@ namespace SBMS
                         DLn.ReceiveComplete = true;
                         DLn.StoreCode = PsL.StoreCodeFrom;
                         DLn.LotNumber = PsL.LotNumber;
-
+ 
                         // Get values from first line of the same item
                         var FirstSOLine = _db.DocLines.Where(x => x.SBCALineID == FirstLineID).FirstOrDefault();
                         DLn.UnitPriceExclusive = FirstSOLine.UnitPriceExclusive;
@@ -812,6 +814,8 @@ namespace SBMS
                         DLn.LineTaxTypeID = FirstSOLine.LineTaxTypeID;
                         DLn.Unit = FirstSOLine.Unit;
                         DLn.LineType = FirstSOLine.LineType;
+                        DLn.ExchRate = 1;
+                        DLn.localCurrLineVal = DLn.Exclusive - DLn.Discount;
                         _db.DocLines.Add(DLn);
                     }  
                 }
@@ -822,7 +826,19 @@ namespace SBMS
                 DocH.Active = true;
                 DocH.CompBy = CurrentUser.RoleID;
                 DocH.CompleteDate = DateTime.Today;
-                
+               
+                // get total cost from transactions
+                DocH.DocCost = Convert.ToDecimal((_db.ItemTransactions.Where(x => x.CompanyID == CurrentUser.CoID && x.DocumentID == slipid).Sum(x => (decimal?)x.TotalLineValExcl) ?? 0m).ToString("N2"));
+                if (DocH.DocCost != 0) DocH.DocCost = DocH.DocCost * -1;
+                decimal DocValue = Convert.ToDecimal((_db.DocLines.Where(x => x.CompanyID == CurrentUser.CoID && x.DocID == Docid).Sum(x => (decimal?)x.Exclusive) ?? 0m));
+                decimal cost = DocH.DocCost ?? 0m;
+                decimal gp = 0m;
+                if (DocValue != 0)
+                {
+                    gp = (DocValue - cost) / DocValue;   // e.g. 0.25
+                }
+                DocH.DocGP = gp;
+
                 var Stat = _db.PickSlipProcesses.Where(ws => ws.CompanyID == CurrentUser.CoID).OrderByDescending(ws => ws.Seq).Select(ws => new { ws.Seq, ws.PSName, ws.PSPID }).FirstOrDefault();
                 var PSH = _db.PickingSlipMasters.Where(x => x.CustomerID == CurrentUser.CoID && x.PSID == slipid).FirstOrDefault();
                 int fromstat = (int)PSH.PSStationID;
@@ -1552,10 +1568,6 @@ namespace SBMS
             {
                 var Psl = _db.PickSlipLines.Where(x => x.LineID == LineIDD).FirstOrDefault();
                 // INSERT FIRST EDITED LINE HERE.THEN ADD ADDITIONA LINES AFTER
-
-
-
-
                 bool isfirst = true;
                 // add new lines for each lot number selected
                 foreach (GridViewRow grv in GridLotNums.Rows)
@@ -1606,6 +1618,7 @@ namespace SBMS
                                 PsLn.IsLotTracked = Psl.IsLotTracked;
                                 PsLn.LotNumber = grv.Cells[1].Text.ToString();
                                 PsLn.Quantity = UseQty;
+                                PsLn.PickQty = UseQty;
                                 _db.PickSlipLines.Add(PsLn);
                             }
                         }
@@ -1811,10 +1824,14 @@ namespace SBMS
             GridViewRow row = (GridViewRow)DDlotNum.NamingContainer;
             LinkButton lbtnLineSave = (LinkButton)row.FindControl("lbtnLineSave");
             CheckBox chkComplete = (CheckBox)row.FindControl("chkComplete");
+            TextBox txtPickQty = (TextBox)row.FindControl("txtPickQty");
+            decimal OrdQty = Convert.ToDecimal(row.Cells[5].Text);
+            
             chkComplete.Checked = true;
             if (DDlotNum.SelectedIndex == 0) chkComplete.Checked = false;
             if (lbtnLineSave != null)
             {
+                txtPickQty.Text = OrdQty.ToString();
                 lbtnLineSave_Click(lbtnLineSave, e);
             }
         }
@@ -1822,7 +1839,7 @@ namespace SBMS
        private void loadpopLotNumbers(long itemid)
         {
             
-            var LotNums = _ActiveLotNums.Where(x => x.ItemId == itemid).ToList();
+            var LotNums = _ActiveLotNums.Where(x => x.ItemId == itemid && x.AllowPicking == true).ToList();
             GridLotNums.DataSource = LotNums.ToList();
             GridLotNums.DataBind();
         }

@@ -138,16 +138,19 @@ namespace SBMS
                         lbtnCompleteTrf.Style.Add("display", "inline-block");
                         lbtnStart.Style.Add("display", "none");
                         LbtnSaveEdits.Style.Add("display", "none");
+                        lbtnAddShip.Style.Add("display", "none");
                     }
                     else if (Trf.TrfStatus == "Complete" || Trf.TrfStatus == "Deleted")
                     {
                         lbtnCompleteTrf.Style.Add("display", "none");
                         lbtnStart.Style.Add("display", "none");
                         LbtnSaveEdits.Style.Add("display", "none");
+                        lbtnAddShip.Style.Add("display", "none");
                     }
                     else
                     {
                         lbtnStart.Style.Add("display", "inline-block");
+                        lbtnAddShip.Style.Add("display", "inline-block");
                         LbtnSaveEdits.Style.Add("display", "inline-block");
                         lbtnCompleteTrf.Style.Add("display", "none");
                     }
@@ -160,7 +163,7 @@ namespace SBMS
         {
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {
-                var stores = _db.Stores.Where(x => x.CompanyID == CurrentUser.CoID && x.StoreActive == true && x.StoreCode != "CoR" && x.StoreCode != "CoD").ToList();
+                var stores = _db.Stores.Where(x => x.CompanyID == CurrentUser.CoID && x.StoreActive == true && x.StoreCode != "CoR" && x.StoreCode != "CoD" && x.StoreCode.ToLower() != "scr").ToList();
                 ddlFromWarehouse.DataSource = stores;
                 ddlFromWarehouse.DataTextField = "StoreDescript";
                 ddlFromWarehouse.DataValueField = "StoreID";
@@ -579,6 +582,7 @@ namespace SBMS
 
             protected void lbtnPrintDN_Click(object sender, EventArgs e)
             {
+            SaveLastFilledLine();  // <-- NEW
             CreatePDF();
             Response.Redirect($"~/ViewPDF.aspx?doc=" + CurrentUser.UserGuiD.ToString() + "\\Trf_" + lblDocNum.Text, false);
         }
@@ -590,6 +594,8 @@ namespace SBMS
 
         protected void lbtnStart_Click(object sender, EventArgs e)
         {
+            SaveLastFilledLine();  // <-- NEW
+
             string result = SaveTransfer();
             if (result != "OK")
             {
@@ -657,6 +663,8 @@ namespace SBMS
 
         protected void LbtnSaveEdits_Click(object sender, EventArgs e)
         {
+            SaveLastFilledLine();  // <-- NEW
+
             string result = SaveTransfer();
             if (result != "OK")
             {
@@ -667,6 +675,39 @@ namespace SBMS
                 AlertHelper.ShowSweetAlert(this, "Transfer saved started.", "success");
             }           
         }
+
+        private void SaveLastFilledLine()
+        {
+            GridViewRow lastFilledRow = null;
+
+            foreach (GridViewRow row in GridTrfLines.Rows)
+            {
+                TextBox txtQty = row.FindControl("txtQty") as TextBox;
+                DropDownList ddlItem = row.FindControl("ddlGridItem") as DropDownList;
+
+                if (txtQty != null && ddlItem != null)
+                {
+                    bool hasQty = !string.IsNullOrWhiteSpace(txtQty.Text);
+                    bool hasItem = ddlItem.SelectedIndex > 0;
+
+                    if (hasQty && hasItem)
+                    {
+                        lastFilledRow = row; // overwrites until the LAST one
+                    }
+                }
+            }
+
+            if (lastFilledRow != null)
+            {
+                LinkButton btnSave = lastFilledRow.FindControl("lbtnLineSave") as LinkButton;
+                if (btnSave != null)
+                {
+                    // Trigger the same logic as a real click
+                    lbtnLineSave_Click(btnSave, EventArgs.Empty);
+                }
+            }
+        }
+
 
         protected string SaveTransfer()
         {
@@ -772,7 +813,7 @@ namespace SBMS
                 ItemTrans.ToID = fromStoreId;
                 ItemTrans.Qty = line.TrfOutQty * -1;
                 trfQty = (decimal)line.TrfOutQty * -1;
-                ItemTrans.PriceInclusive = line.PriceInclusive;
+                //ItemTrans.PriceInclusive = line.PriceInclusive;
                 ItemTrans.PriceExclusive = line.TotalUnitPriceExclInclAdd;
                 TrfUnitCost = (decimal)ItemTrans.PriceExclusive;
                 decimal ToBal = trfQty;
@@ -821,31 +862,31 @@ namespace SBMS
                 }
 
                 //// Record for Issuing store
-                ItemTrans = new ItemTransaction();
-                ItemTrans.CompanyID = line.CompanyID;
-                ItemTrans.DocumentID = 0;
-                ItemTrans.TransactionType = "TRF";
-                ItemTrans.ItemID = line.ItemSelectionId;
-                ItemTrans.ItemCode = line.ItemCode;
-                ItemTrans.ItemDescription = line.ItemDescription;
-                ItemTrans.LotNumber = line.LotNumber ?? null;
-                ItemTrans.Unit = line.Unit;
-                ItemTrans.FromID = fromStoreId;
-                ItemTrans.ToID = toStoreId;
-                ItemTrans.Qty = trfQty * -1;
-                ItemTrans.DocumentType = 4;
-                ItemTrans.TransactionDate = DateTime.Now;
-                ItemTrans.ByRoleID = CurrentUser.RoleID; // roleid
+                ItemTransaction ItemTransOUT = new ItemTransaction();
+                ItemTransOUT.CompanyID = ItemTrans.CompanyID;
+                ItemTransOUT.DocumentID = 0;
+                ItemTransOUT.TransactionType = "TRF";
+                ItemTransOUT.ItemID = ItemTrans.ItemID;
+                ItemTransOUT.ItemCode = ItemTrans.ItemCode;
+                ItemTransOUT.ItemDescription = line.ItemDescription;
+                ItemTransOUT.LotNumber = line.LotNumber ?? null;
+                ItemTransOUT.Unit = line.Unit;
+                ItemTransOUT.FromID = fromStoreId;
+                ItemTransOUT.ToID = toStoreId;
+                ItemTransOUT.Qty = trfQty * -1;
+                ItemTransOUT.DocumentType = 4;
+                ItemTransOUT.TransactionDate = DateTime.Now;
+                ItemTransOUT.ByRoleID = CurrentUser.RoleID; // roleid
 
                 // Additional costs ????
-                ItemTrans.AdditionalCosts = 0;
+                ItemTransOUT.AdditionalCosts = 0;
                 //if (AddCosts > 0) { ItemTrans.AdditionalCosts = AddCosts / trfQty; }
-                ItemTrans.PriceExclusive = TrfUnitCost;
-                ItemTrans.TotalUnitPriceExclInclAdd = TrfUnitCost;
-                ItemTrans.TotalLineValExcl = ItemTrans.TotalUnitPriceExclInclAdd * (trfQty * -1);
-                ItemTrans.TransactionReference = line.ItemCode + " " + trfref + " " + trfQty * -1 + " in from " + _stores.Where(x => x.StoreID == fromStoreId).Select(x => x.StoreCode).FirstOrDefault();
-                ItemTrans.ExchRate = 1;
-                _db.ItemTransactions.Add(ItemTrans);
+                ItemTransOUT.PriceExclusive = ItemTrans.PriceExclusive;
+                ItemTransOUT.TotalUnitPriceExclInclAdd = ItemTrans.TotalUnitPriceExclInclAdd;
+                ItemTransOUT.TotalLineValExcl = ItemTransOUT.TotalUnitPriceExclInclAdd * (trfQty * -1);
+                ItemTransOUT.TransactionReference = ItemTrans.ItemCode + " " + trfref + " " + trfQty * -1 + " in from " + _stores.Where(x => x.StoreID == fromStoreId).Select(x => x.StoreCode).FirstOrDefault();
+                ItemTransOUT.ExchRate = 1;
+                _db.ItemTransactions.Add(ItemTransOUT);
                 _db.SaveChanges();
             }
         }
@@ -1153,5 +1194,19 @@ namespace SBMS
             }
         }
 
+        protected void lbtnAddShip_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        protected void lbtnCancel_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        protected void btnSaveConfirm_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }
