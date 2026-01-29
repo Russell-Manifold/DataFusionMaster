@@ -702,6 +702,7 @@
           <Property Name="ItemCode" Type="varchar" MaxLength="50" />
           <Property Name="FGQty" Type="decimal" Precision="18" Scale="4" />
           <Property Name="CompanyID" Type="bigint" />
+          <Property Name="KitHID" Type="int" />
         </EntityType>
         <EntityType Name="LastCallLog">
           <Key>
@@ -1806,6 +1807,7 @@
           <Property Name="ItemCode" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="FGQty" Type="Decimal" Precision="18" Scale="4" />
           <Property Name="CompanyID" Type="Int64" />
+          <Property Name="KitHID" Type="Int32" />
         </EntityType>
         <EntityType Name="LastCallLog">
           <Key>
@@ -2746,10 +2748,11 @@
         <ComplexType Name="GetKitLinesFromKitCode_Result">
           <Property Type="String" Name="ItemCode" Nullable="true" MaxLength="50" />
           <Property Type="String" Name="KitCode" Nullable="true" MaxLength="50" />
-          <Property Type="Int32" Name="KitLineNo" Nullable="true" />
+          <Property Type="Int32" Name="KitLineNo" Nullable="true" />       
           <Property Type="Int64" Name="ItemID" Nullable="true" />
           <Property Type="Decimal" Name="FGQty" Nullable="true" Precision="18" Scale="4" />
           <Property Type="Int32" Name="KLID" Nullable="false" />
+          <Property Type="Int32" Name="KitHID" Nullable="true" />
           <Property Type="String" Name="Description" Nullable="true" MaxLength="100" />
           <Property Type="Decimal" Name="AvCost" Nullable="true" Precision="18" Scale="4" />
           <Property Type="String" Name="Unit" Nullable="true" MaxLength="20" />
@@ -3669,6 +3672,7 @@
                 <ScalarProperty Name="ItemCode" ColumnName="ItemCode" />
                 <ScalarProperty Name="FGQty" ColumnName="FGQty" />
                 <ScalarProperty Name="CompanyID" ColumnName="CompanyID" />
+                <ScalarProperty Name="KitHID" ColumnName="KitHID" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
@@ -4549,6 +4553,7 @@
                 <ScalarProperty Name="ItemID" ColumnName="ItemID" />
                 <ScalarProperty Name="FGQty" ColumnName="FGQty" />
                 <ScalarProperty Name="KLID" ColumnName="KLID" />
+                <ScalarProperty Name="KitHID" ColumnName="KitHID" />
                 <ScalarProperty Name="Description" ColumnName="Description" />
                 <ScalarProperty Name="AvCost" ColumnName="AvCost" />
                 <ScalarProperty Name="Unit" ColumnName="Unit" />

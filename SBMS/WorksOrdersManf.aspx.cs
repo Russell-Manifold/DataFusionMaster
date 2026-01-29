@@ -1948,59 +1948,66 @@ namespace SBMS
                                     DropDownList DDStore = row.FindControl("DDStore") as DropDownList;
                                     DropDownList DDlotNum = row.FindControl("DDlotNum") as DropDownList;
 
-                                    if (DDStore != null && DDStore.SelectedItem != null &&
-                                        DDStore.SelectedItem.Text.ToLower() != "-store-")
+                                    var WRMLine = _db.WorksOrderRMLines.Where(x => x.CompanyID == CoID && x.LineID == TLineID).FirstOrDefault();
+                                    if (WRMLine == null) continue;
+
+                                    if (DDStore.SelectedItem != null)
                                     {
-                                        var WRMLine = _db.WorksOrderRMLines.Where(x => x.CompanyID == CoID && x.LineID == TLineID).FirstOrDefault();
-                                        if (WRMLine == null) continue;
-
-                                        if (CurrentUser.CompanyUseLotNumbers && WRMLine.IsLotTracked)
+                                        if (DDStore.SelectedItem.Text.ToLower() != "-store-")
                                         {
-                                            WRMLine.LotNumber = null;
-
-                                            if (DDlotNum != null && DDlotNum.Items.Count > 0)
+                                            if (CurrentUser.CompanyUseLotNumbers && WRMLine.IsLotTracked)
                                             {
-                                                if (!DDlotNum.SelectedItem.Text.Contains("Number -"))
+                                                WRMLine.LotNumber = null;
+
+                                                if (DDlotNum != null && DDlotNum.Items.Count > 0)
                                                 {
-                                                    WRMLine.LotNumber = DDlotNum.SelectedValue.ToString();
+                                                    if (!DDlotNum.SelectedItem.Text.Contains("Number -"))
+                                                    {
+                                                        WRMLine.LotNumber = DDlotNum.SelectedValue.ToString();
+                                                    }
+                                                    else
+                                                    {
+                                                        WRMLine.LotNumber = null;
+                                                        errorMessages.Add($"Line {TLineID}: Invalid Lot Number, skipped.");
+                                                        continue;
+                                                    }
                                                 }
                                                 else
                                                 {
                                                     WRMLine.LotNumber = null;
-                                                    errorMessages.Add($"Line {TLineID}: Invalid Lot Number, skipped.");
+                                                    errorMessages.Add($"Line {TLineID}: No Lot Number available, skipped.");
                                                     continue;
                                                 }
                                             }
+
+                                            if (DDStore.SelectedItem != null)
+                                            {
+                                                WRMLine.StoreCodeFrom = DDStore.SelectedItem.Text.ToString();
+                                            }
                                             else
                                             {
-                                                WRMLine.LotNumber = null;
-                                                errorMessages.Add($"Line {TLineID}: No Lot Number available, skipped.");
-                                                continue;
+                                                WRMLine.StoreCodeFrom = null;
                                             }
                                         }
-
-                                        if (DDStore.SelectedItem != null)
-                                        {
-                                            WRMLine.StoreCodeFrom = DDStore.SelectedItem.Text.ToString();
-                                        }
-                                        else
-                                        {
-                                            WRMLine.StoreCodeFrom = null;
-                                        }
-
-                                        decimal UseQty = 0;
-                                        try { UseQty = Convert.ToDecimal(txtUseQty.Text); } catch { }
-                                        WRMLine.UseQty = UseQty;
-
-                                        decimal ScrQty = 0;
-                                        try { ScrQty = Convert.ToDecimal(txtScrapQty.Text); } catch { }
-                                        WRMLine.ScrapQty = ScrQty;
-
-                                        decimal LineUnitCost = 0;
-                                        try { LineUnitCost = Convert.ToDecimal(txtUnitCost.Text); } catch { }
-                                        WRMLine.UnitCost = LineUnitCost;
-                                        _db.SaveChanges();
                                     }
+                                    else 
+                                    {
+                                        WRMLine.LotNumber = null;
+                                        WRMLine.StoreCodeFrom = null;
+                                    }
+                                    decimal UseQty = 0;
+                                    try { UseQty = Convert.ToDecimal(txtUseQty.Text); } catch { }
+                                    WRMLine.UseQty = UseQty;
+
+                                    decimal ScrQty = 0;
+                                    try { ScrQty = Convert.ToDecimal(txtScrapQty.Text); } catch { }
+                                    WRMLine.ScrapQty = ScrQty;
+
+                                    decimal LineUnitCost = 0;
+                                    try { LineUnitCost = Convert.ToDecimal(txtUnitCost.Text); } catch { }
+                                    WRMLine.UnitCost = LineUnitCost;
+                                    _db.SaveChanges();
+                                            
                                 }
                             }
                         }
@@ -3242,14 +3249,16 @@ namespace SBMS
                                     DropDownList DDStore = row.FindControl("DDStore") as DropDownList;
                                     DropDownList DDlotNum = row.FindControl("DDlotNum") as DropDownList;
 
-                                    if (DDStore.SelectedItem.ToString() == "-?-")
+                                    if (DDStore.SelectedItem != null)
                                     {
-                                        cont = false;
-                                        string msg = $"Invalid store selected in BOM items for {row.Cells[2].Text.ToString()}";
-                                        //AlertHelper.ShowSweetAlert(this, $"Invalid store selected in BOM items for {row.Cells[2].Text.ToString()} . Unable to continue.", "error");
-                                        return msg;
+                                        if (DDStore.SelectedItem.ToString() == "-?-")
+                                        {
+                                            cont = false;
+                                            string msg = $"Invalid store selected in BOM items for {row.Cells[2].Text.ToString()}";
+                                            //AlertHelper.ShowSweetAlert(this, $"Invalid store selected in BOM items for {row.Cells[2].Text.ToString()} . Unable to continue.", "error");
+                                            return msg;
+                                        }
                                     }
-
                                     decimal useQty = 0;
                                     decimal scrapQty = 0;
                                     try { useQty = Convert.ToDecimal(txtUseQty.Text); } catch { }
@@ -3429,41 +3438,46 @@ namespace SBMS
                                                 }
                                             }
                                         }
-                                        string gridStore = DDStore.SelectedItem.Text;
-
-                                        // Process usage quantity
-                                        if (useQty > 0)
+                                        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                                        if (DDStore.SelectedItem != null)
                                         {
-                                            string usageKey = $"{gridSelectionId}|{gridLotNumber}|{gridStore}|{useQty}";
-                                            if (!SentKeys.Contains(usageKey))
+                                            string gridStore = DDStore.SelectedItem.Text;
+
+                                            // Process usage quantity
+                                            if (useQty > 0)
                                             {
-                                                string RetStr = DoItemAdjustment(Convert.ToInt64(gridSelectionId), gridLotNumber, gridStore, useQty * -1, 0, "L", (decimal)WRMLine.UnitCost); // "L" denoted works order component
-                                                if (RetStr != "OK")
+                                                string usageKey = $"{gridSelectionId}|{gridLotNumber}|{gridStore}|{useQty}";
+                                                if (!SentKeys.Contains(usageKey))
                                                 {
-                                                    string msg = $"Error performing Item Adjustment for usage: {RetStr}";
-                                                    //AlertHelper.ShowSweetAlert(this, , "error");
-                                                    return msg;
+                                                    string RetStr = DoItemAdjustment(Convert.ToInt64(gridSelectionId), gridLotNumber, gridStore, useQty * -1, 0, "L", (decimal)WRMLine.UnitCost); // "L" denoted works order component
+                                                    if (RetStr != "OK")
+                                                    {
+                                                        string msg = $"Error performing Item Adjustment for usage: {RetStr}";
+                                                        //AlertHelper.ShowSweetAlert(this, , "error");
+                                                        return msg;
+                                                    }
+                                                    SentKeys.Add(usageKey);
                                                 }
-                                                SentKeys.Add(usageKey);
+                                            }
+
+                                            // Process scrap quantity
+                                            if (scrapQty > 0)
+                                            {
+                                                string scrapKey = $"{gridSelectionId}|{gridLotNumber}|{gridStore}|{scrapQty}";
+                                                if (!SentKeys.Contains(scrapKey))
+                                                {
+                                                    string RetStr = DoItemAdjustment(Convert.ToInt64(gridSelectionId), gridLotNumber, gridStore, 0, scrapQty * -1, "L", (decimal)WRMLine.UnitCost);  // "L" denoted works order component
+                                                    if (RetStr != "OK")
+                                                    {
+                                                        string msg = $"Error performing Item Adjustment for scrap: {RetStr}";
+                                                        //AlertHelper.ShowSweetAlert(this, "Error performing Item Adjustment for scrap: " + RetStr, "error");
+                                                        return msg;
+                                                    }
+                                                    SentKeys.Add(scrapKey);
+                                                }
                                             }
                                         }
-
-                                        // Process scrap quantity
-                                        if (scrapQty > 0)
-                                        {
-                                            string scrapKey = $"{gridSelectionId}|{gridLotNumber}|{gridStore}|{scrapQty}";
-                                            if (!SentKeys.Contains(scrapKey))
-                                            {
-                                                string RetStr = DoItemAdjustment(Convert.ToInt64(gridSelectionId), gridLotNumber, gridStore, 0, scrapQty * -1, "L", (decimal)WRMLine.UnitCost);  // "L" denoted works order component
-                                                if (RetStr != "OK")
-                                                {
-                                                    string msg = $"Error performing Item Adjustment for scrap: {RetStr}";
-                                                    //AlertHelper.ShowSweetAlert(this, "Error performing Item Adjustment for scrap: " + RetStr, "error");
-                                                    return msg;
-                                                }
-                                                SentKeys.Add(scrapKey);
-                                            }
-                                        }
+                                        //////////////////////////////////////////////////////////////////
                                     }
                                 }
                             }

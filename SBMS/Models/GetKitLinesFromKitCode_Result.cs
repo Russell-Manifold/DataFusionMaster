@@ -19,6 +19,7 @@ namespace SBMS.Models
         public Nullable<long> ItemID { get; set; }
         public Nullable<decimal> FGQty { get; set; }
         public int KLID { get; set; }
+        public int KitHID { get; set; }
         public string Description { get; set; }
         public Nullable<decimal> AvCost { get; set; }
         public string Unit { get; set; }

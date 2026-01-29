@@ -247,10 +247,14 @@ namespace SBMS
                         }
                         if (qoh < NewPSLine.Quantity)
                         {
-                            chkComplete.Checked = false;
-                            AlertHelper.ShowSweetAlert(this, $"Insufficient quantity in store for {NewPSLine.ItemCode} only {qoh} available. Unable to save", "error");
-                            DDlotNum.SelectedIndex = -1;
-                            return;
+                            var ItmServ = _db.ItemsMasters.FirstOrDefault(x => x.CompanyID == CurrentUser.CoID && x.ID == NewPSLine.SelectionId);
+                            if (ItmServ.Physical == true)
+                            {
+                                chkComplete.Checked = false;
+                                AlertHelper.ShowSweetAlert(this, $"Insufficient quantity in store for {NewPSLine.ItemCode} only {qoh} available. Unable to save", "error");
+                                DDlotNum.SelectedIndex = -1;
+                                return;
+                            }
                         }
 
                     }

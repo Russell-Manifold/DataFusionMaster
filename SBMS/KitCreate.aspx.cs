@@ -92,6 +92,7 @@ namespace SBMS
                 if (kitL != null)
                 {
                     KitLine NewkitLine = new KitLine();
+                    NewkitLine.KitHID = kitH.KitHID;
                     NewkitLine.CompanyID = CoID;
                     NewkitLine.KitCode = "NEW";
                     _db.KitLines.Add(NewkitLine);
@@ -100,7 +101,7 @@ namespace SBMS
                 else
                 {
                     var lastLine = kitL.Last();
-                    if (lastLine != null && lastLine.Description != null && lastLine.Description != "") // Check if NewJCLine and JCID are not null
+                    if (lastLine != null && lastLine.Description != null && lastLine.Description != "") 
                     {
                         KitLine NewkitLine = new KitLine();
                         NewkitLine.CompanyID = CoID;

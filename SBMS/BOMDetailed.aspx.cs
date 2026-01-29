@@ -38,7 +38,7 @@ namespace SBMS
 
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {
-                _items = _db.ItemsMasters.Where(i => i.Active == true && i.CompanyID == CurrentUser.CoID && i.Active == true && (i.IsBOMComponent != null && i.IsBOMComponent == true)).OrderBy(x=>x.Code).ToList();
+                _items = _db.ItemsMasters.Where(i => i.Active == true && i.CompanyID == CurrentUser.CoID && i.Active == true && (i.IsBOMComponent != null && i.IsBOMComponent == true) || (i.Physical == false)).OrderBy(x=>x.Code).ToList();
             }
             if (!IsPostBack)
             {
