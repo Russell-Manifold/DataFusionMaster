@@ -17,10 +17,10 @@ namespace SBMS.Models
         public int KLID { get; set; }
         public string KitCode { get; set; }
         public Nullable<int> KitLineNo { get; set; }
-        public Nullable<int> KitHID { get; set; }
         public Nullable<long> ItemID { get; set; }
         public string ItemCode { get; set; }
         public Nullable<decimal> FGQty { get; set; }
         public Nullable<long> CompanyID { get; set; }
+        public Nullable<int> KitHID { get; set; }
     }
 }

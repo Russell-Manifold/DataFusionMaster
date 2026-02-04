@@ -11,13 +11,9 @@ namespace SBMS.Models
 {
     using System;
     
-    public partial class GetLinkedStoredFromItem_Result
+    public partial class GetValidateBarcode_Result
     {
-        public string StoreCode { get; set; }
-        public int StoreID { get; set; }
-        public string StoreDescript { get; set; }
+        public Nullable<int> QtyPerBarcode { get; set; }
         public Nullable<long> ItemID { get; set; }
-        public bool AllowPicking { get; set; }
-        public Nullable<decimal> TotalUnitPriceExclInclAdd { get; set; }
     }
 }

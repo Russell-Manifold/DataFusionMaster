@@ -42,9 +42,9 @@
                                 </div> 
                                 <asp:Panel ID="Panel1" runat="server" DefaultButton="lbtnfind">
                                    Find Item <asp:TextBox ID="txtfind" runat="server" style="margin-bottom:.5em; width:20em" placeholder="Code/Description/Category"></asp:TextBox><asp:LinkButton ID="lbtnfind" runat="server" CssClass="fa fa-search buttonC" OnClick="lbtnfind_Click"></asp:LinkButton>
-                                    <asp:Label ID="lblReccount" runat="server" Text="" style="padding-left:3em"></asp:Label>
-                                    <asp:CheckBox ID="chkZero" runat="server" Text="Hide_Zero_On_Hand" style="float:right; font-size:small" AutoPostBack="true" OnCheckedChanged="chkZero_CheckedChanged" Checked="true" />
-                                   
+                                    <asp:Label ID="lblReccount" runat="server" Text="" style="padding-left:3em"></asp:Label>  
+                                    <asp:CheckBox ID="chkZero" runat="server" Text="Hide_Zero_On_Hand" style="float:right; font-size:small;" AutoPostBack="true" OnCheckedChanged="chkZero_CheckedChanged" Checked="true" />
+                                   <asp:CheckBox ID="chkService" runat="server" Text="Show_Service_Items" style="float:right; font-size:small" AutoPostBack="true" OnCheckedChanged="chkZero_CheckedChanged" Checked="false" />
                                 </asp:Panel> 
                             <asp:GridView ID="GridItems" runat="server" AutoGenerateColumns="false" CssClass="gridview" AllowSorting="true" OnSorting="GridItems_Sorting" OnRowDataBound="GridItems_RowDataBound" AllowPaging="true" PageSize="100" OnPageIndexChanging="GridItems_PageIndexChanging"  >
                                     <HeaderStyle CssClass="gridViewHeader" />

@@ -11,13 +11,15 @@ namespace SBMS.Models
 {
     using System;
     
-    public partial class GetLinkedStoredFromItem_Result
+    public partial class GetKitLinesFromKitHeaderID_Result
     {
-        public string StoreCode { get; set; }
-        public int StoreID { get; set; }
-        public string StoreDescript { get; set; }
+        public string ItemCode { get; set; }
+        public string KitCode { get; set; }
+        public Nullable<int> KitLineNo { get; set; }
         public Nullable<long> ItemID { get; set; }
-        public bool AllowPicking { get; set; }
-        public Nullable<decimal> TotalUnitPriceExclInclAdd { get; set; }
+        public Nullable<decimal> FGQty { get; set; }
+        public Nullable<int> KitHID { get; set; }
+        public string Description { get; set; }
+        public Nullable<decimal> AvCost { get; set; }
     }
 }

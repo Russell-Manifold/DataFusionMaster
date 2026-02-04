@@ -46,7 +46,7 @@ namespace SBMS
             kitid = Convert.ToInt64(Request.QueryString["kitid"].ToString());
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {
-                _itemsB = _db.ItemsMasters.Where(i => i.Active == true && i.CompanyID == CoID && i.Active == true && (i.IsKitComponent != null && i.IsKitComponent == true)).ToList();
+                _itemsB = _db.ItemsMasters.Where(i => i.Active == true && i.CompanyID == CoID && i.Active == true && ((i.IsKitComponent != null && i.IsKitComponent == true)|| i.Physical == false)).ToList();
 
                 if (!IsPostBack)
                 {
@@ -112,10 +112,10 @@ namespace SBMS
                     }
                 }
                     
-                kitL = _db.GetKitLinesFromKitCode(kitH.KitCode, CoID)
+                kitL = _db.GetKitLinesFromKitHeaderID1(kitH.KitHID, CoID)
                     .Select(Kit => new kitLine
                     {
-                        KLID = Kit.KLID,
+                        KLID = (long)Kit.KLID,
                         ItemCode = Kit.ItemCode ?? "",
                         KitCode = Kit.KitCode ?? "",
                         ItemID = Kit.ItemID.GetValueOrDefault(),

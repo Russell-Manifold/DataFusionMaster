@@ -56,6 +56,17 @@
                                             </ItemTemplate>
                                         </asp:TemplateField>
                                         <asp:BoundField HeaderText="Description" DataField="FGDescript" ReadOnly="True"  />
+                                        <asp:TemplateField ItemStyle-Width="3em" HeaderText="Active" >
+                                        <ItemTemplate>
+                                            <asp:CheckBox ID="chkActive" runat="server" Checked='<%# Eval("KitActive") %>' Enabled="false"/>        
+                                        </ItemTemplate>
+                                    </asp:TemplateField>
+                                    <asp:TemplateField ItemStyle-HorizontalAlign="Right" ItemStyle-Width="3em" >
+                                        <ItemTemplate>
+                                             <asp:LinkButton ID="lbtnDeleteLine" CommandArgument='<%# Eval("KitHID") %>' CommandName="lbtnDeleteLine" runat="server" CssClass="fa fa-ban" ToolTip="Delete Line" OnClick="lbtnDeleteLine_Click" style="color:red"> </asp:LinkButton>
+                                            <cci:ConfirmButtonExtender ID="lbtnIssue_ConfirmButtonExtender1" runat="server" ConfirmText="Confirm, Delete Kit?" Enabled="True" TargetControlID="lbtnDeleteLine"></cci:ConfirmButtonExtender>
+                                        </ItemTemplate>
+                                    </asp:TemplateField>
                                     </Columns>
                                 </asp:GridView>
                             </ContentTemplate>

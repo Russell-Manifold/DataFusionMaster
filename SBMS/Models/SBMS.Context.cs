@@ -17,11 +17,8 @@ namespace SBMS.Models
     
     public partial class SBMSEntities : DbContext
     {
-        //public SBMSEntities()
-        //    : base("name=SBMSEntities")
-        //{
-        //}
         public SBMSEntities(string connectionString) : base(connectionString) { }
+
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
             throw new UnintentionalCodeFirstException();
@@ -438,6 +435,19 @@ namespace SBMS.Models
             return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction<GetKitLinesFromKitCode_Result>("GetKitLinesFromKitCode", bomCodeParameter, coidParameter);
         }
     
+        public virtual ObjectResult<GetKitLinesFromKitHeaderID_Result> GetKitLinesFromKitHeaderID(Nullable<int> kitHID, Nullable<long> coid)
+        {
+            var kitHIDParameter = kitHID.HasValue ?
+                new ObjectParameter("KitHID", kitHID) :
+                new ObjectParameter("KitHID", typeof(int));
+    
+            var coidParameter = coid.HasValue ?
+                new ObjectParameter("coid", coid) :
+                new ObjectParameter("coid", typeof(long));
+    
+            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction<GetKitLinesFromKitHeaderID_Result>("GetKitLinesFromKitHeaderID", kitHIDParameter, coidParameter);
+        }
+    
         public virtual ObjectResult<GetOnePickingSlipFromDocHeaderID_Result> GetOnePickingSlipFromDocHeaderID(Nullable<long> coID, string docID)
         {
             var coIDParameter = coID.HasValue ?
@@ -484,6 +494,19 @@ namespace SBMS.Models
                 new ObjectParameter("coid", typeof(long));
     
             return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction<GetBOMLinesFromBomCode_Result>("GetBOMLinesFromBomCode", bomCodeParameter, coidParameter);
+        }
+    
+        public virtual ObjectResult<GetKitLinesFromKitHeaderID_Result1> GetKitLinesFromKitHeaderID1(Nullable<int> kitHID, Nullable<long> coid)
+        {
+            var kitHIDParameter = kitHID.HasValue ?
+                new ObjectParameter("KitHID", kitHID) :
+                new ObjectParameter("KitHID", typeof(int));
+    
+            var coidParameter = coid.HasValue ?
+                new ObjectParameter("coid", coid) :
+                new ObjectParameter("coid", typeof(long));
+    
+            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction<GetKitLinesFromKitHeaderID_Result1>("GetKitLinesFromKitHeaderID1", kitHIDParameter, coidParameter);
         }
     }
 }

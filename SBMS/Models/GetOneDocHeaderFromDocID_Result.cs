@@ -47,6 +47,5 @@ namespace SBMS.Models
         public Nullable<decimal> Customer_ExchangeRate { get; set; }
         public Nullable<decimal> DocCost { get; set; }
         public Nullable<decimal> DocGP { get; set; }
-
     }
 }

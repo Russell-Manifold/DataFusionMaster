@@ -1262,6 +1262,10 @@
           <Parameter Name="bomCode" Type="varchar" Mode="In" />
           <Parameter Name="coid" Type="bigint" Mode="In" />
         </Function>
+        <Function Name="GetKitLinesFromKitHeaderID" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
+          <Parameter Name="KitHID" Type="int" Mode="In" />
+          <Parameter Name="coid" Type="bigint" Mode="In" />
+        </Function>
         <Function Name="GetLinkedStoredFromItem" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
           <Parameter Name="CoID" Type="bigint" Mode="In" />
         </Function>
@@ -2159,6 +2163,10 @@
             <Parameter Name="bomCode" Mode="In" Type="String" />
             <Parameter Name="coid" Mode="In" Type="Int64" />
           </FunctionImport>
+          <FunctionImport Name="GetKitLinesFromKitHeaderID" ReturnType="Collection(SBMSModel.GetKitLinesFromKitHeaderID_Result)">
+            <Parameter Name="KitHID" Mode="In" Type="Int32" />
+            <Parameter Name="coid" Mode="In" Type="Int64" />
+          </FunctionImport> 
           <EntitySet Name="AvCostChangeLogs" EntityType="SBMSModel.AvCostChangeLog" />
           <EntitySet Name="WorksOrderHeaders" EntityType="SBMSModel.WorksOrderHeader" />
           <EntitySet Name="WorksOrderRMLines" EntityType="SBMSModel.WorksOrderRMLine" />
@@ -2200,6 +2208,10 @@
             <End Role="ItemTransferLine1" EntitySet="ItemTransferLines" />
           </AssociationSet>
           <EntitySet Name="ItemTransferHeaders" EntityType="SBMSModel.ItemTransferHeader" />
+          <FunctionImport Name="GetKitLinesFromKitHeaderID1" ReturnType="Collection(SBMSModel.GetKitLinesFromKitHeaderID_Result1)">
+            <Parameter Name="KitHID" Mode="In" Type="Int32" />
+            <Parameter Name="coid" Mode="In" Type="Int64" />
+          </FunctionImport>
         </EntityContainer>
         <ComplexType Name="GetActiveLotNumbersLinkedToStores_Result">
           <Property Type="String" Name="LotNumber" Nullable="true" MaxLength="50" />
@@ -2758,6 +2770,17 @@
           <Property Type="String" Name="Unit" Nullable="true" MaxLength="20" />
           <Property Type="Boolean" Name="IsLotTracked" Nullable="true" />
         </ComplexType>
+        <ComplexType Name="GetKitLinesFromKitHeaderID_Result">
+          <Property Type="String" Name="ItemCode" Nullable="true" MaxLength="50" />
+          <Property Type="String" Name="KitCode" Nullable="true" MaxLength="50" />
+          <Property Type="Int32" Name="KitLineNo" Nullable="true" />
+          <Property Type="Int64" Name="ItemID" Nullable="true" />
+          <Property Type="Int32" Name="KLID" Nullable="false" />
+          <Property Type="Decimal" Name="FGQty" Nullable="true" Precision="18" Scale="4" />
+          <Property Type="Int32" Name="KitHID" Nullable="true" />
+          <Property Type="String" Name="Description" Nullable="true" MaxLength="100" />
+          <Property Type="Decimal" Name="AvCost" Nullable="true" Precision="18" Scale="4" />
+        </ComplexType>
         <EntityType Name="AvCostChangeLog">
           <Key>
             <PropertyRef Name="adtID" />
@@ -3252,6 +3275,17 @@
           <Property Name="TrfReference" Type="String" MaxLength="250" FixedLength="false" Unicode="false" />
           <Property Name="TrfCompleteDate" Type="DateTime" Precision="3" />
         </EntityType>
+        <ComplexType Name="GetKitLinesFromKitHeaderID_Result1">
+          <Property Type="String" Name="ItemCode" Nullable="true" MaxLength="50" />
+          <Property Type="String" Name="KitCode" Nullable="true" MaxLength="50" />
+          <Property Type="Int32" Name="KitLineNo" Nullable="true" />
+          <Property Type="Int64" Name="ItemID" Nullable="true" />
+          <Property Type="Decimal" Name="FGQty" Nullable="true" Precision="18" Scale="4" />
+          <Property Type="Int32" Name="KLID" Nullable="true" />
+          <Property Type="Int32" Name="KitHID" Nullable="true" />
+          <Property Type="String" Name="Description" Nullable="true" MaxLength="100" />
+          <Property Type="Decimal" Name="AvCost" Nullable="true" Precision="18" Scale="4" />
+        </ComplexType>
         </Schema>
     </edmx:ConceptualModels>
     <!-- C-S mapping content -->
@@ -4561,6 +4595,22 @@
               </ComplexTypeMapping>
             </ResultMapping>
           </FunctionImportMapping>
+          <FunctionImportMapping FunctionImportName="GetKitLinesFromKitHeaderID" FunctionName="SBMSModel.Store.GetKitLinesFromKitHeaderID">
+            <ResultMapping>
+              <ComplexTypeMapping TypeName="SBMSModel.GetKitLinesFromKitHeaderID_Result">
+                <ScalarProperty Name="ItemCode" ColumnName="ItemCode" />
+                <ScalarProperty Name="KitCode" ColumnName="KitCode" />
+                <ScalarProperty Name="KitLineNo" ColumnName="KitLineNo" />
+                <ScalarProperty Name="ItemID" ColumnName="ItemID" />
+                <ScalarProperty Name="FGQty" ColumnName="FGQty" />
+                <ScalarProperty Name="KLID" ColumnName="KLID" />
+                <ScalarProperty Name="KitHID" ColumnName="KitHID" />
+                <ScalarProperty Name="Description" ColumnName="Description" />
+                <ScalarProperty Name="AvCost" ColumnName="AvCost" />
+              </ComplexTypeMapping>
+            </ResultMapping>
+          </FunctionImportMapping>
+          
           <EntitySetMapping Name="AvCostChangeLogs">
             <EntityTypeMapping TypeName="SBMSModel.AvCostChangeLog">
               <MappingFragment StoreEntitySet="AvCostChangeLog">
@@ -5045,6 +5095,21 @@
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
+          <FunctionImportMapping FunctionImportName="GetKitLinesFromKitHeaderID1" FunctionName="SBMSModel.Store.GetKitLinesFromKitHeaderID">
+            <ResultMapping>
+              <ComplexTypeMapping TypeName="SBMSModel.GetKitLinesFromKitHeaderID_Result1">
+                <ScalarProperty Name="ItemCode" ColumnName="ItemCode" />
+                <ScalarProperty Name="KitCode" ColumnName="KitCode" />
+                <ScalarProperty Name="KitLineNo" ColumnName="KitLineNo" />
+                <ScalarProperty Name="ItemID" ColumnName="ItemID" />
+                <ScalarProperty Name="FGQty" ColumnName="FGQty" />
+                <ScalarProperty Name="KLID" ColumnName="KLID" />
+                <ScalarProperty Name="KitHID" ColumnName="KitHID" />
+                <ScalarProperty Name="Description" ColumnName="Description" />
+                <ScalarProperty Name="AvCost" ColumnName="AvCost" />
+              </ComplexTypeMapping>
+            </ResultMapping>
+          </FunctionImportMapping>
           </EntityContainerMapping>
       </Mapping>
     </edmx:Mappings>

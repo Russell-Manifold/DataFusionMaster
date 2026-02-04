@@ -169,6 +169,10 @@ namespace SBMS
                         itemsList = ApplyInMemorySorting(itemsList, sortExpression, sortDirection);
                     }
 
+                    if (chkService.Checked)
+                    {
+                        itemsList = itemsList.Where(x => x.Physical == false).ToList();
+                    }
                     GridItems.DataSource = itemsList;
                     GridItems.DataBind();
 

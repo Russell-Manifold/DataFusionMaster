@@ -25,7 +25,8 @@
                 </div>
               </ProgressTemplate>
         </asp:UpdateProgress> 
-           
+            <asp:UpdatePanel ID="UpdatePanel2" runat="server">
+     <ContentTemplate> 
                 <div class="container">          
                     <div class="row 150%">
                     <div class="2u 12u$(medium)"><a href="https://mydatafusion.online" title="My Data Fusion website"><img src="images/logo.png" style="float:left" class="logoImg"/></a></div>        
@@ -47,8 +48,7 @@
                     </div>
                     <div class="2u 12u$(medium)"><asp:Image ID="imgCoImg" runat="server"  style="float:right" class="logoImg" /></div>
                     </div>
- <asp:UpdatePanel ID="UpdatePanel2" runat="server">
-     <ContentTemplate>   
+  
                 <div class="row 150%">
                     <div class="1u 12u$(medium)">&nbsp;</div>
                     <div class="10u 12u$(medium)">
@@ -179,7 +179,7 @@
                          </asp:Panel>
                      </div>
                 </div>
-            </div>
+            
       
                 <asp:LinkButton ID="LinkButton2" runat="server"></asp:LinkButton>
                
@@ -206,11 +206,10 @@
                         </div>
                     </asp:Panel> 
           <cci:ModalPopupExtender ID="Button2551_ModalPopupExtender" runat="server" BackgroundCssClass="ModalPopupBG" CancelControlID="btnCancel5" Drag="true" OkControlID="btnOkay5" PopupControlID="PnlConf" PopupDragHandleControlID="PopupHeader" TargetControlID="LinkButton2"></cci:ModalPopupExtender>
-                </ContentTemplate>
+                </div>
+                    </ContentTemplate>
             </asp:UpdatePanel>
-                    
-            </div>
-            </div>
+                    </div>
     </form>
     <script type="text/javascript">
     function showOverlayAndPostBack() {

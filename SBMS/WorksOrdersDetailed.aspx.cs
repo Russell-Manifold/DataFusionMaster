@@ -35,7 +35,7 @@ namespace SBMS
             {
                 using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
                     {
-                        _items = _db.ItemsMasters.Where(i => i.Active == true && i.CompanyID == CoID && i.Physical ==true && i.IsFinishedGoods == true).OrderBy(x => x.Code).ToList();
+                        _items = _db.ItemsMasters.Where(i => i.Active == true && i.CompanyID == CoID && i.IsFinishedGoods == true).OrderBy(x => x.Code).ToList();
                         _boms = _db.BOMHeaders.Where(i => i.BomActive == true && i.CompanyID == CoID).OrderBy(x => x.BOMCode).ToList();
                         _kits = _db.KitHeaders.Where(i => i.KitActive == true && i.CompanyID == CoID).OrderBy(x => x.KitCode).ToList();
                     }
@@ -199,12 +199,21 @@ namespace SBMS
                     }
                 if (ddlItemCode != null)
                     {
-                        ddlItemCode.DataSource = _items;
-                        ddlItemCode.DataTextField = "Code";
+                        ddlItemCode.DataSource = _items.Select(i => new {i.ID, DisplayText = i.Code + " - " + i.Description }).ToList();
+                        ddlItemCode.DataTextField = "DisplayText";
                         ddlItemCode.DataValueField = "ID";
                         ddlItemCode.DataBind();
                         ddlItemCode.Items.Insert(0, new ListItem("Select", "0"));
-                        ddlItemCode.SelectedValue = item.SelectionId.ToString();
+                        string selectionIdStr = item.SelectionId.ToString();
+                        if (ddlItemCode.Items.FindByValue(selectionIdStr) != null)
+                        {
+                            ddlItemCode.SelectedValue = selectionIdStr;
+                        }
+                        else
+                        {
+                            ddlItemCode.SelectedIndex = 0; // Default to "Select"
+                        }
+                        ddlLineType.SelectedValue = Convert.ToInt16(item.LineType).ToString();
                         ddlLineType.SelectedValue = Convert.ToInt16(item.LineType).ToString();
                     }
                 } 
@@ -219,9 +228,9 @@ namespace SBMS
                     }
                     if (ddlItemCode != null)
                     {
-                        ddlItemCode.DataSource = _boms;
-                        ddlItemCode.DataTextField = "FGCode";
-                        ddlItemCode.DataValueField = "FGID";
+                        ddlItemCode.DataSource = _boms.Select(i => new { ID=i.FGID, DisplayText = i.FGCode + " - " + i.FGDescript }).ToList();
+                        ddlItemCode.DataTextField = "DisplayText";
+                        ddlItemCode.DataValueField = "ID";
                         ddlItemCode.DataBind();
                         ddlItemCode.Items.Insert(0, new ListItem("Select", "0"));
                         ddlItemCode.SelectedValue = item.SelectionId.ToString();
@@ -239,9 +248,9 @@ namespace SBMS
                     }
                 if (ddlItemCode != null)
                     {
-                        ddlItemCode.DataSource = _kits;
-                        ddlItemCode.DataTextField = "FGCode";
-                        ddlItemCode.DataValueField = "FGID";
+                        ddlItemCode.DataSource = _kits.Select(i => new { ID = i.FGID, DisplayText = i.FGCode + " - " + i.FGDescript }).ToList(); ;
+                        ddlItemCode.DataTextField = "DisplayText";
+                        ddlItemCode.DataValueField = "ID";
                         ddlItemCode.DataBind();
                         ddlItemCode.Items.Insert(0, new ListItem("Select", "0"));
                         ddlItemCode.SelectedValue = item.SelectionId.ToString();
@@ -624,8 +633,8 @@ namespace SBMS
                     if (ddlItemCode != null)
                     {
                         _items = _db.ItemsMasters.Where(i => i.Active == true && i.CompanyID == CoID && i.Physical == true && i.IsFinishedGoods == true).OrderBy(x => x.Code).ToList();
-                        ddlItemCode.DataSource = _items;
-                        ddlItemCode.DataTextField = "Code";
+                        ddlItemCode.DataSource = _items.Select(i => new { ID = i.ID, DisplayText = i.Code + " - " + i.Description }).ToList();
+                        ddlItemCode.DataTextField = "DisplayText";
                         ddlItemCode.DataValueField = "ID";
                         ddlItemCode.DataBind();
                         ddlItemCode.Items.Insert(0, new ListItem("Select", "0"));
@@ -636,9 +645,9 @@ namespace SBMS
                     if (ddlItemCode != null)
                     {
                         _boms = _db.BOMHeaders.Where(i => i.BomActive == true && i.CompanyID == CoID).OrderBy(x => x.BOMCode).ToList();
-                        ddlItemCode.DataSource = _boms;
-                        ddlItemCode.DataTextField = "FGCode";
-                        ddlItemCode.DataValueField = "FGID";
+                        ddlItemCode.DataSource = _boms.Select(i => new { ID = i.FGID, DisplayText = i.FGCode + " - " + i.FGDescript }).ToList();
+                        ddlItemCode.DataTextField = "DisplayText";
+                        ddlItemCode.DataValueField = "ID";
                         ddlItemCode.DataBind();
                         ddlItemCode.Items.Insert(0, new ListItem("Select", "0"));
                     }
@@ -648,9 +657,9 @@ namespace SBMS
                     if (ddlItemCode != null)
                     {
                         _kits = _db.KitHeaders.Where(i => i.KitActive == true && i.CompanyID == CoID).OrderBy(x => x.KitHID).ToList();
-                        ddlItemCode.DataSource = _kits;
-                        ddlItemCode.DataTextField = "FGCode";
-                        ddlItemCode.DataValueField = "FGID";
+                        ddlItemCode.DataSource = _kits.Select(i => new { ID = i.FGID, DisplayText = i.FGCode + " - " + i.FGDescript }).ToList(); ;
+                        ddlItemCode.DataTextField = "DisplayText";
+                        ddlItemCode.DataValueField = "ID";
                         ddlItemCode.DataBind();
                         ddlItemCode.Items.Insert(0, new ListItem("Select", "0"));
                     }

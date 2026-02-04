@@ -46,7 +46,7 @@ namespace SBMS.Classes
         static DateTime CustDT = Convert.ToDateTime("01 Jan 2015"), SuppDT = Convert.ToDateTime("01 Jan 2015"), ItemDT = Convert.ToDateTime("01 Jan 2015"), PODT = Convert.ToDateTime("01 Jan 2015"), InvoiceDT = Convert.ToDateTime("01 Jan 2015"), CNoteDT = Convert.ToDateTime("01 Jan 2015");
         static DateTime SuppInvDT = Convert.ToDateTime("01 Jan 2015"), SuppRetDT = Convert.ToDateTime("01 Jan 2015"), JrnlDT = Convert.ToDateTime("01 Jan 2015"), QuoteDT = Convert.ToDateTime("01 Jan 2015"), SOrdDT = Convert.ToDateTime("01 Jan 2015"), GLegDT = Convert.ToDateTime("01 Jan 2015");
 
-        //public static string sageurl = "https://accounting.sageone.co.za/api/2.0.0/";
+       // public static string sageurl = "https://accounting.sageone.co.za/api/2.0.0/";
        //public static string APIKey = "5850E392-0FE8-43B4-9EEB-18D2B28B115C";
         
         public static string sageurl = "https://resellers.accounting.sageone.co.za/api/2.0.0/";

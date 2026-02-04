@@ -335,7 +335,7 @@ namespace SBMS
                 else if (DDOptions.SelectedValue == "2")
                 {
                     lblTpe.Text = "Works Order";
-                    pnlJCref.Style.Add("display", "inline-block");
+                    pnlJCref.Style.Add("display", "none");
                 }
                 else
                 {

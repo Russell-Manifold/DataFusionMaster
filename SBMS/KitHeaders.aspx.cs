@@ -97,5 +97,23 @@ namespace SBMS
             Session.Clear();
             Response.Redirect("~/Login.aspx", false); Context.ApplicationInstance.CompleteRequest();
         }
+
+        protected void lbtnDeleteLine_Click(object sender, EventArgs e)
+        {
+            LinkButton lbtn = (LinkButton)sender;
+            GridViewRow row = (GridViewRow)lbtn.NamingContainer;
+            int Lid = Convert.ToInt32(lbtn.CommandArgument);
+            using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+            {
+                var BH = _db.KitHeaders.Where(x => x.KitHID == Lid);
+                _db.KitHeaders.RemoveRange(BH);
+
+                var BL = _db.KitLines.Where(x => x.KitHID == Lid);
+                _db.KitLines.RemoveRange(BL);
+                _db.SaveChanges();
+
+                LoadKits();
+            }
+        }
     }
 }

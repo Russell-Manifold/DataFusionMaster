@@ -11,13 +11,16 @@ namespace SBMS.Models
 {
     using System;
     
-    public partial class GetLinkedStoredFromItem_Result
+    public partial class GetOpeningBalancesByStore_Result
     {
-        public string StoreCode { get; set; }
-        public int StoreID { get; set; }
-        public string StoreDescript { get; set; }
+        public long TransID { get; set; }
         public Nullable<long> ItemID { get; set; }
-        public bool AllowPicking { get; set; }
-        public Nullable<decimal> TotalUnitPriceExclInclAdd { get; set; }
+        public string ItemCode { get; set; }
+        public string ItemDescription { get; set; }
+        public string StoreCode { get; set; }
+        public string LotNumber { get; set; }
+        public Nullable<long> ToID { get; set; }
+        public long CompanyID { get; set; }
+        public Nullable<decimal> Balance { get; set; }
     }
 }
