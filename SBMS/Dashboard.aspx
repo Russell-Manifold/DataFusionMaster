@@ -23,7 +23,7 @@
                 <div class="row 150%">
                    <div class="1u 12u$(medium)"><a href="https://mydatafusion.online" title="My Data Fusion website"><img src="images/logo.png" style="float:left" class="logoImg"/></a></div>
                     <div class="2u 12u$(medium)" style="text-align:center">&nbsp;
-                        <asp:Label ID="lblUserName" runat="server" Text="" style="float:right; font-size:.8em; padding-top:1em;"></asp:Label>
+                        <asp:Label ID="lblUserName" runat="server" Text="" style="font-size:.8em; padding-top:1em;"></asp:Label>
                         <asp:DropDownList ID="DDProgBoard" runat="server" CssClass="buttonC" AutoPostBack="true" OnSelectedIndexChanged="DDProgBoard_SelectedIndexChanged"   >
                                            <asp:ListItem> - Tracking Board - </asp:ListItem>
                                            <asp:ListItem>Picking Slips</asp:ListItem> 
@@ -42,8 +42,8 @@
                     <div class="2u 12u$(medium)"><asp:Image ID="imgCoImg" runat="server"  style="float:right" class="logoImg" /></div>
                     </div>
                         <div class="row 150%">
-                            <div class="1u 12u$(medium)">&nbsp;</div>
-                            <div class="10u 12u$(medium)" style="text-align: center">    
+                            <div class="2u 12u$(medium)">&nbsp;</div>
+                            <div class="8u 12u$(medium)" style="text-align: center">    
                                 <div id='myHiddenDiv' runat="server" style='display: none'>
                                          <div style="padding: .5em;">
                                          <img src="images/tenorwait.gif" id='myAnimatedImage' align='absmiddle' class="funkygif" style="border-radius:.5em"  />
@@ -77,7 +77,15 @@
                                         </div>
                                  </asp:Panel>
                             </div>
-                            <div class="1u 12u$(medium)">&nbsp;</div>
+                            <div class="2u 12u$(medium)" style="text-align:left; font-size:xx-small">
+                                <h3>Whats new?</h3>
+                                <ul>
+                                    <li><a href="https://mydatafusion.online/learning.aspx?id=xLpoTuzEKqM" target="_blank" title="See clip"> >> Receiving goods purchased in foreign currency.</a></li>
+                                    <li><a href="https://mydatafusion.online/learning.aspx?id=xLpoTuzEKqM" target="_blank" title="See clip"> >> Allocate multiple lot numbers when receiving a single item code.</a></li>
+                                    <li><a href="https://mydatafusion.online/learning.aspx?id=xLpoTuzEKqM" target="_blank" title="See clip"> >> Consume multiple lot numbers when fulfilling a works order.</a></li>
+                                </ul>
+
+                            </div>
                         </div>
                         </div>
             <section id="footer" class="wrapper">

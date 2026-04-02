@@ -1,5 +1,4 @@
 ﻿using AjaxControlToolkit;
-using DocumentFormat.OpenXml.Office2021.DocumentTasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SBMS.Classes;
@@ -13,6 +12,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Web.Services.Description;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using System.Windows.Interop;
@@ -155,528 +155,6 @@ namespace SBMS
             LoadAccordion(woid, CoID);
         }
 
-        //protected void LoadAccordion(long woid, long CoID)
-        //{
-        //    using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
-        //    {
-        //        bool iscomp = false;
-        //        var WOHeader = _db.WorksOrderHeaders.Where(x => x.CompanyID == CoID && x.ID == woid).FirstOrDefault();
-        //        if (WOHeader != null)
-        //        {
-        //            if (WOHeader.Active == false) iscomp = true;
-        //        }
-        //        var WOLines = _db.WorksOrderLines
-        //                 .Where(x => x.CompanyID == CoID && x.WOID == woid && x.Quantity > 0)
-        //                 .OrderBy(x => x.LineID)
-        //                 .ToList();
-
-        //        AccordionWOLines.Panes.Clear();
-
-        //        AccordionPane paneH = new AccordionPane();
-        //        //paneH.HeaderCssClass = "accordionFooter";
-        //        paneH.Attributes.Add("style", "text-align:center; color:#000");
-        //        AccordionWOLines.Panes.Add(paneH);
-        //        LoadItemStores();
-        //        foreach (var line in WOLines)
-        //        {
-        //            AccordionPane pane = new AccordionPane();
-        //            DropDownList DDHStore = new DropDownList();
-        //            if (DDHStore.Items.Count == 0)
-        //            {
-        //                var storeList = _itemST.Where(x => x.ItemID == line.SelectionId && x.StoreCode != "CoR" && x.StoreCode != "CoD" && x.StoreCode.ToLower() != "scr").ToList();
-        //                DDHStore.ID = $"dd_{line.LineID}";
-        //                DDHStore.DataSource = storeList;
-        //                DDHStore.DataTextField = "StoreCode";
-        //                DDHStore.DataValueField = "StoreID";
-        //                DDHStore.DataBind();
-        //                if (storeList.Count > 1)
-        //                {
-        //                    DDHStore.Items.Insert(0, "-Store-");
-        //                }
-        //                DDHStore.Attributes.Add("style", "height:0.6em");
-        //            }
-        //            if (line.ToStoreID != null)
-        //            {
-        //                try
-        //                {
-        //                    DDHStore.SelectedValue = line.ToStoreID.ToString();
-        //                }
-        //                catch { }
-        //            }
-
-        //            CheckBox chkC = new CheckBox
-        //            {
-        //                ID = $"chk_{line.LineID}",
-        //                Text = "Complete",
-        //                AutoPostBack = true,
-        //                Checked = line.Complete.HasValue ? line.Complete.Value : false
-        //            };
-        //            chkC.CheckedChanged += chkC_CheckedChanged;
-        //            chkC.Attributes.Add("style", "float:right");
-        //            pane.HeaderContainer.Controls.Add(chkC);
-        //            DDHStore.Attributes.Add("style", "float:right; padding:0.5em");
-        //            if (iscomp == true)
-        //            {
-        //                DDHStore.Enabled = false;
-        //                chkC.Enabled = false;
-        //            }
-        //            pane.HeaderContainer.Controls.Add(DDHStore);
-
-        //            if (CurrentUser.CompanyUseLotNumbers)
-        //            {
-        //                if (iscomp == false)
-        //                {
-        //                    if (line.IsLotTracked == true)
-        //                    {
-        //                        LinkButton btnLotNum = new LinkButton
-        //                        {
-        //                            ID = "btnAddLotNum",
-        //                            Text = " Lot Number",
-        //                            CssClass = "icon fa-plus buttonCancelZ",
-        //                            CommandName = "AddLotNum",  // Command to identify the action  
-        //                            ToolTip = "Allocate Lot Number Works Order Item",
-        //                            CommandArgument = line.LineID.ToString() + "|" + line.SelectionId.ToString(),
-
-        //                        };
-        //                        btnLotNum.Click += btnLotNum_Click;
-        //                        pane.HeaderContainer.Controls.Add(btnLotNum);
-        //                    }
-        //                }
-        //            }
-        //            // Add header text to the AccordionPane's HeaderContainer
-        //            var headerLiteral = new Literal { Text = line.ItemCode + " - " + line.ItemDescription + " Qty: " + line.Quantity };
-        //            if (CurrentUser.CompanyUseLotNumbers)
-        //            {
-        //                if (line.IsLotTracked == true)
-        //                {
-        //                    headerLiteral = new Literal { Text = line.ItemCode + " - " + line.ItemDescription + " Qty: " + line.Quantity + "  --> Lot Number:" + line.LotNumber };
-        //                }
-        //            }
-        //            pane.HeaderContainer.Controls.Add(headerLiteral);
-        //            HiddenField hiddenFieldH = new HiddenField
-        //            {
-        //                ID = "HiddenLineIDH",
-        //                Value = line.LineID.ToString() + "|" + line.SelectionId + "|" + line.ItemCode + "|" + line.Quantity + "|" + line.LotNumber
-        //            };
-        //            pane.HeaderContainer.Controls.Add(hiddenFieldH);
-
-        //            HiddenField hiddenField = new HiddenField
-        //            {
-        //                ID = "HiddenLineID",
-        //                Value = line.LineID.ToString() + "|" + line.WOID
-        //            };
-        //            pane.ContentContainer.Controls.Add(hiddenField);
-
-        //            // Create GridView for the content
-        //            GridView gridRMs = new GridView
-        //            {
-        //                ID = $"GridRMs_{line.LineID}",
-        //                AutoGenerateColumns = false,
-        //                CssClass = "gridview",
-        //                ToolTip = "Select Row",
-        //                HeaderStyle = { CssClass = "gridViewHeader" },
-        //                FooterStyle = { CssClass = "gridViewHeader" },
-        //                RowStyle = { CssClass = "gridViewRow" },
-        //                AlternatingRowStyle = { CssClass = "gridViewAltRow" },
-        //                ShowFooter = true
-        //            };
-
-        //            gridRMs.RowCommand += GridRMs_RowCommand;
-
-        //            // Define the same columns as your example
-        //            gridRMs.Columns.Add(new BoundField { DataField = "LineID" });
-        //            gridRMs.Columns.Add(new BoundField { DataField = "SelectionId" });
-        //            gridRMs.Columns.Add(new BoundField { DataField = "ItemCode", HeaderText = "Code", ItemStyle = { Width = new Unit("5em") } });
-        //            gridRMs.Columns.Add(new BoundField { DataField = "ItemDescription", HeaderText = "Description" });
-        //            gridRMs.Columns.Add(new BoundField { DataField = "Unit", HeaderText = "Unit", ItemStyle = { Width = new Unit("3em") } });
-        //            gridRMs.Columns.Add(new BoundField { DataField = "Quantity", HeaderText = "Quantity", ItemStyle = { Width = new Unit("5em") } });
-        //            if (iscomp == true) gridRMs.Enabled = false;
-
-        //            TemplateField useQtyField = new TemplateField
-        //            {
-        //                HeaderText = "Use_Qty",
-        //                ItemTemplate = new GridViewTemplate(ListItemType.Item, "UseQuantity")
-        //            };
-        //            useQtyField.HeaderStyle.HorizontalAlign = HorizontalAlign.Center;
-        //            useQtyField.ItemStyle.Width = 80;
-        //            gridRMs.Columns.Add(useQtyField);
-
-        //            TemplateField scrapQtyField = new TemplateField
-        //            {
-        //                HeaderText = "Scrap_Qty",
-        //                ItemTemplate = new GridViewTemplate(ListItemType.Item, "ScrapQuantity")
-        //            };
-        //            scrapQtyField.HeaderStyle.HorizontalAlign = HorizontalAlign.Center;
-        //            scrapQtyField.ItemStyle.Width = 80;
-        //            gridRMs.Columns.Add(scrapQtyField);
-
-        //            TemplateField costQtyField = new TemplateField
-        //            {
-        //                HeaderText = "Cost",
-        //                ItemTemplate = new GridViewTemplate(ListItemType.Item, "UnitCost")
-        //            };
-        //            costQtyField.HeaderStyle.HorizontalAlign = HorizontalAlign.Center;
-        //            costQtyField.ItemStyle.Width = 20;
-        //            gridRMs.Columns.Add(costQtyField);
-
-        //            gridRMs.RowDataBound += GridRMs_RowDataBound;
-        //            // Add a dropdown field
-        //            TemplateField DDStore = new TemplateField
-        //            {
-        //                HeaderText = "Store",
-        //                ItemTemplate = new GridViewTemplate(ListItemType.Item, "DDStore")
-        //            };
-        //            DDStore.ItemStyle.HorizontalAlign = HorizontalAlign.Center;
-        //            DDStore.ItemStyle.Width = 60;
-        //            gridRMs.Columns.Add(DDStore);
-
-        //            if (CurrentUser.CompanyUseLotNumbers == true)
-        //            {
-        //                // Add a dropdown field
-        //                TemplateField DDlotNum = new TemplateField
-        //                {
-        //                    HeaderText = "Lot Number",
-        //                    ItemTemplate = new GridViewTemplate(ListItemType.Item, "DDlotNum"),
-        //                };
-        //                DDlotNum.ItemStyle.HorizontalAlign = HorizontalAlign.Left;
-        //                DDlotNum.ItemStyle.Width = 80;
-
-        //                gridRMs.Columns.Add(DDlotNum);
-
-
-        //            }
-        //            // Add a button field
-        //            TemplateField btnDelRow = new TemplateField
-        //            {
-        //                HeaderText = "",
-        //                ItemTemplate = new GridViewTemplate(ListItemType.Item, "btnDelRow"),
-        //            };
-        //            btnDelRow.ItemStyle.HorizontalAlign = HorizontalAlign.Left;
-        //            btnDelRow.ItemStyle.Width = 30;
-        //            gridRMs.Columns.Add(btnDelRow);
-
-        //            var MLines = _db.WorksOrderRMLines.Where(x => x.CompanyID == CoID && x.LinkedWOLineID == line.LineID).ToList();
-        //            foreach (var Ln in MLines)
-        //            {
-        //                if (Ln.Quantity != null)
-        //                {
-        //                    Ln.Quantity = Convert.ToDecimal(ApiUrlCall.NumberToDecimal(Ln.Quantity.ToString(), CurrentUser.CompanyDecPlaces));
-        //                }
-        //                Ln.UseQty = Convert.ToDecimal(ApiUrlCall.NumberToDecimal(Ln.UseQty.ToString(), CurrentUser.CompanyDecPlaces));
-        //                Ln.ScrapQty = Convert.ToDecimal(ApiUrlCall.NumberToDecimal(Ln.ScrapQty.ToString(), CurrentUser.CompanyDecPlaces));
-        //            }
-        //            gridRMs.DataSource = MLines;
-        //            gridRMs.DataBind();
-
-        //            ////`````````````````````````````````````````````````````````````````````````````````
-        //            foreach (GridViewRow row in gridRMs.Rows)
-        //            {
-        //                if (row.RowType != DataControlRowType.DataRow)
-        //                    continue;
-
-        //                long id = Convert.ToInt64(row.Cells[0].Text);
-        //                var lineR = _db.WorksOrderRMLines.First(x => x.LineID == id);
-
-        //                // FIND CONTROLS
-        //                DropDownList ddlStore = row.FindControl("DDStore") as DropDownList;
-        //                DropDownList ddlLotNum = row.FindControl("DDlotNum") as DropDownList;
-        //                TextBox txtUseQty = row.FindControl("txtUseQty") as TextBox;
-        //                Label txtUnitCost = row.FindControl("txtUnitCost") as Label;
-
-        //                // APPLY AUTOFILLED VALUES
-        //                if (ddlStore != null)
-        //                    lineR.StoreCodeFrom = ddlStore.SelectedItem?.Text;
-
-        //                if (ddlLotNum != null)
-        //                    lineR.LotNumber = ddlLotNum.SelectedValue;
-
-        //                if (txtUseQty != null)
-        //                    lineR.UseQty = Convert.ToDecimal(txtUseQty.Text);
-
-        //                if (txtUnitCost != null)
-        //                    lineR.UnitCost = string.IsNullOrWhiteSpace(txtUnitCost.Text)
-        //                        ? 0m
-        //                        : Convert.ToDecimal(txtUnitCost.Text);
-        //            }
-        //            _db.SaveChanges();
-        //            // Add the GridView to the ContentContainer
-        //            pane.ContentContainer.Controls.Add(gridRMs);
-
-        //            // Add manufacturing costs table below the grid
-        //            Table tblCosts = new Table();
-        //            tblCosts.Style.Add("font-size", "0.8em");
-        //            tblCosts.BorderColor = System.Drawing.Color.LightGray;
-        //            tblCosts.BorderWidth = Unit.Pixel(1);
-        //            tblCosts.GridLines = GridLines.Both;
-
-        //            TableRow row0 = new TableRow();
-        //            TableCell cell0_1 = new TableCell { Text = "<h3>Manufacturing Costs</h3 >" };
-        //            cell0_1.HorizontalAlign = HorizontalAlign.Left;
-        //            cell0_1.Font.Bold = true;
-        //            row0.Cells.Add(cell0_1);
-        //            TableCell cell0_2 = new TableCell();
-        //            Label lblItemdesc = new Label();
-        //            lblItemdesc.Text = $"<h3>{line.ItemDescription}";
-        //            lblItemdesc.Style.Add("text-align", "left");
-        //            cell0_2.Controls.Add(lblItemdesc);
-        //            cell0_2.ColumnSpan = 5;
-        //            row0.Controls.Add(cell0_2);
-        //            tblCosts.Rows.Add(row0);
-
-        //            // Row 1: Sage Average Unit Cost
-        //            TableRow row1 = new TableRow();
-        //            TableCell cell1_1 = new TableCell { Text = "Sage Average Unit Cost:" };
-        //            cell1_1.HorizontalAlign = HorizontalAlign.Left;
-        //            TableCell cell1_2 = new TableCell { Text = "123.00" };
-        //            cell1_2.Style.Add("width", "6em");
-        //            cell1_2.HorizontalAlign = HorizontalAlign.Right;
-        //            row1.Cells.Add(cell1_1);
-        //            row1.Cells.Add(cell1_2);
-
-        //            TableCell cell1_3 = new TableCell { Text = "This Unit Cost:" };
-        //            cell1_3.HorizontalAlign = HorizontalAlign.Left;
-        //            cell1_3.Style.Add("padding-left", "1em");
-        //            TableCell cell1_4 = new TableCell();
-        //            Label lblThisCost = new Label();
-        //            lblThisCost.Text = "456.00";
-        //            lblThisCost.CssClass = "lblThisCost";
-        //            lblThisCost.ID = $"lblThisCost_{line.LineID}";
-        //            cell1_4.Controls.Add(lblThisCost);
-        //            cell1_4.HorizontalAlign = HorizontalAlign.Right;
-        //            row1.Cells.Add(cell1_3);
-        //            row1.Cells.Add(cell1_4);
-
-        //            TableCell cell1_5 = new TableCell { Text = "Update Unit Cost In Sage?" };
-        //            cell1_5.HorizontalAlign = HorizontalAlign.Left;
-        //            cell1_5.Style.Add("padding-left", "1em");
-        //            row1.Cells.Add(cell1_5);
-
-        //            TableCell cell1_6 = new TableCell();
-        //            RadioButtonList ddlYesNo = new RadioButtonList();
-        //            ddlYesNo.Items.Add(new ListItem("No", "No"));
-        //            ddlYesNo.Items.Add(new ListItem("Yes", "Yes"));
-        //            ddlYesNo.RepeatDirection = System.Web.UI.WebControls.RepeatDirection.Horizontal;
-        //            cell1_6.Style.Add("padding-top", "0.6em");
-        //            cell1_6.HorizontalAlign = HorizontalAlign.Left;
-        //            cell1_6.Controls.Add(ddlYesNo);
-        //            row1.Cells.Add(cell1_6);
-        //            tblCosts.Rows.Add(row1);
-
-        //            // Row 4: Sage GP
-        //            TableRow row4 = new TableRow();
-        //            TableCell cell4_1 = new TableCell { Text = "Sage Current GP:" };
-        //            cell4_1.HorizontalAlign = HorizontalAlign.Left;
-        //            TableCell cell4_2 = new TableCell(); // Fill with value if available
-        //            cell4_2.HorizontalAlign = HorizontalAlign.Right;
-
-        //            row4.Cells.Add(cell4_1);
-        //            row4.Cells.Add(cell4_2);
-        //            tblCosts.Rows.Add(row4);
-
-        //            // Row 3: Sage Default Selling Price
-        //            TableRow row3 = new TableRow();
-        //            TableCell cell3_1 = new TableCell { Text = "Sage Default Selling Price:" };
-        //            cell3_1.HorizontalAlign = HorizontalAlign.Left;
-        //            TableCell cell3_2 = new TableCell();
-        //            Label lblSellD = new Label();
-        //            lblSellD.Text = "876.00";
-        //            cell3_2.Controls.Add(lblSellD);
-        //            cell3_2.HorizontalAlign = HorizontalAlign.Right;
-        //            row3.Cells.Add(cell3_1);
-        //            row3.Cells.Add(cell3_2);
-
-        //            TableCell cell3_3 = new TableCell { Text = "New Default Selling Price:" };
-        //            cell3_3.HorizontalAlign = HorizontalAlign.Left;
-        //            cell3_3.Style.Add("padding-left", "1em");
-        //            TableCell cell3_4 = new TableCell();
-        //            TextBox txtNewSell = new TextBox();
-        //            txtNewSell.Style.Add("text-align", "right");
-        //            txtNewSell.Style.Add("width", "6em");
-        //            txtNewSell.CssClass = "txtNewSell";
-        //            txtNewSell.ID = $"txtNewSell_{line.LineID}";
-        //            cell3_4.Controls.Add(txtNewSell);
-        //            row3.Cells.Add(cell3_3);
-        //            row3.Cells.Add(cell3_4);
-
-        //            TableCell cell3_5 = new TableCell { Text = "Update Default Selling Price In Sage?" };
-        //            cell3_5.HorizontalAlign = HorizontalAlign.Left;
-        //            cell3_5.Style.Add("padding-left", "1em");
-        //            row3.Cells.Add(cell3_5);
-
-        //            TableCell cell3_6 = new TableCell();
-        //            RadioButtonList ddlUpdate = new RadioButtonList();
-        //            ddlUpdate.Items.Add(new ListItem("No", "No"));
-        //            ddlUpdate.Items.Add(new ListItem("Yes", "Yes"));
-        //            ddlUpdate.RepeatDirection = System.Web.UI.WebControls.RepeatDirection.Horizontal;
-        //            cell3_6.Style.Add("padding-top", "0.6em");
-        //            cell3_6.HorizontalAlign = HorizontalAlign.Left;
-        //            cell3_6.Controls.Add(ddlUpdate);
-        //            row3.Cells.Add(cell3_6);
-
-        //            tblCosts.Rows.Add(row3);
-
-        //            // Set border color and width for all cells in tblCosts
-        //            foreach (TableRow row in tblCosts.Rows)
-        //            {
-        //                foreach (TableCell cell in row.Cells)
-        //                {
-        //                    cell.BorderColor = System.Drawing.Color.LightGray;
-        //                    cell.BorderWidth = Unit.Pixel(1);
-        //                }
-        //            }
-
-        //            pane.ContentContainer.Controls.Add(tblCosts);
-        //            AccordionWOLines.Panes.Add(pane);
-        //        }
-        //    }
-        //}
-
-
-        //protected void GridRMs_RowDataBound(object sender, GridViewRowEventArgs e)
-        //{
-        //    e.Row.Cells[0].Visible = false;
-        //    e.Row.Cells[1].Visible = false;
-
-        //    if (e.Row.RowType == DataControlRowType.DataRow)
-        //    {
-        //        // Get the data item
-        //        var item = (WorksOrderRMLine)e.Row.DataItem;
-        //        long itemID = Convert.ToInt64(e.Row.Cells[1].Text.ToString());
-        //        // Find and bind DDStore
-        //        DropDownList ddlStore = e.Row.FindControl("DDStore") as DropDownList;
-        //        if (ddlStore != null)
-        //        {
-        //            LoadItemStores();
-        //            var storeList = _itemST.Where(x => x.ItemID == itemID && x.StoreCode != "CoR" && x.StoreCode != "CoD" && x.StoreCode.ToLower() != "scr").ToList();
-        //            ddlStore.DataSource = storeList;
-        //            ddlStore.DataTextField = "StoreCode";
-        //            ddlStore.DataValueField = "StoreID";
-        //            ddlStore.DataBind();
-        //            if (storeList.Count > 1)
-        //            {
-        //                ddlStore.Items.Insert(0, "-?-");
-        //            }
-        //            if (storeList.Count == 1)
-        //            {
-        //                Label txtUnitCostP = e.Row.FindControl("txtUnitCost") as Label;
-        //                txtUnitCostP.Text = Convert.ToDecimal(storeList[0].TotalUnitPriceExclInclAdd).ToString("N2");
-        //            }
-        //            // Set selected value only if it exists in the list
-        //            string storeValue = item.StoreCodeFrom;
-        //            ListItem foundByText = !string.IsNullOrEmpty(storeValue) ? ddlStore.Items.FindByText(storeValue) : null;
-        //            ListItem foundByValue = !string.IsNullOrEmpty(storeValue) ? ddlStore.Items.FindByValue(storeValue) : null;
-        //            if (foundByText != null)
-        //            {
-        //                ddlStore.SelectedValue = foundByText.Value;
-        //            }
-        //            else if (foundByValue != null)
-        //            {
-        //                ddlStore.SelectedValue = storeValue;
-        //            }
-        //            else
-        //            {
-        //                ddlStore.SelectedIndex = 0;
-        //            }
-        //            ddlStore.SelectedIndexChanged += DDStore_SelectedIndexChanged;
-        //        }
-
-        //        if (CurrentUser.CompanyUseLotNumbers == true)
-        //        {
-        //            // Find and bind DDlotNum
-        //            DropDownList ddlLotNum = e.Row.FindControl("DDlotNum") as DropDownList;
-        //            if (ddlLotNum != null && item.IsLotTracked)
-        //            {
-        //                ddlLotNum.Attributes.Add("style", "display:inline-block");
-        //                LoadActiveLotNums();
-        //                var lotNums = _ActiveLotNums.Where(x => x.StoreCode == ddlStore.SelectedItem.Text && x.ItemId == itemID).Select(x => new
-        //                {
-        //                    LotNum = x.LotNumber,
-        //                    LotDisplay = $"{x.LotNumber} ({x.QtyHandToStore:N2})"
-        //                })
-        //                    .ToList();
-
-        //                ddlLotNum.DataSource = lotNums;
-        //                ddlLotNum.DataTextField = "LotDisplay";
-        //                ddlLotNum.DataValueField = "LotNum";
-        //                ddlLotNum.DataBind();
-        //                if (lotNums.Count > 0)
-        //                {
-        //                    ddlLotNum.Items.Insert(0, new ListItem("- Lot Number -", ""));
-        //                }
-        //                try
-        //                {
-        //                    ddlLotNum.SelectedValue = item.LotNumber;
-        //                }
-        //                catch { }
-        //                ddlLotNum.SelectedIndexChanged += DDlotNum_SelectedIndexChanged;
-        //            }
-        //            else if (ddlLotNum != null)
-        //            {
-        //                ddlLotNum.Items.Clear();
-        //                ddlLotNum.Attributes.Add("style", "display:none");
-        //            }
-        //        }
-        //        TextBox txtUseQty = e.Row.FindControl("txtUseQty") as TextBox;
-        //        txtUseQty.Text = item.UseQty.ToString();
-
-        //        if (item.UnitCost != null)
-        //        {
-        //            Label txtUnitCost = e.Row.FindControl("txtUnitCost") as Label;
-        //            txtUnitCost.Text = string.IsNullOrEmpty(item.UnitCost?.ToString()) ? "0.00" : Convert.ToDecimal(item.UnitCost).ToString("N2");
-        //        }
-        //        TextBox txtScrapQty = e.Row.FindControl("txtScrapQty") as TextBox;
-        //        txtScrapQty.Text = item.ScrapQty.ToString();
-
-        //        LinkButton lbtnDelRow = e.Row.FindControl("btnDelRow") as LinkButton;
-        //        ConfirmButtonExtender confirmExtender = new ConfirmButtonExtender
-        //        {
-        //            ID = $"ConfirmExtender_{e.Row.RowIndex}", // Ensure a unique ID
-        //            TargetControlID = lbtnDelRow.ID, // Link it to the LinkButton
-        //            ConfirmText = "Are you sure you want to delete this row?", // Confirmation message
-        //            Enabled = true // Enable the extender
-        //        };
-
-        //        if (CurrentUser.CompanyUseLotNumbers == true)
-        //        {
-        //            e.Row.Cells[10].Controls.Add(confirmExtender);
-        //        }
-        //        else
-        //        {
-        //            e.Row.Cells[9].Controls.Add(confirmExtender);
-        //        }
-        //        lbtnDelRow.Click += lbtnDelRow_click;
-        //    }
-        //    else if (e.Row.RowType == DataControlRowType.Footer)
-        //    {
-        //        if (!chkCompl.Checked)
-        //        {
-        //            // Add Save Button to the footer row
-        //            LinkButton btnSave = new LinkButton
-        //            {
-        //                ID = "btnSaveFooter",
-        //                Text = " Add additional line",
-        //                CssClass = "icon fa-save buttonRed",
-        //                CommandName = "SaveFooter",  // Command to identify the action  
-        //                ToolTip = "Add line to works order details"
-        //            };
-        //            e.Row.Cells[3].Controls.Add(btnSave);
-        //            if (CurrentUser.UseAutoManf == true)
-        //            {
-        //                LinkButton btnAutoManf = new LinkButton
-        //                {
-        //                    ID = "btnAutoManf",
-        //                    Text = " Auto-fill Use Quantities",
-        //                    CssClass = "icon fa-fill buttonRed",
-        //                    CommandName = "SaveAutoManf",  // Command to identify the action  
-        //                    ToolTip = "Auto full all Use-Qty fields with required quantities.",
-        //                };
-        //                e.Row.Cells[6].ColumnSpan = 3;
-        //                e.Row.Cells[6].Controls.Add(btnAutoManf);
-        //            }
-        //        }
-        //    }
-        //}
-
         protected void LoadAccordion(long woid, long CoID)
         {
             try
@@ -729,7 +207,7 @@ namespace SBMS
             CheckBox chkC = CreateCompletionCheckbox(line, iscomp);
             // Add header controls
             pane.HeaderContainer.Controls.Add(chkC);
-            DDHStore.Attributes.Add("style", "float:right; padding:0.5em; width:5em; text-align:center");
+            DDHStore.Attributes.Add("style", "float:right; width:5em; text-align:center");
             pane.HeaderContainer.Controls.Add(DDHStore);
 
             // Add lot number button if applicable
@@ -777,7 +255,7 @@ namespace SBMS
             DDHStore.DataTextField = "StoreCode";
             DDHStore.DataValueField = "StoreID";
             DDHStore.DataBind();
-            DDHStore.Attributes.Add("style", "height:0.6em");
+            //DDHStore.Attributes.Add("style", "height:2em");
 
             if (storeList.Count > 1)
             {
@@ -1240,7 +718,14 @@ namespace SBMS
             // Configure controls
             if (ddlStore != null)
             {
-                ConfigureStoreDropdown(ddlStore, item, itemID);
+                if (item.Physical != null && item.Physical != false)
+                {
+                    ConfigureStoreDropdown(ddlStore, item, itemID);
+                }
+                else
+                {
+                    ddlStore.Attributes.Add("style", "display:none");
+                }
             }
 
             if (CurrentUser.CompanyUseLotNumbers)
@@ -1873,7 +1358,7 @@ namespace SBMS
                         {
                             if (chkC.Checked == true)
                             {
-                                // Find HiddenLineIDH by pattern since it has dynamic ID
+                                // Find HiddenLineIDH by searching through controls since it has dynamic ID
                                 HiddenField HiddenLineIDH = null;
                                 foreach (Control c in pane.HeaderContainer.Controls)
                                 {
@@ -2048,8 +1533,8 @@ namespace SBMS
 
                 if (ddlItemCode != null)
                 {
-                    ddlItemCode.DataSource = _items;
-                    ddlItemCode.DataTextField = "Code";
+                    ddlItemCode.DataSource = _items.Select(i => new {i.ID, Display = i.Code + " - " + i.Description}).ToList();
+                    ddlItemCode.DataTextField = "Display";
                     ddlItemCode.DataValueField = "ID";
                     ddlItemCode.DataBind();
                     ddlItemCode.Items.Insert(0, new ListItem("Select", "0"));
@@ -2349,8 +1834,8 @@ namespace SBMS
                         {
                             _items = _db.ItemsMasters.Where(i => i.Active == true && i.CompanyID == CoID && i.Physical == true && i.IsFinishedGoods == true).OrderBy(x => x.Code).ToList();
                         }
-                        ddlItemCode.DataSource = _items;
-                        ddlItemCode.DataTextField = "Code";
+                        ddlItemCode.DataSource = _items.Select(i => new { i.ID, Display = i.Code + " - " + i.Description }).ToList();
+                        ddlItemCode.DataTextField = "Display";
                         ddlItemCode.DataValueField = "ID";
                         ddlItemCode.DataBind();
                         ddlItemCode.Items.Insert(0, new ListItem("Select", "0"));
@@ -2446,16 +1931,33 @@ namespace SBMS
             if (e.CommandName == "SaveFooter")
             {
                 lblDescript.Text = string.Empty;
-                txtAddQty.Text = null;
-                GridView grid = (GridView)sender;
+                //txtAddQty.Text = null;
+                // Find the GridView that triggered the event
+                GridView grid = sender as GridView;
+                if (grid == null)
+                    return;
+
+                // Find the parent AccordionPane
                 AccordionPane pane = FindParentAccordionPane(grid);
-                HiddenField Hf = pane.FindControl("HiddenLineID") as HiddenField;
-                woLineID.Text = Hf.Value.Split('|')[0].ToString();
-                WordID.Text = Hf.Value.Split('|')[1].ToString();
+                string hiddenLineIDHValue = null;
+                if (pane != null)
+                {
+                    // Find the HiddenLineIDH hidden field in the header controls (ID pattern: HiddenLineIDH_*)
+                    foreach (Control control in pane.HeaderContainer.Controls)
+                    {
+                        if (control is HiddenField hf && hf.ID != null && hf.ID.StartsWith("HiddenLineIDH_"))
+                        {
+                            hiddenLineIDHValue = hf.Value;
+                            break;
+                        }
+                    }
+                }
+                woLineID.Text = hiddenLineIDHValue.Split('|')[0].ToString();
+                WordID.Text = hiddenLineIDHValue.Split('|')[1].ToString();
                 LoadItems();
-                ddlItemCode.DataSource = _items;
-                ddlItemCode.DataTextField = "Code";
-                ddlItemCode.DataValueField = "Code";
+                ddlItemCode.DataSource = _items.Select(i => new { i.ID, Display = i.Code + " - " + i.Description }).ToList();
+                ddlItemCode.DataTextField = "Display";
+                ddlItemCode.DataValueField = "ID";
                 ddlItemCode.DataBind();
                 ddlItemCode.Items.Insert(0, "-Add Item-");
                 ModalPopupExtender2.Show();
@@ -2510,12 +2012,12 @@ namespace SBMS
             }
             return null;
         }
-        private void SaveNewRowToDatabase(string itemCode, decimal reqty)
+        private void SaveNewRowToDatabase(long itemID, decimal reqty, string storeCode )
         {
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {
                 LoadItems();
-                var itm = _items.Where(x => x.Code == itemCode).FirstOrDefault();
+                var itm = _items.Where(x => x.ID == itemID).FirstOrDefault();
                 int woLineIDF = Convert.ToInt32(woLineID.Text);
                 // get one line from existing WorksOrderLines, to use some of the data
                 var ExistL = _db.WorksOrderLines.Where(x => x.CompanyID == CoID && x.LineID == woLineIDF).FirstOrDefault();
@@ -2525,8 +2027,8 @@ namespace SBMS
 
                 var newRow = new WorksOrderRMLine
                 {
-                    SelectionId = itm.ID,
-                    ItemCode = itemCode,
+                    SelectionId = itemID,
+                    ItemCode = itm.Code,
                     ItemDescription = itm.Description,
                     Quantity = reqty,
                     WOID = Convert.ToInt64(WordID.Text),
@@ -2540,6 +2042,9 @@ namespace SBMS
                     LinkedWOLineID = woLineIDF,
                     UseQty = 0,
                     ScrapQty = 0,
+                    UnitCost = itm.AverageCost / itm.UOMConvert ?? 0,
+                    StoreCodeFrom = DDItemAddStore.SelectedItem.Text.ToString(),
+                    Physical = itm.Physical        
                     //RejectQty = 0
                 };
                 // Save to the database
@@ -2622,18 +2127,42 @@ namespace SBMS
                     }
                     else
                     {
-                        LoadActiveLotNums();
-                        var LotNums = _ActiveLotNums.Where(x => x.ItemId == ItemID && x.StoreCode == StoreCode).ToList();
-                        if (LotNums.Count > 0)
+                        var thisitem = _items.FirstOrDefault(x => x.ID == ItemID);
+                        if (thisitem != null)
                         {
-                            txtUnitCost.Text = Convert.ToDouble(LotNums[0].TotalUnitPriceExclInclAdd).ToString("N2");
-                            WOLine.UnitCost = Convert.ToDecimal(LotNums[0].TotalUnitPriceExclInclAdd.ToString());
+                            txtUnitCost.Text = thisitem.AverageCost?.ToString("N2") ?? "0.00";
+                            WOLine.UnitCost = thisitem.AverageCost ?? 0m;
                         }
                         else
                         {
                             txtUnitCost.Text = "0.00";
-                            WOLine.UnitCost = 0; 
+                            WOLine.UnitCost = 0;
                         }
+
+                        //if (CurrentUser.CompanyUseLotNumbers == true) 
+                        //{ 
+
+
+                        //LoadActiveLotNums();
+                        //    var LotNums = _ActiveLotNums.Where(x => x.ItemId == ItemID && x.StoreCode == StoreCode).ToList();
+                        //    if (LotNums.Count > 0)
+                        //    {
+                        //        txtUnitCost.Text = Convert.ToDouble(LotNums[0].TotalUnitPriceExclInclAdd).ToString("N2");
+                        //        WOLine.UnitCost = Convert.ToDecimal(LotNums[0].TotalUnitPriceExclInclAdd.ToString());
+                        //    }
+                        //    else
+                        //    {
+                        //        txtUnitCost.Text = "0.00";
+                        //        WOLine.UnitCost = 0;
+                        //    }
+                        //}
+                        //else
+                        //  {
+                        // GET ITEMS
+                        //    var thisitem = _items.FirstOrDefault(x => x.ID == ItemID);
+                        //    txtUnitCost.Text =thisitem.AverageCost.ToString() ;
+                        //    WOLine.UnitCost = (decimal)thisitem.AverageCost;
+                        //}
                     }
                     _db.SaveChanges();
                 }
@@ -2724,11 +2253,17 @@ namespace SBMS
                     txtUnitCost.Text = LotNums.Where(x => x.LotNumber == LotNum).Select(x => x.TotalUnitPriceExclInclAdd).FirstOrDefault().ToString();
                     if (LotNums.Sum(x => x.QtyHandToStore) < ItemQty)
                     {
-                        AlertHelper.ShowSweetAlert(this, "Insufficient quantity available.", "error");
-                        return;
+                        txtuseQty.Text = LotNums.Sum(x => x.QtyHandToStore).ToString();
+                        txtuseQty.BorderColor = System.Drawing.Color.Red;
+                        if (Session["InsufficientQtyAlertShown"] == null)
+                        {
+                            AlertHelper.ShowSweetAlert(this, "Insufficient quantity available.", "warning");
+                            Session["InsufficientQtyAlertShown"] = true;
+                        }
                     }
                     else
                     {
+                        txtuseQty.Text = ItemQty.ToString();
                         long LineID = Convert.ToInt64(row.Cells[0].Text);
                         using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
                         {
@@ -3172,15 +2707,439 @@ namespace SBMS
         //    return;
         //}
 
+        //protected async Task<string> ExtractAccordionHeaderDetails(object sender)
+        //{
+        //    bool cont = true;
+        //    for (int i = 0; i < AccordionWOLines.Panes.Count; i++)
+        //    {
+        //        AccordionPane pane = AccordionWOLines.Panes[i];
+        //        // ---------- header controls ----------``
+
+        //        // Find HiddenLineIDH by searching through controls since it has dynamic ID
+        //        HiddenField hiddenFieldH = null;
+        //        foreach (Control control in pane.HeaderContainer.Controls)
+        //        {
+        //            if (control is HiddenField && control.ID != null && control.ID.StartsWith("HiddenLineIDH_"))
+        //            {
+        //                hiddenFieldH = control as HiddenField;
+        //                break;
+        //            }
+        //        }
+
+        //        if (hiddenFieldH != null)
+        //        {
+        //            string lineID = hiddenFieldH.Value.Split('|')[0];
+        //            string itemselectionid = hiddenFieldH.Value.Split('|')[1];
+        //            long ItemSelection = Convert.ToInt64(itemselectionid);
+        //            decimal itemqty = Convert.ToDecimal(hiddenFieldH.Value.Split('|')[3]);
+        //            string itemlotnum = string.Empty;
+
+        //            using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+        //            {
+        //                var WOline = _db.WorksOrderLines.Where(x => x.CompanyID == CurrentUser.CoID && x.WOID == woid && x.SelectionId == ItemSelection).FirstOrDefault();
+        //                if (CurrentUser.CompanyUseLotNumbers && WOline.IsLotTracked)
+        //                {
+        //                    if (hiddenFieldH.Value.Split('|')[4].Length > 0)
+        //                    {
+        //                        itemlotnum = hiddenFieldH.Value.Split('|')[4];
+        //                    }
+        //                    if (itemlotnum == null || itemlotnum == "")
+        //                    {
+        //                        cont = false;
+        //                        string msg = $"Lot Number required for {WOline.ItemCode}";
+        //                        return msg;
+        //                    }
+        //                }
+        //            }
+
+        //            DropDownList ddStore = pane.HeaderContainer.Controls.OfType<DropDownList>().FirstOrDefault();
+        //            if (ddStore.Items.Count > 1 && ddStore.SelectedIndex < 1)
+        //            {
+        //                cont = false;
+        //                string msg = "Please select a destination store for the item.";                     
+        //                return msg;
+        //            }
+
+        //            CheckBox chkComplete = pane.HeaderContainer.Controls.OfType<CheckBox>().FirstOrDefault();
+        //            bool isComplete = chkComplete != null ? chkComplete.Checked : false;
+        //            if (isComplete == false)
+        //            {
+        //                cont = false;
+        //                string msg = "Unable to update Sage, please mark the Works Order Header as complete.";
+        //                //AlertHelper.ShowSweetAlert(this, "", "error");
+        //                return msg;
+        //            }
+
+        //            // PROCESS GRIDVIEW ROWS FOR VALIDATION
+        //            foreach (Control control in pane.ContentContainer.Controls)
+        //            {
+        //                if (control is GridView grid)
+        //                {
+        //                    foreach (GridViewRow row in grid.Rows)
+        //                    {
+        //                        if (row.RowType == DataControlRowType.DataRow)
+        //                        {
+        //                            TextBox txtUseQty = row.FindControl("txtUseQty") as TextBox;
+        //                            TextBox txtScrapQty = row.FindControl("txtScrapQty") as TextBox;
+        //                            DropDownList DDStore = row.FindControl("DDStore") as DropDownList;
+        //                            DropDownList DDlotNum = row.FindControl("DDlotNum") as DropDownList;
+
+        //                            if (DDStore.SelectedItem != null)
+        //                            {
+        //                                if (DDStore.SelectedItem.ToString() == "-?-")
+        //                                {
+        //                                    cont = false;
+        //                                    string msg = $"Invalid store selected in BOM items for {row.Cells[2].Text.ToString()}";
+        //                                    //AlertHelper.ShowSweetAlert(this, $"Invalid store selected in BOM items for {row.Cells[2].Text.ToString()} . Unable to continue.", "error");
+        //                                    return msg;
+        //                                }
+        //                            }
+        //                            decimal useQty = 0;
+        //                            decimal scrapQty = 0;
+        //                            try { useQty = Convert.ToDecimal(txtUseQty.Text); } catch { }
+        //                            try { scrapQty = Convert.ToDecimal(txtScrapQty.Text); } catch { }
+
+        //                            if (useQty == 0 && scrapQty == 0)
+        //                            {
+        //                                cont = false;
+        //                                string msg = $"Invalid quantity for {row.Cells[2].Text.ToString()}";
+        //                                //AlertHelper.ShowSweetAlert(this, $"Invalid quantity for {row.Cells[2].Text.ToString()}. Unable to continue.", "error");
+        //                                return msg;
+        //                            }
+
+        //                            if (CurrentUser.CompanyUseLotNumbers)
+        //                            {
+        //                                var lineIDText = row.Cells[0].Text;
+        //                                int TLineID = Convert.ToInt32(lineIDText);
+        //                                using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+        //                                {
+        //                                    var WRMLine = _db.WorksOrderRMLines.Where(x => x.CompanyID == CoID && x.LineID == TLineID).FirstOrDefault();
+        //                                    if (WRMLine != null && WRMLine.IsLotTracked)
+        //                                    {
+        //                                        if (DDlotNum.SelectedItem == null || DDlotNum.Items.Count == 0 || string.IsNullOrEmpty(DDlotNum.SelectedItem.Text) || DDlotNum.SelectedItem.Text.Contains("Number"))
+        //                                        {
+        //                                            cont = false;
+        //                                            string msg = $"Lot Number required for {WRMLine.ItemCode}";
+        //                                            //AlertHelper.ShowSweetAlert(this, $"Lot Number required for {WRMLine.ItemCode}. Unable to continue.", "error");
+        //                                            return msg;
+        //                                        }
+        //                                    }
+        //                                }
+        //                            }
+        //                        }
+        //                    }
+        //                }
+        //                else if (control is Table tbl)
+        //                {
+        //                    // check if update needed and also if 
+        //                    if (CurrentUser.ShowManfCosts)
+        //                    {
+        //                        // Search through the table for txtNewSell with the specific lineID
+        //                        TextBox txtNewSell = FindControlInTable<TextBox>(tbl, $"txtNewSell_{lineID}");
+        //                        RadioButtonList ddlUpdate = FindControlInTable<RadioButtonList>(tbl, $"ddlUpdate_{lineID}");
+
+        //                        if (ddlUpdate != null && ddlUpdate.SelectedItem != null)
+        //                        {
+        //                            string updateChoice = ddlUpdate.SelectedValue; // "Yes" or "No"
+        //                            // Process the RadioButtonList selection
+        //                            if (updateChoice == "Yes")
+        //                            {
+        //                                if (txtNewSell != null)
+        //                                {
+        //                                    string newSellingPrice = txtNewSell.Text; //
+
+        //                                    // Do something with the value
+        //                                    if (!string.IsNullOrEmpty(newSellingPrice))
+        //                                    {
+        //                                        decimal newPrice = 0m;
+        //                                        if (decimal.TryParse(newSellingPrice, out newPrice))
+        //                                        {
+        //                                            if (newPrice == 0m)
+        //                                            {
+        //                                                string msg = "Invalid new Sage selling price -unable to continue.";
+        //                                                //AlertHelper.ShowSweetAlert(this, "Invalid new Sage selling price - unable to continue.", "error");
+        //                                                return msg;
+        //                                            }
+        //                                        }
+        //                                    }
+        //                                    else
+        //                                    {
+        //                                        string msg = "Invalid new Sage selling price -unable to continue.";
+        //                                        //AlertHelper.ShowSweetAlert(this, "Invalid new Sage selling price - unable to continue.", "error");
+        //                                        return msg;
+        //                                    }
+        //                                }
+        //                            }
+        //                        }
+        //                    }
+        //                }
+        //            }
+        //        }
+        //    }
+
+        //    if (cont == false) return "OK";
+
+        //    // FIRST: Process all API calls
+        //    for (int i = 0; i < AccordionWOLines.Panes.Count; i++)
+        //    {
+        //        long ItemID = 0;
+        //         AccordionPane pane = AccordionWOLines.Panes[i];
+        //        // Find HiddenLineIDH by searching through controls since it has dynamic ID
+
+        //        HiddenField hiddenFieldH = null;
+        //        foreach (Control control in pane.HeaderContainer.Controls)
+        //        {
+        //            if (control is HiddenField && control.ID != null && control.ID.StartsWith("HiddenLineIDH_"))
+        //            {
+        //                hiddenFieldH = control as HiddenField;
+        //                break;
+        //            }
+        //        }
+
+        //        if (hiddenFieldH != null)
+        //        {
+        //            string lineID = hiddenFieldH.Value.Split('|')[0];
+        //            string itemselectionid = hiddenFieldH.Value.Split('|')[1];
+        //            decimal itemqty = Convert.ToDecimal(hiddenFieldH.Value.Split('|')[3]);
+        //            string itemlotnum = string.Empty;
+        //            if (hiddenFieldH.Value.Split('|')[4].Length > 0)
+        //            {
+        //                itemlotnum = hiddenFieldH.Value.Split('|')[4];
+        //            }
+
+        //            decimal thisunitcost = 0;
+        //            string targetControlId = $"lblThisCost_{lineID}";
+
+        //            // Search through the ContentContainer for Tables
+        //            foreach (Control control in pane.ContentContainer.Controls)
+        //            {
+        //                if (control is Table tbl)
+        //                {
+        //                    // Iterate through all rows and cells in the table
+        //                    foreach (TableRow row in tbl.Rows)
+        //                    {
+        //                        foreach (TableCell cell in row.Cells)
+        //                        {
+        //                            // Look for the label in the cell's controls
+        //                            foreach (Control cellControl in cell.Controls)
+        //                            {
+        //                                if (cellControl is HiddenField hf && hf.ID != null && hf.ID.StartsWith("HiddenTotalCost"))
+        //                                {
+        //                                    thisunitcost = !string.IsNullOrEmpty(hf.Value) ? Convert.ToDecimal(hf.Value) : 0;
+        //                                    break;
+        //                                }
+        //                            }
+
+        //                            if (thisunitcost != 0) break;
+        //                        }
+
+        //                        if (thisunitcost != 0) break;
+        //                    }
+
+        //                    if (thisunitcost != 0) break;
+        //                }
+        //            }
+
+        //            DropDownList ddStore = pane.HeaderContainer.Controls.OfType<DropDownList>().FirstOrDefault();
+        //            using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+        //            {
+        //                string selectionId = itemselectionid;
+        //                string LotNumber = itemlotnum;
+        //                string store = ddStore.SelectedItem.Text;
+        //                string Quantity = itemqty.ToString();
+
+        //                string key = $"{selectionId}|{LotNumber}|{store}|{Quantity}";
+        //                if (!SentKeys.Contains(key))
+        //                {
+        //                    int Lid = Convert.ToInt32(lineID);
+        //                    ItemID = Convert.ToInt64(selectionId);
+
+
+        //                    string RetStr = DoItemAdjustment(Convert.ToInt64(selectionId), LotNumber, store, itemqty, 0, "H", thisunitcost);  // "H" denoted works order finished good
+
+        //                    if (RetStr != "OK")
+        //                    {
+        //                        string msg = $"Error 1661 performing Item Adjustmnent in Data Fusion: {RetStr}";
+        //                        //AlertHelper.ShowSweetAlert(this, "Invalid new Sage selling price - unable to continue.", "error");
+        //                        return msg;
+        //                    }
+        //                    SentKeys.Add(key);
+        //                }
+
+        //                // PROCESS GRIDVIEW ROWS FOR API CALLS
+        //                foreach (Control control in pane.ContentContainer.Controls)
+        //                {
+        //                    if (control is GridView grid)
+        //                    {
+        //                        foreach (GridViewRow row in grid.Rows)
+        //                        {
+        //                            if (row.RowType == DataControlRowType.DataRow)
+        //                            {
+        //                                TextBox txtUseQty = row.FindControl("txtUseQty") as TextBox;
+        //                                TextBox txtScrapQty = row.FindControl("txtScrapQty") as TextBox;
+        //                                DropDownList DDStore = row.FindControl("DDStore") as DropDownList;
+        //                                DropDownList DDlotNum = row.FindControl("DDlotNum") as DropDownList;
+
+        //                                var lineIDText = row.Cells[0].Text;
+        //                                int TLineID = Convert.ToInt32(lineIDText);
+
+        //                                decimal useQty = 0;
+        //                                decimal scrapQty = 0;
+        //                                try { useQty = Convert.ToDecimal(txtUseQty.Text); } catch { }
+        //                                try { scrapQty = Convert.ToDecimal(txtScrapQty.Text); } catch { }
+
+        //                                string gridSelectionId = row.Cells[1].Text; // SelectionId from second column
+        //                                string gridLotNumber = "";
+        //                                var WRMLine = _db.WorksOrderRMLines.Where(x => x.CompanyID == CoID && x.LineID == TLineID).FirstOrDefault();
+        //                                if (CurrentUser.CompanyUseLotNumbers)
+        //                                {
+        //                                    if (WRMLine != null && WRMLine.IsLotTracked)
+        //                                    {
+        //                                        if (DDlotNum.SelectedItem != null || DDlotNum.Items.Count != 0 || !string.IsNullOrEmpty(DDlotNum.SelectedItem.Text) || !DDlotNum.SelectedItem.Text.Contains("Number"))
+        //                                        {
+        //                                            gridLotNumber = DDlotNum.SelectedValue.ToString();
+        //                                        }
+        //                                    }
+        //                                }
+        //                                ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        //                                if (DDStore.SelectedItem != null)
+        //                                {
+        //                                    string gridStore = DDStore.SelectedItem.Text;
+
+        //                                    // Process usage quantity
+        //                                    if (useQty > 0)
+        //                                    {
+        //                                        string usageKey = $"{gridSelectionId}|{gridLotNumber}|{gridStore}|{useQty}";
+        //                                        if (!SentKeys.Contains(usageKey))
+        //                                        {
+        //                                            string RetStr = DoItemAdjustment(Convert.ToInt64(gridSelectionId), gridLotNumber, gridStore, useQty * -1, 0, "L", (decimal)WRMLine.UnitCost); // "L" denoted works order component
+        //                                            if (RetStr != "OK")
+        //                                            {
+        //                                                string msg = $"Error performing Item Adjustment for usage: {RetStr}";
+        //                                                //AlertHelper.ShowSweetAlert(this, , "error");
+        //                                                return msg;
+        //                                            }
+        //                                            SentKeys.Add(usageKey);
+        //                                        }
+        //                                    }
+
+        //                                    // Process scrap quantity
+        //                                    if (scrapQty > 0)
+        //                                    {
+        //                                        string scrapKey = $"{gridSelectionId}|{gridLotNumber}|{gridStore}|{scrapQty}";
+        //                                        if (!SentKeys.Contains(scrapKey))
+        //                                        {
+        //                                            string RetStr = DoItemAdjustment(Convert.ToInt64(gridSelectionId), gridLotNumber, gridStore, 0, scrapQty * -1, "L", (decimal)WRMLine.UnitCost);  // "L" denoted works order component
+        //                                            if (RetStr != "OK")
+        //                                            {
+        //                                                string msg = $"Error performing Item Adjustment for scrap: {RetStr}";
+        //                                                //AlertHelper.ShowSweetAlert(this, "Error performing Item Adjustment for scrap: " + RetStr, "error");
+        //                                                return msg;
+        //                                            }
+        //                                            SentKeys.Add(scrapKey);
+        //                                        }
+        //                                    }
+        //                                }
+        //                                //////////////////////////////////////////////////////////////////
+        //                            }
+        //                        }
+        //                    }
+        //                    else if (control is Table tbl)
+        //                    {
+        //                        // Search through the table for txtNewSell with the specific lineID
+        //                        TextBox txtNewSell = FindControlInTable<TextBox>(tbl, $"txtNewSell_{lineID}");
+        //                        RadioButtonList ddlUpdate = FindControlInTable<RadioButtonList>(tbl, $"ddlUpdate_{lineID}");
+
+        //                        if (ddlUpdate != null && ddlUpdate.SelectedItem != null)
+        //                        {
+        //                            string updateChoice = ddlUpdate.SelectedValue;
+        //                            // Process the RadioButtonList selection
+        //                            if (updateChoice == "Yes")
+        //                            {
+        //                                if (txtNewSell != null)
+        //                                {
+        //                                    string newSellingPrice = txtNewSell.Text; // <-- HERE - extract the value
+        //                                    if (!string.IsNullOrEmpty(newSellingPrice))
+        //                                    {
+        //                                        decimal newPrice = 0;
+        //                                        if (decimal.TryParse(newSellingPrice, out newPrice))
+        //                                        {
+        //                                            ApiUrlCall Api = new ApiUrlCall();
+        //                                            // NEED TO GET THE ITEM ID FROM THE WORKS ORDER LINE
+        //                                            var updateTask = Api.UpdateSellingPriceOneItem(ItemID, newPrice, CurrentUser);
+        //                                            string result = await updateTask.ConfigureAwait(false);
+        //                                            if (result == "OK") {
+        //                                                return result;
+        //                                            }
+        //                                            else { return result; }
+        //                                        }
+        //                                    }
+        //                                }
+        //                            }
+        //                        }
+        //                    }
+        //                }
+        //            }
+        //        }
+        //    }
+
+        //    // ONLY AFTER ALL API CALLS SUCCEED: Update local DB completion status
+        //    using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+        //    {
+        //        // Update Works Order Lines completion status
+        //        for (int i = 1; i < AccordionWOLines.Panes.Count; i++)
+        //        {
+        //            AccordionPane pane = AccordionWOLines.Panes[i];
+
+        //            // Find HiddenLineIDH by searching through controls since it has dynamic ID
+        //            HiddenField hiddenFieldH = null;
+        //            foreach (Control control in pane.HeaderContainer.Controls)
+        //            {
+        //                if (control is HiddenField && control.ID != null && control.ID.StartsWith("HiddenLineIDH_"))
+        //                {
+        //                    hiddenFieldH = control as HiddenField;
+        //                    break;
+        //                }
+        //            }
+
+        //            if (hiddenFieldH != null)
+        //            {
+        //                string lineID = hiddenFieldH.Value.Split('|')[0];
+        //                decimal itemqty = Convert.ToDecimal(hiddenFieldH.Value.Split('|')[3]);
+
+        //                long lined = Convert.ToInt32(lineID);
+        //                var wolP = _db.WorksOrderLines.Where(x => x.CompanyID == CurrentUser.CoID && x.LineID == lined).FirstOrDefault();
+        //                wolP.UseQty = itemqty;
+        //                wolP.Active = false;
+        //                wolP.Complete = true;
+        //                wolP.CompleteDate = DateTime.Now;
+        //                wolP.CompleteBy = CurrentUser.RoleID;
+        //            }
+        //        }
+        //        _db.SaveChanges();
+
+        //        // Mark Works Order Header as complete
+        //        long wonum = Convert.ToInt64(lblwoid.Text);
+        //        var woh = _db.WorksOrderHeaders.Where(x => x.CompanyID == CurrentUser.CoID && x.WONum == wonum).FirstOrDefault();
+        //        woh.Active = false;
+        //        woh.WOrderCloseOffDate = DateTime.Now;
+        //        woh.WOrderCloseBy = CurrentUser.RoleID.ToString();
+        //        _db.SaveChanges();
+        //    }
+
+        //    LbtnUpdateWO.Style.Add("display", "none");
+        //    LbtnSaveWO.Style.Add("display", "none");
+        //    //AlertHelper.ShowSweetAlert(this, "Successfully Saved", "success");
+        //    return "OK";
+        //}
+
         protected async Task<string> ExtractAccordionHeaderDetails(object sender)
         {
             bool cont = true;
             for (int i = 0; i < AccordionWOLines.Panes.Count; i++)
             {
                 AccordionPane pane = AccordionWOLines.Panes[i];
-                // ---------- header controls ----------``
 
-                // Find HiddenLineIDH by searching through controls since it has dynamic ID
                 HiddenField hiddenFieldH = null;
                 foreach (Control control in pane.HeaderContainer.Controls)
                 {
@@ -3221,7 +3180,7 @@ namespace SBMS
                     if (ddStore.Items.Count > 1 && ddStore.SelectedIndex < 1)
                     {
                         cont = false;
-                        string msg = "Please select a destination store for the item.";                     
+                        string msg = "Please select a destination store for the item.";
                         return msg;
                     }
 
@@ -3231,7 +3190,6 @@ namespace SBMS
                     {
                         cont = false;
                         string msg = "Unable to update Sage, please mark the Works Order Header as complete.";
-                        //AlertHelper.ShowSweetAlert(this, "", "error");
                         return msg;
                     }
 
@@ -3255,7 +3213,6 @@ namespace SBMS
                                         {
                                             cont = false;
                                             string msg = $"Invalid store selected in BOM items for {row.Cells[2].Text.ToString()}";
-                                            //AlertHelper.ShowSweetAlert(this, $"Invalid store selected in BOM items for {row.Cells[2].Text.ToString()} . Unable to continue.", "error");
                                             return msg;
                                         }
                                     }
@@ -3268,7 +3225,6 @@ namespace SBMS
                                     {
                                         cont = false;
                                         string msg = $"Invalid quantity for {row.Cells[2].Text.ToString()}";
-                                        //AlertHelper.ShowSweetAlert(this, $"Invalid quantity for {row.Cells[2].Text.ToString()}. Unable to continue.", "error");
                                         return msg;
                                     }
 
@@ -3285,7 +3241,6 @@ namespace SBMS
                                                 {
                                                     cont = false;
                                                     string msg = $"Lot Number required for {WRMLine.ItemCode}";
-                                                    //AlertHelper.ShowSweetAlert(this, $"Lot Number required for {WRMLine.ItemCode}. Unable to continue.", "error");
                                                     return msg;
                                                 }
                                             }
@@ -3296,24 +3251,19 @@ namespace SBMS
                         }
                         else if (control is Table tbl)
                         {
-                            // check if update needed and also if 
                             if (CurrentUser.ShowManfCosts)
                             {
-                                // Search through the table for txtNewSell with the specific lineID
                                 TextBox txtNewSell = FindControlInTable<TextBox>(tbl, $"txtNewSell_{lineID}");
                                 RadioButtonList ddlUpdate = FindControlInTable<RadioButtonList>(tbl, $"ddlUpdate_{lineID}");
 
                                 if (ddlUpdate != null && ddlUpdate.SelectedItem != null)
                                 {
-                                    string updateChoice = ddlUpdate.SelectedValue; // "Yes" or "No"
-                                    // Process the RadioButtonList selection
+                                    string updateChoice = ddlUpdate.SelectedValue;
                                     if (updateChoice == "Yes")
                                     {
                                         if (txtNewSell != null)
                                         {
-                                            string newSellingPrice = txtNewSell.Text; //
-
-                                            // Do something with the value
+                                            string newSellingPrice = txtNewSell.Text;
                                             if (!string.IsNullOrEmpty(newSellingPrice))
                                             {
                                                 decimal newPrice = 0m;
@@ -3322,7 +3272,6 @@ namespace SBMS
                                                     if (newPrice == 0m)
                                                     {
                                                         string msg = "Invalid new Sage selling price -unable to continue.";
-                                                        //AlertHelper.ShowSweetAlert(this, "Invalid new Sage selling price - unable to continue.", "error");
                                                         return msg;
                                                     }
                                                 }
@@ -3330,7 +3279,6 @@ namespace SBMS
                                             else
                                             {
                                                 string msg = "Invalid new Sage selling price -unable to continue.";
-                                                //AlertHelper.ShowSweetAlert(this, "Invalid new Sage selling price - unable to continue.", "error");
                                                 return msg;
                                             }
                                         }
@@ -3347,9 +3295,10 @@ namespace SBMS
             // FIRST: Process all API calls
             for (int i = 0; i < AccordionWOLines.Panes.Count; i++)
             {
+                // FIX 1: Always assign ItemID here so it is set before UpdateSellingPriceOneItem is called
                 long ItemID = 0;
-                 AccordionPane pane = AccordionWOLines.Panes[i];
-                // Find HiddenLineIDH by searching through controls since it has dynamic ID
+                AccordionPane pane = AccordionWOLines.Panes[i];
+
                 HiddenField hiddenFieldH = null;
                 foreach (Control control in pane.HeaderContainer.Controls)
                 {
@@ -3371,33 +3320,56 @@ namespace SBMS
                         itemlotnum = hiddenFieldH.Value.Split('|')[4];
                     }
 
+                    // FIX 2: Always assign ItemID outside the SentKeys check
+                    ItemID = Convert.ToInt64(itemselectionid);
+
+                    decimal thistotcost = 0;
+
+                    // FIX 3: Read from HiddenTotalCost hidden field instead of lblThisCost label.
+                    //        The label value is set by JavaScript and resets to "0.00" on every postback.
+                    //        The hidden field survives postback via the POST form data.
+                    foreach (Control control in pane.ContentContainer.Controls)
+                    {
+                        if (control is Table tbl)
+                        {
+                            foreach (TableRow trow in tbl.Rows)
+                            {
+                                foreach (TableCell cell in trow.Cells)
+                                {
+                                    foreach (Control cellControl in cell.Controls)
+                                    {
+                                        if (cellControl is HiddenField hf && hf.ID != null && hf.ID.StartsWith("HiddenTotalCost"))
+                                        {
+                                            thistotcost = !string.IsNullOrEmpty(hf.Value) ? Convert.ToDecimal(hf.Value) : 0;
+                                            break;
+                                        }
+                                    }
+                                    if (thistotcost != 0) break;
+                                }
+                                if (thistotcost != 0) break;
+                            }
+                            if (thistotcost != 0) break;
+                        }
+                    }
+
                     DropDownList ddStore = pane.HeaderContainer.Controls.OfType<DropDownList>().FirstOrDefault();
                     using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
                     {
                         string selectionId = itemselectionid;
                         string LotNumber = itemlotnum;
-                        string store = ddStore.SelectedItem.Text;
+                        string store = string.Empty;
+                        if (ddStore.SelectedItem != null) store = ddStore.SelectedItem.Text;
                         string Quantity = itemqty.ToString();
 
                         string key = $"{selectionId}|{LotNumber}|{store}|{Quantity}";
                         if (!SentKeys.Contains(key))
                         {
                             int Lid = Convert.ToInt32(lineID);
-                            ItemID = Convert.ToInt64(selectionId);
-                            var total = (from h in _db.WorksOrderHeaders
-                                         join l in _db.WorksOrderLines on h.ID equals l.WOID
-                                         join r in _db.WorksOrderRMLines on h.ID equals r.WOID
-                                         where h.CompanyID == CurrentUser.CoID
-                                         && l.LineID == Lid && l.SelectionId == ItemID
-                                         select r.UseQty + r.ScrapQty
-                                        ).FirstOrDefault();
-                            // add finished item to stock
-                            string RetStr = DoItemAdjustment(Convert.ToInt64(selectionId), LotNumber, store, itemqty, 0, "H", (decimal)total / itemqty);  // "H" denoted works order finished good
-
+                            decimal thisunitcost = thistotcost != 0 && itemqty != 0 ? thistotcost / itemqty : 0; // Fallback to 0 if itemqty is 0 to avoid division by zero
+                            string RetStr = DoItemAdjustment(Convert.ToInt64(selectionId), LotNumber, store, itemqty, 0, "H", thisunitcost);
                             if (RetStr != "OK")
                             {
                                 string msg = $"Error 1661 performing Item Adjustmnent in Data Fusion: {RetStr}";
-                                //AlertHelper.ShowSweetAlert(this, "Invalid new Sage selling price - unable to continue.", "error");
                                 return msg;
                             }
                             SentKeys.Add(key);
@@ -3425,90 +3397,88 @@ namespace SBMS
                                         try { useQty = Convert.ToDecimal(txtUseQty.Text); } catch { }
                                         try { scrapQty = Convert.ToDecimal(txtScrapQty.Text); } catch { }
 
-                                        string gridSelectionId = row.Cells[1].Text; // SelectionId from second column
+                                        string gridSelectionId = row.Cells[1].Text;
                                         string gridLotNumber = "";
                                         var WRMLine = _db.WorksOrderRMLines.Where(x => x.CompanyID == CoID && x.LineID == TLineID).FirstOrDefault();
+
+                                        // FIX 4: Corrected || to && to prevent NullReferenceException on SelectedItem.Text
                                         if (CurrentUser.CompanyUseLotNumbers)
                                         {
                                             if (WRMLine != null && WRMLine.IsLotTracked)
                                             {
-                                                if (DDlotNum.SelectedItem != null || DDlotNum.Items.Count != 0 || !string.IsNullOrEmpty(DDlotNum.SelectedItem.Text) || !DDlotNum.SelectedItem.Text.Contains("Number"))
+                                                if (DDlotNum.SelectedItem != null &&
+                                                    DDlotNum.Items.Count != 0 &&
+                                                    !string.IsNullOrEmpty(DDlotNum.SelectedItem.Text) &&
+                                                    !DDlotNum.SelectedItem.Text.Contains("Number"))
                                                 {
                                                     gridLotNumber = DDlotNum.SelectedValue.ToString();
                                                 }
                                             }
                                         }
-                                        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
                                         if (DDStore.SelectedItem != null)
                                         {
                                             string gridStore = DDStore.SelectedItem.Text;
 
-                                            // Process usage quantity
                                             if (useQty > 0)
                                             {
                                                 string usageKey = $"{gridSelectionId}|{gridLotNumber}|{gridStore}|{useQty}";
                                                 if (!SentKeys.Contains(usageKey))
                                                 {
-                                                    string RetStr = DoItemAdjustment(Convert.ToInt64(gridSelectionId), gridLotNumber, gridStore, useQty * -1, 0, "L", (decimal)WRMLine.UnitCost); // "L" denoted works order component
+                                                    string RetStr = DoItemAdjustment(Convert.ToInt64(gridSelectionId), gridLotNumber, gridStore, useQty * -1, 0, "L", (decimal)WRMLine.UnitCost);
                                                     if (RetStr != "OK")
                                                     {
                                                         string msg = $"Error performing Item Adjustment for usage: {RetStr}";
-                                                        //AlertHelper.ShowSweetAlert(this, , "error");
                                                         return msg;
                                                     }
                                                     SentKeys.Add(usageKey);
                                                 }
                                             }
 
-                                            // Process scrap quantity
                                             if (scrapQty > 0)
                                             {
                                                 string scrapKey = $"{gridSelectionId}|{gridLotNumber}|{gridStore}|{scrapQty}";
                                                 if (!SentKeys.Contains(scrapKey))
                                                 {
-                                                    string RetStr = DoItemAdjustment(Convert.ToInt64(gridSelectionId), gridLotNumber, gridStore, 0, scrapQty * -1, "L", (decimal)WRMLine.UnitCost);  // "L" denoted works order component
+                                                    string RetStr = DoItemAdjustment(Convert.ToInt64(gridSelectionId), gridLotNumber, gridStore, 0, scrapQty * -1, "L", (decimal)WRMLine.UnitCost);
                                                     if (RetStr != "OK")
                                                     {
                                                         string msg = $"Error performing Item Adjustment for scrap: {RetStr}";
-                                                        //AlertHelper.ShowSweetAlert(this, "Error performing Item Adjustment for scrap: " + RetStr, "error");
                                                         return msg;
                                                     }
                                                     SentKeys.Add(scrapKey);
                                                 }
                                             }
                                         }
-                                        //////////////////////////////////////////////////////////////////
                                     }
                                 }
                             }
                             else if (control is Table tbl)
                             {
-                                // Search through the table for txtNewSell with the specific lineID
                                 TextBox txtNewSell = FindControlInTable<TextBox>(tbl, $"txtNewSell_{lineID}");
                                 RadioButtonList ddlUpdate = FindControlInTable<RadioButtonList>(tbl, $"ddlUpdate_{lineID}");
 
                                 if (ddlUpdate != null && ddlUpdate.SelectedItem != null)
                                 {
                                     string updateChoice = ddlUpdate.SelectedValue;
-                                    // Process the RadioButtonList selection
                                     if (updateChoice == "Yes")
                                     {
                                         if (txtNewSell != null)
                                         {
-                                            string newSellingPrice = txtNewSell.Text; // <-- HERE - extract the value
+                                            string newSellingPrice = txtNewSell.Text;
                                             if (!string.IsNullOrEmpty(newSellingPrice))
                                             {
                                                 decimal newPrice = 0;
                                                 if (decimal.TryParse(newSellingPrice, out newPrice))
                                                 {
                                                     ApiUrlCall Api = new ApiUrlCall();
-                                                    // NEED TO GET THE ITEM ID FROM THE WORKS ORDER LINE
                                                     var updateTask = Api.UpdateSellingPriceOneItem(ItemID, newPrice, CurrentUser);
                                                     string result = await updateTask.ConfigureAwait(false);
-                                                    if (result == "OK") {
+                                                    // FIX 5: Removed early return "OK" so remaining panes continue processing
+                                                    if (result != "OK")
+                                                    {
                                                         return result;
                                                     }
-                                                    else { return result; }
                                                 }
                                             }
                                         }
@@ -3523,12 +3493,11 @@ namespace SBMS
             // ONLY AFTER ALL API CALLS SUCCEED: Update local DB completion status
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {
-                // Update Works Order Lines completion status
-                for (int i = 1; i < AccordionWOLines.Panes.Count; i++)
+                // FIX 6: Start from index 0 (was 1, silently skipping the first pane's DB update)
+                for (int i = 0; i < AccordionWOLines.Panes.Count; i++)
                 {
                     AccordionPane pane = AccordionWOLines.Panes[i];
 
-                    // Find HiddenLineIDH by searching through controls since it has dynamic ID
                     HiddenField hiddenFieldH = null;
                     foreach (Control control in pane.HeaderContainer.Controls)
                     {
@@ -3555,9 +3524,9 @@ namespace SBMS
                 }
                 _db.SaveChanges();
 
-                // Mark Works Order Header as complete
                 long wonum = Convert.ToInt64(lblwoid.Text);
                 var woh = _db.WorksOrderHeaders.Where(x => x.CompanyID == CurrentUser.CoID && x.WONum == wonum).FirstOrDefault();
+                woh.Status = "Complete";
                 woh.Active = false;
                 woh.WOrderCloseOffDate = DateTime.Now;
                 woh.WOrderCloseBy = CurrentUser.RoleID.ToString();
@@ -3566,7 +3535,6 @@ namespace SBMS
 
             LbtnUpdateWO.Style.Add("display", "none");
             LbtnSaveWO.Style.Add("display", "none");
-            //AlertHelper.ShowSweetAlert(this, "Successfully Saved", "success");
             return "OK";
         }
 
@@ -3650,26 +3618,46 @@ namespace SBMS
 
         protected void lbtnAddYesM_Click(object sender, EventArgs e)
         {
+            long itmID = Convert.ToInt64(ddlItemCode.SelectedValue);
             decimal itemQty = 0;
             try
             {
-                itemQty = Convert.ToDecimal(txtAddQty.Text);
+                itemQty = Convert.ToDecimal(txtqty.Text);
             }
-            catch { AlertHelper.ShowSweetAlert(this, "Invalid Quantity!", "error"); }
+            catch { 
+                AlertHelper.ShowSweetAlert(this, "Invalid Quantity!", "error");
+                return; 
+                    }
+
             long woLid = Convert.ToInt64(woLineID.Text);
             if (itemQty != 0)
             {
-                SaveNewRowToDatabase(ddlItemCode.SelectedValue, itemQty);
+                SaveNewRowToDatabase(itmID, itemQty, DDItemAddStore.SelectedItem.Text);
             }
             LoadWOLines();
         }
 
         protected void ddlItemCode_SelectedIndexChanged(object sender, EventArgs e)
         {
-            string selectedItemCode = ddlItemCode.SelectedValue;
+            long itmID = Convert.ToInt64(ddlItemCode.SelectedValue);
             LoadItems();
-            lblDescript.Text = _items.FirstOrDefault(x => x.Code == selectedItemCode).Description;
-            txtAddQty.Attributes.Add("onkeypress", "return validateQuantityInput(event, this)");
+            lblDescript.Text = _items.FirstOrDefault(x => x.ID == itmID).Description;
+           
+            LoadItemStores();
+            var storeList = _itemST.Where(x => x.ItemID == itmID &&
+                                               x.StoreCode != "CoR" &&
+                                               x.StoreCode != "CoD" &&
+                                               x.StoreCode.ToLower() != "scr").ToList();
+
+            DDItemAddStore.DataSource = storeList;
+            DDItemAddStore.DataTextField = "StoreCode";
+            DDItemAddStore.DataValueField = "StoreID";
+            DDItemAddStore.DataBind();
+
+            if (storeList.Count > 1)
+            {
+                DDItemAddStore.Items.Insert(0, "-?-");
+            }
             ModalPopupExtender2.Show();
         }
 
@@ -3719,120 +3707,81 @@ namespace SBMS
         protected string DoItemAdjustment(long itmid, string LotNum, string stor, decimal useqty, decimal rejqty, string LineType, decimal unitcost)
         {
             string success = "OK";
-            decimal QOH = 0;
             try
             {
                 using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
-                {                 
-                    long store1 = _db.Stores.Where(x => x.StoreCode == stor && x.CompanyID == CurrentUser.CoID).Select(x => x.StoreID).FirstOrDefault();
-
-                    // Call API FIRST before any local DB saves
-                    ApiUrlCall api = new ApiUrlCall();
-                    api.LoadOneItemNA(itmid, CurrentUser);
-                    var itm = _db.ItemsMasters.FirstOrDefault(x => x.CompanyID == CurrentUser.CoID && x.ID == itmid);
-
-                    ItemAdjustment iAdj = new ItemAdjustment();
-                    iAdj.Date = DateTime.Now;
-                    iAdj.ItemID = itmid;
-                    iAdj.AverageCost = (decimal)itm.AverageCost;
-                    iAdj.Quantity = useqty;
-                    iAdj.Reason = "Manf: of WO" + Convert.ToInt64(lblwoid.Text) + " - " + DateTime.Now.ToString() + " Lot:" + LotNum;
-                    if (useqty < 0) iAdj.Reason = iAdj.Reason.Replace("Manf", "Draw");
-                    iAdj.Created = DateTime.Now;
-                    string jsonBody = JsonConvert.SerializeObject(iAdj, Formatting.Indented);
-
-                    if (CurrentUser.UATMode == false)
+                {
+                    if (stor != "")
                     {
-                        string reslt = SendItemAdjustment(jsonBody);
-                        if (reslt != "Success")
+                        long store1 = _db.Stores.Where(x => x.StoreCode == stor && x.CompanyID == CurrentUser.CoID).Select(x => x.StoreID).FirstOrDefault();
+
+                        // Call API FIRST before any local DB saves
+                        ApiUrlCall api = new ApiUrlCall();
+                        api.LoadOneItemNA(itmid, CurrentUser);
+                        var itm = _db.ItemsMasters.FirstOrDefault(x => x.CompanyID == CurrentUser.CoID && x.ID == itmid);
+
+                        // TESTING ONLY
+                        //decimal CurrentQOH = 3;
+                        //decimal SageCurrentAvCost = 166.80m;
+                        // END OF TESTING HARD CODED VALUES
+
+                        decimal CurrentQOH = itm.QuantityOnHand ?? 0;
+                        decimal SageCurrentAvCost = itm.AverageCost ?? 0;
+                        decimal SageCurrentValue = 0;
+                        if (CurrentQOH > 0)
                         {
-                            success = $"Error 1892:{reslt}";
-                            return success;
+                            SageCurrentValue = CurrentQOH * SageCurrentAvCost;
                         }
-                    }
-
-                    // ONLY AFTER API SUCCESS - save to local DB
-                    var result = _db.ItemTransactions.Where(item => item.ItemID == itmid && item.CompanyID == CurrentUser.CoID && item.ToID == store1);
-                    decimal? sumResult = result.Sum(x => (decimal?)x.Qty);
-                    QOH = sumResult ?? 0;
-
-                    ItemTransaction ItemTrans = new ItemTransaction();
-                    ItemTrans.CompanyID = CurrentUser.CoID;
-                    ItemTrans.DocumentID = 0;
-                    if (useqty > 0)
-                    {
-                        ItemTrans.TransactionType = "MANF";
-                    }
-                    else
-                    {
-                        ItemTrans.TransactionType = "DRAW";
-                    }
-                    ItemTrans.ItemID = itmid;
-                    ItemTrans.ItemCode = itm.Code;
-                    ItemTrans.ItemDescription = itm.Description;
-                    ItemTrans.Unit = itm.Unit;
-                    ItemTrans.FromID = 0;
-                    ItemTrans.LotNumber = LotNum;
-                    ItemTrans.ToID = store1;
-                    ItemTrans.Qty = Convert.ToDecimal(useqty);
-                    ItemTrans.DocumentType = 1;
-                    ItemTrans.TransactionDate = DateTime.Now;
-                    ItemTrans.ByRoleID = CurrentUser.RoleID;
-                    ItemTrans.PriceExclusive = unitcost;
-                    ItemTrans.AdditionalCosts = 0;
-                    ItemTrans.TotalUnitPriceExclInclAdd = unitcost;
-                    ItemTrans.TotalLineValExcl = ItemTrans.PriceExclusive * ItemTrans.Qty;
-                    ItemTrans.TransactionReference = ItemTrans.TransactionType +": WO" + Convert.ToInt64(lblwoid.Text) + " - " + DateTime.Now.ToString() + " Lot:" + LotNum;
-                    ItemTrans.ExchRate = 1;
-                    _db.ItemTransactions.Add(ItemTrans);
-                    _db.SaveChanges();
-
-                    #region Record rejectes/scrap - ALSO REVERSED ORDER
-                    if (rejqty > 0)
-                    {
-                        store1 = _db.Stores.Where(x => x.StoreDescript.ToLower().Contains("scrap") && x.CompanyID == CurrentUser.CoID).Select(x => x.StoreID).FirstOrDefault();
-                        if (store1 == 0)
+                        decimal newAvCost = 0;
+                        decimal thisUnitCost = unitcost;
+                        decimal thisValue = (useqty + rejqty) * unitcost;
+                        if (SageCurrentValue > 0)
                         {
-                            Store str = new Store();
-                            str.CompanyID = CurrentUser.CoID;
-                            str.StoreCode = "Scr";
-                            str.StoreDescript = "Scrap";
-                            str.AllowPicking = false;
-                            str.AllowReceiving = false;
-                            str.StoreActive = true;
-                            _db.Stores.Add(str);
-                            _db.SaveChanges();
-                            store1 = str.StoreID;
+                            if ((CurrentQOH + useqty + rejqty) != 0)
+                            {
+                                newAvCost = (thisValue + SageCurrentValue) / (CurrentQOH + useqty + rejqty);
+                            } else
+                            {
+                                newAvCost = (thisValue) / (useqty + rejqty);
+                            }
+                        }
+                        else
+                        {
+                            newAvCost = thisUnitCost;
                         }
 
-                        // API CALL FIRST for scrap
-                        iAdj = new ItemAdjustment();
+                        ItemAdjustment iAdj = new ItemAdjustment();
                         iAdj.Date = DateTime.Now;
                         iAdj.ItemID = itmid;
-                        iAdj.AverageCost = (decimal)itm.AverageCost;
-                        iAdj.Quantity = rejqty * -1m;
-                        iAdj.Reason = "Scrap WO" + Convert.ToInt64(lblwoid.Text) + " - " + DateTime.Now.ToString() + " Lot:" + LotNum;
+                        iAdj.AverageCost = (decimal)newAvCost;
+                        iAdj.Quantity = useqty;
+                        iAdj.Reason = "Manf: of WO" + Convert.ToInt64(lblwoid.Text) + " - " + DateTime.Now.ToString() + " Lot:" + LotNum;
+                        if (useqty < 0) iAdj.Reason = iAdj.Reason.Replace("Manf", "Draw");
                         iAdj.Created = DateTime.Now;
-                        jsonBody = JsonConvert.SerializeObject(iAdj, Formatting.Indented);
+                        string jsonBody = JsonConvert.SerializeObject(iAdj, Formatting.Indented);
+
                         if (CurrentUser.UATMode == false)
                         {
-                            string scrapResult = SendItemAdjustment(jsonBody);
-                            if (scrapResult != "Success")
+                            string reslt = SendItemAdjustment(jsonBody);
+                            if (reslt != "Success")
                             {
-                                success = $"Error 1960:{scrapResult}";
+                                success = $"Error 1892:{reslt}";
                                 return success;
                             }
                         }
 
-                                   // ONLY AFTER API SUCCESS - save scrap to local DB
-                        result = _db.ItemTransactions.Where(item => item.ItemID == itmid && item.CompanyID == CurrentUser.CoID && item.ToID == store1);
-                        sumResult = result.Sum(x => (decimal?)x.Qty);
-                        QOH = sumResult ?? 0;
-
-                        ItemTrans = new ItemTransaction();
+                        // ONLY AFTER API SUCCESS - save to local DB
+                        ItemTransaction ItemTrans = new ItemTransaction();
                         ItemTrans.CompanyID = CurrentUser.CoID;
                         ItemTrans.DocumentID = 0;
-                        ItemTrans.TransactionType = "Scrap";
+                        if (useqty > 0)
+                        {
+                            ItemTrans.TransactionType = "MANF";
+                        }
+                        else
+                        {
+                            ItemTrans.TransactionType = "DRAW";
+                        }
                         ItemTrans.ItemID = itmid;
                         ItemTrans.ItemCode = itm.Code;
                         ItemTrans.ItemDescription = itm.Description;
@@ -3840,7 +3789,7 @@ namespace SBMS
                         ItemTrans.FromID = 0;
                         ItemTrans.LotNumber = LotNum;
                         ItemTrans.ToID = store1;
-                        ItemTrans.Qty = Convert.ToDecimal(rejqty);
+                        ItemTrans.Qty = Convert.ToDecimal(useqty);
                         ItemTrans.DocumentType = 1;
                         ItemTrans.TransactionDate = DateTime.Now;
                         ItemTrans.ByRoleID = CurrentUser.RoleID;
@@ -3848,12 +3797,75 @@ namespace SBMS
                         ItemTrans.AdditionalCosts = 0;
                         ItemTrans.TotalUnitPriceExclInclAdd = unitcost;
                         ItemTrans.TotalLineValExcl = ItemTrans.PriceExclusive * ItemTrans.Qty;
-                        ItemTrans.TransactionReference = "Scrap WO" + Convert.ToInt64(lblwoid.Text) + " - " + DateTime.Now.ToString() + " Lot:" + LotNum;
+                        ItemTrans.TransactionReference = ItemTrans.TransactionType + ": WO" + Convert.ToInt64(lblwoid.Text) + " - " + DateTime.Now.ToString() + " Lot:" + LotNum;
                         ItemTrans.ExchRate = 1;
                         _db.ItemTransactions.Add(ItemTrans);
                         _db.SaveChanges();
+
+                        #region Record rejectes/scrap - ALSO REVERSED ORDER
+                        if (rejqty > 0)
+                        {
+                            store1 = _db.Stores.Where(x => x.StoreDescript.ToLower().Contains("scrap") && x.CompanyID == CurrentUser.CoID).Select(x => x.StoreID).FirstOrDefault();
+                            if (store1 == 0)
+                            {
+                                Store str = new Store();
+                                str.CompanyID = CurrentUser.CoID;
+                                str.StoreCode = "Scr";
+                                str.StoreDescript = "Scrap";
+                                str.AllowPicking = false;
+                                str.AllowReceiving = false;
+                                str.StoreActive = true;
+                                _db.Stores.Add(str);
+                                _db.SaveChanges();
+                                store1 = str.StoreID;
+                            }
+
+                            // API CALL FIRST for scrap
+                            iAdj = new ItemAdjustment();
+                            iAdj.Date = DateTime.Now;
+                            iAdj.ItemID = itmid;
+                            iAdj.AverageCost = (decimal)newAvCost;
+                            iAdj.Quantity = rejqty * -1m;
+                            iAdj.Reason = "Scrap WO" + Convert.ToInt64(lblwoid.Text) + " - " + DateTime.Now.ToString() + " Lot:" + LotNum;
+                            iAdj.Created = DateTime.Now;
+                            jsonBody = JsonConvert.SerializeObject(iAdj, Formatting.Indented);
+                            if (CurrentUser.UATMode == false)
+                            {
+                                string scrapResult = SendItemAdjustment(jsonBody);
+                                if (scrapResult != "Success")
+                                {
+                                    success = $"Error 1960:{scrapResult}";
+                                    return success;
+                                }
+                            }
+
+                            // ONLY AFTER API SUCCESS - save scrap to local DB
+                            ItemTrans = new ItemTransaction();
+                            ItemTrans.CompanyID = CurrentUser.CoID;
+                            ItemTrans.DocumentID = 0;
+                            ItemTrans.TransactionType = "Scrap";
+                            ItemTrans.ItemID = itmid;
+                            ItemTrans.ItemCode = itm.Code;
+                            ItemTrans.ItemDescription = itm.Description;
+                            ItemTrans.Unit = itm.Unit;
+                            ItemTrans.FromID = 0;
+                            ItemTrans.LotNumber = LotNum;
+                            ItemTrans.ToID = store1;
+                            ItemTrans.Qty = Convert.ToDecimal(rejqty);
+                            ItemTrans.DocumentType = 1;
+                            ItemTrans.TransactionDate = DateTime.Now;
+                            ItemTrans.ByRoleID = CurrentUser.RoleID;
+                            ItemTrans.PriceExclusive = unitcost;
+                            ItemTrans.AdditionalCosts = 0;
+                            ItemTrans.TotalUnitPriceExclInclAdd = unitcost;
+                            ItemTrans.TotalLineValExcl = ItemTrans.PriceExclusive * ItemTrans.Qty;
+                            ItemTrans.TransactionReference = "Scrap WO" + Convert.ToInt64(lblwoid.Text) + " - " + DateTime.Now.ToString() + " Lot:" + LotNum;
+                            ItemTrans.ExchRate = 1;
+                            _db.ItemTransactions.Add(ItemTrans);
+                            _db.SaveChanges();
+                        }
+                        #endregion
                     }
-                    #endregion
                 }
             }
             catch (Exception ex)
@@ -3862,6 +3874,7 @@ namespace SBMS
             }
             return success;
         }
+
         public string SendItemAdjustment(string Item)
         {
             string doctype = "ItemAdjustment";
@@ -3904,6 +3917,20 @@ namespace SBMS
         {
             // clear checklist when leaving the page
             Session.Remove("SentKeys");
+        }
+
+        // Place this inside the WorksOrdersManf class, but outside any other method
+        private T FindControlRecursive<T>(Control parent, string id) where T : Control
+        {
+            foreach (Control child in parent.Controls)
+            {
+                if (child is T && child.ID == id)
+                    return (T)child;
+                T found = FindControlRecursive<T>(child, id);
+                if (found != null)
+                    return found;
+            }
+            return null;
         }
 
     }

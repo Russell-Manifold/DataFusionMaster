@@ -22,5 +22,6 @@ namespace SBMS.Models
         public Nullable<decimal> RMQty { get; set; }
         public Nullable<long> CompanyID { get; set; }
         public Nullable<int> BomHID { get; set; }
+        public string BomUnit { get; set; }
     }
 }

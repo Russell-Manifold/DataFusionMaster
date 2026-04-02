@@ -40,6 +40,9 @@
                                       <h3>Details</h3>
                                             <table>
                                                 <tr>
+                                                    <td>Reference *</td>
+                                                    <td>
+                                                        <asp:TextBox ID="txtRef" runat="server" placeholder="Reference"></asp:TextBox></td>
                                                     <td>Created Date</td>
                                                     <td><asp:Label ID="lblDate" runat="server" Text=""></asp:Label>&nbsp;</td>
                                                     <td>Created By<asp:Label ID="CntID" runat="server" Text="" style="display:none"></asp:Label></td>
@@ -52,7 +55,9 @@
                                                     <td colspan="6"><hr /></td>
                                                 </tr>
                                             <tr>
-                                                    <td>Category</td>
+                                                <td></td>
+                                                <td></td>    
+                                                <td>Category</td>
                                                     <td style="text-align:left"> <asp:DropDownList ID="DDCateg" runat="server" style="width:10em" AutoPostBack="true" OnSelectedIndexChanged="DDCateg_SelectedIndexChanged"></asp:DropDownList></td>
                                                     <td style="padding-left:2em">Filter</td>
                                                     <td>
@@ -85,6 +90,7 @@
                                                   <asp:BoundField DataField="CategoryDescript" ReadOnly="True" HeaderText="Category" SortExpression="CategoryDescript" />
                                                   <asp:BoundField DataField="Code" ReadOnly="True" HeaderText="Code" SortExpression="Code" />
                                                   <asp:BoundField DataField="Description" ReadOnly="True" HeaderText="Item"  SortExpression="Description"/>
+                                                  <asp:BoundField DataField="QOH" ReadOnly="True" HeaderText="QOH"  SortExpression="QOH"/>
                                                   <asp:BoundField DataField="StoreCode" ReadOnly="True" HeaderText="Store"  SortExpression="StoreCode"/>
                                                       <asp:TemplateField HeaderText="Select All" ItemStyle-Width="5em">
                                                           <HeaderTemplate >
@@ -109,11 +115,10 @@
                                                 <PagerSettings Visible="true" Mode="Numeric" PageButtonCount="5" />
                                                 <Columns>
                                                     <asp:BoundField DataField="CountID" ReadOnly="True" />      
-                                                    <asp:BoundField DataField="CategoryDescript" ReadOnly="True" HeaderText="Category" SortExpression="CategoryDescript" />
                                                     <asp:BoundField DataField="ItemCode" ReadOnly="True" HeaderText="Code" SortExpression="ItemCode" />
                                                     <asp:BoundField DataField="ItemDescription" ReadOnly="True" HeaderText="Item"  SortExpression="ItemCode"/>
-                                                    <asp:BoundField DataField="StoreCode" ReadOnly="True" HeaderText="Store"  SortExpression="StoreCode"/>
-                                                    <asp:BoundField DataField="LotNumber" ReadOnly="True" HeaderText="Lot Number"  SortExpression="LotNumber"/>
+                                                    <%--<asp:BoundField DataField="StoreCode" ReadOnly="True" HeaderText="Store"  SortExpression="StoreCode"/>--%>
+                                                    <%--<asp:BoundField DataField="LotNumber" ReadOnly="True" HeaderText="Lot Number"  SortExpression="LotNumber"/>--%>
                                                 </Columns>
                                             </asp:GridView>
                                      </ div> 

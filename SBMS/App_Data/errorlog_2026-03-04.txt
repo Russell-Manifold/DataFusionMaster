@@ -1,0 +1,1 @@
+11:22:54 - CoID: 865415 + Error saving LastCallDate for Sales Orders: Store update, insert, or delete statement affected an unexpected number of rows (0). Entities may have been modified or deleted since entities were loaded. Refresh ObjectStateManager entries.

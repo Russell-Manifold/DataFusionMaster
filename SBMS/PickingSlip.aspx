@@ -19,9 +19,10 @@
                         <asp:LinkButton ID="lbtnHome" runat="server" class="buttonC icon fa-home" onclick="lbtnHome_Click1" >&nbsp;&nbsp;</asp:LinkButton>
                         <asp:LinkButton ID="lbtnSOs" runat="server" class="buttonC icon fa-arrow-left" PostBackUrl="~/OSSalesOrders.aspx">&nbsp;Open Sales Orders</asp:LinkButton>
                         <asp:LinkButton ID="lbtnViewSO" runat="server" CssClass="buttonC icon fa-arrow-circle-o-left" ToolTip="View Sales Order" OnClick="lbtnViewSO_Click">&nbsp;Sales Order</asp:LinkButton>
-                         <asp:DropDownList ID="DDOptions" runat="server" AutoPostBack="true" OnSelectedIndexChanged="DDOptions_SelectedIndexChanged" CssClass="buttonC">
+                         <asp:DropDownList ID="DDOptions" runat="server" AutoPostBack="true" OnSelectedIndexChanged="DDOptions_SelectedIndexChanged" CssClass="buttonC" Height="2.35em">
                              <asp:ListItem>- Create -</asp:ListItem>
-                              <asp:ListItem value = "1">Works Order</asp:ListItem>
+                              <asp:ListItem Value="0">Job Card</asp:ListItem>
+                              <asp:ListItem value = "2">Works Order</asp:ListItem>
                          </asp:DropDownList>
                         <asp:LinkButton ID="lbtnWOrd" runat="server" class="buttonC icon fa-align-justify" OnClick="lbtnWOrd_Click" >&nbsp;Works Order</asp:LinkButton>
                         <asp:Label ID="lblWoID" runat="server" Text="" style="display:none"></asp:Label>
@@ -250,7 +251,7 @@
                                     </div>
             </asp:Panel>
 
-                        <asp:LinkButton ID="LinkButton3" runat="server" style="display:none">LinkButton</asp:LinkButton>
+                       <%-- <asp:LinkButton ID="LinkButton3" runat="server" style="display:none">LinkButton</asp:LinkButton>
                             <cci:ModalPopupExtender ID="ModalPopupExtender2" runat="server" BackgroundCssClass="ModalPopupBG" CancelControlID="lbtnNewWOCancel" Drag="true" OkControlID="btnOkay5" PopupControlID="PnlNewWO" PopupDragHandleControlID="PopupHeader" TargetControlID="LinkButton3"></cci:ModalPopupExtender>
                                 <asp:Panel ID="PnlNewWO" runat="server" Style="display: none">   
                                             <div class="HellowWorldPopup">
@@ -266,8 +267,32 @@
                                                     <asp:LinkButton ID="lbtnNewWOYes" runat="server" CssClass="buttonSage icon fa-thumbs-up" OnClick="lbtnNewWOYes_Click" >Yes, Create it</asp:LinkButton>
                                                 </div>
                                             </div>
-                                        </asp:Panel>
-
+                                        </asp:Panel>--%>
+                                   <asp:LinkButton ID="LinkButton3" runat="server"></asp:LinkButton>
+     
+                           <asp:Panel ID="Panel2" runat="server" Style="display: none">
+                                  <asp:LinkButton ID="LinkButton4" runat="server" CssClass="fa fa-times" style="float:right" ToolTip="Cancel" > </asp:LinkButton>
+                                  <div class="HellowWorldPopup">
+                                      <div id="Div443" class="PopupHeader">
+                                          <h4>Confirm, Open new <asp:Label ID="lblTpe" runat="server" Text=""></asp:Label></h4>
+                                          <asp:Label ID="Label2" runat="server" Text="Label" style="display:none"></asp:Label><br />
+                                          From Store:<br /><asp:DropDownList ID="DDStoreH" runat="server"></asp:DropDownList>
+                                      </div>
+                                      <div class="PopupBody">
+                                       <div id="pnlJCref" runat="server">
+                                          <h5>Enter Internal Job Card Reference</h5>
+                                          <asp:TextBox ID="TextBox1" runat="server" style="text-align:center" ></asp:TextBox><br /><br />
+                                           <asp:LinkButton ID="lbtnAutoCreate" runat="server" OnClick="lbtnAutoCreate_Click" CssClass="fa fa-plus-circle buttonRed">Auto-create a Number</asp:LinkButton>
+                                           </div>
+                                      </div>
+                                      <div class="Controls">
+                                          <input id="Button3" type="button" class="fa fa-times-circle" value="" runat="server" style="display:none"/>
+                                          <input id="Button4" type="button" class="buttonYellow" value="OK" runat="server" style="display:none"/>
+                                          <asp:LinkButton ID="btnSaveConfirm" runat="server" CssClass="buttonSage icon fa-thumbs-up" OnClick="btnSaveConfirm_Click">Yes, Do it.</asp:LinkButton><br />
+                                      </div>
+                                  </div>
+                              </asp:Panel> 
+                            <cci:ModalPopupExtender ID="Button2551_ModalPopupExtender" runat="server" BackgroundCssClass="ModalPopupBG" CancelControlID="btnCancel5" Drag="true" OkControlID="btnOkay5" PopupControlID="PnlConf" PopupDragHandleControlID="PopupHeader" TargetControlID="LinkButton2"></cci:ModalPopupExtender>
                                  
                                   </ContentTemplate>
                             </asp:UpdatePanel>

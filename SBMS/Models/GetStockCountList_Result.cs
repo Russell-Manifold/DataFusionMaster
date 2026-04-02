@@ -18,5 +18,6 @@ namespace SBMS.Models
         public string StoreCode { get; set; }
         public string CategoryDescript { get; set; }
         public long ItemID { get; set; }
+        public decimal QOH { get; set; }
     }
 }

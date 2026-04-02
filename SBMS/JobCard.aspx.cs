@@ -587,6 +587,7 @@ namespace SBMS
             DropDownList DDlotNum = (DropDownList)row.FindControl("DDlotNum");
             Label txtUnit = (Label)row.FindControl("txtUnit");
             TextBox txtQty = (TextBox)row.FindControl("txtQty");
+            TextBox txtUseQty = (TextBox)row.FindControl("txtUseQty");
             CheckBox chkCompl = (CheckBox)row.FindControl("chkCompl");
             DropDownList DDStore = (DropDownList)row.FindControl("DDStore");
             Label lblLotNum = (Label)row.FindControl("lblLotNum");
@@ -653,7 +654,11 @@ namespace SBMS
                     }
                     NewJCLine.LinePickDate = Convert.ToDateTime(txtPODate.Text);
                     if (DDlotNum.SelectedIndex > 0) NewJCLine.LotNumber = DDlotNum.SelectedValue.ToString();
-                    NewJCLine.Quantity = Convert.ToDecimal(txtQty.Text.ToString());
+
+                    if (txtQty.Text != string.Empty) NewJCLine.Quantity = Convert.ToDecimal(txtQty.Text.ToString());          
+                    if (txtUseQty.Text != string.Empty) NewJCLine.LinePickQty = Convert.ToDecimal(txtUseQty.Text.ToString());
+                    if ((txtQty.Text == string.Empty || txtQty.Text == "") && (txtUseQty.Text != "" && txtUseQty.Text != string.Empty)) NewJCLine.Quantity = Convert.ToDecimal(txtUseQty.Text.ToString());
+
                     NewJCLine.PickComplete = chkCompl.Checked;
                     var Itm = _db.ItemsMasters.Where(x => x.CompanyID == CoID && x.Code == NewJCLine.ItemCode).FirstOrDefault();
                     if (Itm != null)
@@ -773,7 +778,7 @@ namespace SBMS
                             ItemTrans.DocumentType = 7;
                             ItemTrans.ExchRate = 1;
                             // get latest ItemTransaction Line with Unit costs
-                            if (!DDlotNum.SelectedValue.ToLower().Contains("number"))
+                            if (!DDlotNum.SelectedValue.ToLower().Contains("number") && DDlotNum.SelectedValue.ToString() != "")
                             {
                                 var ItmT = _db.ItemTransactions.Where(x => x.CompanyID == CurrentUser.CoID && x.ItemID == NewJCLine.SelectionId && x.ToID == FrmStorid && x.LotNumber == DDlotNum.SelectedValue).OrderByDescending(x => x.TrnID);
                                 if (ItmT != null)
@@ -789,10 +794,19 @@ namespace SBMS
                                 var ItmT = _db.ItemTransactions.Where(x => x.CompanyID == CurrentUser.CoID && x.ItemID == NewJCLine.SelectionId && x.ToID == FrmStorid).OrderByDescending(x => x.TrnID);
                                 if (ItmT != null)
                                 {
-                                    qoh = (decimal)ItmT.Sum(x => x.Qty);
-                                    var lastTrn = ItmT.OrderByDescending(x => x.TrnID).FirstOrDefault();
-                                    ItemTrans.PriceExclusive = lastTrn.PriceExclusive;
-                                    ItemTrans.TotalUnitPriceExclInclAdd = lastTrn.TotalUnitPriceExclInclAdd;
+                                    try
+                                    {
+                                        qoh = (decimal)ItmT.Sum(x => x.Qty);
+                                        var lastTrn = ItmT.OrderByDescending(x => x.TrnID).FirstOrDefault();
+                                        ItemTrans.PriceExclusive = lastTrn.PriceExclusive;
+                                        ItemTrans.TotalUnitPriceExclInclAdd = lastTrn.TotalUnitPriceExclInclAdd;
+                                    }
+                                    catch 
+                                    {
+                                        qoh = 0;
+                                        ItemTrans.PriceExclusive = Itm.PriceExclusive ;
+                                        ItemTrans.TotalUnitPriceExclInclAdd = Itm.PriceExclusive;
+                                    }
                                 }
                             }
                             ItemTrans.TransactionDate = DateTime.Now;
@@ -801,7 +815,7 @@ namespace SBMS
                             ItemTrans.TotalLineValExcl = ItemTrans.TotalUnitPriceExclInclAdd * ItemTrans.Qty;
                             ItemTrans.TransactionReference = lblDocNum.Text;
                             ItemTrans.LotNumber = string.Empty;
-                            ItemTrans.LotNumber = string.Empty;
+                            //ItemTrans.LotNumber = string.Empty;
                             if (NewJCLine.IsLotTracked == true)
                             {
                                 ItemTrans.LotNumber = NewJCLine.LotNumber;
@@ -997,6 +1011,7 @@ namespace SBMS
                         jcl.LinePickDate = Convert.ToDateTime(txtPODate.Text);
                         jcl.Physical = itmD.Physical;
                         jcl.CompanyID = CurrentUser.CoID;
+                        jcl.LinePickQty = 0;
                         _db.JobCardLines.Add(jcl);
                     }
                 }
@@ -1014,44 +1029,6 @@ namespace SBMS
 
         }
 
-        protected void lbtnIssue_Click(object sender, EventArgs e)
-        {
-            long JCIDn = Convert.ToInt64(lblJCid.Text);
-            using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
-            {
-                var thisJC = _db.JobCardsMasters.Where(x => x.CustomerID == CoID && x.JCID == JCIDn).FirstOrDefault();
-                if (thisJC != null)
-                {
-                    var newstat = _db.WorkStations.Where(x => x.CompanyID == CurrentUser.CoID && x.Seq == 2).FirstOrDefault();
-                    int frmStatid = (int)thisJC.JCWSID;
-                    thisJC.JCStatus = newstat.WSName;
-                    thisJC.JCWSID = newstat.WSID;
-                    thisJC.JCStart = true;
-                    thisJC.JCStartDate = DateTime.Now;
-                    thisJC.JCIssuedTo = _db.RolesMasters.Where(x => x.CompanyID == CurrentUser.CoID && x.IsJobCards == true).OrderBy(x => x.RoleID).Select(x => x.RoleID).FirstOrDefault();
-                    var JCTransaction = new JobTransaction
-                    {
-                        JCID = (int?)JCIDn,
-                        MoveQty = thisJC.JCQtyOfItems,
-                        RejectQty = 0,
-                        MoveDate = DateTime.Now,
-                        FromStationID = frmStatid,
-                        ToStationID = thisJC.JCWSID,
-                        CompanyID = CurrentUser.CoID,
-                        MoveBy = CurrentUser.RoleID
-                        // Set other properties as needed
-                    };
-                    _db.JobTransactions.Add(JCTransaction);
-
-                    var thisdoc = _db.DocHeaders.Where(x => x.CompanyID == CurrentUser.CoID && x.LinkedJCID == JCIDn).FirstOrDefault();
-                    thisdoc.Started = true;
-                    _db.SaveChanges();
-
-                    LoadJCHeader();
-                    LoadHistory();
-                }
-            }
-        }
 
         protected void LbtnJCSave_Click(object sender, EventArgs e)
         {
@@ -1094,7 +1071,8 @@ namespace SBMS
                             ItemTrans.Unit = JCLn.Unit;
                             ItemTrans.FromID = 0;
                             ItemTrans.ToID = _db.Stores.FirstOrDefault(x => x.CompanyID == CurrentUser.CoID && x.StoreCode == JCLn.StoreCodeFrom).StoreID;
-                            ItemTrans.Qty = Convert.ToDecimal(JCLn.Quantity);
+                            ItemTrans.Qty = Convert.ToDecimal(JCLn.LinePickQty);
+                            //ItemTrans.Qty = Convert.ToDecimal(JCLn.Quantity);
                             ItemTrans.DocumentType = 7;
                             ItemTrans.ExchRate = 1;
                             ItemTrans.PriceExclusive = JCLn.UnitPriceExclusive;
@@ -1191,6 +1169,7 @@ namespace SBMS
                     thisdocline.StoreCode = (JCLine.StoreCodeFrom ?? "").ToString();
                     decimal SOQty = (decimal)thisdocline.Quantity;
                     thisdocline.Quantity = JCLine.Quantity;
+                    thisdocline.ReceiveQty = JCLine.LinePickQty;
                     thisdocline.QtyLeft = SOQty - JCLine.Quantity;
                     thisdocline.isKit = JCLine.isKit ?? false;
                     thisdocline.isKitLine = JCLine.isKitLine ?? false;
@@ -1204,6 +1183,7 @@ namespace SBMS
                     newdocline.LotNumber = (JCNLine.LotNumber ?? "").ToString();
                     newdocline.StoreCode = (JCNLine.StoreCodeFrom ?? "").ToString();
                     newdocline.Quantity = JCNLine.Quantity;
+                    newdocline.ReceiveQty = JCNLine.LinePickQty;
                     newdocline.ReceiveQty = JCNLine.Quantity;
                     newdocline.ReceiveComplete = false;
                     newdocline.QtyLeft = 0;
@@ -1231,6 +1211,7 @@ namespace SBMS
                         newdocline.DiscountPercentage = 0;
                         newdocline.Discount = 0;
                         newdocline.UnitCost = 0;
+                        newdocline.ExchRate = 1;
                     }
                     else
                     {
@@ -1245,6 +1226,7 @@ namespace SBMS
                         newdocline.DiscountPercentage = JCNLine.DiscountPercentage;
                         newdocline.Discount = JCNLine.Discount;
                         newdocline.UnitCost = JCNLine.UnitCost;
+                        newdocline.ExchRate = 1;
                     }
                     _db.DocLines.Add(newdocline);   
                 }
@@ -1619,10 +1601,10 @@ namespace SBMS
 
 
                     #region HeaderRow
-                    PdfPTable table4 = new PdfPTable(8);
+                    PdfPTable table4 = new PdfPTable(9);
                     PdfPCell cell4;
                     table4.SpacingBefore = 15f;
-                    table4.SetWidths(new int[] { 50, 150, 80, 25, 30, 80, 40, 50 });
+                    table4.SetWidths(new int[] { 50, 130, 70, 25, 30, 70, 40, 40, 50 });
                     table4.TotalWidth = doc.PageSize.Width - 80;
                     table4.LockedWidth = true;
 
@@ -1664,6 +1646,12 @@ namespace SBMS
                     table4.AddCell(cell4);
 
                     cell4 = new PdfPCell(new Phrase("Qty", regfont));
+                    cell4.HorizontalAlignment = 1;
+                    cell4.BackgroundColor = BaseColor.LIGHT_GRAY;
+                    cell4.BorderColor = new BaseColor(211, 211, 211);
+                    table4.AddCell(cell4);
+
+                    cell4 = new PdfPCell(new Phrase("Use Qty", regfont));
                     cell4.HorizontalAlignment = 1;
                     cell4.BackgroundColor = BaseColor.LIGHT_GRAY;
                     cell4.BorderColor = new BaseColor(211, 211, 211);
@@ -1723,13 +1711,12 @@ namespace SBMS
                         if (jcqty > 0)
                         {
                             cell4 = new PdfPCell(new Phrase(Convert.ToDecimal(ApiUrlCall.NumberToDecimal(jcqty.ToString(), CurrentUser.CompanyDecPlaces)).ToString(), regfont));
-                            //cell4 = new PdfPCell(new Phrase(jcqty.ToString("N2"), regfont));
                         }
                         else
                         {
                             cell4 = new PdfPCell(new Phrase("", regfont));
                         }
-                       
+                        
                         if (DL.isBundle != null)
                         {
                             if ((bool)DL.isBundle)
@@ -1763,6 +1750,21 @@ namespace SBMS
                         cell4.BorderColor = new BaseColor(211, 211, 211);  // RGB values for light gray
                         table4.AddCell(cell4);
 
+
+                        decimal jcUseqty = Convert.ToDecimal(DL.LinePickQty);
+                        if (jcUseqty > 0)
+                        {
+                            cell4 = new PdfPCell(new Phrase(Convert.ToDecimal(ApiUrlCall.NumberToDecimal(jcUseqty.ToString(), CurrentUser.CompanyDecPlaces)).ToString(), regfont));
+                        }
+                        else
+                        {
+                            cell4 = new PdfPCell(new Phrase("", regfont));
+                        }
+                        cell4.HorizontalAlignment = 1;
+                        cell4.VerticalAlignment = Element.ALIGN_MIDDLE;
+                        cell4.BorderColor = new BaseColor(211, 211, 211);  // RGB values for light gray
+                        table4.AddCell(cell4);
+
                         cell4 = new PdfPCell(new Phrase(dnp, regfont));
                         cell4.BorderColor = new BaseColor(211, 211, 211);  // RGB values for light gray
                         table4.AddCell(cell4);
@@ -1775,6 +1777,10 @@ namespace SBMS
                         {
                             cell4 = new PdfPCell(new Phrase("", regfont));
                             cell4.FixedHeight = 25f;
+                            cell4.BorderColor = BaseColor.LIGHT_GRAY;
+                            table4.AddCell(cell4);
+
+                            cell4 = new PdfPCell(new Phrase("", regfont));
                             cell4.BorderColor = BaseColor.LIGHT_GRAY;
                             table4.AddCell(cell4);
 
@@ -1859,6 +1865,7 @@ namespace SBMS
                 jcl.Physical = true;
                 jcl.CompanyID = CurrentUser.CoID;
                 jcl.IsLotTracked = false;
+                jcl.LinePickQty = 0;
                 _db.JobCardLines.Add(jcl);
 
                 useqty = 0;
@@ -1895,6 +1902,7 @@ namespace SBMS
                     jcl.LinePickDate = Convert.ToDateTime(txtPODate.Text);
                     jcl.Physical = itmD.Physical;
                     jcl.CompanyID = CurrentUser.CoID;
+                    jcl.LinePickQty = 0;
                     _db.JobCardLines.Add(jcl);
                 }
                 _db.SaveChanges();
@@ -2096,5 +2104,64 @@ namespace SBMS
 
             }
          }
+
+        protected void lbtnIssue_Click(object sender, EventArgs e)
+        {
+            using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+            {
+                var JCRoles = _db.RolesMasters.Where(x => x.CompanyID == CurrentUser.CoID && x.IsJobCards == true).ToList();
+                DDJCRoles.DataSource = JCRoles;
+                DDJCRoles.DataTextField = "RoleName";
+                DDJCRoles.DataValueField = "RoleID";
+                DDJCRoles.DataBind();
+
+                var JCWorksS = _db.WorkStations.Where(x => x.CompanyID == CurrentUser.CoID && x.WSActive == true).ToList();
+                DDept.DataSource = JCWorksS;
+                DDept.DataTextField = "WSName";
+                DDept.DataValueField = "WSID";
+                DDept.DataBind();
+
+                ModalPopupExtender3.Show();
+            }
+        }
+
+
+        protected void lbtnOKIssue_Click(object sender, EventArgs e)
+        {
+            long JCIDn = Convert.ToInt64(lblJCid.Text);
+            using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+            {
+                var thisJC = _db.JobCardsMasters.Where(x => x.CustomerID == CoID && x.JCID == JCIDn).FirstOrDefault();
+                if (thisJC != null)
+                {
+                    int frmStatid = (int)thisJC.JCWSID;
+                    thisJC.JCStatus = DDept.SelectedItem.Text;
+                    thisJC.JCWSID = Convert.ToInt32(DDept.SelectedItem.Value);
+                    thisJC.JCStart = true;
+                    thisJC.JCStartDate = DateTime.Now;
+                    thisJC.JCIssuedTo = _db.RolesMasters.Where(x => x.CompanyID == CurrentUser.CoID && x.IsJobCards == true).OrderBy(x => x.RoleID).Select(x => x.RoleID).FirstOrDefault();
+                    var JCTransaction = new JobTransaction
+                    {
+                        JCID = (int?)JCIDn,
+                        MoveQty = thisJC.JCQtyOfItems,
+                        RejectQty = 0,
+                        MoveDate = DateTime.Now,
+                        FromStationID = frmStatid,
+                        ToStationID = thisJC.JCWSID,
+                        CompanyID = CurrentUser.CoID,
+                        MoveBy = CurrentUser.RoleID
+                        // Set other properties as needed
+                    };
+                    _db.JobTransactions.Add(JCTransaction);
+
+                    var thisdoc = _db.DocHeaders.Where(x => x.CompanyID == CurrentUser.CoID && x.LinkedJCID == JCIDn).FirstOrDefault();
+                    thisdoc.Started = true;
+                    _db.SaveChanges();
+
+                    LoadJCHeader();
+                    LoadHistory();
+                }
+            }
+        }
     }
 }

@@ -141,18 +141,39 @@ namespace SBMS
 
         protected string CollectData()
         {
-            string filePath = Server.MapPath("~/inputcsv/" + CurrentUser.UserGuiD.ToString().Replace(" ", "").Replace("-", "") + "-StkEnq.csv");
+            string filePath = Server.MapPath("~/inputcsv/"
+                + CurrentUser.UserGuiD.ToString().Replace(" ", "").Replace("-", "")
+                + "-StkEnq.csv");
+
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {
-               var CurrStock = _db.GetAllStockLevels(CurrentUser.CoID).ToList();
-                if (txtfind.Text.Trim().Length > 0)
-                {
-                    CurrStock = CurrStock.Where(x => x.ItemCode.ToLower().Contains(txtfind.Text.Trim().ToLower()) || (x.Description != null && x.Description.ToLower().Contains(txtfind.Text.Trim().ToLower()))).ToList();
-                }
+                string searchTerm = txtfind.Text.Trim().Length > 0
+                    ? txtfind.Text.Trim()
+                    : null;
+
+                var CurrStock = _db.GetAllStockLevels(CurrentUser.CoID, searchTerm).ToList();
+
                 WriteToCsv(CurrStock, filePath);
             }
+
             return "OK";
         }
+
+        //protected string CollectData()
+        //{
+        //    string filePath = Server.MapPath("~/inputcsv/" + CurrentUser.UserGuiD.ToString().Replace(" ", "").Replace("-", "") + "-StkEnq.csv");
+        //    using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+        //    {
+        //       var CurrStock = _db.GetAllStockLevels(CurrentUser.CoID).ToList();
+        //       long itm = _db.ItemsMasters.Where(x => x.CompanyID == CurrentUser.CoID).Select(x => x.ID).FirstOrDefault(); // need to fix here.
+        //        if (txtfind.Text.Trim().Length > 0)
+        //        {
+        //            CurrStock = CurrStock.Where(x => x.ItemCode.ToLower().Contains(txtfind.Text.Trim().ToLower()) || (x.Description != null && x.Description.ToLower().Contains(txtfind.Text.Trim().ToLower()))).ToList();
+        //        }
+        //        WriteToCsv(CurrStock, filePath);
+        //    }
+        //    return "OK";
+        //}
 
         public static void WriteToCsv<T>(List<T> items, string filePath, bool append = false)
         {
@@ -233,7 +254,11 @@ namespace SBMS
             XLWorkbook wb = new XLWorkbook();
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {
-                var stockLevels = _db.GetAllStockLevels(CurrentUser.CoID).ToList();
+                string searchTerm = txtfind.Text.Trim().Length > 0
+                    ? txtfind.Text.Trim()
+                    : null;
+
+                var stockLevels = _db.GetAllStockLevels(CurrentUser.CoID, searchTerm).ToList();
                 DataTable data = stockLevels.ToDataTable();
            
                 /// // Add pivot table sheet

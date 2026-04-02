@@ -49,7 +49,7 @@ namespace SBMS
                 if (!IsPostBack)
                 {
                     LoadBom();
-                    var items = _db.ItemsMasters.Where(i => i.Active == true && i.CompanyID == CurrentUser.CoID && i.Active == true && i.IsFromBOM == true && (i.IsBOMComponent == null || i.IsBOMComponent == false)).ToList();
+                    var items = _db.ItemsMasters.Where(i => i.Active == true && i.CompanyID == CurrentUser.CoID && i.Active == true && i.IsFromBOM == true).ToList();
                     DDFGCode.DataSource = items;
                     DDFGCode.DataTextField = "Code";
                     DDFGCode.DataValueField = "ID";
@@ -75,7 +75,7 @@ namespace SBMS
                 txtTotCost.Text = (adc1 + adc2 + adc3).ToString();
 
                 var BomL = _db.GetBOMLinesFromBomHeaderID(bomH.BomHID, CurrentUser.CoID)
-                        .Select(bom => new BoMLine
+                        .Select(bom => new BoMLineN
                         {
                             BLID = bom.BLID,
                             ItemCode = bom.ItemCode ?? "",
@@ -83,7 +83,8 @@ namespace SBMS
                             ItemID = bom.ItemID.GetValueOrDefault(),
                             Description = bom.Description ?? "",
                             RMQty = bom.RMQty.GetValueOrDefault(),
-                            AvCost = bom.AvCost.GetValueOrDefault()
+                            AvCost = bom.AvCost.GetValueOrDefault(),
+                            BomUnit = bom.BomUnit ?? ""
                         }).ToList();
 
                 if (BomL != null)
@@ -110,7 +111,7 @@ namespace SBMS
                 }
                     
                 BomL = _db.GetBOMLinesFromBomHeaderID(bomH.BomHID, CurrentUser.CoID)
-                    .Select(bom => new BoMLine
+                    .Select(bom => new BoMLineN
                     {
                         BLID = bom.BLID,
                         ItemCode = bom.ItemCode ?? "",
@@ -118,18 +119,17 @@ namespace SBMS
                         ItemID = bom.ItemID.GetValueOrDefault(),
                         Description = bom.Description ?? "",
                         RMQty = bom.RMQty.GetValueOrDefault(),
-                        AvCost = bom.AvCost.GetValueOrDefault()
+                        AvCost = bom.AvCost.GetValueOrDefault(),
+                        BomUnit = bom.BomUnit ?? ""
                     }).ToList();
 
-                    foreach (BoMLine bl in BomL)
+                    foreach (BoMLineN bl in BomL)
                     {
                         if (bl.AvCost > 0 && bl.RMQty > 0)
                         {
                             bl.AvRMCost = bl.AvCost * bl.RMQty;
                         }
                     }
-
-            
 
                 var totalRMQty = BomL.Sum(bomLine => bomLine.RMQty);
                 var totalRMCost = BomL.Sum(bomLine => bomLine.AvRMCost);
@@ -140,7 +140,7 @@ namespace SBMS
                     GridBOMLines.DataBind();
                     GridBOMLines.FooterRow.Cells[2].Text = "Total";
                     GridBOMLines.FooterRow.Cells[3].Text = totalRMQty.ToString("N4");
-                    GridBOMLines.FooterRow.Cells[5].Text = totalRMCost.ToString("N4");
+                    GridBOMLines.FooterRow.Cells[6].Text = totalRMCost.ToString("N4");
                 }
             }
         }
@@ -191,6 +191,7 @@ namespace SBMS
                 BL.ItemCode = DDItemCode.SelectedItem.Text ?? string.Empty;
                 BL.ItemID = itemId;
                 BL.RMQty = rmQty;
+                BL.BomUnit = row.Cells[4].Text.ToString();
                 _db.SaveChanges();
                 LoadBom();
             }
@@ -215,7 +216,7 @@ namespace SBMS
             e.Row.Cells[0].Visible = false;
             if (e.Row.RowType == DataControlRowType.DataRow)
             {
-                var item = (BoMLine)e.Row.DataItem;  
+                var item = (BoMLineN)e.Row.DataItem;  
                 var ddlItemCode = (DropDownList)e.Row.FindControl("DDItemCode");                            
                 {
                   if (ddlItemCode != null)
@@ -261,7 +262,8 @@ namespace SBMS
                     TextBox txtDescription = (TextBox)row.FindControl("txtDescription");
                     TextBox txtBOMQty = (TextBox)row.FindControl("txtBOMQty");
                     row.Cells[2].Text = item.Description;
-                    row.Cells[4].Text = item.AverageCost.ToString();
+                    row.Cells[4].Text = item.Unit.ToString();
+                    row.Cells[5].Text = item.AverageCost.ToString();
                     txtBOMQty.Text = "0"; // Adjust based on your item properties
                 }
             }
@@ -344,8 +346,7 @@ namespace SBMS
             Response.Redirect("~/BOMDetailed.aspx?bomid=" + bomid, false);
         }
 
-
-        private class BoMLine
+        private class BoMLineN
         {
             public long BLID { get; set; }
             public string ItemCode { get; set; }
@@ -355,6 +356,7 @@ namespace SBMS
             public decimal RMQty { get; set; }
             public decimal AvCost { get; set; }
             public decimal AvRMCost { get; set; }
+            public string BomUnit { get; set; }
            
         }
 

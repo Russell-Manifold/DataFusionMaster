@@ -55,6 +55,7 @@ namespace SBMS
                     NewCnt.CtCreateDate= DateTime.Now;
                     NewCnt.CreatedBy = CurrentUser.RoleID;
                     _db.StockCountMasters.Add(NewCnt);
+                    _db.SaveChanges();
                     lblCountID.Text = NewCnt.StCntID.ToString();
 
                     lblDate.Text = DateTime.Today.ToString("dd MMM yyyy");
@@ -182,14 +183,26 @@ namespace SBMS
 
         protected void ProcessSelectedRows()
         {
-            foreach (GridViewRow row in GridItemsSelect.Rows)
+            using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {
-                CheckBox chkSelect = (CheckBox)row.FindControl("chkSelect");
-                if (chkSelect != null && chkSelect.Checked)
+                foreach (GridViewRow row in GridItemsSelect.Rows)
                 {
-                    
-                }
-            }
+                    CheckBox chkSelect = (CheckBox)row.FindControl("chkSelect");
+                    if (chkSelect != null && chkSelect.Checked)
+                    {
+                        StockCountLine NewLine = new StockCountLine();
+                        NewLine.CompanyID = CurrentUser.CoID;
+                        NewLine.CountID = Convert.ToInt16(lblCountID.Text);
+                        NewLine.ItemID = Convert.ToInt32(row.Cells[0].Text);
+                        NewLine.StoreID = Convert.ToInt32(DDStore.SelectedValue.ToString());
+                        NewLine.ItemCode = row.Cells[2].Text;
+                        NewLine.ItemDescription = row.Cells[3].Text;
+                        NewLine.QtyOnHand = Convert.ToDecimal(row.Cells[4].Text);                
+                        _db.StockCountLines.Add(NewLine);
+                    }
+                 }
+                _db.SaveChanges();
+            }  
         }
 
         protected void LoadCountList()

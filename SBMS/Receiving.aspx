@@ -68,12 +68,13 @@
                             <td colspan="7" style="text-align:center"><asp:Label ID="lblSaveStatus" runat="server" Text="" style="color:red; font-size:1.2em"></asp:Label></td>
                             </tr>
                            <tr>
-                               <td  colspan="8" style="text-align:center"><h4>Delivery Details</h4></td>
+                               <td  colspan="8" style="text-align:center"><h4>Receiving Details <span style="font-size:0.7em">**(DN Num OR Invoice Num required)</span></h4></td>
                            </tr>
                             <tr>
                                 <td style="width:10em">D/N Num **</td>
                                 <td><asp:TextBox ID="txtDNNum" runat="server" ></asp:TextBox></td>
-                                <td colspan="2">**(DN Num OR Invoice Num required) </td>
+                                <td><asp:Label ID="lblExRate" runat="server" Text="Exch Rate" ></asp:Label> </td>
+                                <td><asp:TextBox ID="txtExRate" runat="server" BorderColor="red" BorderStyle="solid" BorderWidth="1px"></asp:TextBox><cci:FilteredTextBoxExtender ID="FilteredTextBoxExtender4" runat="server" TargetControlID="txtExRate" FilterType="Custom, Numbers" ValidChars="." /></td>
                                 <td>&nbsp;</td>
                                 <td><asp:Label ID="Label1" runat="server" Text="Receiving Complete"></asp:Label><asp:CheckBox ID="chkReceiveComplete" runat="server" Text=" " Enabled="false"/></td>
                                 <td>&nbsp;</td>
@@ -99,7 +100,7 @@
                  <div class="row 150%">
                      <div class="1u 12u$(medium)">&nbsp;</div>
                      <div class="10u 12u$(medium)">   
-                          <asp:GridView ID="GridPOLines" runat="server" AutoGenerateColumns="false" CssClass="gridview" RowStyle-Wrap="true" OnRowDataBound="GridPOLines_RowDataBound" ShowFooter="true" >
+                          <asp:GridView ID="GridPOLines" runat="server" AutoGenerateColumns="false" CssClass="gridview" RowStyle-Wrap="true" OnRowDataBound="GridPOLines_RowDataBound" ShowFooter="true" OnSelectedIndexChanged="GridPOLines_SelectedIndexChanged" >
                                     <HeaderStyle CssClass="gridViewHeader" />
                                             <RowStyle CssClass="gridViewRow" />
                                             <AlternatingRowStyle CssClass="gridViewAltRow" />
@@ -119,7 +120,7 @@
                                                 <%--<asp:BoundField HeaderText="Disc%" DataField="DiscountPercentage" ReadOnly="True" DataFormatString="{0:p}" ItemStyle-HorizontalAlign="Center" ItemStyle-Width="5em"   />--%>
                                                 <%--<asp:BoundField HeaderText="Discount" DataField="Discount" ReadOnly="True" DataFormatString="{0:N2}" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" ItemStyle-Width="5em"  />--%>
                                                 <asp:BoundField HeaderText="PO Total" DataField="Total" ReadOnly="True" DataFormatString="{0:N2}" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right"  />    
-                                                <asp:BoundField HeaderText="Receive_Qty" DataField="ReceiveQty" ReadOnly="True" ItemStyle-HorizontalAlign="Center" ItemStyle-Width="7em" />    
+                                                <asp:BoundField HeaderText="Receive_Qty" DataField="ReceiveQty" ReadOnly="True" ItemStyle-HorizontalAlign="Center" ItemStyle-Width="7em" FooterStyle-HorizontalAlign="Center" />    
                                                 <asp:TemplateField HeaderText="To_Receive" ItemStyle-Width="7em" ItemStyle-HorizontalAlign="Center">
                                                     <ItemTemplate>
                                                         <asp:CheckBox ID="chkUnloadComplete" runat="server" Checked='<%# Eval("ToReceive") %>' Enabled="false" Text=" " />
@@ -138,7 +139,7 @@
                                             </Columns>
                            </asp:GridView>
                           <asp:Panel ID="PnlAddCosts" runat="server" style="float:left; margin-top:.25em; margin-right:1em; max-width:70%;">
-                           <asp:LinkButton ID="LbtnAddCosts" runat="server" style="font-size:.9em; float:left" CssClass="icon fa-plus-square buttonCancel" ToolTip="Add Additional costs" >&nbsp;Estimated Addtional Costs</asp:LinkButton>
+                           <asp:LinkButton ID="LbtnAddCosts" runat="server" style="font-size:.9em; float:left; display:none" CssClass="icon fa-plus-square buttonCancel" ToolTip="Add Additional costs" Enabled="false" >&nbsp;Estimated Addtional Costs</asp:LinkButton>
                               <asp:GridView ID="GridAddCosts" runat="server" AutoGenerateColumns="false" CssClass="gridview" showFooter="true" style="width:100%" OnRowDataBound="GridAddCosts_RowDataBound">
                               <HeaderStyle CssClass="gridViewHeader" />
                               <RowStyle CssClass="gridViewRow" />
@@ -157,10 +158,11 @@
                                     </asp:TemplateField>
                               </Columns>
                           </asp:GridView>
-                              <br /><br /><span style="font-size:0.8em">Notes: <br />
+                              <%--<br /><br /><span style="font-size:0.8em">Notes: <br />
                                   The total value of ESTIMATED additional costs will be automatically split and allocated to each PO line.<br />
                                   A Supplier Adjustment will be generated in Sage Accounting for each additional cost line.
-                              </span>
+                              </span>--%>
+                              <br /><br /><span style="font-size:0.8em">Additional Costings module is currently undergoing </br> an upgrade and will return shortly. </span> <br />
                            </asp:Panel>
                           
                          <asp:Panel ID="PnlTotals" runat="server" style="float:right; border:1px gray solid; margin-top:1em; margin-right:1em;">

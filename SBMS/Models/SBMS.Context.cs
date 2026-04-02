@@ -374,13 +374,17 @@ namespace SBMS.Models
             return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction<GetOneDocHeaderFromDocID_Result>("GetOneDocHeaderFromDocID", coIDParameter, docIDParameter);
         }
     
-        public virtual ObjectResult<GetAllStockLevels_Result> GetAllStockLevels(Nullable<long> coID)
+        public virtual ObjectResult<GetAllStockLevels_Result> GetAllStockLevels(Nullable<long> coID, string searchTerm)
         {
             var coIDParameter = coID.HasValue ?
                 new ObjectParameter("CoID", coID) :
                 new ObjectParameter("CoID", typeof(long));
-    
-            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction<GetAllStockLevels_Result>("GetAllStockLevels", coIDParameter);
+
+            var searchTermParameter = searchTerm != null ?
+                new ObjectParameter("SearchTerm", searchTerm) :
+                new ObjectParameter("SearchTerm", typeof(string));
+
+            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction<GetAllStockLevels_Result>("GetAllStockLevels", coIDParameter, searchTermParameter);
         }
     
         public virtual ObjectResult<string> GetItemLinkedStores(Nullable<long> coID, Nullable<long> itmID)

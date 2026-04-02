@@ -310,7 +310,8 @@ namespace SBMS
                             x.AutoGenTaxInvoice,
                             x.UsePacks,
                             x.UseEndDate,
-                            x.ShowManfCosts
+                            x.ShowManfCosts,
+                            x.SageWeightField
                         })
                         .FirstOrDefault();
 
@@ -328,6 +329,7 @@ namespace SBMS
                     userDetails.UsePacks = GenLogIn.UsePacks;
                     userDetails.ExpiryDate = GenLogIn.UseEndDate != null ? (DateTime)GenLogIn.UseEndDate : DateTime.MaxValue;
                     userDetails.ShowManfCosts = GenLogIn.ShowManfCosts;
+                    userDetails.SageWeightField = GenLogIn.SageWeightField ?? "";
                     if (GenLogIn.UseLotTracking == true)
                     {
                         userDetails.CompanyUseLotNumbers = true;

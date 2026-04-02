@@ -38,7 +38,7 @@ namespace SBMS
 
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {
-                _items = _db.ItemsMasters.Where(i => i.Active == true && i.CompanyID == CurrentUser.CoID && i.Active == true && (i.IsBOMComponent != null && i.IsBOMComponent == true) || (i.Physical == false)).OrderBy(x=>x.Code).ToList();
+                _items = _db.ItemsMasters.Where(i =>i.Active == true && i.CompanyID == CurrentUser.CoID && (i.IsBOMComponent == true || i.Physical == false)).OrderBy(x => x.Code).ToList();
             }
             if (!IsPostBack)
             {
@@ -92,7 +92,8 @@ namespace SBMS
                                 ItemID = bom.ItemID.GetValueOrDefault(),
                                 Description = bom.Description ?? "",
                                 RMQty = ApiUrlCall.NumberToDecimal(bom.RMQty.GetValueOrDefault(), CurrentUser.CompanyDecPlaces),
-                                AvCost = ApiUrlCall.NumberToDecimal(bom.AvCost.GetValueOrDefault(), CurrentUser.CompanyDecPlaces)
+                                AvCost = ApiUrlCall.NumberToDecimal(bom.AvCost.GetValueOrDefault(), CurrentUser.CompanyDecPlaces),
+                                BomUnit = bom.BomUnit ?? ""
                             }).ToList();
                     if (BomL == null)
                     {
@@ -137,7 +138,8 @@ namespace SBMS
                                 ItemID = bom.ItemID.GetValueOrDefault(),
                                 Description = bom.Description ?? "",
                                 RMQty = ApiUrlCall.NumberToDecimal(bom.RMQty.GetValueOrDefault(), CurrentUser.CompanyDecPlaces),
-                                AvCost = ApiUrlCall.NumberToDecimal(bom.AvCost.GetValueOrDefault(), CurrentUser.CompanyDecPlaces)
+                                AvCost = ApiUrlCall.NumberToDecimal(bom.AvCost.GetValueOrDefault(), CurrentUser.CompanyDecPlaces),
+                                BomUnit = bom.BomUnit ?? ""
                             }).ToList();
 
                     foreach (BoMLine bl in BomL)
@@ -157,8 +159,8 @@ namespace SBMS
                         GridBOMLines.DataSource = BomL;
                         GridBOMLines.DataBind();
                         GridBOMLines.FooterRow.Cells[2].Text = "Total";
-                        GridBOMLines.FooterRow.Cells[3].Text = ApiUrlCall.NumberToDecimal(totalRMQty.ToString(),CurrentUser.CompanyDecPlaces);
-                        GridBOMLines.FooterRow.Cells[5].Text = ApiUrlCall.NumberToDecimal(totalRMCost.ToString(), CurrentUser.CompanyDecPlaces);
+                        GridBOMLines.FooterRow.Cells[4].Text = ApiUrlCall.NumberToDecimal(totalRMQty.ToString(),CurrentUser.CompanyDecPlaces);
+                        GridBOMLines.FooterRow.Cells[6].Text = ApiUrlCall.NumberToDecimal(totalRMCost.ToString(), CurrentUser.CompanyDecPlaces);
                         lblNewBOMCost.Text = "0";
                         if (BOMCost >0)  lblNewBOMCost.Text = ApiUrlCall.NumberToDecimal((BOMCost).ToString(), CurrentUser.CompanyDecPlaces);
                     }
@@ -245,6 +247,7 @@ namespace SBMS
                 BL.ItemCode = DDItemCode.SelectedItem.Text ?? string.Empty;
                 BL.ItemID = itemId;
                 BL.RMQty = rmQty;
+                if (row.Cells[4].Text.ToString() != "&nbsp;") BL.BomUnit = row.Cells[4].Text.ToString();
                 _db.SaveChanges();
                 LoadBom();
             }
@@ -299,7 +302,7 @@ namespace SBMS
                     PopulateItemDetails(row, selectedItemid);
                 }
             }
-            ScriptManager.RegisterStartupScript(this, this.GetType(), "SetFocus", $"document.getElementById('{txtBOMQty.ClientID}').focus();", true);
+           ScriptManager.RegisterStartupScript(this, this.GetType(), "SetFocus", $"document.getElementById('{txtBOMQty.ClientID}').focus();", true);
         }
 
         private void PopulateItemDetails(GridViewRow row, long itemid)
@@ -315,7 +318,8 @@ namespace SBMS
                     TextBox txtDescription = (TextBox)row.FindControl("txtDescription");
                     TextBox txtBOMQty = (TextBox)row.FindControl("txtBOMQty");
                     row.Cells[2].Text = item.Description;
-                    row.Cells[4].Text = item.AverageCost.ToString();
+                    row.Cells[4].Text = item.Unit.ToString();
+                    row.Cells[5].Text = item.AverageCost.ToString();
                     txtBOMQty.Text = "0"; // Adjust based on your item properties
                 }
             }
@@ -418,7 +422,8 @@ namespace SBMS
             public decimal RMQty { get; set; }
             public decimal AvCost { get; set; }
             public decimal AvRMCost { get; set; }
-           
+
+            public string BomUnit { get; set; }
         }
         protected void lbtnHome_Click(object sender, EventArgs e)
         {

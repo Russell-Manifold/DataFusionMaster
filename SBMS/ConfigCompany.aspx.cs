@@ -42,11 +42,16 @@ namespace SBMS
                 GetCompanyDetails();
                 ApiUrlCall api = new ApiUrlCall();
                 await api.GetTaxType(CurrentUser);
-                //if (ApiUrlCall.dbName.ToLower().Contains("demo"))
-                //{
-                //    chkMod2.Enabled = true;
-                //    chkMod3.Enabled = true;
-                //}
+                if (ApiUrlCall.dbName.ToLower().Contains("demo"))
+                {
+                    chkMod2.Enabled = true;
+                    chkMod3.Enabled = true;
+                }
+                else
+                {
+                    chkMod2.Enabled = false;
+                    chkMod3.Enabled = false;
+                }
             }
         }
 
@@ -100,6 +105,11 @@ namespace SBMS
                 DDecPlaces.Text = Comp.ItemQtyDecPlaces.ToString();
                 chkMod2.Checked = Convert.ToBoolean(Comp.UseModule2);
                 chkMod3.Checked = Convert.ToBoolean(Comp.UseModule3);
+                if (Comp.SageWeightField != null)
+                {
+                    txtSageWght.Text = Comp.SageWeightField.ToString();
+                    chkweight.Checked = true;
+                }
             }
          }
 
@@ -157,7 +167,19 @@ namespace SBMS
                     CurrentUser.UsePacks = Comp.UsePacks;
                     Comp.ShowManfCosts = chkManfCosts.Checked;
                     CurrentUser.ShowManfCosts = Comp.ShowManfCosts;
-                    _db.SaveChanges();
+                    if (chkweight.Checked)
+                    {
+                        if (txtSageWght.Text.ToLower().Contains("userfield"))
+                        {
+                            Comp.SageWeightField = txtSageWght.Text;
+                            CurrentUser.SageWeightField = Comp.SageWeightField;
+                        }
+                    }
+                    else
+                    {
+                        CurrentUser.SageWeightField = null;
+                    }
+                        _db.SaveChanges();
                 string message = "Successfully Saved";
                 AlertHelper.ShowSweetAlert(this, message, "success");
                 }
@@ -245,6 +267,11 @@ namespace SBMS
             {
                 chkAutoManf.Enabled = true;
             }
+        }
+
+        protected void chkweight_CheckedChanged(object sender, EventArgs e)
+        {
+            if (chkweight.Checked = false) txtSageWght.Text = null;
         }
     }
 }

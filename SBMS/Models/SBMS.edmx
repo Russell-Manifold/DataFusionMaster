@@ -49,10 +49,10 @@
             <PropertyRef Name="BomHID" />
           </Key>
           <Property Name="BomHID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
-          <Property Name="BOMCode" Type="varchar" MaxLength="20" />
+          <Property Name="BOMCode" Type="varchar" MaxLength="50" />
           <Property Name="BomDescript" Type="varchar" MaxLength="100" />
           <Property Name="FGID" Type="bigint" />
-          <Property Name="FGCode" Type="varchar" MaxLength="20" />
+          <Property Name="FGCode" Type="varchar" MaxLength="50" />
           <Property Name="FGDescript" Type="varchar" MaxLength="100" />
           <Property Name="StoreCode" Type="varchar" MaxLength="6" />
           <Property Name="AddCost01" Type="decimal" Precision="18" Scale="4" />
@@ -76,6 +76,7 @@
           <Property Name="RMQty" Type="decimal" Precision="18" Scale="6" />
           <Property Name="CompanyID" Type="bigint" />
           <Property Name="BomHID" Type="int" />
+          <Property Name="BomUnit" Type="varchar" MaxLength="20" />
         </EntityType>
         <EntityType Name="BundlesHeader">
           <Key>
@@ -146,6 +147,7 @@
           <Property Name="AutoGenTaxInvoice" Type="bit" Nullable="false" />
           <Property Name="UsePacks" Type="bit" Nullable="false" />
           <Property Name="ShowManfCosts" Type="bit" Nullable="false" />
+          <Property Name="SageWeightField" Type="varchar" MaxLength="50" />
         </EntityType>
         <EntityType Name="DelivMethods">
           <Key>
@@ -309,6 +311,7 @@
           <Property Name="Customer_CurrencyId" Type="bigint" />
           <Property Name="DocCost" Type="decimal" Precision="18" Scale="4" />
           <Property Name="DocGP" Type="decimal" Precision="18" Scale="4" />
+          <Property Name="PostAddress5" Type="varchar" MaxLength="200" />   
         </EntityType>
         <EntityType Name="DocHeaderAttachment">
           <Key>
@@ -487,6 +490,7 @@
           <Property Name="ReorderLevel" Type="decimal" Precision="10" Scale="0" Nullable="false" />
           <Property Name="MinReOrderQty" Type="decimal" Precision="10" Scale="0" Nullable="false" />
           <Property Name="IsLotTracked" Type="bit" Nullable="false" />
+          <Property Name="UOMConvert" Type="decimal" Precision="10" Scale="4" />
         </EntityType>
         <EntityType Name="ItemsReorderLevels">
           <Key>
@@ -625,6 +629,8 @@
           <Property Name="CompanyID" Type="bigint" />
           <Property Name="IsLotTracked" Type="bit" Nullable="false" />
           <Property Name="ItemTransLineID" Type="bigint" />
+          <Property Name="LinePickQty" Type="decimal" Precision="18" Scale="4" />
+          <Property Name="LinePickBy" Type="int"/>
         </EntityType>
         <EntityType Name="JobCardsMaster">
           <Key>
@@ -1222,6 +1228,7 @@
         </Function>
         <Function Name="GetAllStockLevels" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
           <Parameter Name="CoID" Type="bigint" Mode="In" />
+          <Parameter Name="SearchTerm" Type="varchar" Mode="In" />
         </Function>
         <Function Name="GetBOMLinesFromBomCode" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
           <Parameter Name="bomCode" Type="varchar" Mode="In" />
@@ -1417,10 +1424,10 @@
             <PropertyRef Name="BomHID" />
           </Key>
           <Property Name="BomHID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="BOMCode" Type="String" MaxLength="20" FixedLength="false" Unicode="false" />
+          <Property Name="BOMCode" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="BomDescript" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
           <Property Name="FGID" Type="Int64" />
-          <Property Name="FGCode" Type="String" MaxLength="20" FixedLength="false" Unicode="false" />
+          <Property Name="FGCode" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="FGDescript" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
           <Property Name="StoreCode" Type="String" MaxLength="6" FixedLength="false" Unicode="false" />
           <Property Name="AddCost01" Type="Decimal" Precision="18" Scale="4" />
@@ -1444,6 +1451,7 @@
           <Property Name="RMQty" Type="Decimal" Precision="18" Scale="6" />
           <Property Name="CompanyID" Type="Int64" />
           <Property Name="BomHID" Type="Int32" />
+          <Property Name="BomUnit" Type="String" MaxLength="20" />
         </EntityType>
         <EntityType Name="DelivMethod">
           <Key>
@@ -1511,6 +1519,7 @@
           <Property Name="Customer_CurrencyId" Type="Int64" />
           <Property Name="DocCost" Type="Decimal" Precision="18" Scale="4" />
           <Property Name="DocGP" Type="Decimal" Precision="18" Scale="4" />
+          <Property Name="PostAddress5" Type="String" MaxLength="200" FixedLength="false" Unicode="false" />
         </EntityType>
         <EntityType Name="DocLine">
           <Key>
@@ -1666,6 +1675,7 @@
           <Property Name="ReorderLevel" Type="Decimal" Nullable="false" Precision="10" Scale="0" />
           <Property Name="MinReOrderQty" Type="Decimal" Nullable="false" Precision="10" Scale="0" />
           <Property Name="IsLotTracked" Type="Boolean" Nullable="false" />
+          <Property Name="UOMConvert" Type="Decimal" Precision="10" Scale="4" />
         </EntityType>
         <EntityType Name="ItemsReorderLevel">
           <Key>
@@ -1765,6 +1775,8 @@
           <Property Name="CompanyID" Type="Int64" />
           <Property Name="IsLotTracked" Type="Boolean" Nullable="false" />
           <Property Name="ItemTransLineID" Type="Int64" />
+          <Property Name="LinePickQty" Type="Decimal" Precision="18" Scale="4" />
+          <Property Name="LinePickBy" Type="Int32"/>
         </EntityType>
         <EntityType Name="JobTransaction">
           <Key>
@@ -2145,6 +2157,7 @@
           </FunctionImport>
           <FunctionImport Name="GetAllStockLevels" ReturnType="Collection(SBMSModel.GetAllStockLevels_Result)">
           <Parameter Name="CoID" Mode="In" Type="Int64" />
+          <Parameter Name="SearchTerm" Mode="In" Type="String" />
           </FunctionImport>
           <FunctionImport Name="GetItemLinkedStores" ReturnType="Collection(String)">
             <Parameter Name="CoID" Mode="In" Type="Int64" />
@@ -2512,6 +2525,7 @@
           <Property Type="String" Name="StoreCode" Nullable="true" MaxLength="6" />
           <Property Type="String" Name="CategoryDescript" Nullable="true" MaxLength="100" />
           <Property Type="Int64" Name="ItemID" Nullable="false" />
+          <Property Type="Decimal" Name="QOH" Nullable="false" Precision="18" Scale="2" />
         </ComplexType>
         <EntityType Name="BundlesHeader">
           <Key>
@@ -2696,6 +2710,7 @@
           <Property Type="Decimal" Name="Customer_ExchangeRate" Nullable="true" Precision="18" Scale="4" />
           <Property Type="Decimal" Name="DocCost" Nullable="true" Precision="18" Scale="4" />
           <Property Type="Decimal" Name="DocGP" Nullable="true" Precision="18" Scale="4" />
+          <Property Type="String" Name="PostAddress5" Nullable="true" MaxLength="200" />
         </ComplexType>
         <ComplexType Name="GetAllStockLevels_Result">
           <Property Type="String" Name="ItemCode" Nullable="true" MaxLength="50" />
@@ -2712,7 +2727,8 @@
           <Property Type="Decimal" Name="NumericUserField1" Nullable="true" />
           <Property Type="Decimal" Name="NumericUserField2" Nullable="true" />
           <Property Type="Decimal" Name="NumericUserField3" Nullable="true" />   
-          <Property Type="Decimal" Name="ExchRate" Nullable="true" />   
+          <Property Type="Decimal" Name="ExchRate" Nullable="true" />
+          <Property Type="Int64" Name="ItemID" Nullable="false" />
         </ComplexType>
         <EntityType Name="DocHeaderAttachment">
           <Key>
@@ -2934,6 +2950,7 @@
           <Property Type="Boolean" Name="Complete" Nullable="true" />
           <Property Type="Int32" Name="LinkedWONumber" Nullable="false" />
           <Property Type="Int64" Name="FromStoreID" Nullable="true"/>
+          <Property Type="String" Name="PostAddress5" Nullable="true" MaxLength="200" />
         </ComplexType>
         <ComplexType Name="GetProdRMDemands_Result">
           <Property Type="Int32" Name="WONum" Nullable="false" />
@@ -2960,6 +2977,7 @@
           <Property Type="Int32" Name="BLID" Nullable="false" />
           <Property Type="String" Name="Description" Nullable="true" MaxLength="100" />
           <Property Type="Decimal" Name="AvCost" Nullable="true" Precision="18" Scale="4" />
+          <Property Type="String" Name="BomUnit" Nullable="true" MaxLength="20" />
         </ComplexType>
         <ComplexType Name="GetBOMLinesFromBomCode_Result">
           <Property Type="String" Name="ItemCode" Nullable="true" MaxLength="50" />
@@ -2970,6 +2988,7 @@
           <Property Type="Int32" Name="BLID" Nullable="false" />
           <Property Type="String" Name="Description" Nullable="true" MaxLength="100" />
           <Property Type="Decimal" Name="AvCost" Nullable="true" Precision="18" Scale="4" />
+          <Property Type="String" Name="BomUnit" Nullable="true" MaxLength="20" />
         </ComplexType>
         <EntityType Name="ReceivingAddCost">
           <Key>
@@ -3063,6 +3082,7 @@
           <Property Name="AutoGenTaxInvoice" Type="Boolean" Nullable="false" />
           <Property Name="UsePacks" Type="Boolean" Nullable="false" />
           <Property Name="ShowManfCosts" Type="Boolean" Nullable="false" />
+          <Property Name="SageWeightField" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
         </EntityType>
         <EntityType Name="ReceivingOutstanding">
           <Key>
@@ -3324,6 +3344,7 @@
                 <ScalarProperty Name="ItemCode" ColumnName="ItemCode" />
                 <ScalarProperty Name="RMQty" ColumnName="RMQty" />
                 <ScalarProperty Name="CompanyID" ColumnName="CompanyID" />
+                <ScalarProperty Name="BomUnit" ColumnName="BomUnit" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
@@ -3393,6 +3414,7 @@
                 <ScalarProperty Name="Customer_CurrencyId" ColumnName="Customer_CurrencyId" />
                 <ScalarProperty Name="DocCost" ColumnName="DocCost" />
                 <ScalarProperty Name="DocGP" ColumnName="DocGP" />
+                <ScalarProperty Name="PostAddress5" ColumnName="PostAddress5" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
@@ -3554,6 +3576,7 @@
                 <ScalarProperty Name="IsFromBOM" ColumnName="IsFromBOM" />
                 <ScalarProperty Name="IsFromKit" ColumnName="IsFromKit" />
                 <ScalarProperty Name="NettMass" ColumnName="NettMass" />
+                <ScalarProperty Name="UOMConvert" ColumnName="UOMConvert" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
@@ -3657,6 +3680,8 @@
                 <ScalarProperty Name="StoreCodeFrom" ColumnName="StoreCodeFrom" />
                 <ScalarProperty Name="LinePickDate" ColumnName="LinePickDate" />
                 <ScalarProperty Name="Physical" ColumnName="Physical" />
+                <ScalarProperty Name="LinePickQty" ColumnName="LinePickQty" />
+                <ScalarProperty Name="LinePickBy" ColumnName="LinePickBy" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
@@ -4300,6 +4325,7 @@
                 <ScalarProperty Name="StoreCode" ColumnName="StoreCode" />
                 <ScalarProperty Name="CategoryDescript" ColumnName="CategoryDescript" />
                 <ScalarProperty Name="ItemID" ColumnName="ItemID" />
+                <ScalarProperty Name="QOH" ColumnName="QOH" />
               </ComplexTypeMapping>
             </ResultMapping>
           </FunctionImportMapping>
@@ -4502,7 +4528,7 @@
                 <ScalarProperty Name="PSStatus" ColumnName="PSStatus" />
                 <ScalarProperty Name="LinkedPSNum" ColumnName="LinkedPSNum" />
                 <ScalarProperty Name="PSIssuedTo" ColumnName="PSIssuedTo" />
-                
+                <ScalarProperty Name="PostAddress5" ColumnName="PostAddress5" />             
               </ComplexTypeMapping>
             </ResultMapping>
           </FunctionImportMapping>
@@ -4524,6 +4550,7 @@
                 <ScalarProperty Name="NumericUserField2" ColumnName="NumericUserField2" />
                 <ScalarProperty Name="NumericUserField3" ColumnName="NumericUserField3" />
                 <ScalarProperty Name="ExchRate" ColumnName="ExchRate" />
+                <ScalarProperty Name="ItemID" ColumnName="ItemID" />
               </ComplexTypeMapping>
             </ResultMapping>
           </FunctionImportMapping>
@@ -4770,6 +4797,7 @@
                 <ScalarProperty Name="Complete" ColumnName="Complete" />
                 <ScalarProperty Name="LinkedWONumber" ColumnName="LinkedWONumber" />
                 <ScalarProperty Name="FromStoreID" ColumnName="FromStoreID" />
+                <ScalarProperty Name="PostAddress5" ColumnName="PostAddress5" />
               </ComplexTypeMapping>
             </ResultMapping>
           </FunctionImportMapping>
@@ -4804,6 +4832,7 @@
                 <ScalarProperty Name="BLID" ColumnName="BLID" />
                 <ScalarProperty Name="Description" ColumnName="Description" />
                 <ScalarProperty Name="AvCost" ColumnName="AvCost" />
+                <ScalarProperty Name="BomUnit" ColumnName="BomUnit" />
               </ComplexTypeMapping>
             </ResultMapping>
           </FunctionImportMapping>
@@ -4818,6 +4847,7 @@
                 <ScalarProperty Name="BLID" ColumnName="BLID" />
                 <ScalarProperty Name="Description" ColumnName="Description" />
                 <ScalarProperty Name="AvCost" ColumnName="AvCost" />
+                <ScalarProperty Name="BomUnit" ColumnName="BomUnit" />
               </ComplexTypeMapping>
             </ResultMapping>
           </FunctionImportMapping>
@@ -4915,6 +4945,7 @@
                 <ScalarProperty Name="AutoGenTaxInvoice" ColumnName="AutoGenTaxInvoice" />
                 <ScalarProperty Name="UsePacks" ColumnName="UsePacks" />
                 <ScalarProperty Name="ShowManfCosts" ColumnName="ShowManfCosts" />
+                <ScalarProperty Name="SageWeightField" ColumnName="SageWeightField" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>

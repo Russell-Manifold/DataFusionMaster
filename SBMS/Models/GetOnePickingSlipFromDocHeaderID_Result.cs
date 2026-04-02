@@ -47,5 +47,6 @@ namespace SBMS.Models
         public Nullable<bool> Complete { get; set; }
         public int LinkedWONumber { get; set; }
         public Nullable<long> FromStoreID { get; set; }
+        public string PostAddress5 { get; set; }
     }
 }

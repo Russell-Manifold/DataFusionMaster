@@ -29,12 +29,28 @@ namespace SBMS
         decimal RecValue = 0, RecTax = 0, RecEx = 0;
         private string LotNumCheck = "";
         decimal addcosts = 0;
+        decimal recqty = 0; 
         private UserDetails CurrentUser
         {
             get
             {
                 return Session["UserDetails"] as UserDetails;
             }
+        }
+
+        protected override void Render(System.Web.UI.HtmlTextWriter writer)
+        {
+            if (GridPOLines.Rows.Count > 0)
+            {
+                foreach (GridViewRow row in GridPOLines.Rows)
+                {
+                    if (row.RowType == DataControlRowType.DataRow)
+                    {
+                        row.Attributes.Add("onclick", Page.ClientScript.GetPostBackEventReference(GridPOLines, "Select$" + row.RowIndex, true));
+                    }
+                }
+            }
+            base.Render(writer);
         }
         protected async void Page_Load(object sender, EventArgs e)
         {
@@ -75,6 +91,14 @@ namespace SBMS
                         txtRef.Text = (thispo.Reference ?? "").ToString();
                         txtPODate.Text = Convert.ToDateTime(thispo.DocDate).ToString("dd MMM yyyy");
                         txtMsg.Text = thispo.Message ?? "";
+                        decimal exchRate = thispo.Supplier_ExchangeRate ?? 1m;
+                        txtExRate.Text = exchRate.ToString("0.####");
+                        if (exchRate == 1m)
+                        {
+                            txtExRate.Visible = false;
+                            lblExRate.Visible = false;
+                        }
+
                         if (thispo.CompleteDate != null) txtRecDate.Text = Convert.ToDateTime(thispo.CompleteDate).ToString("dd MMM yyyy");
                         if (thispo.Complete != null)
                         {
@@ -383,8 +407,13 @@ namespace SBMS
                     lbtnLotNumAdd = (LinkButton)e.Row.FindControl("lbtnLotNumAdd");
                     lbtnLotNumAdd.Visible = true;
                 }
+                recqty += Convert.ToDecimal(e.Row.Cells[7].Text.ToString());
             }
-            e.Row.Cells[13].Visible = false;
+            else if (e.Row.RowType == DataControlRowType.Footer)
+            {
+                e.Row.Cells[7].Text = recqty.ToString();
+            }
+                e.Row.Cells[13].Visible = false;
             e.Row.Cells[14].Visible = false;
         }
 
@@ -548,6 +577,7 @@ namespace SBMS
         protected async void lbtnReceiveFinish_Click(object sender, EventArgs e)
         {
             docid = Convert.ToInt64(lblDocID.Text);
+            decimal exchRate =1;
             string SuppInvN = "";
             if (txtDNNum.Text.Trim().ToString().Length < 3)
             {
@@ -591,7 +621,7 @@ namespace SBMS
                     {
                         SuppInvN = txtDNNum.Text.Trim().ToString();
                     }
-
+                    // check and update Foreign Currency rate
                     int SuppInvNumb = _db.DocHeaders.Where(x => x.CompanyID == CurrentUser.CoID && x.SupplierInvNum == SuppInvN).Count();
                     if (SuppInvNumb > 0)
                     {
@@ -624,8 +654,16 @@ namespace SBMS
                     DocH.Reference = SuppInvN.ToString();
                     DocH.Message = Head.Message.ToString();
                     DocH.FromDocument = Head.DocumentNumber.ToString();
-                    if (Head.Supplier_ExchangeRate != 1) DocH.Supplier_ExchangeRate = (decimal)Head.Supplier_ExchangeRate;
-                    if (Head.Supplier_CurrencyId != null) DocH.Supplier_CurrencyId = (long)Head.Supplier_CurrencyId;
+                    if (Head.Supplier_CurrencyId != null)
+                    {
+                        try
+                        {
+                            DocH.Supplier_CurrencyId = (long)Head.Supplier_CurrencyId;
+                            exchRate = Convert.ToDecimal(txtExRate.Text);
+                            DocH.Supplier_ExchangeRate = (decimal)exchRate;
+                        }
+                        catch { }
+                    }
 
                     List<DocumentLine> documentLines = new List<DocumentLine>();
                     List<DocumentItemList> dil = new List<DocumentItemList>();
@@ -664,7 +702,8 @@ namespace SBMS
                             DL.Discount = (decimal)dl.Discount;
                             DL.Tax = (decimal)dl.Tax;
                             DL.Total = (decimal)dl.Total;
-
+                            DL.ExchRate = (decimal)exchRate;
+                            DL.localCurrLineVal = (DL.Quantity * DL.UnitPriceExclusive) / exchRate;
                             if (dl.LotNumber != null && dl.LotNumber.ToString() != "" && dl.StoreCode != null && dl.StoreCode.ToString() != "")
                             {
                                 DL.Comments = "Store: " + dl.StoreCode + " - Lot # " + dl.LotNumber + " : " + dl.Comments;
@@ -686,8 +725,7 @@ namespace SBMS
                             if (dl.AnalysisCategoryId3 != null) DL.AnalysisCategoryId3 = (long)dl.AnalysisCategoryId3;
                             documentLines.Add(DL);
                         }
-                    }
-                    ;
+                    } ;
                     #endregion
 
                     #region get and store original average costs for later use
@@ -718,7 +756,7 @@ namespace SBMS
                         Doc.Lines = documentLines;
                         object jsonObject;
 
-                        if (Doc.Header.Supplier_ExchangeRate != 1)
+                        if (Doc.Header.Supplier_ExchangeRate == 1)
                         {
                             jsonObject = new
                             {
@@ -757,7 +795,7 @@ namespace SBMS
                                 Doc.Header.Supplier_CurrencyId,
                                 Doc.Lines
                             };
-                        }
+                       }
 
                         // First serialize your anonymous object
                         var rawJson = JsonConvert.SerializeObject(jsonObject);
@@ -905,9 +943,13 @@ namespace SBMS
                                     tempLine.StoreCode = dl.StoreCode;
                                     tempLine.LotNumber = dl.LotNumber;
                                     tempLine.LineTaxTypeID = dl.LineTaxTypeID;
+                                    tempLine.AddCostsAmount = 0;
                                     tempLine.AddCostsAmount = AddCostPropValue;
                                     tempLine.AddCostsReason = txtAddCostsReason.Text.ToString();
                                     tempLine.ExchRate = dl.ExchRate;
+
+                                    var ItmCon = _db.ItemsMasters.Where(x => x.CompanyID == CurrentUser.CoID && x.ID == dl.SelectionId).FirstOrDefault();
+                                    decimal ConvRate = (decimal)ItmCon.UOMConvert;
 
                                     // 1) Create transaction to move items from supplier into the selected warehouse.
                                     ItemTransaction ItemTrans = new ItemTransaction();
@@ -921,11 +963,11 @@ namespace SBMS
                                     ItemTrans.Unit = dl.Unit;
                                     ItemTrans.FromID = getstoreid("CoR");
                                     ItemTrans.ToID = getstoreid(dl.StoreCode);
-                                    ItemTrans.Qty = dl.ReceiveQty;
-                                    ItemTrans.PriceExclusive = dl.UnitPriceExclusive;
-                                    ItemTrans.AdditionalCosts = ThisItemUnitNett - dl.UnitPriceExclusive;
-                                    ItemTrans.TotalUnitPriceExclInclAdd = ThisItemUnitNett;
-                                    ItemTrans.TotalLineValExcl = ThisItemUnitNett * dl.ReceiveQty;
+                                    ItemTrans.Qty = dl.ReceiveQty * ConvRate;
+                                    ItemTrans.PriceExclusive = (dl.UnitPriceExclusive / exchRate) / ConvRate;
+                                    ItemTrans.AdditionalCosts = (ThisItemUnitNett / exchRate) - (dl.UnitPriceExclusive / exchRate);
+                                    ItemTrans.TotalUnitPriceExclInclAdd = (ThisItemUnitNett / exchRate) / ConvRate;
+                                    ItemTrans.TotalLineValExcl = (ThisItemUnitNett * dl.ReceiveQty) / exchRate;
                                     ItemTrans.DocumentType = 2;
                                     ItemTrans.TransactionReference = SuppInvNum;
                                     // Additional costs ????
@@ -937,7 +979,7 @@ namespace SBMS
                                     if (dl.LotNumber != null)
                                     {
                                         var LotNumUpdate = _db.LotTrackingMasters.Where(x => x.CompanyID == CurrentUser.CoID && x.LotNumber == dl.LotNumber).FirstOrDefault();
-                                        LotNumUpdate.LotTotUnitPrice = ThisItemUnitNett;
+                                        LotNumUpdate.LotTotUnitPrice = ThisItemUnitNett / exchRate;
                                     }
 
                                     // check for itemstore link
@@ -964,14 +1006,14 @@ namespace SBMS
                                 {
                                     await api.LoadOneItem(dl.SelectionId, CurrentUser);
                                     var Itm = _db.ItemsMasters.Where(x => x.CompanyID == CurrentUser.CoID && x.ID == dl.SelectionId).FirstOrDefault();
-                                    if (Itm.AverageCost != ThisItemUnitNett)
+                                    if (Itm.AverageCost != ThisItemUnitNett / exchRate)
                                     {
                                         #region AdjustItemOut
                                         ItemAdjustment iAdj = new ItemAdjustment();
                                         iAdj.Date = DateTime.Now;
                                         iAdj.ItemID = dl.SelectionId;
                                         // update master record of item before adjustments
-                                        iAdj.AverageCost = (decimal)dl.UnitPriceExclusive;
+                                        iAdj.AverageCost = (decimal)dl.UnitPriceExclusive / exchRate;
                                         iAdj.Quantity = (decimal)dl.ReceiveQty * -1;
                                         iAdj.Reason = "ADJ Out Trans ID: " + itemtransnum + " - " + txtAddCostsReason.Text.ToString();
                                         iAdj.Created = DateTime.Now;
@@ -996,7 +1038,7 @@ namespace SBMS
                                         decimal ThisUnitVal = ThisItemUnitNett;
                                         decimal NewQty = (decimal)(origqty + dl.ReceiveQty);
                                         decimal NewTotVal = (decimal)(origvalue + (dl.UnitPriceExclusive * dl.ReceiveQty));
-                                        decimal NewAvCost = NewTotVal / NewQty;
+                                        decimal NewAvCost = (NewTotVal / NewQty) / exchRate;
 
                                         iAdj = new ItemAdjustment();
                                         iAdj.Date = DateTime.Now;
@@ -1078,10 +1120,14 @@ namespace SBMS
                                 tempLine.LineTaxTypeID = dl.LineTaxTypeID;
                                 tempLine.AddCostsAmount = linevalAddCosts;
                                 tempLine.AddCostsReason = dl.AddCostsReason;
-                                tempLine.ReceiveTotalExcl = dl.Exclusive - dl.Discount + linevalAddCosts;
-                                tempLine.ExchRate = dl.ExchRate;
+                                tempLine.ReceiveTotalExcl =dl.Exclusive - dl.Discount + linevalAddCosts;
+                                tempLine.ExchRate = (decimal)exchRate;
+                                tempLine.localCurrLineVal = (decimal)tempLine.ReceiveTotalExcl / (decimal)exchRate;
                                 if (dl.ItemType == 0)
                                 {
+                                    var ItmCon = _db.ItemsMasters.Where(x => x.CompanyID == CurrentUser.CoID && x.ID == dl.SelectionId).FirstOrDefault();
+                                    decimal ConvRate = (decimal)ItmCon.UOMConvert;
+
                                     // 1) Create transaction to move items from supplier into the selected warehouse.
                                     ItemTransaction ItemTrans = new ItemTransaction();
                                     ItemTrans.CompanyID = CurrentUser.CoID;
@@ -1094,23 +1140,23 @@ namespace SBMS
                                     ItemTrans.Unit = dl.Unit;
                                     ItemTrans.FromID = getstoreid("CoR");
                                     ItemTrans.ToID = getstoreid(dl.StoreCode);
-                                    ItemTrans.Qty = dl.ReceiveQty;
-                                    ItemTrans.PriceExclusive = dl.UnitPriceExclusive;
-                                    ItemTrans.TotalLineValExcl = tempLine.ReceiveTotalExcl;
+                                    ItemTrans.Qty = dl.ReceiveQty * ConvRate;
+                                    ItemTrans.PriceExclusive = (dl.UnitPriceExclusive / exchRate) / ConvRate;
+                                    ItemTrans.TotalLineValExcl = tempLine.ReceiveTotalExcl / exchRate;
                                     ItemTrans.AdditionalCosts = linevalAddCosts;
-                                    ItemTrans.TotalUnitPriceExclInclAdd = newunitcost;
+                                    ItemTrans.TotalUnitPriceExclInclAdd = (newunitcost / exchRate)/ConvRate;
                                     ItemTrans.DocumentType = 2;
                                     ItemTrans.TransactionReference = SuppInvNum;
                                     // Additional costs ????
                                     ItemTrans.TransactionDate = DateTime.Now;
                                     ItemTrans.ByRoleID = CurrentUser.RoleID; // roleid
-                                    ItemTrans.ExchRate = tempLine.ExchRate;
+                                    ItemTrans.ExchRate = (decimal)exchRate;       
                                     _db.ItemTransactions.Add(ItemTrans);
 
                                     if (dl.LotNumber != null)
                                     {
                                         var LotNumUpdate = _db.LotTrackingMasters.Where(x => x.CompanyID == CurrentUser.CoID && x.LotNumber == dl.LotNumber).FirstOrDefault();
-                                        LotNumUpdate.LotTotUnitPrice = (decimal)dl.UnitPriceExclusive;
+                                        LotNumUpdate.LotTotUnitPrice = (decimal)dl.UnitPriceExclusive / exchRate;
                                     }
                                     // check for itemstore link
                                     var ItS = _db.ItemStoreLinkMasters.Where(x => x.CompanyID == CurrentUser.CoID && x.StoreID == ItemTrans.ToID && x.ItemID == dl.SelectionId).FirstOrDefault();
@@ -1402,19 +1448,22 @@ namespace SBMS
                         PnlLotTracking.Style.Add("display", "inline-block");
                         PnlLotTracking.Style.Add("width", "100%");
                     }
-
-                    bool Itm = (bool)_db.ItemsMasters.FirstOrDefault(x => x.CompanyID == CurrentUser.CoID && x.ID == Docline.SelectionId).IsLotTracked;
-                    if (Itm == true)
+                    try
                     {
-                        PnlLotTracking.Style.Add("display", "inline-block");
-                        PnlLotTracking.Style.Add("width", "100%");
-                    }
+                        bool Itm = (bool)_db.ItemsMasters.FirstOrDefault(x => x.CompanyID == CurrentUser.CoID && x.ID == Docline.SelectionId).IsLotTracked;
+                        if (Itm == true)
+                        {
+                            PnlLotTracking.Style.Add("display", "inline-block");
+                            PnlLotTracking.Style.Add("width", "100%");
+                        }
 
                         if (CurrentUser.CompanyUseLotAddDetails == true)
                         {
                             PnlLotAdditions.Style.Add("display", "inline-block");
                             PnlLotAdditions.Style.Add("width", "100%");
                         }
+                    }
+                    catch { DDStore.Enabled=false; }
                 }
                 
             DDStoreEdit.SelectedIndex = 0;
@@ -2077,6 +2126,18 @@ namespace SBMS
             string code = lbtnItmC.Text;
             OpenFirstMatchingItemCode(code);
             //ProcessLotNumAdd(row);
+        }
+
+        protected void GridPOLines_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (GridPOLines.SelectedRow != null)
+            {
+                LinkButton lbtnItmC = GridPOLines.SelectedRow.FindControl("lbtnItmC") as LinkButton;
+                if (lbtnItmC != null)
+                {
+                    lbtnItmC_Click(lbtnItmC, EventArgs.Empty);
+                }
+            }
         }
 
         private void ProcessLotNumAdd(GridViewRow row)

@@ -528,13 +528,31 @@ namespace SBMS
         protected global::System.Web.UI.WebControls.Label lblDescript;
 
         /// <summary>
-        /// txtAddQty control.
+        /// txtqty control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtAddQty;
+        protected global::System.Web.UI.WebControls.TextBox txtqty;
+
+        /// <summary>
+        /// ftbeP control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::AjaxControlToolkit.FilteredTextBoxExtender ftbeP;
+
+        /// <summary>
+        /// DDItemAddStore control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.DropDownList DDItemAddStore;
 
         /// <summary>
         /// lbtnAddYes control.

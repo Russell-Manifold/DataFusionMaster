@@ -52,17 +52,11 @@
                                 </div>
                              </div>
                 <div class="row 150%">
-                    <div class="col-2 col-12-wide" style="margin-top:2em">
-                        <asp:LinkButton ID="lbtnOpenNew" runat="server" style="float:right; font-size:1em;" CssClass="icon fa-edit buttonRed" ToolTip="Open New Stock Take" PostBackUrl="~/StockCountCreate.aspx">&nbsp;</asp:LinkButton><h3>Active Counts</h3>
-                        <cci:ConfirmButtonExtender ID="lbtnOpenNew_ConfirmButtonExtender1" runat="server" ConfirmText="Open New Stock Take? Are You Sure?" Enabled="True" TargetControlID="lbtnOpenNew"></cci:ConfirmButtonExtender>
-                        <asp:DropDownList ID="DDStckCount" runat="server" style="width:100%" AutoPostBack="true" OnSelectedIndexChanged="DDStckCount_SelectedIndexChanged">
-                        </asp:DropDownList>
-                    </div>
-                        <div class="col-10 col-12-wide">
-                          <h3 style="margin-top:1.2em">Details</h3>
-                                <table>
+                       <div class="col-12 col-12-wide">                         
+                            <table>
                                     <tr>
-                                        <td>Created Date</td>
+                                         <td style="border-right:2px solid gray; padding-right:1em"><asp:LinkButton ID="lbtnOpenNew" runat="server" style="float:right; font-size:1em;" CssClass="icon fa-edit buttonRed" ToolTip="Open New Stock Take" PostBackUrl="~/StockCountCreate.aspx">&nbsp;</asp:LinkButton><h3>Active Counts</h3></td>
+                                        <td>&nbsp;Created Date</td>
                                         <td><asp:Label ID="lblDate" runat="server" Text=""></asp:Label>&nbsp;</td>
                                         <td>Created By<asp:Label ID="CntID" runat="server" Text="" style="display:none"></asp:Label></td>
                                         <td><asp:Label ID="lblCreatedBy" runat="server" Text=""></asp:Label></td>
@@ -70,21 +64,23 @@
                                         <td></td>
                                     </tr>
                                     <tr>
-                                        <td colspan="6"><hr /></td>
+                                        <td colspan="7"><hr /></td>
                                     </tr>
                                 <tr>
-                                        <td>Category</td>
+                                    <td style="border-right:2px solid gray"><asp:DropDownList ID="DDStckCount" runat="server" style="width:10em" AutoPostBack="true" OnSelectedIndexChanged="DDStckCount_SelectedIndexChanged"></asp:DropDownList></td>    
+                                    <td>&nbsp;Category</td>
                                         <td style="text-align:left"> <asp:DropDownList ID="DDCateg" runat="server" style="width:10em" AutoPostBack="true" OnSelectedIndexChanged="DDCateg_SelectedIndexChanged"></asp:DropDownList></td>
                                         <td style="padding-left:2em">Filter</td>
                                         <td>
                                             <asp:Panel ID="Panel1" runat="server" DefaultButton="lbtnSearch">
-                                                 <asp:TextBox ID="txtFilter" runat="server" style="width:10em" placeholder="Code/Description"></asp:TextBox><asp:LinkButton ID="lbtnSearch" runat="server" CssClass="icon fa-search buttonC" ToolTip="Search"></asp:LinkButton>
+                                                 <asp:TextBox ID="txtFilter" runat="server" style="width:15em" placeholder="Code/Description"></asp:TextBox><asp:LinkButton ID="lbtnSearch" runat="server" CssClass="icon fa-search buttonRed" ToolTip="Search"></asp:LinkButton>
                                             </asp:Panel>
                                            </td>
                                         <td style="padding-left:2em">Store</td>
-                                        <td><asp:DropDownList ID="DDStore" runat="server" style="width:10em; float:left" AutoPostBack="true" OnSelectedIndexChanged="DDStore_SelectedIndexChanged"></asp:DropDownList></td>
+                                        <td><asp:DropDownList ID="DDStore" runat="server" style="width:10em;" AutoPostBack="true" OnSelectedIndexChanged="DDStore_SelectedIndexChanged"></asp:DropDownList></td>
                                     </tr>    
                                 </table>
+                            <cci:ConfirmButtonExtender ID="lbtnOpenNew_ConfirmButtonExtender1" runat="server" ConfirmText="Open New Stock Take? Are You Sure?" Enabled="True" TargetControlID="lbtnOpenNew"></cci:ConfirmButtonExtender>
                             <hr />
                                  
                             <asp:GridView ID="GridCntLines" runat="server" AutoGenerateColumns="false" CssClass="gridview" AllowSorting="true" OnSorting="GridCntLines_Sorting" OnRowDataBound="GridCntLines_RowDataBound" >

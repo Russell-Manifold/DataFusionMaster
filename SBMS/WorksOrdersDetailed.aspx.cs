@@ -347,7 +347,7 @@ namespace SBMS
                 ThisFCLine.LineType = (short)(ddlt.SelectedValue != null ? Convert.ToInt16(ddlt.SelectedValue) : 0);
                 ThisFCLine.CompanyID = CoID;
                 ThisFCLine.Quantity = qty;
-                ThisFCLine.ItemCode = ddl.SelectedItem?.Text ?? "";
+                
                 ThisFCLine.ItemDescription = txtDescription.Text?.Trim() ?? "";
                 ThisFCLine.DueDelDate = dt;
                 ThisFCLine.Active = true;
@@ -385,6 +385,7 @@ namespace SBMS
                 try
                 {
                     var item = _db.ItemsMasters.FirstOrDefault(x => x.CompanyID == CoID && x.ID == ItemID);
+                    ThisFCLine.ItemCode = item.Code.ToString()?? "";
                     ThisFCLine.IsLotTracked = item != null ? item.IsLotTracked : false;
                 }
                 catch { ThisFCLine.IsLotTracked = false; }
@@ -403,7 +404,7 @@ namespace SBMS
                         LinkedWOLineID = (int)rowid,
                         WOID = woid,
                         SelectionId = ThisFCLine.SelectionId,
-                        ItemCode = ThisFCLine.ItemCode,
+                        ItemCode = itm.Code,
                         ItemDescription = ThisFCLine.ItemDescription,
                         Quantity = ThisFCLine.Quantity,
                         CompanyID = CoID,
@@ -411,14 +412,16 @@ namespace SBMS
                         LinkedFGCode = ThisFCLine.ItemCode,
                         LinkedFGQty = ThisFCLine.Quantity,
                         PickComplete = false,
-                        Unit = itm?.Unit ?? "",
-                        IsLotTracked = itm?.IsLotTracked ?? false
+                        Unit = itm.Unit,
+                        IsLotTracked = itm.IsLotTracked,
+                        UnitCost = (itm.AverageCost / itm.UOMConvert) ?? 0,
+                        Physical = itm?.Physical ?? false
                     };
                     _db.WorksOrderRMLines.Add(RML);
                 }
                 if (ThisFCLine.LineType == 2)
                 {
-                    int bmc = _db.BOMHeaders.Where(x => x.CompanyID == CoID && x.FGCode == ThisFCLine.ItemCode).Select(x => x.BomHID).FirstOrDefault();
+                    int bmc = _db.BOMHeaders.Where(x => x.CompanyID == CoID && x.FGID == ThisFCLine.SelectionId).Select(x => x.BomHID).FirstOrDefault();
                     var BomLines = _db.GetBOMLinesFromBomHeaderID(bmc, CoID);
                     if (BomLines != null)
                     {
@@ -427,6 +430,12 @@ namespace SBMS
                             if (bl.ItemID != null)
                             {
                                 var itm = _db.ItemsMasters.FirstOrDefault(x => x.CompanyID == CoID && x.ID == bl.ItemID);
+                                decimal AvCostPerUnit = 0;
+                                try
+                                {
+                                    AvCostPerUnit = itm != null ? (itm.AverageCost / itm.UOMConvert) ?? 0 : 0;
+                                }
+                                catch { }
                                 WorksOrderRMLine RML = new WorksOrderRMLine
                                 {
                                     LinkedWOLineID = (int)rowid,
@@ -441,7 +450,9 @@ namespace SBMS
                                     LinkedFGQty = ThisFCLine.Quantity,
                                     PickComplete = false,
                                     Unit = itm?.Unit ?? "",
-                                    IsLotTracked = itm?.IsLotTracked ?? false
+                                    IsLotTracked = itm?.IsLotTracked ?? false,
+                                    UnitCost = AvCostPerUnit,
+                                    Physical = itm?.Physical ?? false
                                 };
                                 _db.WorksOrderRMLines.Add(RML);
                             }
@@ -450,7 +461,7 @@ namespace SBMS
                 }
                 if (ThisFCLine.LineType == 3)
                 {
-                    string kmc = _db.KitHeaders.Where(x => x.CompanyID == CoID && x.FGCode == ThisFCLine.ItemCode).Select(x => x.KitCode).FirstOrDefault();
+                    string kmc = _db.KitHeaders.Where(x => x.CompanyID == CoID && x.FGID == ThisFCLine.SelectionId).Select(x => x.KitCode).FirstOrDefault();
                     var KitLines = _db.GetKitLinesFromKitCode(kmc, CoID);
                     if (KitLines != null)
                     {
@@ -471,7 +482,9 @@ namespace SBMS
                                 LinkedFGQty = ThisFCLine.Quantity,
                                 PickComplete = false,
                                 Unit = itm?.Unit ?? "",
-                                IsLotTracked = itm?.IsLotTracked ?? false
+                                IsLotTracked = itm?.IsLotTracked ?? false,
+                                UnitCost = (itm.AverageCost / itm.UOMConvert)  ?? 0,
+                                Physical = itm?.Physical ?? false
                             };
                             _db.WorksOrderRMLines.Add(RML);
                         }

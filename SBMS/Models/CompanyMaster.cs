@@ -50,5 +50,6 @@ namespace SBMS.Models
         public bool AutoGenTaxInvoice { get; set; }
         public bool UsePacks { get; set; }
         public bool ShowManfCosts { get; set; }
+        public string SageWeightField { get; set; }
     }
 }

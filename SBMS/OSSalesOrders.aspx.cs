@@ -94,6 +94,10 @@ namespace SBMS
                 {
                     query = query.Where(x => x.DueDelDate < Convert.ToDateTime(DDueDate.SelectedValue.ToString()));
                 }
+                if (dlDelivery.SelectedIndex > 0)
+                {
+                    query = query.Where(x => x.DeliveryBy == dlDelivery.SelectedItem.ToString());
+                }
                 // Apply sorting using dynamic LINQ
                 if (!string.IsNullOrEmpty(sortExpression))
                 {
@@ -136,6 +140,7 @@ namespace SBMS
             }
         }
         private void BindData()
+
         {
             string sortExpression = ViewState["SortExpression"] as string ?? "DueDelDate"; // Replace "DefaultColumn" with your default column
             string sortDirection = ViewState["SortDirection"] as string ?? "ASC";
@@ -344,6 +349,26 @@ namespace SBMS
                 DDueDate.DataBind();
                 DDueDate.Items.Insert(0, "-Select-");
 
+                var dldeliv = _db.DocHeaders
+                .Where(d => d.DocType == 5
+                         && d.CompanyID == CurrentUser.CoID
+                         && d.DueDelDate.HasValue
+                         && d.Active == true
+                         && d.DeliveryBy != "" && d.DeliveryBy.Length > 2)
+                .Select(d => d.DeliveryBy)
+                .Distinct()
+                .OrderBy(d => d)
+                .ToList();
+
+                dlDelivery.DataSource = dldeliv.Select(d => new
+                {
+                    Text = d.ToString(),
+                    Value = d.ToString()
+                });
+                dlDelivery.DataTextField = "Text";
+                dlDelivery.DataValueField = "Value";
+                dlDelivery.DataBind();
+                dlDelivery.Items.Insert(0, "-Select-");
             }
         }
 

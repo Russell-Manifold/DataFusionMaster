@@ -54,29 +54,6 @@
                         </asp:GridView>
                     </div>
                     <div class="3u 12u$(medium)" style="text-align: center">&nbsp;</div>
-                   <%-- <cci:ModalPopupExtender ID="Button25_ModalPopupExtender" runat="server" BackgroundCssClass="ModalPopupBG" CancelControlID="btnCancel5" Drag="true" OkControlID="btnOkay5" PopupControlID="PnlConf" PopupDragHandleControlID="PopupHeader" TargetControlID="lbtnDelMethod"></cci:ModalPopupExtender>
-                    <asp:Panel ID="PnlConf" runat="server" Style="display: none">
-                        <asp:LinkButton ID="lbtnCancel" runat="server" CssClass="fa fa-times" Style="float: right" ToolTip="Cancel" OnClick="lbtnCancel_Click"> </asp:LinkButton>
-                        <div class="HellowWorldPopup">
-                            <div id="Div4" class="PopupHeader">
-                                <h4>Add Delivery Method<asp:Label ID="lblTpe" runat="server" Text=""></asp:Label></h4>
-                            </div>
-                            <div class="PopupBody" style="text-align: center">
-                                <table style="width: 450px; margin: auto; font-size: .8em; text-align: left">
-                                    <tr>
-                                        <td>Delivery Method *</td>
-                                        <td style="padding: .5em">
-                                            <asp:TextBox ID="txtDelMName" runat="server" Width="250px" Style="padding: .5em"></asp:TextBox><asp:Label ID="lblDelMID" runat="server" Text="" Style="display: none"></asp:Label></td>
-                                    </tr>
-                                </table>
-                            </div>
-                            <div class="Controls">
-                                <input id="btnCancel5" type="button" class="fa fa-times-circle" value="" runat="server" style="display: none" />
-                                <input id="btnOkay5" type="button" class="buttonYellow" value="OK" runat="server" style="display: none" />
-                                <asp:LinkButton ID="btnSaveConfirm" runat="server" CssClass="icon fa-save buttonCancel" OnClick="btnSaveConfirm_Click"> Save</asp:LinkButton><br />
-                            </div>
-                        </div>
-                    </asp:Panel>--%>
                 </div>
             </div>
         </div>

@@ -52,7 +52,7 @@
                                         <asp:BoundField DataField="BundID"  />
                                         <asp:TemplateField HeaderText="Bundle Code" ItemStyle-Width="12em" >
                                             <ItemTemplate >
-                                                <asp:LinkButton ID="lbtnBundle" CommandArgument='<%# Eval("BundCode")%>' CommandName="lbtnBundle" runat="server" Text='<%# Eval("BundCode")%>' ToolTip="View Bundle" style="color:#4A82AB; font-weight:600" OnClick="lbtnBundle_Click" ></asp:LinkButton>
+                                                <asp:LinkButton ID="lbtnBundle" CommandArgument='<%# Eval("BundCode")%>' CommandName="lbtnBundle" runat="server" Text='<%# Eval("BundCode")%>' ToolTip="View Bundle" style="color:#4A82AB; font-weight:600; border:1px solid #4A82AB" width="120px" OnClick="lbtnBundle_Click" ></asp:LinkButton>
                                             </ItemTemplate>
                                         </asp:TemplateField>
                                         <asp:BoundField HeaderText="Description" DataField="BundDescription" ReadOnly="True"  />

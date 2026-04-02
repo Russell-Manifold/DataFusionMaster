@@ -139,14 +139,18 @@ namespace SBMS
                         lbtnDelPS.Attributes.Add("style", "display:none");
                         lbtnIssue.Attributes.Add("style", "display:none");
                     }
+                    
                     if (CurrentUser.UseModule3 == true)
                     {
                        if (thisPS.LinkedWONumber != 0)
                         {
+                            var item = DDOptions.Items.FindByValue("2");
+                            if (item != null) DDOptions.Items.Remove(item);
+
                             lblWoID.Text = thisPS.LinkedWONumber.ToString();
                             var WONum = _db.WorksOrderHeaders.FirstOrDefault(x => x.CompanyID == CurrentUser.CoID && x.ID == thisPS.LinkedWONumber).WONum;
                             lbtnWOrd.Text = $" Open WO {WONum}";
-                            DDOptions.Style.Add("display", "none");
+                            //DDOptions.Style.Add("display", "none");
                         }
                         else
                         {
@@ -1663,7 +1667,35 @@ namespace SBMS
         {
             if (DDOptions.SelectedIndex > 0)
             {
-                ModalPopupExtender2.Show();
+                loadstores();
+                if (DDOptions.SelectedValue == "0")
+                {
+                    lblTpe.Text = "Job Card";
+                    pnlJCref.Style.Add("display", "inline-block");
+
+                }
+                else if (DDOptions.SelectedValue == "2")
+                {
+                    lblTpe.Text = "Works Order";
+                    pnlJCref.Style.Add("display", "none");
+                }
+                Button2551_ModalPopupExtender.Show();
+            }
+        }
+
+        private void loadstores()
+        {
+            using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+            {
+                var Stores = _db.Stores.Where(x => x.CompanyID == CurrentUser.CoID && x.StoreActive == true && x.StoreCode != "CoD" && x.StoreCode != "CoR" && x.AllowPicking == true).ToList();
+                if (Stores.Any())
+                {
+                    DDStoreH.DataSource = Stores;
+                    DDStoreH.DataTextField = "StoreDescript";
+                    DDStoreH.DataValueField = "StoreCode";
+                    DDStoreH.DataBind();
+                    DDStoreH.Items.Insert(0, "- Any/All -");
+                }
             }
         }
 
@@ -1847,5 +1879,581 @@ namespace SBMS
             GridLotNums.DataSource = LotNums.ToList();
             GridLotNums.DataBind();
         }
+
+        protected void lbtnAutoCreate_Click(object sender, EventArgs e)
+        {
+            docid = Convert.ToInt64(lblDocID.Text);
+            using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+            {
+                var JcD = _db.JobCardsMasters.Where(x => x.CustomerID == CurrentUser.CoID && x.JCNumber == lblDocNum.Text.Replace("SO", "JC")).FirstOrDefault();
+                if (JcD != null)
+                {
+                    var JcDL = _db.JobCardLines.Where(x => x.JCID == JcD.JCID).ToList();
+                    _db.JobCardLines.RemoveRange(JcDL);
+                    _db.JobCardsMasters.Remove(JcD);
+                }
+
+                JobCardsMaster JCN = new JobCardsMaster();
+                JCN.JCNumber = lblDocNum.Text.Replace("SO", "JC");
+                JCN.JCGUID = Guid.NewGuid();
+                JCN.CustomerID = CurrentUser.CoID;
+                JCN.JCCreatedDate = DateTime.Now;
+                JCN.JCActive = true;
+                var WStation = _db.WorkStations.Where(x => x.CompanyID == CurrentUser.CoID && x.Seq == 1).Select(x => new { x.WSID, x.WSName }).FirstOrDefault();
+                if (WStation == null)
+                {
+                    string message = "Workstations have not been configuired yet. Please use the settings to set them up before continuing";
+                    AlertHelper.ShowSweetAlert(this, message, "warning");
+                    return;
+                }
+
+                JCN.JCWSID = WStation.WSID;
+                JCN.JCStatus = WStation.WSName;
+                var POLines = _db.DocLines.Where(x => x.DocID == docid).OrderBy(x => x.LineID).ToList();
+                JCN.JCSummary = POLines[0].ItemDescription;
+                JCN.JCQtyOfItems = POLines[0].Quantity;
+                _db.JobCardsMasters.Add(JCN);
+                _db.SaveChanges();
+
+                // get DocLines and add them to the Jobcard
+                foreach (var Ln in POLines)
+                {
+                    Boolean iskit = false;
+                    int HLineType = 0;
+                    int LLineType = 0;
+
+                    JobCardLine Jcl = new JobCardLine();
+                    Jcl.JCID = JCN.JCID;
+                    Jcl.SelectionId = Ln.SelectionId;
+                    Jcl.ItemCode = Ln.ItemCode;
+                    Jcl.ItemDescription = Ln.ItemDescription;
+                    Jcl.LinePickDate = _db.DocHeaders.Where(x => x.DocID == docid).Select(x => x.DueDelDate).FirstOrDefault();
+                    Jcl.SBCALineID = Ln.SBCALineID;
+                    var bc = _db.ItemBarCodeLinks.Where(x => x.ItemID == Ln.SelectionId).FirstOrDefault();
+                    if (bc != null) Jcl.BarCode = bc.BarCode;
+                    Jcl.Unit = Ln.Unit;
+                    Jcl.UnitPriceExclusive = Ln.UnitPriceExclusive;
+                    Jcl.UnitPriceInclusive = Ln.UnitPriceInclusive;
+                    Jcl.DiscountPercentage = Ln.DiscountPercentage;
+                    Jcl.TaxPercentage = Ln.TaxPercentage;
+                    Jcl.LineTaxTypeID = Ln.LineTaxTypeID;
+                    Jcl.Exclusive = Ln.Exclusive;
+                    Jcl.Discount = Ln.Discount;
+                    Jcl.Tax = Ln.Tax;
+                    Jcl.Total = Ln.Total;
+                    Jcl.Quantity = Ln.Quantity;
+                    Jcl.Comments = Ln.Comments;
+                    Jcl.UnitCost = Ln.UnitCost;
+                    Jcl.isBundle = false;
+                    Jcl.isBundleLine = false;
+                    Jcl.CompanyID = CurrentUser.CoID;
+                    Jcl.LineType = Ln.LineType;
+                    Jcl.IsLotTracked = false;
+                    if (Ln.LineType == 1) Jcl.LineType = 2;
+
+                    var ThisItem = _db.ItemsMasters.Where(x => x.CompanyID == CurrentUser.CoID && x.ID == Ln.SelectionId).FirstOrDefault();
+                    if (ThisItem != null)
+                    {
+                        Jcl.Physical = ThisItem.Physical;
+                        Jcl.isKit = ThisItem.IsFromKit;
+                        Jcl.isKitLine = ThisItem.IsKitComponent;
+                        Jcl.IsLotTracked = ThisItem.IsLotTracked;
+
+                        if (ThisItem.IsFromKit != null && (bool)ThisItem.IsFromKit)
+                        {
+                            var Store = _db.GetItemLinkedStores(CurrentUser.CoID, Jcl.SelectionId).ToList().FirstOrDefault();
+                            Jcl.StoreCodeFrom = Store.ToString();
+                            Jcl.PickComplete = true;
+                        }
+                    }
+                    else
+                    {
+                        Jcl.Physical = false;
+                        Jcl.isKit = false;
+                        Jcl.isKitLine = false;
+                        Jcl.IsLotTracked = false;
+                    }
+
+                    _db.JobCardLines.Add(Jcl);
+                    _db.SaveChanges();
+                    long JClineid = Jcl.LineID;
+                    // check if this line is a kit item and add kit lines
+                    if (ThisItem != null && ThisItem.IsFromKit != null && ThisItem.IsFromKit == true)
+                    {
+                        iskit = true;
+                        HLineType = 3;
+                        var KitLines = _db.GetKitLinesFromKitCode(Ln.ItemCode, CurrentUser.CoID).Where(x => x.ItemID != null && x.ItemID > 0 && x.FGQty > 0).ToList();
+                        if (KitLines != null && KitLines.Count > 0)
+                        {
+                            foreach (var KitL in KitLines)
+                            {
+                                if ((long)KitL.ItemID > 0)
+                                {
+                                    JobCardLine JclL = new JobCardLine();
+                                    JclL.JCID = JCN.JCID;
+                                    JclL.LineType = LLineType;
+                                    JclL.SelectionId = (long)KitL.ItemID;
+                                    JclL.ItemCode = KitL.ItemCode;
+                                    JclL.ItemDescription = KitL.Description;
+                                    JclL.Physical = ThisItem.Physical;
+                                    JclL.LinePickDate = Jcl.LinePickDate;
+                                    JclL.SBCALineID = 0;
+
+                                    JclL.Unit = KitL.Unit;
+                                    JclL.UnitPriceExclusive = 0;
+                                    JclL.UnitPriceInclusive = 0;
+                                    JclL.DiscountPercentage = 0;
+                                    JclL.TaxPercentage = 0;
+                                    JclL.LineTaxTypeID = 0;
+                                    JclL.Exclusive = 0;
+                                    JclL.Discount = 0;
+                                    JclL.Tax = 0;
+                                    JclL.Total = 0;
+
+                                    JclL.Quantity = Ln.Quantity * KitL.FGQty;
+                                    JclL.UnitCost = 0;
+                                    JclL.Comments = "";
+                                    JclL.isKit = false;
+                                    JclL.isKitLine = true;
+                                    JclL.isBundle = false;
+                                    JclL.isBundleLine = false;
+                                    JclL.CompanyID = CurrentUser.CoID;
+                                    JclL.IsLotTracked = KitL.IsLotTracked ?? false;
+                                    _db.JobCardLines.Add(JclL);
+                                }
+                            }
+                        }
+                        var thisjcl = _db.JobCardLines.Where(x => x.LineID == JClineid).FirstOrDefault();
+                        thisjcl.isKit = iskit;
+                        thisjcl.LineType = HLineType;
+                    }
+                }
+
+                // insert jobcardtransaction record
+                JobTransaction JTract = new JobTransaction
+                {
+                    CompanyID = CurrentUser.CoID,
+                    JCID = JCN.JCID,
+                    FromStationID = WStation.WSID,
+                    ToStationID = WStation.WSID,
+                    MoveDate = DateTime.Now,
+                    MoveQty = JCN.JCQtyOfItems,
+                    MoveBy = CurrentUser.RoleID,
+                    RejectQty = 0
+                };
+                _db.JobTransactions.Add(JTract);
+
+                var thispo = _db.DocHeaders.Where(x => x.DocID == docid).FirstOrDefault();
+                if (thispo != null)
+                {
+                    thispo.LinkedJCID = JCN.JCID;
+                    //thispo.Started = true;
+                    docguid = thispo.DocGUID.ToString();
+                }
+                try
+                {
+                    _db.SaveChanges();
+                }
+                catch (Exception ex)
+                {
+                }
+                Response.Redirect("~/JobCard.aspx?docid=" + docguid.ToString());
+            }
+        }
+
+        protected void btnSaveConfirm_Click(object sender, EventArgs e)
+        {
+            docid = Convert.ToInt64(lblDocID.Text);
+            string stor = DDStoreH.SelectedValue.ToString();
+            if (lblTpe.Text == "Job Card")
+            {
+                if (txtMsgBody.Text.Length < 4)
+                {
+                    string message = "Please capture a Job Card # longer than 4 characters";
+                    AlertHelper.ShowSweetAlert(this, message, "warning");
+                    return;
+                }
+                using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+                {
+                    string jcnum = txtMsgBody.Text.ToString().Trim();
+                    var jcChk = _db.JobCardsMasters.Where(x => x.JCNumber == jcnum).FirstOrDefault();
+                    if (jcChk != null)
+                    {
+                        string message = "JC Number already in use, please create a new one";
+                        AlertHelper.ShowSweetAlert(this, message, "warning");
+                        Button2551_ModalPopupExtender.Show();
+                        return;
+                    }
+
+                    JobCardsMaster JCN = new JobCardsMaster();
+                    JCN.CustomerID = CurrentUser.CoID;
+                    JCN.JCNumber = txtMsgBody.Text.ToString();
+                    JCN.JCGUID = Guid.NewGuid();
+                    JCN.JCCreatedDate = DateTime.Now;
+                    var WStation = _db.WorkStations.Where(x => x.CompanyID == CurrentUser.CoID && x.Seq == 1).Select(x => new { x.WSID, x.WSName }).FirstOrDefault();
+                    JCN.JCWSID = WStation.WSID;
+                    JCN.JCStatus = WStation.WSName;
+                    JCN.JCActive = true;
+                    var POLines = _db.DocLines.Where(x => x.DocID == docid).OrderBy(x => x.LineID).ToList();
+                    JCN.JCSummary = POLines[0].ItemDescription;
+                    JCN.JCQtyOfItems = POLines[0].Quantity;
+                    _db.JobCardsMasters.Add(JCN);
+                    _db.SaveChanges();
+                    // get DocLines and add them to the Jobcard    
+                    foreach (var Ln in POLines)
+                    {
+                        Boolean iskit = false;
+                        int HLineType = 0;
+                        int LLineType = 0;
+
+                        JobCardLine Jcl = new JobCardLine();
+                        Jcl.JCID = JCN.JCID;
+                        Jcl.SelectionId = Ln.SelectionId;
+                        Jcl.ItemCode = Ln.ItemCode;
+                        Jcl.ItemDescription = Ln.ItemDescription;
+                        Jcl.LinePickDate = _db.DocHeaders.Where(x => x.DocID == docid).Select(x => x.DueDelDate).FirstOrDefault();
+                        Jcl.SBCALineID = Ln.SBCALineID;
+                        var bc = _db.ItemBarCodeLinks.Where(x => x.ItemID == Ln.SelectionId).FirstOrDefault();
+                        if (bc != null) Jcl.BarCode = bc.BarCode;
+                        Jcl.Unit = Ln.Unit;
+                        Jcl.UnitPriceExclusive = Ln.UnitPriceExclusive;
+                        Jcl.UnitPriceInclusive = Ln.UnitPriceInclusive;
+                        Jcl.DiscountPercentage = Ln.DiscountPercentage;
+                        Jcl.TaxPercentage = Ln.TaxPercentage;
+                        Jcl.LineTaxTypeID = Ln.LineTaxTypeID;
+                        Jcl.Exclusive = Ln.Exclusive;
+                        Jcl.Discount = Ln.Discount;
+                        Jcl.Tax = Ln.Tax;
+                        Jcl.Total = Ln.Total;
+                        Jcl.Quantity = Ln.Quantity;
+                        Jcl.Comments = Ln.Comments;
+                        Jcl.UnitCost = Ln.UnitCost;
+                        Jcl.isBundle = false;
+                        Jcl.isBundleLine = false;
+                        Jcl.CompanyID = CurrentUser.CoID;
+                        Jcl.LineType = Ln.LineType;
+                        Jcl.IsLotTracked = false;
+                        if (Ln.LineType == 1) Jcl.LineType = 2;
+                        var ThisItem = _db.ItemsMasters.Where(x => x.CompanyID == CurrentUser.CoID && x.ID == Ln.SelectionId).FirstOrDefault();
+                        if (ThisItem != null)
+                        {
+                            Jcl.Physical = ThisItem.Physical;
+                            Jcl.isKit = ThisItem.IsFromKit;
+                            Jcl.isKitLine = ThisItem.IsKitComponent;
+                            Jcl.IsLotTracked = ThisItem.IsLotTracked;
+
+                            if (ThisItem.IsFromKit != null && (bool)ThisItem.IsFromKit)
+                            {
+                                var Store = _db.GetItemLinkedStores(CurrentUser.CoID, Jcl.SelectionId).ToList().FirstOrDefault();
+                                Jcl.StoreCodeFrom = Store.ToString();
+                                Jcl.PickComplete = true;
+                            }
+                        }
+                        else
+                        {
+                            Jcl.Physical = false;
+                            Jcl.isKit = false;
+                            Jcl.isKitLine = false;
+                        }
+
+                        _db.JobCardLines.Add(Jcl);
+                        _db.SaveChanges();
+                        long JClineid = Jcl.LineID;
+                        // check if this line is a kit item and add kit lines
+
+                        if (ThisItem != null)
+                        {
+                            if (ThisItem.IsFromKit != null && ThisItem.IsFromKit == true)
+                            {
+                                iskit = true;
+                                HLineType = 3;
+                                var KitLines = _db.GetKitLinesFromKitCode(Ln.ItemCode, CurrentUser.CoID).Where(x => x.ItemID != null && x.ItemID > 0 && x.FGQty > 0).ToList();
+                                if (KitLines != null && KitLines.Count > 0)
+                                {
+                                    foreach (var KitL in KitLines)
+                                    {
+                                        JobCardLine JclL = new JobCardLine();
+                                        JclL.JCID = JCN.JCID;
+                                        JclL.LineType = LLineType;
+                                        JclL.SelectionId = (long)KitL.ItemID;
+                                        JclL.ItemCode = KitL.ItemCode;
+                                        JclL.ItemDescription = KitL.Description;
+                                        JclL.LinePickDate = Jcl.LinePickDate;
+                                        JclL.SBCALineID = 0;
+                                        var bcL = _db.ItemBarCodeLinks.Where(x => x.ItemID == KitL.ItemID).FirstOrDefault();
+                                        if (bcL != null) JclL.BarCode = bcL.BarCode;
+                                        JclL.Unit = KitL.Unit;
+                                        JclL.UnitPriceExclusive = 0;
+                                        JclL.UnitPriceInclusive = 0;
+                                        JclL.DiscountPercentage = 0;
+                                        JclL.TaxPercentage = 0;
+                                        Jcl.LineTaxTypeID = 0;
+                                        JclL.Exclusive = 0;
+                                        JclL.Discount = 0;
+                                        JclL.Tax = 0;
+                                        JclL.Total = 0;
+
+                                        JclL.Quantity = Ln.Quantity * KitL.FGQty;
+                                        Jcl.UnitCost = 0;
+                                        JclL.Comments = "";
+                                        JclL.isKit = false;
+                                        JclL.isKitLine = true;
+                                        JclL.isBundle = false;
+                                        JclL.isBundleLine = false;
+                                        JclL.CompanyID = CurrentUser.CoID;
+                                        JclL.IsLotTracked = KitL.IsLotTracked ?? false;
+                                        _db.JobCardLines.Add(JclL);
+                                    }
+                                }
+                            }
+                            var thisjcl = _db.JobCardLines.Where(x => x.LineID == JClineid).FirstOrDefault();
+                            thisjcl.isKit = iskit;
+                            thisjcl.LineType = HLineType;
+                        }
+                    }
+                    // insert jobcardtransaction record
+                    JobTransaction JTract = new JobTransaction
+                    {
+                        CompanyID = CurrentUser.CoID,
+                        JCID = JCN.JCID,
+                        FromStationID = WStation.WSID,
+                        ToStationID = WStation.WSID,
+                        MoveDate = DateTime.Now,
+                        MoveQty = JCN.JCQtyOfItems,
+                        MoveBy = CurrentUser.RoleID,
+                        RejectQty = 0
+                    };
+                    _db.JobTransactions.Add(JTract);
+
+                    var thispo = _db.DocHeaders.Where(x => x.DocID == docid).FirstOrDefault();
+                    if (thispo != null)
+                    {
+                        thispo.LinkedJCID = JCN.JCID;
+                        docguid = thispo.DocGUID.ToString();
+                        _db.SaveChanges();
+                    }
+                    Response.Redirect("~/JobCard.aspx?docid=" + docguid.ToString());
+                }
+            }
+            else if (lblTpe.Text == "Works Order")
+            {
+                WorksOrderHeader WCHead = new WorksOrderHeader();
+                WCHead.CompanyID = CurrentUser.CoID;
+                WCHead.Status = "NEW";
+                WCHead.Active = true;
+                WCHead.LinkedDocumentNum = lblDocNum.Text.ToString();
+                WCHead.CustSupName = txtCustName.Text.ToString();
+                WCHead.Reference = txtRef.Text.ToString();
+                WCHead.DueDate = Convert.ToDateTime(txtSODate.Text, CultureInfo.InvariantCulture);
+                WCHead.WOrderDate = DateTime.Now;
+                using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+                {
+                    _db.WorksOrderHeaders.Add(WCHead);
+                    _db.SaveChanges();
+                    int newfcid = WCHead.ID;
+
+                    int woNumb = _db.WorksOrderHeaders.Where(x => x.CompanyID == CurrentUser.CoID)
+                        .OrderByDescending(x => x.WONum)
+                        .Select(x => x.WONum)
+                        .FirstOrDefault();
+                    WCHead.WONum = woNumb + 1;
+
+
+                    var TempLines = _db.DocLines.Where(x => x.DocID == docid && x.ItemCode != null).OrderBy(x => x.LineID).ToList();
+                    //_db.DocLines.Where(x => x.DocID == docid).OrderBy(x => x.LineID).ToList();
+                    // for each pickingslip row --> add new WO line
+                    foreach (var tl in TempLines)
+                    {
+                        var _item = _db.ItemsMasters.Where(i => i.Active == true && i.CompanyID == CurrentUser.CoID && i.ID == tl.SelectionId).FirstOrDefault();
+                        WorksOrderLine WoL = new WorksOrderLine();
+                        WoL.CompanyID = CurrentUser.CoID;
+                        WoL.WOID = newfcid;
+                        WoL.LineType = 1;
+                        if (_item.IsFromBOM == true) WoL.LineType = 2;
+                        if (_item.IsFromKit == true) WoL.LineType = 3;
+                        WoL.Quantity = tl.Quantity;
+                        WoL.ItemCode = tl.ItemCode;
+                        WoL.ItemDescription = tl.ItemDescription;
+                        WoL.SelectionId = tl.SelectionId;
+                        WoL.DueDelDate = Convert.ToDateTime(txtSODate.Text, CultureInfo.InvariantCulture);
+                        WoL.Active = true;
+                        _db.WorksOrderLines.Add(WoL);
+                        _db.SaveChanges();
+                        int newWoLid = WoL.LineID;
+
+                        if (_item.IsFromBOM == false && _item.IsFromKit == false)
+                        {
+                            WorksOrderRMLine RML = new WorksOrderRMLine();
+                            RML.LinkedWOLineID = (int)newWoLid;
+                            RML.WOID = newfcid;
+                            RML.SelectionId = tl.SelectionId;
+                            RML.ItemCode = tl.ItemCode;
+                            RML.ItemDescription = tl.ItemDescription;
+                            RML.Quantity = Convert.ToDecimal(tl.Quantity);
+                            RML.CompanyID = CurrentUser.CoID;
+                            RML.LinkedFGSelectionID = tl.SelectionId;
+                            RML.LinkedFGCode = tl.ItemCode;
+                            RML.LinkedFGQty = tl.Quantity;
+                            RML.PickComplete = false;
+                            RML.Unit = _item.Unit;
+                            RML.IsLotTracked = _item.IsLotTracked;
+                            _db.WorksOrderRMLines.Add(RML);
+                        }
+                        else if (_item.IsFromBOM == true)
+                        {
+                            int bmc = _db.BOMHeaders.Where(x => x.CompanyID == CurrentUser.CoID && x.FGCode == tl.ItemCode).Select(x => x.BomHID).FirstOrDefault();
+                            if (bmc > 0)
+                            {
+                                var BomLines = _db.GetBOMLinesFromBomHeaderID(bmc, CurrentUser.CoID);
+                                foreach (var bl in BomLines)
+                                {
+                                    if (bl.ItemID != null)
+                                    {
+                                        WorksOrderRMLine RML = new WorksOrderRMLine();
+                                        RML.LinkedWOLineID = (int)newWoLid;
+                                        RML.WOID = newfcid;
+                                        RML.SelectionId = (long)bl.ItemID;
+                                        RML.ItemCode = bl.ItemCode;
+                                        RML.ItemDescription = bl.Description;
+                                        RML.Quantity = Convert.ToDecimal(tl.Quantity) * Convert.ToDecimal(bl.RMQty);
+                                        RML.CompanyID = CurrentUser.CoID;
+                                        RML.LinkedFGSelectionID = tl.SelectionId;
+                                        RML.LinkedFGCode = tl.ItemCode;
+                                        RML.LinkedFGQty = tl.Quantity;
+                                        RML.PickComplete = false;
+                                        var itm = _db.ItemsMasters.Where(x => x.CompanyID == CurrentUser.CoID && x.ID == tl.SelectionId).FirstOrDefault();
+                                        RML.Unit = itm.Unit;
+                                        RML.IsLotTracked = itm.IsLotTracked;
+                                        _db.WorksOrderRMLines.Add(RML);
+                                    }
+                                }
+                            }
+                        }
+                        else if (_item.IsFromKit == true)
+                        {
+                            string kmc = _db.KitHeaders.Where(x => x.CompanyID == CurrentUser.CoID && x.FGCode == tl.ItemCode).Select(x => x.KitCode).FirstOrDefault();
+                            if (kmc != null)
+                            {
+                                var KitLines = _db.GetKitLinesFromKitCode(kmc, CurrentUser.CoID);
+                                foreach (var bl in KitLines)
+                                {
+                                    if (bl.ItemID != null)
+                                    {
+                                        WorksOrderRMLine RML = new WorksOrderRMLine();
+                                        RML.LinkedWOLineID = (int)newWoLid;
+                                        RML.WOID = newfcid;
+                                        RML.SelectionId = (long)bl.ItemID;
+                                        RML.ItemCode = bl.ItemCode;
+                                        RML.ItemDescription = bl.Description;
+                                        RML.Quantity = Convert.ToDecimal(tl.Quantity) * Convert.ToDecimal(bl.FGQty);
+                                        RML.CompanyID = CurrentUser.CoID;
+                                        RML.LinkedFGSelectionID = tl.SelectionId;
+                                        RML.LinkedFGCode = tl.ItemCode;
+                                        RML.LinkedFGQty = tl.Quantity;
+                                        RML.PickComplete = false;
+                                        RML.IsLotTracked = (bool)bl.IsLotTracked;
+                                        RML.Unit = _db.ItemsMasters.FirstOrDefault(x => x.CompanyID == CurrentUser.CoID && x.ID == bl.ItemID).Unit;
+                                        _db.WorksOrderRMLines.Add(RML);
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    var thisdoc = _db.DocHeaders.Where(x => x.DocID == docid).FirstOrDefault();
+                    thisdoc.LinkedWOID = newfcid;
+                    _db.SaveChanges();
+                    Response.Redirect($"~/WorksOrdersDetailed.aspx?woid={newfcid}", false);
+                }
+            }
+            else
+            {
+                using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+                {
+                    PickingSlipMaster PSN = new PickingSlipMaster();
+                    PSN.CustomerID = CurrentUser.CoID;
+                    PSN.PSIntNumber = lblDocNum.Text.ToString().Replace("SO", "PS");
+                    PSN.PSGUID = Guid.NewGuid();
+                    PSN.PSCreatedDate = DateTime.Now;
+                    PSN.PSCreatedByRoleID = 0;
+                    PSN.PSStatus = "Captured";
+                    PSN.PSStationID = _db.PickSlipProcesses.Where(x => x.CompanyID == CurrentUser.CoID && x.Seq == 1).Select(x => x.PSPID).FirstOrDefault();
+                    PSN.PSActive = true;
+                    PSN.PSDueDate = (DateTime)Convert.ToDateTime(txtSODate.Text);
+                    PSN.LinkedSOrdID = docid;
+                    PSN.LinkedWONumber = 0;
+                    if (DDStoreH.SelectedIndex > 0)
+                    {
+                        PSN.FromStoreID = Convert.ToInt64(_db.Stores.Where(x => x.CompanyID == CurrentUser.CoID && x.StoreCode == stor).Select(x => x.StoreID).FirstOrDefault());
+                    }
+                    else { PSN.FromStoreID = 0; }
+
+                    _db.PickingSlipMasters.Add(PSN);
+                    try
+                    {
+                        _db.SaveChanges();
+                    }
+                    catch (Exception ex) { }
+
+
+                    // get DocLines and add them to the Jobcard
+                    var POLines = _db.DocLines.Where(x => x.DocID == docid && x.ItemCode != null).OrderBy(x => x.LineID).ToList();
+                    foreach (var Ln in POLines)
+                    {
+                        PickSlipLine PsL = new PickSlipLine();
+                        PsL.PSID = PSN.PSID;
+                        PsL.SBCALineID = Ln.SBCALineID;
+                        PsL.SelectionId = Ln.SelectionId;
+                        PsL.ItemCode = Ln.ItemCode;
+                        PsL.ItemDescription = Ln.ItemDescription;
+                        var bc = _db.ItemBarCodeLinks.Where(x => x.ItemID == Ln.SelectionId).FirstOrDefault();
+                        if (bc != null) PsL.BarCode = bc.BarCode;
+                        PsL.Quantity = Ln.Quantity;
+                        PsL.Comments = Ln.Comments;
+                        PsL.PickComplete = false;
+                        if (DDStoreH.SelectedIndex > 0)
+                        {
+                            PsL.StoreCodeFrom = DDStoreH.SelectedValue.ToString();
+                        }
+                        else { PsL.StoreCodeFrom = ""; }
+
+                        PsL.LineType = Ln.LineType;
+                        PsL.CompanyID = CurrentUser.CoID;
+                        PsL.IsLotTracked = false;
+                        var ThisItem = _db.ItemsMasters.Where(x => x.CompanyID == CurrentUser.CoID && x.ID == Ln.SelectionId).FirstOrDefault();
+                        if (ThisItem != null)
+                        {
+                            PsL.IsLotTracked = ThisItem.IsLotTracked;
+                        }
+                        _db.PickSlipLines.Add(PsL);
+                    }
+
+                    // insert Picking Slip Transaction record
+                    PickSlipTransaction PSract = new PickSlipTransaction
+                    {
+                        CompanyID = CurrentUser.CoID,
+                        PSID = PSN.PSID,
+                        FromStationID = PSN.PSStationID,
+                        ToStationID = PSN.PSStationID,
+                        MoveDate = DateTime.Now,
+                        MoveQty = 1,
+                        MoveBy = CurrentUser.RoleID,
+                        RejectQty = 0
+                    };
+                    _db.PickSlipTransactions.Add(PSract);
+
+                    var thispo = _db.DocHeaders.Where(x => x.DocID == docid).FirstOrDefault();
+                    if (thispo != null)
+                    {
+                        thispo.LinkedPSID = PSN.PSID;
+                        //thispo.Started = true;
+                        docguid = thispo.DocGUID.ToString();
+                    }
+                    _db.SaveChanges();
+                    Response.Redirect("~/PickingSlip.aspx?docid=" + docguid.ToString());
+                }
+            }
+        }
+
     }
 }

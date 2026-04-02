@@ -43,8 +43,22 @@ namespace SBMS
                                  x.FGCode.ToLower().Contains(searchText.ToLower()) ||
                                  x.BomDescript.ToLower().Contains(searchText.ToLower())))
                     .ToList();
-                GridBOM.DataSource = BOMs;
-                GridBOM.DataBind();
+                if (BOMs.Count > 0)
+                {
+                    if (BOMs.Count > 0)
+                    {
+                        foreach (var item in BOMs)
+                        {
+                            if (item.BomActive == null)
+                            {
+                                item.BomActive = true;
+                            }
+                        }
+
+                        GridBOM.DataSource = BOMs;
+                        GridBOM.DataBind();
+                    }
+                }
             }
         }
 
@@ -68,6 +82,7 @@ namespace SBMS
                 BOMHeader NewBH = new BOMHeader();
                 NewBH.CompanyID = CurrentUser.CoID;
                 NewBH.BOMCode = "NEW";
+                NewBH.BomActive = true;
                 _db.BOMHeaders.Add(NewBH);
                 _db.SaveChanges();
                 int newbhid = NewBH.BomHID;

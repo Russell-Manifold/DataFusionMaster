@@ -144,22 +144,26 @@
                                          <asp:DropDownList ID="ddlGridItem" runat="server" AutoPostBack="true" OnSelectedIndexChanged="ddlGridItem_SelectedIndexChanged"></asp:DropDownList>
                                      </ItemTemplate>
                                  </asp:TemplateField>
-                                 <asp:TemplateField HeaderText="Lot Number" ItemStyle-Width="5em">
+                                 <asp:TemplateField HeaderText="On Hand </br> (From Store)" ItemStyle-Width="8em" ItemStyle-HorizontalAlign="Center" HeaderStyle-HorizontalAlign="Center">
+                                    <ItemTemplate>
+                                        <asp:Label ID="lblAvailQty" runat="server" style="text-align:center"></asp:Label>       
+                                    </ItemTemplate>
+                                     </asp:TemplateField>
+                                  <asp:TemplateField HeaderText="Lot Number" ItemStyle-Width="5em">
                                     <ItemTemplate>
                                         <asp:DropDownList ID="DDlotNum" runat="server" Style="width: 8em; text-align: center" AutoPostBack="true" OnSelectedIndexChanged="DDlotNum_SelectedIndexChanged">
                                             <asp:ListItem Value="0">- Lot Number-</asp:ListItem>
                                         </asp:DropDownList>
                                     </ItemTemplate>
                                 </asp:TemplateField>
-                                 <asp:TemplateField HeaderText="On Hand" ItemStyle-Width="10em" ItemStyle-HorizontalAlign="Center" HeaderStyle-HorizontalAlign="Center">
-                                    <ItemTemplate>
-                                        <asp:Label ID="lblAvailQty" runat="server" style="text-align:center"></asp:Label>
-                                        
-                                    </ItemTemplate>
-                                     </asp:TemplateField>
-                                 <asp:TemplateField HeaderText="Trf_Qty" ItemStyle-Width="6em" ItemStyle-HorizontalAlign="Center" HeaderStyle-HorizontalAlign="Center">
+                                 <asp:TemplateField HeaderText="On Hand </br> (To Store)" ItemStyle-Width="8em" ItemStyle-HorizontalAlign="Center" HeaderStyle-HorizontalAlign="Center">
+                                   <ItemTemplate>
+                                       <asp:Label ID="lblToStoreQty" runat="server" style="text-align:center"></asp:Label>       
+                                   </ItemTemplate>
+                                    </asp:TemplateField>
+                                 <asp:TemplateField HeaderText="Qty_To_Trf" ItemStyle-Width="6em" ItemStyle-HorizontalAlign="Center" HeaderStyle-HorizontalAlign="Center">
                                      <ItemTemplate>
-                                         <asp:TextBox ID="txtQty" runat="server" Text='<%# Eval("TrfOutQty") %>' style="text-align:center"></asp:TextBox>
+                                         <asp:TextBox ID="txtQty" runat="server" Text='<%# Eval("TrfOutQty") %>' style="text-align:center; width:6em"></asp:TextBox>
                                      </ItemTemplate>
                                  </asp:TemplateField>
                                  

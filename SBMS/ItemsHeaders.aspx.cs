@@ -298,6 +298,7 @@ namespace SBMS
 
         protected void GridItems_RowDataBound(object sender, GridViewRowEventArgs e)
         {
+            
             decimal SBCAQty = 0, MDFQty = 0, PickQty = 0, JCQty = 0;
             if (e.Row.RowType == DataControlRowType.DataRow)
             {

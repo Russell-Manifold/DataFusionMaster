@@ -235,16 +235,29 @@
                         <div class="PopupBody" style="margin: 2em">
                             <h4>
                                 <asp:Label ID="woLineID" runat="server" Text="" style="display:none"></asp:Label><asp:Label ID="WordID" runat="server" Text="" style="display:none"></asp:Label>
-                                Item Code:<br /><asp:DropDownList ID="ddlItemCode" runat="server" AutoPostBack="true" OnSelectedIndexChanged="ddlItemCode_SelectedIndexChanged"></asp:DropDownList><br /><br />
-                                <asp:Label ID="lblDescript" runat="server" Text=""></asp:Label><br /><br />
-                                Qty:<br />
-                                <asp:TextBox ID="txtAddQty" runat="server" style="width:4em; text-align:center" ></asp:TextBox>
-                            </h4>
-                                   
+                               <table style="text-align:left">
+                                   <tr>
+                                       <td > Item Code:</td>
+                                       <td><asp:DropDownList ID="ddlItemCode" runat="server" AutoPostBack="true" OnSelectedIndexChanged="ddlItemCode_SelectedIndexChanged" Width="250px"></asp:DropDownList></td>
+                                   </tr>
+                                   <tr>
+                                       <td colspan="2" style="padding:1em"><asp:Label ID="lblDescript" runat="server" Text="" style="text-align:left">&nbsp;</asp:Label></td>
+                                   </tr>
+                                   <tr>
+                                       <td> Qty Required:</td>
+                                       <td><asp:TextBox ID="txtqty" runat="server" style="width:150px; text-align:center">1</asp:TextBox></td>
+                                       <cci:FilteredTextBoxExtender ID="ftbeP" runat="server" TargetControlID="txtqty" FilterType="Numbers,Custom" ValidChars="." />
+                                   </tr>
+                                   <tr>
+                                       <td> Store:</td>
+                                    <td><asp:DropDownList ID="DDItemAddStore" runat="server" Width="50px"></asp:DropDownList></td>
+                                </tr>
+                               </table>
+                            </h4>                   
                         </div>
                         <div class="Controls">
                             <input id="lbtnAddYes" type="button" class="buttonYellow" value="OK" runat="server" style="display: none" />
-                            <asp:LinkButton ID="lbtnAddYesM" runat="server" CssClass="icon fa-save buttonSage" OnClick="lbtnAddYesM_Click">OK</asp:LinkButton>
+                            <asp:LinkButton ID="lbtnAddYesM" runat="server" CssClass="icon fa-plus-circle buttonSage" OnClick="lbtnAddYesM_Click"> OK</asp:LinkButton>
                         </div>
                     </div>
                 </asp:Panel>

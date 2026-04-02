@@ -50,7 +50,7 @@ namespace SBMS
             kitid = Convert.ToInt64(Request.QueryString["kitid"].ToString());
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {
-                _items = _db.ItemsMasters.Where(i => i.Active == true && i.CompanyID == CoID && i.Active == true && (i.IsKitComponent != null && i.IsKitComponent == true)).OrderBy(x => x.Code).ToList();
+                _items = _db.ItemsMasters.Where(i => i.Active == true && i.CompanyID == CoID && i.Active == true && (i.IsKitComponent != null && i.IsKitComponent == true) || (i.Physical == false)).OrderBy(x => x.Code).ToList();
             }
             if (!IsPostBack)
             {
@@ -67,11 +67,18 @@ namespace SBMS
                 if (kitH != null)
                 {
                     kitCode = kitH.KitCode;
-                    var item = _db.ItemsMasters.FirstOrDefault(x => x.CompanyID == CurrentUser.CoID && x.Code == kitCode);
-                    decimal avgCost = item?.AverageCost ?? 0; // Use 0 as default if null
-                    lblItemCost.Text = avgCost.ToString("N2");                  
-                    
                     lblFGID.Text = kitH.FGID.ToString();
+                    var item = _db.ItemsMasters.FirstOrDefault(x => x.CompanyID == CurrentUser.CoID && x.Code == kitCode);
+                    
+                    decimal avgCost = item?.AverageCost ?? 0; // Use 0 as default if null
+                    lblItemCost.Text = avgCost.ToString("N2");
+
+                    //decimal SageSell = item?.PriceExclusive ?? 0; // Use 0 as default if null
+                    //lblSageSell.Text = SageSell.ToString("N2");
+
+                    //decimal GPPerc = item?.GPPercentage ?? 0;
+                    //txtNewGP.Text = GPPerc.ToString();
+                   
                     if (kitH.FGCode != null) lblFGCode.Text = kitH.FGCode.ToString() ?? "";
                     if (kitH.FGDescript != null) lblFGDescript.Text = kitH.FGDescript.ToString() ?? "";
                     if (kitH.AddCost01 != null) txtAdd1.Text = kitH.AddCost01.ToString() ?? "";
@@ -83,7 +90,7 @@ namespace SBMS
                     if (txtAdd2.Text.ToString().Trim().Length > 0) adc2 = Convert.ToDecimal(txtAdd2.Text, CultureInfo.InvariantCulture);
                     if (txtAdd3.Text.ToString().Trim().Length > 0) adc3 = Convert.ToDecimal(txtAdd3.Text, CultureInfo.InvariantCulture);
                     txtTotCost.Text = (adc1 + adc2 + adc3).ToString();
-
+                  
                     var KitL = _db.GetKitLinesFromKitCode(kitH.KitCode, CoID)
                             .Select(bom => new KitLineT
                             {
@@ -93,13 +100,14 @@ namespace SBMS
                                 ItemID = bom.ItemID.GetValueOrDefault(),
                                 Description = bom.Description ?? "",
                                 FGQty = bom.FGQty.GetValueOrDefault(),
-                                AvCost = bom.AvCost.GetValueOrDefault()
+                                AvCost = bom.AvCost.GetValueOrDefault()                  
                             }).ToList();
                     if (KitL == null)
                     {
                         KitLine NewKitLine = new KitLine();
                         NewKitLine.CompanyID = CoID;
                         NewKitLine.KitCode = "NEW";
+                        NewKitLine.KitHID = (int)kitid;
                         _db.KitLines.Add(NewKitLine);
                         _db.SaveChanges();
                     }
@@ -108,6 +116,7 @@ namespace SBMS
                         KitLine NewKitLine = new KitLine();
                         NewKitLine.CompanyID = CoID;
                         NewKitLine.KitCode = kitH.KitCode;
+                        NewKitLine.KitHID = (int)kitid;
                         _db.KitLines.Add(NewKitLine);
                         _db.SaveChanges();
                     }
@@ -119,12 +128,13 @@ namespace SBMS
                             KitLine NewKitLine = new KitLine();
                             NewKitLine.CompanyID = CoID;
                             NewKitLine.KitCode = kitH.KitCode;
+                            NewKitLine.KitHID = (int)kitid;
                             _db.KitLines.Add(NewKitLine);
                             _db.SaveChanges();
 
                         }
                     }
-                    KitL = _db.GetKitLinesFromKitCode(kitH.KitCode, CoID)
+                            KitL = _db.GetKitLinesFromKitCode(kitH.KitCode, CoID)
                             .Select(bom => new KitLineT
                             {
                                 KLID = bom.KLID,
@@ -162,18 +172,50 @@ namespace SBMS
 
         protected void lbtnLineSave_Click(object sender, EventArgs e)
         {
-            LinkButton lbtn = (LinkButton)sender;
-            GridViewRow row = (GridViewRow)lbtn.NamingContainer;
-            DropDownList DDItemCode = (DropDownList)row.FindControl("DDItemCode");
+            LinkButton lbtn = sender as LinkButton;
+            if (lbtn == null) return;
+            GridViewRow row = lbtn.NamingContainer as GridViewRow;
+            if (row == null) return;
+            DropDownList DDItemCode = row.FindControl("DDItemCode") as DropDownList;
+            TextBox txtBOMQty = row.FindControl("txtBOMQty") as TextBox;
 
-            TextBox txtBOMQty = (TextBox)row.FindControl("txtBOMQty");
+            // Validation: Ensure all required values are present
+            if (DDItemCode == null || txtBOMQty == null || DDItemCode.SelectedIndex == 0 || string.IsNullOrWhiteSpace(txtBOMQty.Text))
+            {
+                AlertHelper.ShowSweetAlert(this, "Please select an item and enter a valid quantity before saving.", "warning");
+                return;
+            }
 
-            int Lid = Convert.ToInt32(lbtn.CommandArgument);
+            long itemId;
+            decimal rmQty;
+            if (!long.TryParse(DDItemCode.SelectedValue, out itemId) || itemId == 0)
+            {
+                AlertHelper.ShowSweetAlert(this, "Invalid item selected.", "warning");
+                return;
+            }
+            if (!decimal.TryParse(txtBOMQty.Text, out rmQty) || rmQty <= 0)
+            {
+                AlertHelper.ShowSweetAlert(this, "Invalid quantity entered.", "warning");
+                return;
+            }
+
+            int Lid;
+            if (!int.TryParse(lbtn.CommandArgument.ToString(), out Lid))
+            {
+                AlertHelper.ShowSweetAlert(this, "Invalid line ID.", "error");
+                return;
+            }
+
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {
                 var BL = _db.KitLines.Where(x => x.KLID == Lid).FirstOrDefault();
-                BL.ItemCode = DDItemCode.SelectedItem.Text.ToString();
-                BL.ItemID = Convert.ToInt64(DDItemCode.SelectedValue);
+                if (BL == null)
+                {
+                    AlertHelper.ShowSweetAlert(this, "Kit line not found.", "error");
+                    return;
+                }
+                BL.ItemCode = DDItemCode.SelectedItem.Text ?? string.Empty;
+                BL.ItemID = itemId;
                 BL.FGQty = Convert.ToDecimal(txtBOMQty.Text);
                 _db.SaveChanges();
                 LoadKit();

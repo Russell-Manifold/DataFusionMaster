@@ -1,0 +1,26 @@
+12:06:07 - CoID: 739032 + LoadItems error: An error occurred while updating the entries. See the inner exception for details.
+12:06:08 - CoID: 739032 + Error saving LastCallDate for Items: An error occurred while updating the entries. See the inner exception for details.
+12:14:16 - CoID: 739032 + LoadItems error: An error occurred while updating the entries. See the inner exception for details.
+12:14:16 - CoID: 739032 + Error saving LastCallDate for Items: An error occurred while updating the entries. See the inner exception for details.
+12:22:15 - CoID: 739032 + LoadItems error: An error occurred while updating the entries. See the inner exception for details.
+12:22:21 - CoID: 739032 + Error saving LastCallDate for Items: An error occurred while updating the entries. See the inner exception for details.
+12:25:04 - CoID: 739032 + LoadItems error: An error occurred while updating the entries. See the inner exception for details.
+12:25:04 - CoID: 739032 + Error saving LastCallDate for Items: An error occurred while updating the entries. See the inner exception for details.
+12:26:25 - CoID: 739032 + LoadItems error: An error occurred while updating the entries. See the inner exception for details.
+12:26:26 - CoID: 739032 + Error saving LastCallDate for Items: An error occurred while updating the entries. See the inner exception for details.
+12:33:21 - CoID: 739032 + LoadItems error: An error occurred while updating the entries. See the inner exception for details.
+12:33:22 - CoID: 739032 + Error saving LastCallDate for Items: An error occurred while updating the entries. See the inner exception for details.
+12:36:55 - CoID: 739032 + LoadItems error: An error occurred while updating the entries. See the inner exception for details.
+12:36:56 - CoID: 739032 + Error saving LastCallDate for Items: An error occurred while updating the entries. See the inner exception for details.
+12:38:11 - CoID: 739032 + LoadItems error: An error occurred while updating the entries. See the inner exception for details.
+12:38:11 - CoID: 739032 + Error saving LastCallDate for Items: An error occurred while updating the entries. See the inner exception for details.
+12:39:30 - CoID: 739032 + LoadItems error: An error occurred while updating the entries. See the inner exception for details.
+12:39:30 - CoID: 739032 + Error saving LastCallDate for Items: An error occurred while updating the entries. See the inner exception for details.
+12:43:58 - CoID: 739032 + LoadItems error: An error occurred while updating the entries. See the inner exception for details.
+12:43:59 - CoID: 739032 + Error saving LastCallDate for Items: An error occurred while updating the entries. See the inner exception for details.
+12:48:29 - CoID: 739032 + LoadItems error: An error occurred while updating the entries. See the inner exception for details.
+12:48:29 - CoID: 739032 + Error saving LastCallDate for Items: An error occurred while updating the entries. See the inner exception for details.
+12:49:50 - CoID: 739032 + LoadItems error: An error occurred while updating the entries. See the inner exception for details.
+12:49:50 - CoID: 739032 + Error saving LastCallDate for Items: An error occurred while updating the entries. See the inner exception for details.
+12:56:28 - CoID: 739032 + LoadItems error: An error occurred while updating the entries. See the inner exception for details.
+12:56:36 - CoID: 739032 + Error saving LastCallDate for Items: An error occurred while updating the entries. See the inner exception for details.

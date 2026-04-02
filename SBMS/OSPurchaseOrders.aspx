@@ -92,7 +92,7 @@
                                             <asp:BoundField DataField="DocID" ReadOnly="True" />
                                             <asp:TemplateField HeaderText="PO #" ItemStyle-Width="6em" SortExpression="DocumentNumber">
                                                 <ItemTemplate>
-                                                    <asp:LinkButton ID="lbtnPO" CommandArgument='<%# Eval("DocGUID")%>' CommandName="lbtnPO" runat="server" Text='<%# Eval("DocumentNumber")%>' ToolTip="View Sales Order" Style="color: #4A82AB; font-weight: 600; margin: 0em" OnClick="lbtnPO_Click"></asp:LinkButton>
+                                                    <asp:LinkButton ID="lbtnPO" CommandArgument='<%# Eval("DocGUID")%>' CommandName="lbtnPO" runat="server" Text='<%# Eval("DocumentNumber")%>' ToolTip="View Purchase Order" Style="color: #4A82AB; font-weight: 600; padding: 0.5em; border:1px solid #4A82AB; border-radius:0.5em" OnClick="lbtnPO_Click"></asp:LinkButton>
                                                 </ItemTemplate>
                                             </asp:TemplateField>
                                             <asp:BoundField HeaderText="Supplier Name" DataField="CustSupName" ReadOnly="True" SortExpression="CustSupName" />

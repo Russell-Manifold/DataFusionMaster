@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using iTextSharp.text.pdf;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RestSharp;
 using SBMS.Models;
@@ -46,11 +47,11 @@ namespace SBMS.Classes
         static DateTime CustDT = Convert.ToDateTime("01 Jan 2015"), SuppDT = Convert.ToDateTime("01 Jan 2015"), ItemDT = Convert.ToDateTime("01 Jan 2015"), PODT = Convert.ToDateTime("01 Jan 2015"), InvoiceDT = Convert.ToDateTime("01 Jan 2015"), CNoteDT = Convert.ToDateTime("01 Jan 2015");
         static DateTime SuppInvDT = Convert.ToDateTime("01 Jan 2015"), SuppRetDT = Convert.ToDateTime("01 Jan 2015"), JrnlDT = Convert.ToDateTime("01 Jan 2015"), QuoteDT = Convert.ToDateTime("01 Jan 2015"), SOrdDT = Convert.ToDateTime("01 Jan 2015"), GLegDT = Convert.ToDateTime("01 Jan 2015");
 
-       // public static string sageurl = "https://accounting.sageone.co.za/api/2.0.0/";
-       //public static string APIKey = "5850E392-0FE8-43B4-9EEB-18D2B28B115C";
+      //public static string sageurl = "https://accounting.sageone.co.za/api/2.0.0/";
+      //public static string APIKey = "5850E392-0FE8-43B4-9EEB-18D2B28B115C";
         
-        public static string sageurl = "https://resellers.accounting.sageone.co.za/api/2.0.0/";
-        public static string APIKey = "2B7B61BA-41B8-4212-B2A2-77B8734BA688";
+       public static string sageurl = "https://resellers.accounting.sageone.co.za/api/2.0.0/";
+       public static string APIKey = "2B7B61BA-41B8-4212-B2A2-77B8734BA688";
 
         // Syncflo SBCA profile - SANDBOX KEY
         //public static string APIKey = "934D4C3F-FF4D-4311-9380-F21ACB54DCBB";
@@ -652,13 +653,122 @@ namespace SBMS.Classes
             return ds;
         }
 
+        //private static string FiltDate(string dtS)
+        //{
+        //    DateTime dt = Convert.ToDateTime(dtS);
+        //    string DtStr = "&$filter=((Modified gt datetime'" + dt.ToString("yyyy-MM-ddTHH:mm:ss.fff", CultureInfo.InvariantCulture) + "' or Created gt datetime'" + dt.ToString("yyyy-MM-ddTHH:mm:ss.fff", CultureInfo.InvariantCulture) + "')";
+        //    return (DtStr);
+        //}
+
         private static string FiltDate(string dtS)
         {
-            DateTime dt = Convert.ToDateTime(dtS);
-            string DtStr = "&$filter=((Modified gt datetime'" + dt.ToString("yyyy-MM-ddTHH:mm:ss.fff", CultureInfo.InvariantCulture) + "' or Created gt datetime'" + dt.ToString("yyyy-MM-ddTHH:mm:ss.fff", CultureInfo.InvariantCulture) + "')";
-            return (DtStr);
+            DateTime dt;
+
+            // Try to parse the date using multiple common formats
+            string[] formats = GetAllDateFormats();
+
+            // Try parsing with explicit formats first
+            if (!DateTime.TryParseExact(dtS, formats, CultureInfo.InvariantCulture, DateTimeStyles.None, out dt))
+            {
+                // Try parsing with current culture
+                if (!DateTime.TryParse(dtS, CultureInfo.CurrentCulture, DateTimeStyles.None, out dt))
+                {
+                    // Try parsing with invariant culture
+                    if (!DateTime.TryParse(dtS, CultureInfo.InvariantCulture, DateTimeStyles.None, out dt))
+                    {
+                        // If all parsing attempts fail, log and throw a meaningful exception
+                        string error = $"Unable to parse date string: '{dtS}'. Supported formats include: " +
+                                      "ISO 8601 (yyyy-MM-ddTHH:mm:ss), US (MM/dd/yyyy), EU (dd/MM/yyyy), " +
+                                      "and various other common formats.";
+                        throw new ArgumentException(error);
+                    }
+                }
+            }
+
+            // Ensure we have a consistent format for the OData filter
+            string DtStr = "&$filter=((Modified gt datetime'" + dt.ToString("yyyy-MM-ddTHH:mm:ss.fff", CultureInfo.InvariantCulture) + "' or Created gt datetime'" + dt.ToString("yyyy-MM-ddTHH:mm:ss.fff", CultureInfo.InvariantCulture) +"')";
+            return DtStr;
         }
 
+        private static string[] GetAllDateFormats()
+        {
+            return new[] {
+        // ISO 8601 formats
+        "yyyy-MM-ddTHH:mm:ss.fffffff",
+        "yyyy-MM-ddTHH:mm:ss.fff",
+        "yyyy-MM-ddTHH:mm:ss",
+        "yyyy-MM-ddTHH:mm",
+        "yyyy-MM-dd",
+        
+        // Common separators
+        "yyyy-MM-dd HH:mm:ss.fff",
+        "yyyy-MM-dd HH:mm:ss",
+        "yyyy-MM-dd HH:mm",
+        
+        // US formats
+        "MM/dd/yyyy HH:mm:ss.fff",
+        "MM/dd/yyyy HH:mm:ss",
+        "MM/dd/yyyy HH:mm",
+        "MM/dd/yyyy",
+        "M/d/yyyy H:mm:ss",
+        "M/d/yyyy H:mm",
+        "M/d/yyyy",
+        
+        // European formats
+        "dd/MM/yyyy HH:mm:ss.fff",
+        "dd/MM/yyyy HH:mm:ss",
+        "dd/MM/yyyy HH:mm",
+        "dd/MM/yyyy",
+        "d/M/yyyy H:mm:ss",
+        "d/M/yyyy H:mm",
+        "d/M/yyyy",
+        
+        // Month name formats
+        "dd-MMM-yyyy HH:mm:ss.fff",
+        "dd-MMM-yyyy HH:mm:ss",
+        "dd-MMM-yyyy HH:mm",
+        "dd-MMM-yyyy",
+        "dd MMM yyyy HH:mm:ss.fff",
+        "dd MMM yyyy HH:mm:ss",
+        "dd MMM yyyy HH:mm",
+        "dd MMM yyyy",
+        "MMM dd, yyyy HH:mm:ss",
+        "MMM dd, yyyy",
+        
+        // Compact formats
+        "yyyyMMddTHHmmssfff",
+        "yyyyMMddTHHmmss",
+        "yyyyMMddTHHmm",
+        "yyyyMMdd",
+        
+        // Additional common formats
+        "dd.MM.yyyy HH:mm:ss",
+        "dd.MM.yyyy",
+        "MM.dd.yyyy HH:mm:ss",
+        "MM.dd.yyyy",
+        "yyyy.MM.dd HH:mm:ss",
+        "yyyy.MM.dd",
+        
+        // RFC 1123/2822
+        "ddd, dd MMM yyyy HH:mm:ss GMT",
+        "ddd, dd MMM yyyy HH:mm:ss UTC",
+        
+        // Sortable format
+        "yyyy'-'MM'-'dd'T'HH':'mm':'ss",
+        
+        // Current culture patterns
+        CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern + " " +
+            CultureInfo.CurrentCulture.DateTimeFormat.LongTimePattern,
+        CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern + " " +
+            CultureInfo.CurrentCulture.DateTimeFormat.ShortTimePattern,
+        CultureInfo.CurrentCulture.DateTimeFormat.LongDatePattern + " " +
+            CultureInfo.CurrentCulture.DateTimeFormat.LongTimePattern,
+        CultureInfo.CurrentCulture.DateTimeFormat.LongDatePattern + " " +
+            CultureInfo.CurrentCulture.DateTimeFormat.ShortTimePattern,
+        CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern,
+        CultureInfo.CurrentCulture.DateTimeFormat.LongDatePattern
+    };
+        }
         public class DocumentLine
         {
             public long SelectionId { get; set; }
@@ -1179,9 +1289,19 @@ namespace SBMS.Classes
                                     itm.TextUserField3 = item?["TextUserField3"]?.ToString() ?? ""; if (itm.TextUserField3.Length > 100) { itm.TextUserField3 = itm.TextUserField3.Substring(0, 100); };
                                     string unit = item?["Unit"]?.ToString() ?? "";
                                     itm.Unit = unit.Length > 10 ? unit.Substring(0, 10) : unit;
-                                    if (item["YesNoUserField1"] != null) itm.YesNoUserField1 = Convert.ToBoolean(item["YesNoUserField1"].ToString() ?? "");
-                                    if (item["YesNoUserField2"] != null) itm.YesNoUserField2 = Convert.ToBoolean(item["YesNoUserField2"].ToString() ?? "");
-                                    if (item["YesNoUserField3"] != null) itm.YesNoUserField3 = Convert.ToBoolean(item["YesNoUserField3"].ToString() ?? "");
+                                    try
+                                    {
+                                        if (item["YesNoUserField1"] != null) itm.YesNoUserField1 = Convert.ToBoolean(item["YesNoUserField1"].ToString() ?? "");
+                                        if (item["YesNoUserField2"] != null) itm.YesNoUserField2 = Convert.ToBoolean(item["YesNoUserField2"].ToString() ?? "");
+                                        if (item["YesNoUserField3"] != null) itm.YesNoUserField3 = Convert.ToBoolean(item["YesNoUserField3"].ToString() ?? "");
+                                    }
+                                    catch { }
+                                    if (Userdetails.SageWeightField.ToLower().Contains("userfield"))    
+                                    {
+                                        decimal unitmass = Convert.ToDecimal(item[Userdetails.SageWeightField]);
+                                        if (unitmass >0) itm.NettMass = Convert.ToDecimal(item[Userdetails.SageWeightField]?? 0, CultureInfo.InvariantCulture);
+                                    }
+
                                     try
                                     {
                                         itm.TotQOH_MDF = _db.ItemTransactions.Where(it => it.CompanyID == Userdetails.CoID && it.ItemID == itemid).Sum(it => it.Qty) ?? 0;
@@ -1245,11 +1365,18 @@ namespace SBMS.Classes
                                     thisitm.TextUserField1 = item?["TextUserField1"]?.ToString() ?? ""; if (thisitm.TextUserField1.Length > 100) { thisitm.TextUserField1 = thisitm.TextUserField1.Substring(0, 100); };
                                     thisitm.TextUserField2 = item?["TextUserField2"]?.ToString() ?? ""; if (thisitm.TextUserField1.Length > 100) { thisitm.TextUserField2 = thisitm.TextUserField2.Substring(0, 100); };
                                     thisitm.TextUserField3 = item?["TextUserField3"]?.ToString() ?? ""; if (thisitm.TextUserField3.Length > 100) { thisitm.TextUserField3 = thisitm.TextUserField3.Substring(0, 100); };
+                                    thisitm.UOMConvert = 1;
                                     string unit = item?["Unit"]?.ToString() ?? "";
                                     thisitm.Unit = unit.Length > 10 ? unit.Substring(0, 10) : unit;
                                     if (item["YesNoUserField1"] != null) thisitm.YesNoUserField1 = Convert.ToBoolean(item["YesNoUserField1"].ToString() ?? "");
                                     if (item["YesNoUserField2"] != null) thisitm.YesNoUserField2 = Convert.ToBoolean(item["YesNoUserField2"].ToString() ?? "");
                                     if (item["YesNoUserField3"] != null) thisitm.YesNoUserField3 = Convert.ToBoolean(item["YesNoUserField3"].ToString() ?? "");
+
+                                    if (Userdetails.SageWeightField.ToLower().Contains("userfield"))
+                                    {
+                                        decimal unitmass = Convert.ToDecimal(item[Userdetails.SageWeightField]);
+                                        if (unitmass > 0) itm.NettMass = Convert.ToDecimal(item[Userdetails.SageWeightField] ?? 0, CultureInfo.InvariantCulture);
+                                    }
                                     try
                                     {
                                         thisitm.TotQOH_MDF = _db.ItemTransactions.Where(it => it.CompanyID == Userdetails.CoID && it.ItemID == itemid).Sum(it => it.Qty) ?? 0;
@@ -1264,7 +1391,8 @@ namespace SBMS.Classes
                                     try
                                     {
                                         thisitm.TaxTypeIdSales = Convert.ToInt32(item["TaxTypeIdSales"] ?? 0);
-                                    }    catch { thisitm.TaxTypeIdSales = 0; }
+                                    }   
+                                    catch { thisitm.TaxTypeIdSales = 0; }
 
                                 try
                                     {
@@ -1354,11 +1482,20 @@ namespace SBMS.Classes
                 }
                 await LoadBundles(false, Userdetails);
                 // update doclines, 
-                string result = ApiUrlCall.SetSQLDataFromString("EXEC Fix_DocLines_ItemCodes @CoID = " + Userdetails.CoID);
+                string result = ApiUrlCall.SetSQLDataFromString($"EXEC Fix_DocLines_ItemCodes @CoID = {Userdetails.CoID}" );
                 if (result != "OK")
                 {
                     ApiUrlCall api = new ApiUrlCall();
                     api.LogErrorToFile("Ln1345 - Update item codes error:- " + result);
+                }
+                if (Userdetails.SageWeightField != null && Userdetails.SageWeightField != "")
+                {
+                    string result2 = ApiUrlCall.SetSQLDataFromString($"EXEC Updateweights @CoID = {Userdetails.CoID} , @massfield = '{Userdetails.SageWeightField}'");
+                    if (result2 != "OK")
+                    {
+                        ApiUrlCall api = new ApiUrlCall();
+                        api.LogErrorToFile("Ln1493 - Update Nett Mass error:- " + result2);
+                    }
                 }
             }
             return errorList;
@@ -1855,18 +1992,18 @@ namespace SBMS.Classes
 
                 do
                     {
-                        //string requestUrl = sageurl + "SalesOrder/GET?apikey={" + APIKey + "}&CompanyID=" + Userdetails.CoID + "&$skip=" + skipQty + FiltDate(SOrdDT.ToString()) + ")&includeDetail=true&includeCustomerDetails=true";
-                        string requestUrl = sageurl + "SalesOrder/GET?apikey={" + APIKey + "}&CompanyID=" + Userdetails.CoID + "&$skip=" + skipQty + FiltDate(SOrdDT.ToString()) + " and Status ne 'Invoiced')&includeDetail=true&includeCustomerDetails=true";
+                        string requestUrl = sageurl + "SalesOrder/GET?apikey={" + APIKey + "}&CompanyID=" + Userdetails.CoID + "&$skip=" + skipQty + FiltDate(SOrdDT.ToString()) + ")&includeDetail=true&includeCustomerDetails=true";
                         ApiUrlCall api = new ApiUrlCall();
-                        //JObject parsedJSON = await api.ApiCallAsync(requestUrl, Userdetails);
                     try
                     {
                         parsedJSON = await ApiCallAsync(requestUrl, Userdetails);
                     }
                     catch (Exception ex)
                     {
+                        string errMsg = $"CoID: {Userdetails.CoID} + LoadSalesOrders Entity error: Err 2005 - {ex.Message}: {ex.InnerException}";
+                        LogErrorToFile(errMsg);
                         parsedJSON = new JObject
-                        {
+                        { 
                             ["error"] = "Err 1643 - " + ex.Message
                         };
                     }
@@ -1916,6 +2053,7 @@ namespace SBMS.Classes
                                         ChkDoc.DelAddress3 = item["DeliveryAddress03"].ToString() ?? "";
                                         ChkDoc.DelAddress4 = item["DeliveryAddress04"].ToString() ?? "";
                                         ChkDoc.DelAddress5 = item["DeliveryAddress05"].ToString() ?? "";
+                                        ChkDoc.PostAddress5 = item["PostalAddress05"].ToString() ?? "";
                                         if (item.ToString().Contains("SalesRepresentative"))
                                         {
                                         ChkDoc.SalesRepresentativeId = Convert.ToInt64(item["SalesRepresentativeId"].ToString());
@@ -1933,7 +2071,11 @@ namespace SBMS.Classes
                                         {
                                             _db.SaveChanges();
                                         }
-                                        catch (Exception ex) { string str = ex.Message; }
+                                        catch (Exception ex) {
+                                            string errMsg = $"CoID: {Userdetails.CoID} + LoadSalesOrders Entity error: Err 2078 - {ex.Message}: {ex.InnerException}";
+                                            LogErrorToFile(errMsg);
+                                            string str = ex.Message; 
+                                        }
                                        
                                         long currentDocId = Convert.ToInt64(item["ID"].ToString());
                                         if (!compDocIds.Contains(currentDocId))
@@ -1969,6 +2111,7 @@ namespace SBMS.Classes
                                         DocH.DelAddress3 = item["DeliveryAddress03"].ToString().Trim() ?? "";
                                         DocH.DelAddress4 = item["DeliveryAddress04"].ToString().Trim() ?? "";
                                         DocH.DelAddress5 = item["DeliveryAddress05"].ToString().Trim() ?? "";
+                                        DocH.PostAddress5 = item["PostalAddress05"].ToString().Trim() ?? "";
                                         if (item.ToString().Contains("SalesRepresentative"))
                                         {
                                         DocH.SalesRepresentativeId = Convert.ToInt64(item["SalesRepresentativeId"].ToString());
@@ -3931,6 +4074,7 @@ namespace SBMS.Classes
                     DocH.DelAddress3 = parsedJSON["DeliveryAddress03"].ToString().Trim() ?? "";
                     DocH.DelAddress4 = parsedJSON["DeliveryAddress04"].ToString().Trim() ?? "";
                     DocH.DelAddress5 = parsedJSON["DeliveryAddress05"].ToString().Trim() ?? "";
+                    DocH.PostAddress5 = parsedJSON["PostalAddress05"].ToString().Trim() ?? "";
                     if (parsedJSON.ToString().Contains("SalesRepresentative"))
                     {
                         DocH.SalesRepName = parsedJSON["SalesRepresentative"]["Name"].ToString().Replace("'", "''").Trim();

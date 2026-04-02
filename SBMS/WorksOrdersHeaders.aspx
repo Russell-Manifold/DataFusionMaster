@@ -88,7 +88,7 @@
                                                     <ItemTemplate>
                                                         <asp:LinkButton ID="lbtnWO" CommandArgument='<%# Eval("ID")%>' CommandName="lbtnWO"
                                                             runat="server" Text='<%# "WO" + DataBinder.Eval(Container.DataItem, "WONum").ToString() %>' 
-                                                            ToolTip="View Works Order Details" style="color:#4A82AB; font-weight:600" 
+                                                            ToolTip="View Works Order Details" style="color:#4A82AB; font-weight:600; padding: 0.5em; border:1px solid #4A82AB; border-radius:0.5em; text-align:center"  Width="55px"
                                                             OnClick="lbtnWO_Click">
                                                         </asp:LinkButton>
                                                     </ItemTemplate>

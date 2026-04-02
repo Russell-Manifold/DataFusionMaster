@@ -21,5 +21,6 @@ namespace SBMS.Models
         public int BLID { get; set; }
         public string Description { get; set; }
         public Nullable<decimal> AvCost { get; set; }
+        public string BomUnit { get; set; }
     }
 }

@@ -53,5 +53,6 @@ namespace SBMS.Classes
 
         public bool ShowManfCosts { get; set; }
 
+        public string SageWeightField { get; set; }
     }
 } 

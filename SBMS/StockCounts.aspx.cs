@@ -103,7 +103,7 @@ namespace SBMS
             {
                 var StkCnts = _db.StockCountMasters.Where(x => x.CompanyID == CurrentUser.CoID && x.ClosedOff != true).ToList();
                 DDStckCount.DataSource = StkCnts;
-                DDStckCount.DataTextField = "CtDescription";
+                DDStckCount.DataTextField = "StCntID";
                 DDStckCount.DataValueField = "StCntID";
                 DDStckCount.DataBind();
                 DDStckCount.Items.Insert(0, "-Select-");

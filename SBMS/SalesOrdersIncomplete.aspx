@@ -82,7 +82,7 @@
                     </div>
                         <div class="row 150%">
                             <div class="col-2 col-12-narrow" >    
-                            <h4 style="text-align:left">Filter
+                            <h4 style="text-align:left">
                                 <asp:LinkButton ID="lbtnClear" runat="server" CssClass="buttonC fa fa-search" ToolTip="Clear Filters and Refresh" OnClick="lbtnClear_Click" style="margin:auto; font-size:0.8em; margin-top:0.8em"></asp:LinkButton></h4>  
                             </div>
                              <div class="col-2 col-12-narrow">  

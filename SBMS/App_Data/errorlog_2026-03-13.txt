@@ -1,0 +1,2 @@
+14:36:09 - Ln1345 - Update item codes error:- Procedure or function Fix_DocLines_ItemCodes has too many arguments specified.
+14:47:49 - Ln1493 - Update Nett Mass error:- Error converting data type varchar to numeric.

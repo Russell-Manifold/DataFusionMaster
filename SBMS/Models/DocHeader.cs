@@ -67,5 +67,6 @@ namespace SBMS.Models
         public Nullable<long> Customer_CurrencyId { get; set; }
         public Nullable<decimal> DocCost { get; set; }
         public Nullable<decimal> DocGP { get; set; }
+        public string PostAddress5 { get; set; }
     }
 }

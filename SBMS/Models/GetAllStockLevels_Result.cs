@@ -28,5 +28,6 @@ namespace SBMS.Models
         public Nullable<decimal> NumericUserField2 { get; set; }
         public Nullable<decimal> NumericUserField3 { get; set; }
         public Nullable<decimal> ExchRate { get; set; }
+        public long ItemID { get; set; }
     }
 }

@@ -52,7 +52,7 @@
                                         <asp:BoundField DataField="KitHID"  />
                                         <asp:TemplateField HeaderText="Item Code" ItemStyle-Width="6em" >
                                             <ItemTemplate >
-                                                <asp:LinkButton ID="lbtnBOM" CommandArgument='<%# Eval("KitHID")%>' CommandName="lbtnBOM" runat="server" Text='<%# Eval("FGCode")%>' ToolTip="View Bill OF Materials" style="color:#4A82AB; font-weight:600" OnClick="lbtnBOM_Click" ></asp:LinkButton>
+                                                <asp:LinkButton ID="lbtnBOM" CommandArgument='<%# Eval("KitHID")%>' CommandName="lbtnBOM" runat="server" Text='<%# Eval("FGCode")%>' ToolTip="View Bill OF Materials" style="color:#4A82AB; font-weight:600; border:1px solid #4A82AB" width="120px" OnClick="lbtnBOM_Click" ></asp:LinkButton>
                                             </ItemTemplate>
                                         </asp:TemplateField>
                                         <asp:BoundField HeaderText="Description" DataField="FGDescript" ReadOnly="True"  />

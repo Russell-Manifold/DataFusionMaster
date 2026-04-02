@@ -33,16 +33,13 @@
                     <div class="8u 12u$(medium)">
                         <asp:LinkButton ID="lbtnHome" runat="server" class="buttonC icon fa-home" onclick="lbtnHome_Click">&nbsp;&nbsp;</asp:LinkButton>
                         <asp:LinkButton ID="lbtnSOs" runat="server" class="buttonC icon fa-arrow-left" PostBackUrl="~/OSSalesOrders.aspx">&nbsp;Open Sales Orders</asp:LinkButton>
-                        <asp:LinkButton ID="lbtnViewJC" runat="server" CssClass="buttonC icon fa-search-plus" ToolTip="View Job Card" OnClick="lbtnJCNew_Click">&nbsp;Job Card</asp:LinkButton>
-                        <asp:LinkButton ID="lbtnViewPS" runat="server" CssClass="buttonC icon fa-search-plus" ToolTip="View Picking Slip" OnClick="lbtnViewPS_Click">&nbsp;Picking Slip</asp:LinkButton>
-                        <asp:DropDownList ID="DDOptions" runat="server" AutoPostBack="true" OnSelectedIndexChanged="DDOptions_SelectedIndexChanged" CssClass="buttonC">
+                        <asp:DropDownList ID="DDOptions" runat="server" AutoPostBack="true" OnSelectedIndexChanged="DDOptions_SelectedIndexChanged" CssClass="buttonC" Height="2.35em">
                             <asp:ListItem>- Create -</asp:ListItem>
                              <asp:ListItem value = "1">Create Picking Slip</asp:ListItem>
                             <asp:ListItem Value="0">Create Job Card</asp:ListItem>
                             <asp:ListItem Value="2">Create Works Order</asp:ListItem>
                         </asp:DropDownList>
-   
-                        <asp:LinkButton ID="lbtnReload" runat="server" ToolTip="Reload Sales Order From Sage" CssClass="icon fa-refresh" OnClick="lbtnReload_Click" style="float:right; font-size:0.8em" >&nbsp;</asp:LinkButton>
+                            <asp:LinkButton ID="lbtnReload" runat="server" ToolTip="Reload Sales Order From Sage" CssClass="icon fa-refresh" OnClick="lbtnReload_Click" style="float:right; font-size:0.8em" >&nbsp;</asp:LinkButton>
                                 <cci:ConfirmButtonExtender ID="ConfirmButtonExtender1R" runat="server" ConfirmText="Confirm, reload this Sales Order?" Enabled="True" TargetControlID="lbtnReload"></cci:ConfirmButtonExtender>
                         <h2 style="padding-top:0; line-height:1em">Sales Order</h2>                       
                     </div>
@@ -66,16 +63,16 @@
                                 <td><asp:TextBox ID="txtCustName" runat="server" style="width:95%" ReadOnly="true"></asp:TextBox><asp:Label ID="lblCustID" runat="server" Text="" style="display:none"></asp:Label></td>
                                 <td style="width:10em">Address</td>
                                 <td><asp:TextBox ID="txtAddress1" runat="server" style="width:95%" ReadOnly="true"></asp:TextBox></td>
-                                <td>Picking Slip </td>
-                                <td><asp:TextBox ID="txtPSNum" runat="server" ReadOnly="true" ></asp:TextBox></td>
+                                <td>Picking Slip</td>
+                                <td><asp:TextBox ID="txtPSNum" runat="server" ReadOnly="true" ></asp:TextBox><asp:LinkButton ID="lbtnViewPS" runat="server" CssClass="buttonRed icon fa-search" ToolTip="View Picking Slip" OnClick="lbtnViewPS_Click"></asp:LinkButton></td>
                             </tr>
                             <tr>
                                 <td>Due Date</td>
                                 <td style="padding-top: 2px"><asp:TextBox ID="txtPODate" runat="server" ReadOnly="true"></asp:TextBox>&nbsp;<span style="float:right; padding-right:5%"> Doc Date<asp:TextBox ID="txtCaptDate" runat="server" ReadOnly="true"></asp:TextBox></span></td>
                                  <td></td>
                                 <td><asp:TextBox ID="txtAddress2" runat="server" style="width:95%" ReadOnly="true"></asp:TextBox></td>
-                                <td>Job Card</td>
-                                <td><asp:TextBox ID="txtJCNum" runat="server" ReadOnly="true"></asp:TextBox></td>
+                                <td>Job Card </td>
+                                <td><asp:TextBox ID="txtJCNum" runat="server" ReadOnly="true"></asp:TextBox><asp:LinkButton ID="lbtnViewJC" runat="server" CssClass="buttonRed icon fa-search" ToolTip="View Job Card" OnClick="lbtnJCNew_Click"></asp:LinkButton></td>
                            </tr>
                             <tr >
                                 <td>Reference</td>
@@ -163,11 +160,13 @@
                      
                      <div class="12u 12u$(medium)" style="text-align: center">
                          <asp:Panel ID="PnlButtons" runat="server" Style="display: none">
-                             <span id="lblspan" runat="server" style="float:left" visible="false"> Send No Charge Lines To Sage?<br /><asp:DropDownList ID="DDNCSelect" runat="server">
-                                 <asp:ListItem Value="0">-Select-</asp:ListItem>
+                             <span id="lblspan" runat="server" tooltip="Select NO for the stock entries of 0.00 lines to be made by item adjustments in SAGE, and not reflect on the Sales Order or Tax Invoice" >'No Charge'  (0.00) lines detected. Add them to the Sage Sales Order?
+                                 <asp:DropDownList ID="DDNCSelect" runat="server" Width="60px" >
                                  <asp:ListItem Value="1">Yes</asp:ListItem>
                                  <asp:ListItem Value="2">No</asp:ListItem>
-                           </asp:DropDownList><br /><br /></span>
+                           </asp:DropDownList><br />
+                                 <span style="font-size:x-small">(Selecting NO :-  The item entries of 0.00 lines to be made by item adjustments in SAGE, and not reflect on the Sales Order or Tax Invoice)</span>
+                             </span><br />
                              <asp:Label ID="lblErr" runat="server" Text="" style="margin:auto; color:red"></asp:Label><br />
                              <asp:LinkButton ID="lbtnPrintDN" runat="server" class="buttonRed icon fa-print" Width="200px" OnClick="lbtnPrintDN_Click" Style="display: none">&nbsp;Delivery Note</asp:LinkButton>
                              <asp:LinkButton ID="lbtnPost" runat="server" class="buttonIndex icon fa-upload" Width="220px" OnClick="lbtnPost_Click" ToolTip="Updates Sales Order in Sage Accounting with picking details, Store, Lot number etc. Tax invoice to be generated In Sage Accounting.">&nbsp;Update Sage SO</asp:LinkButton>
@@ -178,11 +177,8 @@
                              <cci:ConfirmButtonExtender ID="lbtnUndo_ConfirmButtonExtender1" runat="server" ConfirmText="Confirm, Re-open this Sales Order for editing?" Enabled="True" TargetControlID="lbtnUndo"></cci:ConfirmButtonExtender>
                          </asp:Panel>
                      </div>
-                </div>
-            
-      
-                <asp:LinkButton ID="LinkButton2" runat="server"></asp:LinkButton>
-               
+                </div>      
+                <asp:LinkButton ID="LinkButton2" runat="server"></asp:LinkButton>      
                  <asp:Panel ID="PnlConf" runat="server" Style="display: none">
                         <asp:LinkButton ID="lbtnCancel" runat="server" CssClass="fa fa-times" style="float:right" ToolTip="Cancel" > </asp:LinkButton>
                         <div class="HellowWorldPopup">

@@ -56,7 +56,7 @@
                                         <asp:TemplateField HeaderText="Item Code" ItemStyle-Width="8em" SortExpression="Code">
                                             <ItemTemplate>
                                                 <asp:LinkButton ID="lbtnBOM" CommandArgument='<%# Eval("ID") %>' CommandName="lbtnBOM" runat="server"
-                                                    Text='<%# Eval("Code") %>' ToolTip="View Item" style="color:#4A82AB; font-weight:600"
+                                                    Text='<%# Eval("Code") %>' ToolTip="View Item" style="color:#4A82AB; font-weight:600; border:1px solid #4A82AB" width="120px"
                                                     OnClick="lbtnBOM_Click"></asp:LinkButton>
                                             </ItemTemplate>
                                         </asp:TemplateField>
@@ -78,35 +78,33 @@
                                                    <asp:CheckBox ID="chkIsLotTracked" runat="server" Checked='<%# Eval("IsLotTracked") %>' Text=" " Enabled="false" />
                                                </ItemTemplate>
                                            </asp:TemplateField>
-                                        <asp:TemplateField HeaderText="Is A Finished Item" ItemStyle-Width="6em" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" SortExpression="IsFinishedGoods">
+                                        <asp:TemplateField HeaderText="Finished Item" ItemStyle-Width="6em" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" SortExpression="IsFinishedGoods">
                                             <ItemTemplate>
                                                 <asp:CheckBox ID="chkIsFG" runat="server" Checked='<%# Eval("IsFinishedGoods") %>' Text=" " Enabled="false" />
                                             </ItemTemplate>
                                         </asp:TemplateField>
-                                        <asp:TemplateField HeaderText="Is Made From A BOM" ItemStyle-Width="6em" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" SortExpression="IsFromBOM">
+                                        <asp:TemplateField HeaderText="From BOM" ItemStyle-Width="6em" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" SortExpression="IsFromBOM">
                                             <ItemTemplate>
                                                 <asp:CheckBox ID="chkIsFromBOM" runat="server" Checked='<%# Eval("IsFromBOM") %>' Text=" " AutoPostBack="true" OnCheckedChanged="chkIsFromBOM_CheckedChanged"/>
                                             </ItemTemplate>
                                         </asp:TemplateField>
-                                        <asp:TemplateField HeaderText="Is Made From A KIT" ItemStyle-Width="6em" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" SortExpression="IsFromKit">
+                                        <asp:TemplateField HeaderText="From KIT" ItemStyle-Width="6em" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" SortExpression="IsFromKit">
                                             <ItemTemplate>
                                                 <asp:CheckBox ID="chkIsFromKit" runat="server" Checked='<%# Eval("IsFromKit") %>' Text=" " AutoPostBack="true" OnCheckedChanged="chkIsFromKit_CheckedChanged" />
                                             </ItemTemplate>
                                         </asp:TemplateField>
-                                        <asp:TemplateField HeaderText="Is BOM Component" ItemStyle-Width="6em" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" SortExpression="IsBOMComponent">
+                                        <asp:TemplateField HeaderText="BOM Component" ItemStyle-Width="6em" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" SortExpression="IsBOMComponent">
                                             <ItemTemplate>
                                                 <asp:CheckBox ID="chkIsBom" runat="server" Checked='<%# Eval("IsBOMComponent") %>' Text=" " AutoPostBack="true" OnCheckedChanged="chkIsBom_CheckedChanged" />
                                             </ItemTemplate>
                                         </asp:TemplateField>
-                                        <asp:TemplateField HeaderText="Is Kit Component" ItemStyle-Width="6em" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" SortExpression="IsKitComponent">
+                                        <asp:TemplateField HeaderText="Kit Component" ItemStyle-Width="6em" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" SortExpression="IsKitComponent">
                                             <ItemTemplate>
                                                 <asp:CheckBox ID="chkIskit" runat="server" Checked='<%# Eval("IsKitComponent") %>' Text=" " AutoPostBack="true" OnCheckedChanged="chkIskit_CheckedChanged" />
                                             </ItemTemplate>
                                         </asp:TemplateField>
                                     </Columns>
                                 </asp:GridView>
-
-
                             </ContentTemplate>
                             <Triggers>
                                 <asp:PostBackTrigger ControlID="lbtndwnload" />

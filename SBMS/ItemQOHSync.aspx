@@ -78,6 +78,9 @@
                     </div>    
                  </div>
                          </ContentTemplate>
+                      <Triggers>
+                                <asp:PostBackTrigger ControlID="lbtnUpdateYes" />
+                            </Triggers>
                      </asp:UpdatePanel>
                     </div>  
                         <section id="footer" class="wrapper">

@@ -74,7 +74,8 @@
                                                 <cci:FilteredTextBoxExtender ID="ftbe" runat="server" TargetControlID="txtBOMQty" FilterType="Custom, Numbers" ValidChars="." />
                                             </ItemTemplate>
                                             </asp:TemplateField>
-                                        <asp:BoundField HeaderText="Av Unit Cost" DataField="AvCost" ReadOnly="True" DataFormatString="{0:N4}" ItemStyle-HorizontalAlign="Right" FooterStyle-HorizontalAlign="Right" ItemStyle-Width="6em" />
+                                        <asp:BoundField HeaderText="UOM" DataField="BomUnit" ReadOnly="True" ItemStyle-Width="2em" ItemStyle-HorizontalAlign="Center"  />
+                                        <asp:BoundField HeaderText="Av Unit Cost" DataField="AvCost" ReadOnly="True" DataFormatString="{0:N4}" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right" FooterStyle-HorizontalAlign="Right" ItemStyle-Width="6em" />
                                         <asp:BoundField HeaderText="Av Cost" DataField="AvRMCost" ReadOnly="True" DataFormatString="{0:N4}" ItemStyle-HorizontalAlign="Right" FooterStyle-HorizontalAlign="Right" ItemStyle-Width="6em" />
                                         <asp:TemplateField ItemStyle-HorizontalAlign="Right" ItemStyle-Width="3em" >
                                                     <ItemTemplate>

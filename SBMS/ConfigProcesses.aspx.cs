@@ -67,11 +67,11 @@ namespace SBMS
 
             if (!IsPostBack)
             {
+                PnlJCProcesses.Style.Add("display", "inline-block");
                 if (CurrentUser.UseModule2 == false)
                 {
                     PnlJCProcesses.Style.Add("display", "none");
-                }
-                if (CurrentUser.UseModule3 == false)
+                } else if (CurrentUser.UseModule2 == false && CurrentUser.UseModule3 == false)
                 {
                     PnlJCProcesses.Style.Add("display", "none");
                 }

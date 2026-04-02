@@ -113,8 +113,11 @@ namespace SBMS
                 var Item = _db.ItemsMasters.Where(x => x.CompanyID == CoID && x.ID == itmid).FirstOrDefault();
                 lblItemCode.Text = Item.Code ?? "";
                 txtDescription.Text = Item.Description ?? "";
+                txtWeight.Text = Item.NettMass.ToString() ?? "";
+                txtUom.Text = Item.Unit ?? "";
                 if ((bool)Item.IsLotTracked) chkIsTracked.Checked = true;
-                if (Convert.ToDecimal(Item.ReorderLevel) < 0) txtReOrdQty.Text = (Convert.ToDecimal(Item.ReorderLevel * -1)).ToString();
+                if (Convert.ToDecimal(Item.ReorderLevel) < 0) txtReOrdQty.Text = (Convert.ToDecimal(Item.ReorderLevel * -1)).ToString();   
+                //txtConversion.Text = ApiUrlCall.NumberToDecimal(Item.UOMConvert.ToString() ?? "1", CurrentUser.CompanyDecPlaces);
                 if (Item.Physical != null)
                 {
                     chkisFinished.Checked = (bool)Item.IsFinishedGoods;
@@ -130,8 +133,10 @@ namespace SBMS
                         lbtnBOM.Visible = false;
                         LbtnKit.Visible = false;
                         txtReOrdQty.Enabled = false;
-                        Accordion1.Panes.RemoveAt(3);
-                        Accordion1.Panes.RemoveAt(2);
+                        Accordion1.Panes[3].Visible = false;
+                        Accordion1.Panes[2].Visible = false;
+                        Accordion1.Panes[4].Visible = false;
+                        Accordion1.Panes[1].Visible = false;
                     }
                     else
                     {
@@ -269,12 +274,18 @@ namespace SBMS
                 Item.IsFinishedGoods = Convert.ToBoolean(chkisFinished.Checked);
                 Item.IsFromBOM = Convert.ToBoolean(chkIsFromBom.Checked);
                 Item.IsFromKit = Convert.ToBoolean(chkIsFromKit.Checked);
+                //try
+                //{
+                //    Item.UOMConvert = Convert.ToDecimal(txtConversion.Text);
+                //} catch { }
+                Item.UOMConvert = 1;
                 decimal MinQty = 0;
                 try
                 {
                     MinQty = Convert.ToDecimal(txtReOrdQty.Text) * -1;
                 }
                 catch { }
+                
                 Item.ReorderLevel = MinQty;
                 Item.IsLotTracked = chkIsTracked.Checked;
                 
@@ -504,7 +515,7 @@ namespace SBMS
             List<TransLine> TLL = new List<TransLine>();
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {
-                int recordsToTake = 100; 
+                int recordsToTake = 10000; 
                 var TransList = _db.ItemTransactions.Where(x => x.CompanyID == CurrentUser.CoID && x.ItemID == itmID).OrderBy(x => x.TransactionDate).Take(recordsToTake).ToList();
                 foreach (var Trn in TransList)
                 {
@@ -535,7 +546,7 @@ namespace SBMS
                         {
                             try
                             {
-                                TL.Document = _db.DocHeaders.FirstOrDefault(x => x.CompanyID == CurrentUser.CoID && x.DocID == Trn.DocumentID).DocumentNumber;
+                                if (TL.Document != null) TL.Document = _db.DocHeaders.FirstOrDefault(x => x.CompanyID == CurrentUser.CoID && x.DocID == Trn.DocumentID).DocumentNumber;
                             }
                             catch { }
                         }

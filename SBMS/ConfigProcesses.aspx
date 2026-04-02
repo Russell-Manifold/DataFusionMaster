@@ -29,7 +29,7 @@
                          <asp:Panel ID="PnlPickProcesses" runat="server">
                               <h4>Picking Processes</h4>
                               <asp:LinkButton ID="lbtnAddPProc" runat="server" style="float:right" CssClass="icon fa-plus-square buttonRed"> Add New</asp:LinkButton>
-                            <asp:GridView ID="GridPickProc" runat="server" AutoGenerateColumns="false" CssClass="gridview"  ToolTip="Open User" OnRowDataBound="GridPickProc_RowDataBound"  OnSelectedIndexChanged="GridPickProc_SelectedIndexChanged">
+                            <asp:GridView ID="GridPickProc" runat="server" AutoGenerateColumns="false" CssClass="gridview"  ToolTip="Open Picking Step" OnRowDataBound="GridPickProc_RowDataBound"  OnSelectedIndexChanged="GridPickProc_SelectedIndexChanged">
                                     <HeaderStyle CssClass="gridViewHeader" />
                                     <FooterStyle CssClass="gridViewHeader" />
                                     <RowStyle CssClass="gridViewRow" />
@@ -52,7 +52,7 @@
                            <asp:Panel ID="PnlJCProcesses" runat="server">
                              <h4>Job Card/Production Processes</h4>
                                <asp:LinkButton ID="lbtnAddJCProc" runat="server" style="float:right" CssClass="icon fa-plus-square buttonRed"> Add New</asp:LinkButton>
-                               <asp:GridView ID="GridJCProc" runat="server" AutoGenerateColumns="false" CssClass="gridview"  ToolTip="Open User" OnRowDataBound="GridJCProc_RowDataBound"  OnSelectedIndexChanged="GridJCProc_SelectedIndexChanged">
+                               <asp:GridView ID="GridJCProc" runat="server" AutoGenerateColumns="false" CssClass="gridview"  ToolTip="Open Job Card Process" OnRowDataBound="GridJCProc_RowDataBound"  OnSelectedIndexChanged="GridJCProc_SelectedIndexChanged">
                                     <HeaderStyle CssClass="gridViewHeader" />
                                     <FooterStyle CssClass="gridViewHeader" />
                                     <RowStyle CssClass="gridViewRow" />

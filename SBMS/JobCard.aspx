@@ -7,6 +7,7 @@
     <link id="Link3" runat="server" rel="shortcut icon" href="images/datafusionicon.ico" type="image/x-icon" />
     <link id="Link4" runat="server" rel="icon" href="images/datafusionicon.ico" type="image/ico" />
     <link rel="stylesheet" href="assets/css/main.css" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
     <form id="form1" runat="server">
@@ -62,7 +63,6 @@
                                 <td>Issued To</td>
                                 <td>
                                     <asp:TextBox ID="txtIssuedTo" runat="server" ReadOnly="true"></asp:TextBox>&nbsp;<asp:LinkButton ID="lbtnIssue" runat="server" CssClass="fa fa-plus-circle buttonRed" ToolTip="Issue Job Card" OnClick="lbtnIssue_Click">&nbsp;</asp:LinkButton>
-                                    <cci:ConfirmButtonExtender ID="lbtnIssue_ConfirmButtonExtender1" runat="server" ConfirmText="Issue this Job Card? Are you sure?" Enabled="True" TargetControlID="lbtnIssue"></cci:ConfirmButtonExtender>
                                 </td>
                             </tr>
                             <tr>
@@ -155,7 +155,7 @@
                                                 <asp:TextBox ID="txtBarcode" runat="server" AutoPostBack="true" OnTextChanged="txtBarcode_TextChanged" Text='<%# Eval("BarCode") %>' oninput="handleBarcodeScan(this)" Style="width: 9em">></asp:TextBox>
                                             </ItemTemplate>
                                         </asp:TemplateField>
-                                        <asp:TemplateField HeaderText="Lot Number">
+                                        <asp:TemplateField HeaderText="Lot #" HeaderStyle-Width="4em">
                                             <ItemTemplate>
                                                 <asp:Label ID="lblLotNum" runat="server" style="display:none" Text='<%# Eval("LotNumber") %>' ></asp:Label>
                                                 <asp:DropDownList ID="DDlotNum" runat="server" OnSelectedIndexChanged="DDlotNum_SelectedIndexChanged" style="width:8.2em; text-align:center">
@@ -168,11 +168,16 @@
                                                 <asp:Label ID="txtUnit" runat="server" Width="3em" Text='<%# Eval("Unit") %>'></asp:Label>
                                             </ItemTemplate>
                                         </asp:TemplateField>
-                                        <asp:TemplateField HeaderText="Quantity" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right">
+                                        <asp:TemplateField HeaderText="Qty" ItemStyle-HorizontalAlign="Center" HeaderStyle-HorizontalAlign="Center">
                                             <ItemTemplate>
                                                 <asp:TextBox ID="txtQty" runat="server" Width="6em" Style="text-align: center" Text='<%# Eval("Quantity" , "{0:N2}") %>' onkeydown='<%# "triggerSaveOnEnter(event, \"" + ((GridViewRow)Container).FindControl("lbtnLineSave").ClientID + "\")" %>'></asp:TextBox>
                                             </ItemTemplate>
                                         </asp:TemplateField>
+                                        <asp:TemplateField HeaderText="Use Qty *" ItemStyle-HorizontalAlign="Center" HeaderStyle-HorizontalAlign="Center" HeaderStyle-ForeColor="Red">
+                                        <ItemTemplate>
+                                            <asp:TextBox ID="txtUseQty" runat="server" Width="6em" Style="text-align: center" Text='<%# Eval("LinePickQty" , "{0:N2}") %>' onkeydown='<%# "triggerSaveOnEnter(event, \"" + ((GridViewRow)Container).FindControl("lbtnLineSave").ClientID + "\")" %>'></asp:TextBox>
+                                        </ItemTemplate>
+                                    </asp:TemplateField>
                                         <asp:TemplateField ItemStyle-Width="2em">
                                                 <HeaderTemplate ><asp:Label ID="Label1" runat="server" Text="Done"></asp:Label><br />
                                                     <asp:CheckBox ID="chkSelectAll" runat="server" AutoPostBack="true" OnCheckedChanged="chkSelectAll_CheckedChanged" />
@@ -319,6 +324,35 @@
                         </div>
                     </div>
                 </asp:Panel>
+
+                 <asp:LinkButton ID="LinkButton4" runat="server" Style="display: none">LinkButton</asp:LinkButton>
+                 <cci:ModalPopupExtender ID="ModalPopupExtender3" runat="server" BackgroundCssClass="ModalPopupBG" CancelControlID="lbtnCancel5B" Drag="true" OkControlID="lbtnOK5B" PopupControlID="PnLIssue" PopupDragHandleControlID="PopupHeader" TargetControlID="LinkButton4"></cci:ModalPopupExtender>
+                 <asp:Panel ID="PnLIssue" runat="server" Style="display: none" DefaultButton="lbtnOKBundle">
+                     <asp:LinkButton ID="lbtnCancel5B" runat="server" CssClass="fa fa-times" Style="float: right" ToolTip="Cancel"> </asp:LinkButton>
+                     <div class="HellowWorldPopup">
+                         <div id="DivIssueTo" class="PopupHeader">
+                             <h3>Issue To
+                                 <asp:Label ID="Label2" runat="server" Text=""></asp:Label></h3>
+                         </div>
+                         <div class="PopupBody">
+                             <table style="margin:auto">
+                                 <tr >
+                                     <td> Role: </td>
+                                     <td style="padding-bottom:1em"><asp:DropDownList ID="DDJCRoles" runat="server" Width="150px"></asp:DropDownList></td>        
+                                 </tr>
+                                 <tr>
+                                     <td> Department:</td>
+                                     <td> <asp:DropDownList ID="DDept" runat="server" Width="150px"></asp:DropDownList></td>
+                                 </tr>
+                             </table>
+                         </div>
+                         <div class="Controls" style="text-align:center">
+                             <input id="lbtnOK5B" type="button" class="buttonYellow" value="OK" runat="server" style="display: none" />
+                             <asp:LinkButton ID="lbtnOKIssue" runat="server" CssClass="buttonCancel" OnClick="lbtnOKIssue_Click">Issue</asp:LinkButton><br />
+                             <br />
+                         </div>
+                     </div>
+                 </asp:Panel>
             </div>
         </div>
     </form>

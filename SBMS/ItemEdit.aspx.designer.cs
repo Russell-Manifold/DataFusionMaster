@@ -141,15 +141,6 @@ namespace SBMS
         protected global::System.Web.UI.WebControls.CheckBox chkPhysical;
 
         /// <summary>
-        /// chkisFinished control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.CheckBox chkisFinished;
-
-        /// <summary>
         /// chkIsFromBom control.
         /// </summary>
         /// <remarks>
@@ -157,6 +148,24 @@ namespace SBMS
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.CheckBox chkIsFromBom;
+
+        /// <summary>
+        /// txtUom control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtUom;
+
+        /// <summary>
+        /// chkisFinished control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.CheckBox chkisFinished;
 
         /// <summary>
         /// chkisBom control.
@@ -168,22 +177,22 @@ namespace SBMS
         protected global::System.Web.UI.WebControls.CheckBox chkisBom;
 
         /// <summary>
-        /// chkIsFromKit control.
+        /// txtReOrdQty control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.CheckBox chkIsFromKit;
+        protected global::System.Web.UI.WebControls.TextBox txtReOrdQty;
 
         /// <summary>
-        /// chkisKit control.
+        /// FilteredTextBoxExtender1 control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.CheckBox chkisKit;
+        protected global::AjaxControlToolkit.FilteredTextBoxExtender FilteredTextBoxExtender1;
 
         /// <summary>
         /// LbLIsTracked control.
@@ -204,22 +213,31 @@ namespace SBMS
         protected global::System.Web.UI.WebControls.CheckBox chkIsTracked;
 
         /// <summary>
-        /// txtReOrdQty control.
+        /// chkIsFromKit control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtReOrdQty;
+        protected global::System.Web.UI.WebControls.CheckBox chkIsFromKit;
 
         /// <summary>
-        /// FilteredTextBoxExtender1 control.
+        /// txtWeight control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::AjaxControlToolkit.FilteredTextBoxExtender FilteredTextBoxExtender1;
+        protected global::System.Web.UI.WebControls.TextBox txtWeight;
+
+        /// <summary>
+        /// chkisKit control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.CheckBox chkisKit;
 
         /// <summary>
         /// chkStores control.

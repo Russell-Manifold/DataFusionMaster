@@ -48,8 +48,18 @@ namespace SBMS
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {
                 var BOMs = _db.KitHeaders.Where(x => x.CompanyID == CoID).ToList();
-                GridBOM.DataSource = BOMs;
-                GridBOM.DataBind();
+                if (BOMs.Count > 0)
+                {
+                    foreach (var item in BOMs)
+                    {
+                        if (item.KitActive == null)
+                        {
+                            item.KitActive = true;
+                        }
+                    }
+                    GridBOM.DataSource = BOMs;
+                    GridBOM.DataBind();
+                }
             }
         }
 
@@ -72,6 +82,7 @@ namespace SBMS
                 KitHeader NewKH = new KitHeader();
                 NewKH.CompanyID = (int)CoID;
                 NewKH.KitCode = "NEW";
+                NewKH.KitActive = true;
                 _db.KitHeaders.Add(NewKH);
                 _db.SaveChanges();
                 int newbhid = NewKH.KitHID;

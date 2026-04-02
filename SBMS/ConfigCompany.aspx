@@ -157,6 +157,15 @@
                                <tr>
                                     <td colspan="4"><hr /></td>
                                     </tr> 
+                               <tr>
+                                    <td>Use Produce Weights (for deliveries, shipping etc)</td>
+                                     <td><asp:CheckBox ID="chkweight" runat="server" /></td>
+                                    <td>Sage field name used for Unit weight</td>
+                                   <td><asp:TextBox ID="txtSageWght" runat="server" placeholder="eg: NumericUserField1"></asp:TextBox></td>    
+                                     </tr>     
+                                         <tr>
+                                         <td colspan="4"><hr /></td>
+                                     </tr> 
                                 <tr>
                              <td>Use Picking Slip Tracking</td>
                               <td><asp:CheckBox ID="chkPickSlip" runat="server"/>

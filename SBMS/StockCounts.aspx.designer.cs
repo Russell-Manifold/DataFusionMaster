@@ -186,24 +186,6 @@ namespace SBMS
         protected global::System.Web.UI.WebControls.LinkButton lbtnOpenNew;
 
         /// <summary>
-        /// lbtnOpenNew_ConfirmButtonExtender1 control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::AjaxControlToolkit.ConfirmButtonExtender lbtnOpenNew_ConfirmButtonExtender1;
-
-        /// <summary>
-        /// DDStckCount control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList DDStckCount;
-
-        /// <summary>
         /// lblDate control.
         /// </summary>
         /// <remarks>
@@ -229,6 +211,15 @@ namespace SBMS
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Label lblCreatedBy;
+
+        /// <summary>
+        /// DDStckCount control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.DropDownList DDStckCount;
 
         /// <summary>
         /// DDCateg control.
@@ -274,6 +265,15 @@ namespace SBMS
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.DropDownList DDStore;
+
+        /// <summary>
+        /// lbtnOpenNew_ConfirmButtonExtender1 control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::AjaxControlToolkit.ConfirmButtonExtender lbtnOpenNew_ConfirmButtonExtender1;
 
         /// <summary>
         /// GridCntLines control.

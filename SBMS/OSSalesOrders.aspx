@@ -80,6 +80,7 @@
                                             <td style="text-align: center">Status &nbsp;<asp:DropDownList ID="DDStatus" runat="server" Width="100px" AutoPostBack="true" OnSelectedIndexChanged="DDSOStatus_SelectedIndexChanged"></asp:DropDownList></td>
                                             <td style="text-align: center">SO Status &nbsp;<asp:DropDownList ID="DDSOStatus" runat="server" Width="100px" AutoPostBack="true" OnSelectedIndexChanged="DDSOStatus_SelectedIndexChanged"></asp:DropDownList></td>
                                             <td style="text-align: center">Due Date <= &nbsp;<asp:DropDownList ID="DDueDate" runat="server" Width="100px" AutoPostBack="true" OnSelectedIndexChanged="DDSOStatus_SelectedIndexChanged"></asp:DropDownList></td>
+                                            <td style="text-align: center">Delivery &nbsp;<asp:DropDownList ID="dlDelivery" runat="server" Width="100px" AutoPostBack="true" OnSelectedIndexChanged="DDSOStatus_SelectedIndexChanged"></asp:DropDownList></td>
                                             <td style="text-align: left; margin-top:1em"><asp:CheckBox ID="chkCompl" runat="server" Text=" Show Completed" AutoPostBack="true" OnCheckedChanged="chkCompl_CheckedChanged" /></td>
                                             <td><asp:LinkButton ID="lbtnDownload" runat="server" CssClass="fa fa-download buttonRed" ToolTip="Download to excel" OnClick="lbtnDownload_Click"></asp:LinkButton></td>
                                         </tr>
@@ -96,7 +97,7 @@
                                         <asp:BoundField DataField="DocID" ReadOnly="True" />
                                         <asp:TemplateField HeaderText="SO #" ItemStyle-Width="6em" SortExpression="DocumentNumber" >
                                             <ItemTemplate >
-                                                <asp:LinkButton ID="lbtnSO" CommandArgument='<%# Eval("DocGUID")%>' CommandName="lbtnSO" runat="server" Text='<%# Eval("DocumentNumber")%>' ToolTip="View Sales Order" style="color:#4A82AB; font-weight:600" ></asp:LinkButton>
+                                                <asp:LinkButton ID="lbtnSO" CommandArgument='<%# Eval("DocGUID")%>' CommandName="lbtnSO" runat="server" Text='<%# Eval("DocumentNumber")%>' ToolTip="View Sales Order" style="color:#4A82AB; font-weight:600; padding: 0.5em; border:1px solid #4A82AB; border-radius:0.5em"  ></asp:LinkButton>
                                             </ItemTemplate>
                                         </asp:TemplateField>
                                         <asp:BoundField HeaderText="Customer" DataField="CustSupName" ReadOnly="True" SortExpression="CustSupName" />
@@ -104,17 +105,17 @@
                                         <asp:BoundField HeaderText="Reference" DataField="Reference" ReadOnly="True" SortExpression="Reference" />
                                         <asp:TemplateField HeaderText="Pick-Slip" ItemStyle-BackColor="Azure" ItemStyle-HorizontalAlign="Center" HeaderStyle-HorizontalAlign="Center" SortExpression="LinkedPSNum">
                                             <ItemTemplate >
-                                                <asp:LinkButton ID="lbtnPS" CommandArgument='<%# String.Format("{0} | {1}", Eval("DocGUID"), Eval("LinkedPSNum")) %>' CommandName="lbtnPS"  runat="server" Text='<%# Eval("LinkedPSNum")%>' ToolTip="View Picking Slip" style="color:#4A82AB; font-weight:600" ></asp:LinkButton>
+                                                <asp:LinkButton ID="lbtnPS" CommandArgument='<%# String.Format("{0} | {1}", Eval("DocGUID"), Eval("LinkedPSNum")) %>' CommandName="lbtnPS"  runat="server" Text='<%# Eval("LinkedPSNum")%>' ToolTip="View Picking Slip" style="color:#4A82AB; font-weight:600;" ></asp:LinkButton>
                                             </ItemTemplate>
                                         </asp:TemplateField>
                                         <asp:TemplateField HeaderText="Job Card" ItemStyle-BackColor="antiquewhite" ItemStyle-HorizontalAlign="Center" HeaderStyle-HorizontalAlign="Center" SortExpression="LinkedJCNum">
                                             <ItemTemplate>
-                                                <asp:LinkButton ID="lbtnJC" CommandArgument='<%# String.Format("{0} | {1}", Eval("DocGUID"), Eval("LinkedJCNum")) %>' CommandName="lbtnJC"  runat="server" Text='<%# Eval("LinkedJCNum")%>' ToolTip="View Job Card" style="color:#4A82AB; font-weight:600"></asp:LinkButton>
+                                                <asp:LinkButton ID="lbtnJC" CommandArgument='<%# String.Format("{0} | {1}", Eval("DocGUID"), Eval("LinkedJCNum")) %>' CommandName="lbtnJC"  runat="server" Text='<%# Eval("LinkedJCNum")%>' ToolTip="View Job Card" style="color:#4A82AB; font-weight:600;"></asp:LinkButton>
                                             </ItemTemplate>
                                         </asp:TemplateField>
                                          <asp:BoundField HeaderText="Status" DataField="LinkedStatus" ReadOnly="True" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" ItemStyle-Width="8em" SortExpression="LinkedStatus" />
                                         <asp:BoundField HeaderText="Due_Date" DataField="DueDelDate" ReadOnly="True" DataFormatString="{0:dd MMM yyyy}" ItemStyle-Width="8em" SortExpression="DueDelDate" />
-                                        <asp:BoundField HeaderText="Total" DataField="Total" ReadOnly="True" DataFormatString="{0:#.00}" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />  
+                                        <asp:BoundField HeaderText="Total" DataField="Total" ReadOnly="True" DataFormatString="{0:# ###.00}" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />  
                                         <asp:TemplateField HeaderText="Start" ItemStyle-HorizontalAlign="Left" SortExpression="RecStarted" ItemStyle-Width="3em" HeaderStyle-HorizontalAlign="Right">
                                             <ItemTemplate >
                                                 <asp:CheckBox ID="chkstarted" runat="server" Checked='<%# Eval("Started")%>' Enabled="false" Text=" "  />

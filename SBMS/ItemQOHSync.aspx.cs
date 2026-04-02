@@ -230,7 +230,7 @@ namespace SBMS
 
         protected void lbtnUpdateYes_Click(object sender, EventArgs e)
         {
-            int Reccount = 0, StorScr = 0;
+            int Reccount = 0, StorScr = 0, batchcnt = 200;
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {
                 var StorScp = _db.Stores.FirstOrDefault(x => x.CompanyID == CurrentUser.CoID && x.StoreDescript.ToLower().Contains("scrap"));
@@ -347,6 +347,15 @@ namespace SBMS
                             // }
                             // catch (Exception ex) { }
                         }
+                    }
+                    if (Reccount > batchcnt)
+                     {
+                        try
+                        {
+                           batchcnt = batchcnt + 200;
+                            _db.SaveChanges();
+                        }
+                        catch (Exception ex) { }
                     }
                 }
                 try

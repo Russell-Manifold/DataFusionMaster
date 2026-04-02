@@ -50,5 +50,9 @@ namespace SBMS.Models
         public Nullable<long> CompanyID { get; set; }
         public bool IsLotTracked { get; set; }
         public Nullable<long> ItemTransLineID { get; set; }
+
+        public Nullable<decimal> LinePickQty { get; set; }
+
+        public Nullable<int> LinePickBy { get; set; }
     }
 }

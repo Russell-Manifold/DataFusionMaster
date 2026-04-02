@@ -72,15 +72,16 @@
                                                           </asp:DropDownList>
                                             </ItemTemplate>
                                         </asp:TemplateField>
-                                        <asp:BoundField HeaderText="Item Description" DataField="Description" ReadOnly="True"  />
+                                        <asp:BoundField HeaderText="Item Description" DataField="Description" ReadOnly="True"  />      
                                         <asp:TemplateField HeaderText="RM Qty" ItemStyle-HorizontalAlign="Center" HeaderStyle-HorizontalAlign="Center" FooterStyle-HorizontalAlign="Center">
                                             <ItemTemplate>
                                                 <asp:TextBox ID="txtBOMQty" runat="server" Width="6em" style="text-align:center" Text='<%# Eval("RMQty") %>'  onkeydown='<%# "triggerSaveOnEnter(event, \"" + ((GridViewRow)Container).FindControl("lbtnLineSave").ClientID + "\")" %>'></asp:TextBox>
                                                 <cci:FilteredTextBoxExtender ID="ftbe" runat="server" TargetControlID="txtBOMQty" FilterType="Custom, Numbers" ValidChars="." />
                                             </ItemTemplate>
                                             </asp:TemplateField>
-                                        <asp:BoundField HeaderText="Av Unit Cost" DataField="AvCost" ReadOnly="True" ItemStyle-HorizontalAlign="Right" FooterStyle-HorizontalAlign="Right" ItemStyle-Width="6em" />
-                                        <asp:BoundField HeaderText="Av Cost" DataField="AvRMCost" ReadOnly="True" ItemStyle-HorizontalAlign="Right" FooterStyle-HorizontalAlign="Right" ItemStyle-Width="6em" />
+                                         <asp:BoundField HeaderText="UOM" DataField="BomUnit" ReadOnly="True" ItemStyle-Width="2em" ItemStyle-HorizontalAlign="Center"  />
+                                        <asp:BoundField HeaderText="Unit Cost" DataField="AvCost" ReadOnly="True" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right" FooterStyle-HorizontalAlign="Right" ItemStyle-Width="6em" />
+                                        <asp:BoundField HeaderText="Cost" DataField="AvRMCost" ReadOnly="True" ItemStyle-HorizontalAlign="Right" FooterStyle-HorizontalAlign="Right" ItemStyle-Width="6em" />
                                         <asp:TemplateField ItemStyle-HorizontalAlign="Right" ItemStyle-Width="3em" >
                                                     <ItemTemplate>
                                                          <asp:LinkButton ID="lbtnLineSave" CommandArgument='<%# Eval("BLID") %>' CommandName="lbtnLineSave" runat="server" CssClass="fa fa-save buttonRed" ToolTip="Save BOM Line" OnClick="lbtnLineSave_Click"> </asp:LinkButton>

@@ -138,15 +138,21 @@ namespace SBMS
                     lblDocGP.Text = (thispo.DocGP ?? 0m).ToString("P2");
 
                     DDOptions.Attributes.Add("style", "display:inline-block; color:#4282C1; font-size:1em; border: 1px #4282C1 solid; border-radius:.25em; margin-top:.5em");
-                    if (thispo.LinkedJCNum != null || thispo.LinkedPSNum != null) DDOptions.Attributes.Add("style", "display:none");
+                    //if (thispo.LinkedJCNum != null || thispo.LinkedPSNum != null) DDOptions.Attributes.Add("style", "display:none");
 
                     if (CurrentUser.UseModule2 == false)
                     {
                         // Remove by Value
                         var item = DDOptions.Items.FindByValue("0");
-                        if (item != null)
-                            DDOptions.Items.Remove(item);
+                        if (item != null) DDOptions.Items.Remove(item);
                     }
+                    else if (thispo.LinkedJCNum != null)
+                    {
+                        var item = DDOptions.Items.FindByValue("0");
+                        if (item != null) DDOptions.Items.Remove(item);
+                    }
+
+
                     if (CurrentUser.UseModule3 == false)
                     {
                         // Remove by Value
@@ -154,6 +160,8 @@ namespace SBMS
                         if (item != null)
                             DDOptions.Items.Remove(item);
                     }
+                    
+
                     if (CurrentUser.CanViewJobCards != false)
                     {
                         if (thispo.LinkedJCNum != null)
@@ -164,24 +172,32 @@ namespace SBMS
                             txtPSNum.Enabled = false;
                             lblStatus.Text = (thispo.JCStatus ?? "").ToString();
 
-                            if (thispo.JCIssuedTo != null) txtIssuedTo.Text = _db.RolesMasters.FirstOrDefault(x => x.CompanyID == CurrentUser.CoID && x.RoleID == thispo.JCIssuedTo).RoleName ?? "";
+                            if (thispo.JCIssuedTo != null)
+                            {
+                                var IssTo  =  _db.RolesMasters.FirstOrDefault(x => x.CompanyID == CurrentUser.CoID && x.RoleID == thispo.JCIssuedTo);
+                                if (IssTo != null) txtIssuedTo.Text = IssTo.RoleName.ToString();
+                            }
+                            
                             if (thispo.JCStatus == "Complete")
                             {
                                 lblStatus.BackColor = System.Drawing.Color.Orange;
                             }
                         } else
                         {
-                            lbtnViewJC.Style.Add("display", "none");
+                            if (CurrentUser.UseModule2 == false || thispo.LinkedJCNum == null) lbtnViewJC.Style.Add("display", "none");
                         }
                     }
                     else
                     {
-                        lbtnViewJC.Style.Add("display", "none");
+                        if (CurrentUser.UseModule2 == false || thispo.LinkedJCNum == null) lbtnViewJC.Style.Add("display", "none");
                     }
                     if (thispo.LinkedPSNum != null)
                     {
+                        lbtnViewPS.Style.Add("display", "inline-block");
+                        var item = DDOptions.Items.FindByValue("1");
+                        if (item != null) DDOptions.Items.Remove(item);
                         txtPSNum.Text = thispo.LinkedPSNum.ToString();
-                        lbtnViewJC.Style.Add("display", "none");
+                        if (CurrentUser.UseModule2 == false || thispo.LinkedJCNum == null) lbtnViewJC.Style.Add("display", "none");
                         txtJCNum.Enabled = false;
                         lblStatus.Text = (thispo.PSStatus ?? "").ToString();
                         try
@@ -308,6 +324,15 @@ namespace SBMS
 
                     GridPOLines.DataSource = TempLines;
                     GridPOLines.DataBind();
+                    bool hasZeroPrice = TempLines.Any(x => x.UnitPriceExclusive == 0);
+                    if (hasZeroPrice)
+                    {
+                        lblspan.Style.Add("display", "inline-block");
+                    } 
+                    else 
+                    {
+                        lblspan.Style.Add("display", "none");
+                    }
                     lblSubTotal.Text = TempLines.Sum(x => x.Exclusive).Value.ToString("N2");
                     lblTotVat.Text = TempLines.Sum(x => x.Tax).Value.ToString("N2");
                     lblTotal.Text = TempLines.Sum(x => x.Total).Value.ToString("N2");
@@ -1051,17 +1076,9 @@ namespace SBMS
                         return retStr;
                     }
                 }
-                    foreach (var dl in SOLines)
+                foreach (var dl in SOLines)
                 {
                     decimal origqty = dl.ReceiveQty ?? 0;
-                    //if (dl.ItemType == 0)
-                    //{
-                    //    if (dl.StoreCode == null || dl.StoreCode.ToString() == "")
-                    //    {
-                    //        //ShowMessage(sender, EventArgs.Empty, "Invalid Store Code for " + dl.ItemDescription + ". Unable to continue.");
-                    //        return;
-                    //    }
-                    //}
                     DocumentLine DL = new DocumentLine();
                     if (dl.isKit != null && (bool)dl.isKit)
                     {
@@ -1111,34 +1128,7 @@ namespace SBMS
                         Itm.QuantityOnHand = Itm.QuantityOnHand + ItemTrans.Qty;
                         #endregion
                     }
-                    ////else if (dl.isKitLine != null && (bool)dl.isKitLine)
-                    //else if (dl.Exclusive == 0)
-                    //{
-                    //    #region AdjustItemOut_If_It_Is_a_Kit_Item_At_No_Charge_And_the_Lines_arent_Being_Sent_To_Sage
-                    //    if (Convert.ToInt16(DDNCSelect.SelectedValue) == 2)
-                    //    {
-                            
-                    //    }
-                    //    #endregion
-
-
-                    //    // 1) Adjust stock IN  (as it is at no charge on the document, but the stock will be counted down via the invoice)
-                    //    #region AdjustItemIn
-                    //    //ItemAdjustment iAdj = new ItemAdjustment();
-                    //    //iAdj.Date = DateTime.Now;
-                    //    //iAdj.ItemID = dl.SelectionId;
-                    //    //// get item av cost from Sage
-                    //    //string str = ApiUrlCall.LoadOneItem(iAdj.ItemID, CurrentUser);
-                    //    //decimal AvCost = (decimal)_db.ItemsMasters.Where(x => x.CompanyID == CurrentUser.CoID && x.ID == iAdj.ItemID).Select(x => x.AverageCost).FirstOrDefault();
-                    //    //iAdj.AverageCost = AvCost;
-                    //    //iAdj.Quantity = (decimal)dl.Quantity;
-                    //    //iAdj.Reason = "" + lblDocNum.Text + " -  Adj in  for Flexi-kit Invoicing of " + dl.ItemDescription;
-                    //    //iAdj.Created = DateTime.Now;
-                    //    //jsonBody = JsonConvert.SerializeObject(iAdj, Formatting.Indented);
-                    //    //SendItemAdjustment(jsonBody);
-                    //    #endregion
-                    //}
-
+                   
                     if (dl.isBundle == null || !(bool)dl.isBundle)
                     {
                         // Adding docuiment lines based on selection of DDNCSelect - sending no charge lines to Sage.
@@ -1221,28 +1211,31 @@ namespace SBMS
                                 if (dl.AnalysisCategoryId1 != null) DL.AnalysisCategoryId1 = (long)dl.AnalysisCategoryId1;
                                 if (dl.AnalysisCategoryId2 != null) DL.AnalysisCategoryId2 = (long)dl.AnalysisCategoryId2;
                                 if (dl.AnalysisCategoryId3 != null) DL.AnalysisCategoryId3 = (long)dl.AnalysisCategoryId3;
-                                // reset Qty to origiunal qty. SO Qty must remain as original, on item movement and tax invoice must reflect picked qty
+                                // reset Qty to original qty. SO Qty must remain as original, on item movement and tax invoice must reflect picked qty
                                 DL.Quantity = origqty;
                                 documentLines.Add(DL);
                             }
                             else
                             {
-                               // If NOT sending lines to Sage, all stock for no charge lines must be adjusted out. 
                                 ItemAdjustment iAdj = new ItemAdjustment();
-                                iAdj.Date = DateTime.Now;
                                 iAdj.ItemID = dl.SelectionId;
-                                // get item av cost from Sage
-
-                                await api.LoadOneItem(iAdj.ItemID, CurrentUser);
-                                decimal AvCost = (decimal)_db.ItemsMasters.Where(x => x.CompanyID == CurrentUser.CoID && x.ID == iAdj.ItemID).Select(x => x.AverageCost).FirstOrDefault();
-                                iAdj.AverageCost = AvCost;
-                                iAdj.Quantity = (decimal)dl.ReceiveQty * -1;
-                                iAdj.Reason = "" + lblDocNum.Text + " -  Adj OUT for No-Charge Line: Invoicing of " + dl.ItemDescription;
-                                iAdj.Created = DateTime.Now;
-                                jsonBody = JsonConvert.SerializeObject(iAdj, Formatting.Indented);
-                                if (CurrentUser.UATMode == false)
+                                //await api.LoadOneItem(iAdj.ItemID, CurrentUser);
+                                var itm = _db.ItemsMasters.Where(x => x.CompanyID == CurrentUser.CoID && x.ID == iAdj.ItemID).FirstOrDefault();
+                                if ((bool)itm.Physical)
                                 {
-                                   await SendItemAdjustment(jsonBody);
+                                    // get item av cost from Sage
+                                    decimal AvCost = (decimal)itm.AverageCost;
+                                    // If NOT sending lines to Sage, all stock for no charge lines must be adjusted out. 
+                                    iAdj.Date = DateTime.Now;
+                                    iAdj.AverageCost = AvCost;
+                                    iAdj.Quantity = (decimal)dl.ReceiveQty * -1;
+                                    iAdj.Reason = "" + lblDocNum.Text + " -  Adj OUT for No-Charge Line: Invoicing of " + dl.ItemDescription;
+                                    iAdj.Created = DateTime.Now;
+                                    jsonBody = JsonConvert.SerializeObject(iAdj, Formatting.Indented);
+                                    if (CurrentUser.UATMode == false)
+                                    {
+                                        await SendItemAdjustment(jsonBody);
+                                    }
                                 }
                             }
                         }
@@ -1507,7 +1500,7 @@ namespace SBMS
                             _db.JobTransactions.Add(JTract);
                            
                             // re-add the items back to ItemsMaster stock on hand
-                            var JCLines = _db.JobCardLines.Where(x => x.CompanyID == CurrentUser.CoID && x.JCID == DocH.LinkedJCID).OrderBy(x => x.LineID).ToList();
+                            var JCLines = _db.JobCardLines.Where(x => x.CompanyID == CurrentUser.CoID && x.JCID == DocH.LinkedJCID && x.ItemCode != null).OrderBy(x => x.LineID).ToList();
                             if (JCLines != null)
                             {
                                 foreach (var pl in JCLines)

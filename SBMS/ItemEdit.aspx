@@ -44,24 +44,83 @@
                                           1) Item Basic Details
                                     </Header>
                                  <Content>
-                                    <table style="width:50em; margin:auto">
+                                    <table style="margin:auto; text-align:left">
                                         <tr>
-                                            <td style="width:50%; text-align:left">
-                                                <asp:CheckBox ID="chkPhysical" runat="server" text=" Physical" Enabled="false"/><br />
-                                                   <asp:CheckBox ID="chkisFinished" runat="server" text="  Is Finished Item "/><br />
-                                                <asp:CheckBox ID="chkIsFromBom" runat="server" text=" Is Made Up From A BOM "/><br />
-                                                   <asp:CheckBox ID="chkisBom" runat="server" text="  Is a BOM Component"/><br />
-                                                 <asp:CheckBox ID="chkIsFromKit" runat="server" text=" Is Made Up From A Kit "/><br />
-                                                   <asp:CheckBox ID="chkisKit" runat="server" text=" Is a Kit Component "/><br />        
+                                            <td style="width:15em">
+                                                <asp:CheckBox ID="chkPhysical" runat="server" text=" Physical" Enabled="false" />
+                                             </td>
+                                            <td style="width:20em">
+                                                    <asp:CheckBox ID="chkIsFromBom" runat="server" text=" Is Made Up From A BOM " />
+                                                </td>
+                                            <td style="width:20em">
+                                                 UOM 
                                             </td>
-                                            <td style="text-align:right; vertical-align:top">
-                                                <asp:Label ID="LbLIsTracked" runat="server" Text="Item is Lot Tracked"></asp:Label><asp:CheckBox ID="chkIsTracked" runat="server" text=" " Enabled="false"/><br /><br />
-                                                Minimum Level <asp:TextBox ID="txtReOrdQty" runat="server" Width="60px">0</asp:TextBox>
+                                            <td style="width:5em">
+                                                <asp:TextBox ID="txtUom" runat="server" Width="60px" Enabled="false"></asp:TextBox>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td >                 
+                                                <asp:CheckBox ID="chkisFinished" runat="server" text="  Is Finished Item " />
+                                            </td>
+                                             <td><asp:CheckBox ID="chkisBom" runat="server" text="  Is a BOM Component" /></td>
+                                            <td>
+                                                Minimum Level 
+                                            </td>
+                                            <td>
+                                                <asp:TextBox ID="txtReOrdQty" runat="server" Width="60px">0</asp:TextBox>
                                                 <cci:FilteredTextBoxExtender ID="FilteredTextBoxExtender1" runat="server" TargetControlID="txtReOrdQty" FilterType="Custom, Numbers" ValidChars="." />
                                             </td>
                                         </tr>
-                                    </table>
-                                     
+                                        
+                                        <tr>
+                                            <td>
+                                                  <asp:Label ID="LbLIsTracked" runat="server" Text="Item is Lot Tracked"></asp:Label><asp:CheckBox ID="chkIsTracked" runat="server" text=" " Enabled="false"/>    
+                                            </td>
+                                           <td>
+                                                <asp:CheckBox ID="chkIsFromKit" runat="server" text=" Is Made Up From A Kit " />
+                                            </td>
+                                            <td> 
+                                                Nett Mass
+                                            </td>
+                                            <td> 
+                                                <asp:TextBox ID="txtWeight" runat="server" Width="60px" ToolTip="Update from Sage User defined fields only" Enabled="false" ></asp:TextBox>
+                                            </td>
+                                          </tr>
+                                        <tr>
+                                            <td>&nbsp;</td>
+                                        <td><asp:CheckBox ID="chkisKit" runat="server" text=" Is a Kit Component " /></td>      
+                                        <td>
+                                                <%--Stocking Unit Conversion Factor&nbsp;<asp:LinkButton ID="lbtnConvInfo" runat="server" ToolTip="What does this mean?" CssClass="buttonRed">?</asp:LinkButton>--%>   
+                                            </td>
+                                        <td>
+                                                <%--<asp:TextBox ID="txtConversion" runat="server" Width="60px" ToolTip="Conversion factor between ordering and receiving." ></asp:TextBox>--%>           
+                                            </td>
+                                        </tr>
+                                    </table>       
+                                     <%--<cci:FilteredTextBoxExtender ID="ftbe" runat="server" TargetControlID="txtConversion" FilterType="Custom, Numbers" ValidChars="." />--%>
+                                     <%--<cci:ModalPopupExtender ID="Button25_ModalPopupExtender" runat="server" BackgroundCssClass="ModalPopupBG" CancelControlID="btnCancel5" Drag="true" OkControlID="btnOkay5" PopupControlID="PnlConf" PopupDragHandleControlID="PopupHeader" TargetControlID="lbtnConvInfo"></cci:ModalPopupExtender>
+                                             <asp:Panel ID="PnlConf" runat="server" Style="display: none" Width="450px">
+                                             
+                                             <div class="HellowWorldPopup">
+                                                 <div id="Div4" class="PopupHeader">
+                                                     <h4>What is Stocking Unit Conversion Factor ?</h4>
+                                                 </div>
+                                                 <div class="PopupBody" style="text-align: center">
+                                                     This is used when purchasing and receiving occus in 2 different units of measure. As an example, purchasing may be by box, with 24 items in a box. <br />
+                                                     On receiving, the items need to be received in single units into Data Fusion.<br />
+                                                     So a Purchase Order of 2 Boxes, will equal 48 units being received. <br />
+                                                     In this instance, the Conversion Factor will "24" for this item.<br />
+                                                     On receiving, Sage will then process 2 Boxes, and Data Fusion will process 48 units.<br /><br />
+                                                     If you have no need for this functionality, simply leave the conversion factor as "1".
+                                                 </div>
+                                                 <div class="Controls">
+                                                     <input id="btnCancel5" type="button" class="fa fa-times-circle" value="" runat="server" style="display: none" />
+                                                     <input id="btnOkay5" type="button" class="buttonYellow" value="OK" runat="server" style="display: none" />
+                                                     <asp:LinkButton ID="lbtnCancel" runat="server" CssClass="icon fa-times" Style="float: right" ToolTip="Close" > Close</asp:LinkButton><br />
+                                                 </div>
+                                             </div>
+                                         </asp:Panel>--%>
                                     </Content>
                                  </cci:AccordionPane>     
                              <cci:AccordionPane runat="server">

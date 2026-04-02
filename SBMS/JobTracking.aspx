@@ -90,7 +90,7 @@
                                             <h5 class="modal-title" id="quantityModalLabel">Approved Quantity Sent</h5>
                                             <asp:TextBox ID="txtQuantity" runat="server" CssClass="form-control" placeholder="Approved" style="text-align:center; width:6em"></asp:TextBox>
                                             <h5 class="modal-title" id="quantityModalRLabel">Number of Rejects</h5>
-                                            <asp:TextBox ID="txtRejQuantity" runat="server" CssClass="form-control" placeholder="Rejects" style="text-align:center;  width:6em"></asp:TextBox>
+                                            <asp:TextBox ID="txtRejQuantity" runat="server" CssClass="form-control" placeholder="Rejects" style="text-align:center;  width:6em" Text="0"></asp:TextBox>
                                              <asp:HiddenField ID="hiddenJobId" runat="server" ClientIDMode="Static" />
                                              <asp:HiddenField ID="newWsID" runat="server" ClientIDMode="Static" />
                                                 </asp:Panel>

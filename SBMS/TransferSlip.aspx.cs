@@ -68,7 +68,6 @@ namespace SBMS
             if (!IsPostBack)
             {
                 LoadWarehouses();
-                //LoadActiveItems();
                 LoadTransfer();
             }
         }
@@ -212,7 +211,7 @@ namespace SBMS
         {
             if (CurrentUser.CompanyUseLotNumbers == false)
             {
-                e.Row.Cells[1].Visible = false;
+                e.Row.Cells[2].Visible = false;
             }
             if (e.Row.RowType == DataControlRowType.DataRow)
             {
@@ -254,6 +253,7 @@ namespace SBMS
                 var ddlGridItem = (DropDownList)e.Row.FindControl("ddlGridItem");
                 var DDlotNum = (DropDownList)e.Row.FindControl("DDlotNum");
                 var lblAvailQty = (Label)e.Row.FindControl("lblAvailQty");
+                var lblToStoreQty = (Label)e.Row.FindControl("lblToStoreQty");
 
                 if (ddlGridItem != null)
                 {
@@ -288,39 +288,41 @@ namespace SBMS
                         // Set QOH for the selected item
                         if (itemid != null)
                         {
-                            if (CurrentUser.CompanyUseLotNumbers == false)
+                            var qoh = _itemDropDownList.Where(x => x.StoreID == Storeid && x.ItemID == itemid).Sum(x => x.QOH);
+                            lblAvailQty.Text = ApiUrlCall.NumberToDecimal(qoh.ToString(), CurrentUser.CompanyDecPlaces);
+                            if (ddlToWarehouse.SelectedIndex <= 0)
                             {
-                                e.Row.Cells[1].Visible = false;
-                                var qoh = _itemDropDownList.Where(x => x.StoreID == Storeid && x.ItemID == itemid).Sum(x => x.QOH);
-                                lblAvailQty.Text = ApiUrlCall.NumberToDecimal(qoh.ToString(), CurrentUser.CompanyDecPlaces);
+                                return;
                             }
-                            else
+                            long StoreidTo = Convert.ToInt64(ddlToWarehouse.SelectedValue);
+                            var qohTo = _itemDropDownList.Where(x => x.StoreID == StoreidTo && x.ItemID == itemid).Sum(x => x.QOH);
+                            lblToStoreQty.Text = ApiUrlCall.NumberToDecimal(qohTo.ToString(), CurrentUser.CompanyDecPlaces);
+
+                            if (DDlotNum != null)
                             {
-                                if (DDlotNum != null)
+                                DDlotNum.DataSource = _itemDropDownList
+                                    .Where(x => x.StoreID == Storeid && x.ItemID == itemid && !string.IsNullOrEmpty(x.LotNum))
+                                    .Select(x => x.LotNum)
+                                    .Distinct()
+                                    .ToList();
+                                DDlotNum.DataBind();
+                                DDlotNum.Items.Insert(0, new System.Web.UI.WebControls.ListItem("-Select-", ""));
+                                // Set selected value to the LotNumber from the data item
+                                var lotNumberProp = dataItem.GetType().GetProperty("LotNumber");
+                                if (lotNumberProp != null)
                                 {
-                                    DDlotNum.DataSource = _itemDropDownList
-                                        .Where(x => x.StoreID == Storeid && x.ItemID == itemid && !string.IsNullOrEmpty(x.LotNum))
-                                        .Select(x => x.LotNum)
-                                        .Distinct()
-                                        .ToList();
-                                    DDlotNum.DataBind();
-                                    DDlotNum.Items.Insert(0, new System.Web.UI.WebControls.ListItem("-Select-", ""));
-                                    // Set selected value to the LotNumber from the data item
-                                    var lotNumberProp = dataItem.GetType().GetProperty("LotNumber");
-                                    if (lotNumberProp != null)
+                                    var lotNumberValue = lotNumberProp.GetValue(dataItem, null) as string;
+                                    if (!string.IsNullOrEmpty(lotNumberValue) && DDlotNum.Items.FindByValue(lotNumberValue) != null)
                                     {
-                                        var lotNumberValue = lotNumberProp.GetValue(dataItem, null) as string;
-                                        if (!string.IsNullOrEmpty(lotNumberValue) && DDlotNum.Items.FindByValue(lotNumberValue) != null)
-                                        {
-                                            DDlotNum.SelectedValue = lotNumberValue;
-                                        }
+                                        DDlotNum.SelectedValue = lotNumberValue;
                                     }
-                                }
+                                }      
                             }
                         }
                         else
                         {
                             lblAvailQty.Text = "0";
+                            lblToStoreQty.Text = "0";
                         }
                     }
                 }
@@ -456,141 +458,154 @@ namespace SBMS
             }
          }
 
-            protected void ddlGridItem_SelectedIndexChanged(object sender, EventArgs e)
+        protected void ddlGridItem_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            long Storeid, itemid;
+            DropDownList ddlGridItem = sender as DropDownList;
+            if (ddlGridItem == null) return;
+
+            if (ddlFromWarehouse.SelectedIndex == 0 || ddlToWarehouse.SelectedIndex == 0)
             {
-                long Storeid, itemid;
-                DropDownList ddlGridItem = sender as DropDownList;
-                if (ddlGridItem == null) return;
+                ddlGridItem.SelectedIndex = 0;
+                AlertHelper.ShowSweetAlert(this, "Please select both From and To warehouses before continuing.", "error");
+                return;
+            }
+              
+            GridViewRow row = ddlGridItem.NamingContainer as GridViewRow;
+            if (row == null) return;
 
-                GridViewRow row = ddlGridItem.NamingContainer as GridViewRow;
-                if (row == null) return;
-
-                // Get the TrfLID for this row
-                long? trfLid = null;
-                var grid = row.NamingContainer as GridView;
-                if (grid != null && grid.DataKeys != null && grid.DataKeys.Count > row.RowIndex)
-                {
-                    trfLid = Convert.ToInt64(grid.DataKeys[row.RowIndex].Value);
-                }
-
-            using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+            // Get the TrfLID for this row
+            long? trfLid = null;
+            var grid = row.NamingContainer as GridView;
+            if (grid != null && grid.DataKeys != null && grid.DataKeys.Count > row.RowIndex)
             {
-                var lines = _db.ItemTransferLines.Where(x => x.CompanyID == CurrentUser.CoID && x.TrfID == TrfThisID).ToList();
+                trfLid = Convert.ToInt64(grid.DataKeys[row.RowIndex].Value);
+            }
 
-                // Set SelectionId in the in-memory line
-                //var lines = Session["CurrentTransferLines"] as List<ItemTransferLine>;
-                if (lines != null && trfLid != null)
+        using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+        {
+            var lines = _db.ItemTransferLines.Where(x => x.CompanyID == CurrentUser.CoID && x.TrfID == TrfThisID).ToList();
+
+            // Set SelectionId in the in-memory line
+            //var lines = Session["CurrentTransferLines"] as List<ItemTransferLine>;
+            if (lines != null && trfLid != null)
+            {
+                var line = lines.FirstOrDefault(x => x.TrfLID == trfLid);
+                if (line != null && ddlGridItem.SelectedIndex > 0)
                 {
-                    var line = lines.FirstOrDefault(x => x.TrfLID == trfLid);
-                    if (line != null && ddlGridItem.SelectedIndex > 0)
-                    {
-                        line.ItemSelectionId = Convert.ToInt64(ddlGridItem.SelectedValue);
-                        line.ItemDescription = ddlGridItem.SelectedItem.Text;
-                    }
+                    line.ItemSelectionId = Convert.ToInt64(ddlGridItem.SelectedValue);
+                    line.ItemDescription = ddlGridItem.SelectedItem.Text;
                 }
             }
-                // Populate DDlotNum for the selected item
-                var DDlotNum = row.FindControl("DDlotNum") as DropDownList;
-                if (DDlotNum != null && ddlGridItem.SelectedIndex > 0)
-                {
-                    Storeid = Convert.ToInt64(ddlFromWarehouse.SelectedValue);
-                    itemid = Convert.ToInt64(ddlGridItem.SelectedValue);
-                    var lotList = _itemDropDownList
-                        .Where(x => x.StoreID == Storeid && x.ItemID == itemid && !string.IsNullOrEmpty(x.LotNum))
-                        .Select(x => x.LotNum)
-                        .Distinct()
-                        .ToList();
-                    DDlotNum.DataSource = lotList;
-                    DDlotNum.DataBind();
-                    DDlotNum.Items.Insert(0, new System.Web.UI.WebControls.ListItem("-Select-", ""));
-                }
-
-                var lblAvailQty = row.FindControl("lblAvailQty") as Label;
+        }
+            // Populate DDlotNum for the selected item
+            var DDlotNum = row.FindControl("DDlotNum") as DropDownList;
+            if (DDlotNum != null && ddlGridItem.SelectedIndex > 0)
+            {
                 Storeid = Convert.ToInt64(ddlFromWarehouse.SelectedValue);
                 itemid = Convert.ToInt64(ddlGridItem.SelectedValue);
-
-                var qoh = _itemDropDownList.Where(x => x.StoreID == Storeid && x.ItemID == itemid).Sum(x => x.QOH);
-                lblAvailQty.Text = ApiUrlCall.NumberToDecimal(qoh.ToString(), CurrentUser.CompanyDecPlaces);
-                // Optionally, update QOH display here if needed
+                var lotList = _itemDropDownList
+                    .Where(x => x.StoreID == Storeid && x.ItemID == itemid && !string.IsNullOrEmpty(x.LotNum))
+                    .Select(x => x.LotNum)
+                    .Distinct()
+                    .ToList();
+                DDlotNum.DataSource = lotList;
+                DDlotNum.DataBind();
+                DDlotNum.Items.Insert(0, new System.Web.UI.WebControls.ListItem("-Select-", ""));
             }
 
-            protected void DDlotNum_SelectedIndexChanged(object sender, EventArgs e)
+            var lblAvailQty = row.FindControl("lblAvailQty") as Label;
+            Storeid = Convert.ToInt64(ddlFromWarehouse.SelectedValue);
+            itemid = Convert.ToInt64(ddlGridItem.SelectedValue);
+
+            var qoh = _itemDropDownList.Where(x => x.StoreID == Storeid && x.ItemID == itemid).Sum(x => x.QOH);
+            lblAvailQty.Text = ApiUrlCall.NumberToDecimal(qoh.ToString(), CurrentUser.CompanyDecPlaces);
+        // Optionally, update QOH display here if needed
+
+                // Get TO Store Q O H before transfer
+                var lblToStoreQty = row.FindControl("lblToStoreQty") as Label;
+                int ToStoreID = Convert.ToInt32(ddlToWarehouse.SelectedValue);
+                var qohTo = _itemDropDownList.Where(x => x.StoreID == ToStoreID && x.ItemID == itemid).Sum(x => x.QOH);
+                lblToStoreQty.Text = ApiUrlCall.NumberToDecimal(qohTo.ToString(), CurrentUser.CompanyDecPlaces);
+         }
+
+        protected void DDlotNum_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (ddlFromWarehouse.SelectedIndex <= 0)
             {
-                if (ddlFromWarehouse.SelectedIndex <= 0)
+                return;
+            }
+
+            DropDownList dd = sender as DropDownList;
+            if (dd == null) return;
+
+            GridViewRow row = dd.NamingContainer as GridViewRow;
+            if (row == null) return;
+            DropDownList DDlotNum = row.FindControl("DDlotNum") as DropDownList;
+            long Storeid = Convert.ToInt64(ddlFromWarehouse.SelectedValue);
+            var ddlGridItem = (DropDownList)row.FindControl("ddlGridItem");
+            var lblAvailQty = (Label)row.FindControl("lblAvailQty");
+
+            long itemid = Convert.ToInt64(ddlGridItem.SelectedValue);
+            string selectedLot = DDlotNum.SelectedItem.Text;
+
+        // Set LotNumber in the in-memory line
+        using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+        {
+            var lines = _db.ItemTransferLines.Where(x => x.CompanyID == CurrentUser.CoID && x.TrfID == TrfThisID).ToList();
+
+            // var lines = Session["CurrentTransferLines"] as List<ItemTransferLine>;
+            if (lines != null)
+            {
+                // Find the line by TrfLID (from DataKeys or CommandArgument)
+                int rowIndex = row.RowIndex;
+                var grid = row.NamingContainer as GridView;
+                long? trfLid = null;
+                if (grid != null && grid.DataKeys != null && grid.DataKeys.Count > rowIndex)
                 {
-                    return;
+                    trfLid = Convert.ToInt64(grid.DataKeys[rowIndex].Value);
                 }
-
-                DropDownList dd = sender as DropDownList;
-                if (dd == null) return;
-
-                GridViewRow row = dd.NamingContainer as GridViewRow;
-                if (row == null) return;
-                DropDownList DDlotNum = row.FindControl("DDlotNum") as DropDownList;
-                long Storeid = Convert.ToInt64(ddlFromWarehouse.SelectedValue);
-                var ddlGridItem = (DropDownList)row.FindControl("ddlGridItem");
-                var lblAvailQty = (Label)row.FindControl("lblAvailQty");
-
-                long itemid = Convert.ToInt64(ddlGridItem.SelectedValue);
-                string selectedLot = DDlotNum.SelectedItem.Text;
-
-            // Set LotNumber in the in-memory line
-            using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
-            {
-                var lines = _db.ItemTransferLines.Where(x => x.CompanyID == CurrentUser.CoID && x.TrfID == TrfThisID).ToList();
-
-                // var lines = Session["CurrentTransferLines"] as List<ItemTransferLine>;
-                if (lines != null)
+                else
                 {
-                    // Find the line by TrfLID (from DataKeys or CommandArgument)
-                    int rowIndex = row.RowIndex;
-                    var grid = row.NamingContainer as GridView;
-                    long? trfLid = null;
-                    if (grid != null && grid.DataKeys != null && grid.DataKeys.Count > rowIndex)
-                    {
-                        trfLid = Convert.ToInt64(grid.DataKeys[rowIndex].Value);
-                    }
-                    else
-                    {
-                        // fallback: try to get from a hidden field or other means if available
-                    }
-                    if (trfLid != null)
-                    {
-                        var line = lines.FirstOrDefault(x => x.TrfLID == trfLid);
-                        if (line != null)
-                        {
-                            line.LotNumber = selectedLot;
-                        }
-                    }
+                    // fallback: try to get from a hidden field or other means if available
                 }
-            }
-                var qoh = _itemDropDownList.Where(x => x.StoreID == Storeid && x.ItemID == itemid && x.LotNum == selectedLot).Sum(x => x.QOH);
-                lblAvailQty.Text = ApiUrlCall.NumberToDecimal(qoh.ToString(), CurrentUser.CompanyDecPlaces);
-            }
-
-            protected void lbtnDeleteLine_Click(object sender, EventArgs e)
-            {
-                using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+                if (trfLid != null)
                 {
-                    LinkButton lbtn = sender as LinkButton;
-                    int Lid = Convert.ToInt32(lbtn.CommandArgument);
-                    _db.ItemTransferLines.RemoveRange(_db.ItemTransferLines.Where(x => x.CompanyID == CurrentUser.CoID && x.TrfLID == Lid));
-                    _db.SaveChanges();
-                    LoadTransfer();
+                    var line = lines.FirstOrDefault(x => x.TrfLID == trfLid);
+                    if (line != null)
+                    {
+                        line.LotNumber = selectedLot;
+                    }
                 }
             }
-
-            protected void lbtnPrintDN_Click(object sender, EventArgs e)
-            {
-            SaveLastFilledLine();  // <-- NEW
-            CreatePDF();
-            Response.Redirect($"~/ViewPDF.aspx?doc=" + CurrentUser.UserGuiD.ToString() + "\\Trf_" + lblDocNum.Text, false);
+        }
+            var qoh = _itemDropDownList.Where(x => x.StoreID == Storeid && x.ItemID == itemid && x.LotNum == selectedLot).Sum(x => x.QOH);
+            lblAvailQty.Text = ApiUrlCall.NumberToDecimal(qoh.ToString(), CurrentUser.CompanyDecPlaces);
         }
 
-            protected void lbtnComplete_Click(object sender, EventArgs e)
+        protected void lbtnDeleteLine_Click(object sender, EventArgs e)
+        {
+            using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {
-
+                LinkButton lbtn = sender as LinkButton;
+                int Lid = Convert.ToInt32(lbtn.CommandArgument);
+                _db.ItemTransferLines.RemoveRange(_db.ItemTransferLines.Where(x => x.CompanyID == CurrentUser.CoID && x.TrfLID == Lid));
+                _db.SaveChanges();
+                LoadTransfer();
             }
+        }
+
+        protected void lbtnPrintDN_Click(object sender, EventArgs e)
+        {
+        SaveLastFilledLine();  // <-- NEW
+        CreatePDF();
+        Response.Redirect($"~/ViewPDF.aspx?doc=" + CurrentUser.UserGuiD.ToString() + "\\Trf_" + lblDocNum.Text, false);
+    }
+
+        protected void lbtnComplete_Click(object sender, EventArgs e)
+        {
+
+        }
 
         protected void lbtnStart_Click(object sender, EventArgs e)
         {
@@ -672,7 +687,7 @@ namespace SBMS
             }
             else
             {
-                AlertHelper.ShowSweetAlert(this, "Transfer saved started.", "success");
+                AlertHelper.ShowSweetAlert(this, "Transfer Saved.", "success");
             }           
         }
 
@@ -775,9 +790,7 @@ namespace SBMS
                     header.TrfCompleteDate = DateTime.Now;
                 }
 
-                var lines = _db.ItemTransferLines
-                .Where(x => x.CompanyID == CurrentUser.CoID && x.TrfID == TrfThisID && x.ItemSelectionId != null && x.TrfOutQty > 0)
-                .ToList();
+                var lines = _db.ItemTransferLines.Where(x => x.CompanyID == CurrentUser.CoID && x.TrfID == TrfThisID && x.ItemSelectionId != null && x.TrfOutQty > 0).ToList();
 
                 long fromStoreId = header.TrfFromID ?? 0;
                 long toStoreId = header.TrfToID ?? 0;

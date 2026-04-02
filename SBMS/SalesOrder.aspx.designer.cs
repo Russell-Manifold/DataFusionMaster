@@ -87,24 +87,6 @@ namespace SBMS
         protected global::System.Web.UI.WebControls.LinkButton lbtnSOs;
 
         /// <summary>
-        /// lbtnViewJC control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton lbtnViewJC;
-
-        /// <summary>
-        /// lbtnViewPS control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton lbtnViewPS;
-
-        /// <summary>
         /// DDOptions control.
         /// </summary>
         /// <remarks>
@@ -222,6 +204,15 @@ namespace SBMS
         protected global::System.Web.UI.WebControls.TextBox txtPSNum;
 
         /// <summary>
+        /// lbtnViewPS control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton lbtnViewPS;
+
+        /// <summary>
         /// txtPODate control.
         /// </summary>
         /// <remarks>
@@ -256,6 +247,15 @@ namespace SBMS
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.TextBox txtJCNum;
+
+        /// <summary>
+        /// lbtnViewJC control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton lbtnViewJC;
 
         /// <summary>
         /// txtRef control.

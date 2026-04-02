@@ -88,7 +88,7 @@
                                                     <ItemTemplate>
                                                         <asp:LinkButton ID="lbtnWO" CommandArgument='<%# Eval("TrfID")%>' CommandName="lbtnWO"
                                                             runat="server" Text='<%# "Trf " + DataBinder.Eval(Container.DataItem, "TransferID").ToString() %>' 
-                                                            ToolTip="View Transfer Details" style="color:#4A82AB; font-weight:600" 
+                                                            ToolTip="View Transfer Details" style="color: #4A82AB; font-weight: 600; padding: 0.5em; border:1px solid #4A82AB; border-radius:0.5em; text-align:center"  Width="55px"
                                                             OnClick="lbtnWO_Click">
                                                         </asp:LinkButton>
                                                     </ItemTemplate>
@@ -96,7 +96,7 @@
                                                 <asp:BoundField HeaderText="From" DataField="FrmStore" SortExpression="FrmStore" ItemStyle-Width="5em" />
                                                 <asp:BoundField HeaderText="To" DataField="ToStore" SortExpression="ToStore" ItemStyle-Width="5em" />                                                
                                                 <asp:BoundField HeaderText="Reference" DataField="TrfReference" SortExpression="TrfReference" />
-                                                <asp:BoundField HeaderText="Date" DataField="TrfDate" SortExpression="TrfDate"  DataFormatString="{0:dd MMM yyyy}" ItemStyle-Width="8em" />
+                                                <asp:BoundField HeaderText="Date" DataField="TrfDate" SortExpression="TrfDate"  DataFormatString="{0:dd MMM yyyy}" ItemStyle-Width="8em"  />
                                                 <asp:TemplateField HeaderText="Status" SortExpression="Status" ItemStyle-Width="8em">
                                                     <ItemTemplate>
                                                         <asp:Label ID="lblStatus" runat="server" Text='<%# Eval("TrfStatus") %>' ></asp:Label>
