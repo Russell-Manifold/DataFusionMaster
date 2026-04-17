@@ -1,6 +1,10 @@
 ﻿using SBMS.Classes;
 using SBMS.Models;
 using System;
+using System.Collections.Generic;
+using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
+using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
 using System.Linq.Dynamic.Core;
@@ -10,7 +14,7 @@ namespace SBMS
 {
     public partial class StockCountCreate : BasePage
     {
-
+        int countid;
         private UserDetails CurrentUser
         {
             get
@@ -27,6 +31,8 @@ namespace SBMS
                 return;
             }
 
+            countid = Convert.ToInt32(Request.QueryString["id"].ToString());
+
             if (!IsPostBack)
             {
                 string imgname = CurrentUser.CoID + ".png";
@@ -39,27 +45,50 @@ namespace SBMS
                 {
                     imgCoImg.ImageUrl = ResolveUrl("~/images/CoImages/0000.png");
                 }
-
+                CleanUpEmptyCounts();
                 LoadDDs();
                 ApplyFilterAndSort();
                 // create stock coundID
                 using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
                 {
-                    var maxStCntID = _db.StockCountMasters
-                    .Where(x => x.CompanyID == CurrentUser.CoID)
-                    .Max(x => (int?)x.StCntID) ?? 0;
+                    if (countid == 0)
+                    {
+                        var maxStCntID = _db.StockCountMasters
+                        .Where(x => x.CompanyID == CurrentUser.CoID)
+                        .Max(x => (int?)x.StCntID) ?? 0;
 
-                    long LastCnt = maxStCntID;
-                    var NewCnt = new StockCountMaster();
-                    NewCnt.CompanyID = CurrentUser.CoID;
-                    NewCnt.CtCreateDate= DateTime.Now;
-                    NewCnt.CreatedBy = CurrentUser.RoleID;
-                    _db.StockCountMasters.Add(NewCnt);
+                        long LastCnt = maxStCntID;
+                        var NewCnt = new StockCountMaster();
+                        NewCnt.CompanyID = CurrentUser.CoID;
+                        NewCnt.CtCreateDate = DateTime.Now;
+                        NewCnt.CreatedBy = CurrentUser.RoleID;
+                        _db.StockCountMasters.Add(NewCnt);
+                        _db.SaveChanges();
+                        lblCountID.Text = NewCnt.StCntID.ToString();
+                        lblDate.Text = DateTime.Today.ToString("dd MMM yyyy");
+                        lblCountID.Visible = false;
+                    }
+                    else
+                    {
+                        lblCountID.Text = countid.ToString();
+                        var CntID = _db.StockCountMasters.Where(x => x.CompanyID == CurrentUser.CoID && x.StCntID == countid).FirstOrDefault();
+                        txtRef.Text = CntID.CtDescription.ToString();
+                        ApplyFilterAndSort();
+                        LoadCountList();
+                    }  
+                }
+            }
+        }
+
+        private void CleanUpEmptyCounts()
+        {
+            using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+            {
+                var toDelete = _db.StockCountMasters.Where(x => x.CompanyID == CurrentUser.CoID && (x.CtDescription == null || x.CtDescription.Trim() == "")).ToList();
+                if (toDelete.Any())
+                {
+                    _db.StockCountMasters.RemoveRange(toDelete);
                     _db.SaveChanges();
-                    lblCountID.Text = NewCnt.StCntID.ToString();
-
-                    lblDate.Text = DateTime.Today.ToString("dd MMM yyyy");
-                    lblCountID.Visible = false;
                 }
             }
         }
@@ -93,6 +122,7 @@ namespace SBMS
            string filterText = txtFilter.Text;
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {
+               
                 var StkLines = _db.GetStockCountList(CurrentUser.CoID).AsQueryable();
 
                // Apply filters
@@ -190,18 +220,36 @@ namespace SBMS
                     CheckBox chkSelect = (CheckBox)row.FindControl("chkSelect");
                     if (chkSelect != null && chkSelect.Checked)
                     {
-                        StockCountLine NewLine = new StockCountLine();
-                        NewLine.CompanyID = CurrentUser.CoID;
-                        NewLine.CountID = Convert.ToInt16(lblCountID.Text);
-                        NewLine.ItemID = Convert.ToInt32(row.Cells[0].Text);
-                        NewLine.StoreID = Convert.ToInt32(DDStore.SelectedValue.ToString());
-                        NewLine.ItemCode = row.Cells[2].Text;
-                        NewLine.ItemDescription = row.Cells[3].Text;
-                        NewLine.QtyOnHand = Convert.ToDecimal(row.Cells[4].Text);                
-                        _db.StockCountLines.Add(NewLine);
+                        long itmid = Convert.ToInt64(row.Cells[0].Text);
+                        var storesList = _db.GetItemLinkedStores(CurrentUser.CoID, itmid).ToList();
+                        foreach (var stor in storesList)
+                        {
+                            StockCountLine NewLine = new StockCountLine();
+                            NewLine.CompanyID = CurrentUser.CoID;
+                            NewLine.CountID = Convert.ToInt32(lblCountID.Text);
+                            NewLine.ItemID = itmid;
+                            NewLine.StoreID = stor.StoreID;
+                            NewLine.ItemCode = row.Cells[2].Text;
+                            NewLine.ItemDescription = row.Cells[3].Text;
+                            NewLine.StoreCode = stor.StoreCode;
+                            NewLine.QtyOnHand = stor.QOH; // Set QtyOnHand to the QOH value from the linked store
+                            _db.StockCountLines.Add(NewLine);
+                        }
+
+                        // Save per grid row — smaller batches, duplicates only affect one row's stores
+                        try
+                        {
+                            _db.SaveChanges();
+                        }
+                        catch (DbUpdateException)
+                        {
+                            _db.ChangeTracker.Entries()
+                                .Where(e => e.State == EntityState.Added)
+                                .ToList()
+                                .ForEach(e => e.State = EntityState.Detached);
+                        }
                     }
-                 }
-                _db.SaveChanges();
+                }
             }  
         }
 
@@ -213,6 +261,45 @@ namespace SBMS
                 var countList = _db.StockCountLines.Where(x=>x.CompanyID == CurrentUser.CoID && x.CountID == IntCnt).ToList();
                 GridCntLines.DataSource = countList;
                 GridCntLines.DataBind();
+            }
+        }
+
+        protected void lbtnSave_Click(object sender, EventArgs e)
+        {
+            if (txtRef.Text.ToString().Length < 3)
+            {
+                AlertHelper.ShowSweetAlert(this, "Reference must be at least 3 characters.");
+                return;
+            }
+            if (GridCntLines.Rows.Count == 0)
+            {
+                AlertHelper.ShowSweetAlert(this, "Please capture at least 1 item to count.");
+                return;
+            }
+            using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+            {
+                var CntHead = _db.StockCountMasters.FirstOrDefault(x => x.CompanyID == CurrentUser.CoID && x.StCntID == countid);
+                if (CntHead != null)
+                {
+                    CntHead.CtDescription = txtRef.Text;
+                    CntHead.CtCreateDate = DateTime.Now;
+                    _db.Entry(CntHead).State = EntityState.Modified;
+                    _db.SaveChanges();
+                    AlertHelper.ShowSweetAlert(this, "Stock Count saved successfully.", "success");
+                    Response.Redirect("~/StockCountList.aspx?user=" + CurrentUser.UserGuiD, false);
+                }
+            }
+        }
+
+        protected void lbtnBack_Click(object sender, EventArgs e)
+        {
+            if (CurrentUser != null)
+            {
+                Response.Redirect("~/StockCounts.aspx?user=" + CurrentUser.UserGuiD, false);
+            }
+            else
+            {
+                Response.Redirect("~/Dashboard.aspx", true);
             }
         }
     }

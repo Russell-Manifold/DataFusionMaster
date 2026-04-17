@@ -234,6 +234,8 @@
   <ItemGroup>
     <Content Include="assets\css\images\overlay.png" />
     <Content Include="assets\js\buttonDisable.js" />
+    <Content Include="StockCountUpload.aspx" />
+    <Content Include="ItemConvertUOM.aspx" />
     <Content Include="CommonScripts.ascx" />
     <Content Include="ConfigAccounts.aspx" />
     <Content Include="ConfigProcesses.aspx" />
@@ -931,6 +933,20 @@
     <Content Include="scripts\jquery-3.7.1.min.map" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="StockCountUpload.aspx.cs">
+      <DependentUpon>StockCountUpload.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="StockCountUpload.aspx.designer.cs">
+      <DependentUpon>StockCountUpload.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="ItemConvertUOM.aspx.cs">
+      <DependentUpon>ItemConvertUOM.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="ItemConvertUOM.aspx.designer.cs">
+      <DependentUpon>ItemConvertUOM.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Classes\AlertHelper.cs" />
     <Compile Include="Classes\Authentication.cs" />
     <Compile Include="Classes\BasePage.cs">
@@ -1095,6 +1111,7 @@
     <Compile Include="Models\DocType.cs">
       <DependentUpon>SBMS.tt</DependentUpon>
     </Compile>
+    <Compile Include="Models\Stores.cs" />
     <Compile Include="Models\DocumentItemList.cs" />
     <Compile Include="Models\DocumentLineOrigValues.cs" />
     <Compile Include="Models\DynamicReport.cs">
@@ -1172,6 +1189,8 @@
     <Compile Include="Models\GetOpeningBalancesAllStores_Result.cs">
       <DependentUpon>SBMS.tt</DependentUpon>
     </Compile>
+    <Compile Include="Models\GetItemLinkedStores_Result.cs" />
+    <Compile Include="Models\GetOpeningBalancesByStore_Result.cs" />
     <Compile Include="Models\GetPickSlipMovementTransactions_Result.cs">
       <DependentUpon>SBMS.tt</DependentUpon>
     </Compile>
@@ -1275,11 +1294,6 @@
       <DependentUpon>SBMS.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\RolesMaster.cs">
-      <DependentUpon>SBMS.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Models\SBMS1.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
       <DependentUpon>SBMS.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\StockCountLine.cs">
@@ -1445,11 +1459,6 @@
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>SBMS.Context.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Models\SBMS.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>SBMS.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\SBMS.Designer.cs">
       <AutoGen>True</AutoGen>

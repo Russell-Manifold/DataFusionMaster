@@ -11,7 +11,7 @@ namespace SBMS
 {
 
 
-    public partial class StockCounts
+    public partial class StockCountUpload
     {
 
         /// <summary>
@@ -177,6 +177,15 @@ namespace SBMS
         protected global::System.Web.UI.WebControls.LinkButton lbtnHome;
 
         /// <summary>
+        /// lbtnBack control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton lbtnBack;
+
+        /// <summary>
         /// imgCoImg control.
         /// </summary>
         /// <remarks>
@@ -186,111 +195,57 @@ namespace SBMS
         protected global::System.Web.UI.WebControls.Image imgCoImg;
 
         /// <summary>
-        /// DDSelect control.
+        /// lblerr control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList DDSelect;
+        protected global::System.Web.UI.WebControls.Label lblerr;
 
         /// <summary>
-        /// DDStckCount control.
+        /// fileUpload control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList DDStckCount;
+        protected global::System.Web.UI.WebControls.FileUpload fileUpload;
 
         /// <summary>
-        /// lblRef control.
+        /// btnProcess control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblRef;
+        protected global::System.Web.UI.WebControls.Button btnProcess;
 
         /// <summary>
-        /// lblDate control.
+        /// pnlResults control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblDate;
+        protected global::System.Web.UI.WebControls.Panel pnlResults;
 
         /// <summary>
-        /// CntID control.
+        /// lblCountInfo control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label CntID;
+        protected global::System.Web.UI.WebControls.Label lblCountInfo;
 
         /// <summary>
-        /// lblCreatedBy control.
+        /// lblUploadResult control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblCreatedBy;
-
-        /// <summary>
-        /// DDCateg control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList DDCateg;
-
-        /// <summary>
-        /// Panel1 control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Panel Panel1;
-
-        /// <summary>
-        /// txtFilter control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtFilter;
-
-        /// <summary>
-        /// lbtnSearch control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton lbtnSearch;
-
-        /// <summary>
-        /// DDStore control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList DDStore;
-
-        /// <summary>
-        /// GridCntLines control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.GridView GridCntLines;
+        protected global::System.Web.UI.WebControls.Label lblUploadResult;
     }
 }

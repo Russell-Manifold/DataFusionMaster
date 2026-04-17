@@ -240,6 +240,15 @@ namespace SBMS
         protected global::System.Web.UI.WebControls.LinkButton imgItemAdjust;
 
         /// <summary>
+        /// imgItemConvert control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton imgItemConvert;
+
+        /// <summary>
         /// lbtnStckCount control.
         /// </summary>
         /// <remarks>

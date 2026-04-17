@@ -61,6 +61,12 @@ namespace SBMS.Classes
         public static byte[] key = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24 };
         public static byte[] iv = { 8, 7, 6, 5, 4, 3, 2, 1 };
 
+        private static volatile bool _SOisSyncRunning = false;
+        private static readonly object _SOsyncLock = new object();
+
+        private static volatile bool _POisSyncRunning = false;
+        private static readonly object _POsyncLock = new object();
+
         public async Task<JObject> ApiCallAsync(string requestUrl, UserDetails userDetails)
         {
             using (HttpClient client = new HttpClient())
@@ -867,6 +873,13 @@ namespace SBMS.Classes
 
         public async Task <JObject> LoadPurchaseOrders(UserDetails Userdetails)
         {
+            lock (_POsyncLock)
+            {
+                if (_POisSyncRunning)
+                    return new JObject();
+                _POisSyncRunning = true;
+            } 
+            
             bool UpdateDate = false;
             double skipQty = 0; float TotQty = 0; int RetQty = 0;
             int usedoc = 0;
@@ -918,140 +931,142 @@ namespace SBMS.Classes
                     }
 
                     if (parsedJSON.Count > 0)
+                    {
+                        JArray items = (JArray)parsedJSON["Results"];
+                        TotQty = Convert.ToInt32(parsedJSON["TotalResults"]);
+                        RetQty = Convert.ToInt32(parsedJSON["ReturnedResults"]);
+
+                        string SalesRep = string.Empty; string Ref = string.Empty;
+                        if (items != null)
                         {
-                            JArray items = (JArray)parsedJSON["Results"];
-                            TotQty = Convert.ToInt32(parsedJSON["TotalResults"]);
-                            RetQty = Convert.ToInt32(parsedJSON["ReturnedResults"]);
-
-                            string SalesRep = string.Empty; string Ref = string.Empty;
-                            if (items != null)
+                            foreach (var item in items)
                             {
-                                foreach (var item in items)
+                                long thisdocid = Convert.ToInt64(item["ID"].ToString());
+                                if (item["Lines"] != null)
                                 {
-                                    long thisdocid = Convert.ToInt64(item["ID"].ToString());
-                                    if (item["Lines"] != null)
+                                    List<DocumentLine> myObjects = JsonConvert.DeserializeObject<List<DocumentLine>>(item["Lines"].ToString());
+                                    foreach (DocumentLine obj in myObjects)
                                     {
-                                        List<DocumentLine> myObjects = JsonConvert.DeserializeObject<List<DocumentLine>>(item["Lines"].ToString());
-                                        foreach (DocumentLine obj in myObjects)
+                                        if (obj.LineType.ToString() == "0")
                                         {
-                                            if (obj.LineType.ToString() == "0")
-                                            {
-                                                usedoc = 1;
-                                                break;
-                                            }
+                                            usedoc = 1;
+                                            break;
                                         }
                                     }
-                                    if (usedoc == 1)
-                                    {
-                                        var ChkDoc = _db.DocHeaders.Where(x => x.DocID == thisdocid && x.CompanyID == Userdetails.CoID).FirstOrDefault();
-                                        if (ChkDoc != null)
-                                        {
-                                            ChkDoc.DocDate = Convert.ToDateTime(item["Date"].ToString());
-                                            ChkDoc.DueDelDate = Convert.ToDateTime(item["DeliveryDate"] ?? "");
-                                            ChkDoc.Status = item["Status"].ToString();
-                                            ChkDoc.Discount = Convert.ToDecimal(item["Discount"].ToString());
-                                            ChkDoc.Exclusive = Convert.ToDecimal(item["Exclusive"].ToString());
-                                            ChkDoc.Tax = Convert.ToDecimal(item["Tax"].ToString());
-                                            ChkDoc.Rounding = Convert.ToDecimal(item["Rounding"].ToString());
-                                            ChkDoc.Total = Convert.ToDecimal(item["Total"].ToString());
-                                            ChkDoc.Reference = item["Reference"].ToString();
-                                            ChkDoc.Message = item["Message"].ToString();
-                                            ChkDoc.Inclusive = Convert.ToBoolean(item["Inclusive"].ToString());
-                                            ChkDoc.DiscountPercentage = Convert.ToDecimal(item["DiscountPercentage"].ToString());
-                                            ChkDoc.TaxReference = string.Empty;
-                                            ChkDoc.Supplier_ExchangeRate = 1;
-                                            if (item["Supplier_ExchangeRate"] != null)
-                                            {
-                                                ChkDoc.Supplier_ExchangeRate = Convert.ToDecimal(item["Supplier_ExchangeRate"]);
-                                                ChkDoc.Supplier_CurrencyId = Convert.ToInt64(item["Supplier_CurrencyId"]);
-                                            }
-                                            
-                                        if (item["TaxReference"] != null) ChkDoc.TaxReference = item["TaxReference"].ToString();
-                                            _db.Entry(ChkDoc).State = System.Data.Entity.EntityState.Modified;
-                                            try
-                                            {
-                                                _db.SaveChanges();
-                                            }
-                                            catch (Exception ex) { string str = ex.Message; }
-                                            long currentDocId = Convert.ToInt64(item["ID"].ToString());
-                                            if (!compDocIds.Contains(currentDocId))
-                                            {
-                                                await LoadPOLines(currentDocId, Userdetails);
-                                            }
-                                        //await LoadPOLines(Convert.ToInt64(item["ID"].ToString()), Userdetails);
-                                        }
-                                        else
-                                        {
-                                            DocHeader DocH = new DocHeader();
-                                            DocH.DocDate = Convert.ToDateTime(item["Date"].ToString());
-                                            DocH.DocID = Convert.ToInt64(item["ID"].ToString());
-                                            DocH.DueDelDate = Convert.ToDateTime(item["DeliveryDate"] ?? "");
-                                            DocH.DocumentNumber = item["DocumentNumber"].ToString() ?? "";
-                                            DocH.CustSuppID = Convert.ToInt64(item["SupplierId"].ToString());
-                                            DocH.CustSupName = item["SupplierName"].ToString() ?? "";
-                                            DocH.CompanyID = Convert.ToInt32(Userdetails.CoID);
-                                            DocH.Started = false;
-                                            DocH.Complete = false;
-                                            DocH.Status = item["Status"].ToString();
-                                            DocH.Reference = item["Reference"].ToString();
-                                            DocH.Message = item["Message"].ToString();
-                                            DocH.Discount = Convert.ToDecimal(item["Discount"].ToString());
-                                            DocH.Exclusive = Convert.ToDecimal(item["Exclusive"].ToString());
-                                            DocH.Tax = Convert.ToDecimal(item["Tax"].ToString());
-                                            DocH.Rounding = Convert.ToDecimal(item["Rounding"].ToString());
-                                            DocH.Total = Convert.ToDecimal(item["Total"].ToString());
-                                            DocH.DocType = 1;
-                                            DocH.Inclusive = Convert.ToBoolean(item["Inclusive"].ToString());
-                                            DocH.DiscountPercentage = Convert.ToDecimal(item["DiscountPercentage"].ToString());
-                                            DocH.TaxReference = string.Empty;
-                                            DocH.DocGUID = Guid.NewGuid();
-                                            DocH.Supplier_ExchangeRate = 1;
-                                            if (item["Supplier_ExchangeRate"] != null)
-                                            {
-                                                DocH.Supplier_ExchangeRate = Convert.ToDecimal(item["Supplier_ExchangeRate"]);
-                                                DocH.Supplier_CurrencyId = Convert.ToInt64(item["Supplier_CurrencyId"]);
-                                            }
-
-                                            if (item["TaxReference"] != null) DocH.TaxReference = item["TaxReference"].ToString();
-                                            _db.DocHeaders.Add(DocH);
-                                            try
-                                            {
-                                                _db.SaveChanges();
-                                            }
-                                        catch (System.Data.Entity.Validation.DbEntityValidationException ex)
-                                        {
-                                            var errorMessages = ex.EntityValidationErrors
-                                                .SelectMany(x => x.ValidationErrors)
-                                                .Select(x => x.PropertyName + ": " + x.ErrorMessage);
-
-                                            string fullErrorMessage = string.Join("; ", errorMessages);
-                                            string code = item?["Code"]?.ToString() ?? "Unknown";
-                                            string name = item?["Description"]?.ToString() ?? "Unknown";
-
-                                            string errMsg = $"CoID: {Userdetails.CoID} + LoadPurchaseOrders Entity error: PO {item["DocumentNumber"].ToString() ?? ""}: {fullErrorMessage}";
-                                            LogErrorToFile(errMsg);
-                                        }
-                                        catch (Exception ex)
-                                        {
-                                            string code = item?["Code"]?.ToString() ?? "Unknown";
-                                            string name = item?["Description"]?.ToString() ?? "Unknown";
-                                            string errMsg = $"CoID: {Userdetails.CoID} + LoadPurchaseOrders error: PO {item["DocumentNumber"].ToString() ?? ""}: {ex.Message}";
-                                            LogErrorToFile(errMsg);
-                                        }
-
-                                            long currentDocId = Convert.ToInt64(item["ID"].ToString());
-                                            if (!compDocIds.Contains(currentDocId))
-                                            {
-                                                await LoadPOLines(currentDocId, Userdetails);
-                                            }
-
-                                        //await LoadPOLines(Convert.ToInt64(item["ID"].ToString()), Userdetails);
-                                        }
-                                    }
-                                    usedoc = 0;
                                 }
+                                if (usedoc == 1)
+                                {
+                                    var ChkDoc = _db.DocHeaders.Where(x => x.DocID == thisdocid && x.CompanyID == Userdetails.CoID).FirstOrDefault();
+                                    if (ChkDoc != null)
+                                    {
+                                        ChkDoc.DocDate = Convert.ToDateTime(item["Date"].ToString());
+                                        ChkDoc.DueDelDate = Convert.ToDateTime(item["DeliveryDate"] ?? "");
+                                        ChkDoc.CustSuppID = Convert.ToInt64(item["SupplierId"].ToString());
+                                        ChkDoc.CustSupName = item["SupplierName"].ToString() ?? "";
+                                        ChkDoc.Status = item["Status"].ToString();
+                                        ChkDoc.Discount = Convert.ToDecimal(item["Discount"].ToString());
+                                        ChkDoc.Exclusive = Convert.ToDecimal(item["Exclusive"].ToString());
+                                        ChkDoc.Tax = Convert.ToDecimal(item["Tax"].ToString());
+                                        ChkDoc.Rounding = Convert.ToDecimal(item["Rounding"].ToString());
+                                        ChkDoc.Total = Convert.ToDecimal(item["Total"].ToString());
+                                        ChkDoc.Reference = item["Reference"].ToString();
+                                        ChkDoc.Message = item["Message"].ToString();
+                                        ChkDoc.Inclusive = Convert.ToBoolean(item["Inclusive"].ToString());
+                                        ChkDoc.DiscountPercentage = Convert.ToDecimal(item["DiscountPercentage"].ToString());
+                                        ChkDoc.TaxReference = string.Empty;
+                                        ChkDoc.Supplier_ExchangeRate = 1;
+                                        if (item["Supplier_ExchangeRate"] != null)
+                                        {
+                                            ChkDoc.Supplier_ExchangeRate = Convert.ToDecimal(item["Supplier_ExchangeRate"]);
+                                            ChkDoc.Supplier_CurrencyId = Convert.ToInt64(item["Supplier_CurrencyId"]);
+                                        }
+                                            
+                                    if (item["TaxReference"] != null) ChkDoc.TaxReference = item["TaxReference"].ToString();
+                                        _db.Entry(ChkDoc).State = System.Data.Entity.EntityState.Modified;
+                                        try
+                                        {
+                                            _db.SaveChanges();
+                                        }
+                                        catch (Exception ex) { string str = ex.Message; }
+                                        long currentDocId = Convert.ToInt64(item["ID"].ToString());
+                                        if (!compDocIds.Contains(currentDocId))
+                                        {
+                                            await LoadPOLines(currentDocId, Userdetails);
+                                        }
+                                    //await LoadPOLines(Convert.ToInt64(item["ID"].ToString()), Userdetails);
+                                    }
+                                    else
+                                    {
+                                        DocHeader DocH = new DocHeader();
+                                        DocH.DocDate = Convert.ToDateTime(item["Date"].ToString());
+                                        DocH.DocID = Convert.ToInt64(item["ID"].ToString());
+                                        DocH.DueDelDate = Convert.ToDateTime(item["DeliveryDate"] ?? "");
+                                        DocH.DocumentNumber = item["DocumentNumber"].ToString() ?? "";
+                                        DocH.CustSuppID = Convert.ToInt64(item["SupplierId"].ToString());
+                                        DocH.CustSupName = item["SupplierName"].ToString() ?? "";
+                                        DocH.CompanyID = Convert.ToInt32(Userdetails.CoID);
+                                        DocH.Started = false;
+                                        DocH.Complete = false;
+                                        DocH.Status = item["Status"].ToString();
+                                        DocH.Reference = item["Reference"].ToString();
+                                        DocH.Message = item["Message"].ToString();
+                                        DocH.Discount = Convert.ToDecimal(item["Discount"].ToString());
+                                        DocH.Exclusive = Convert.ToDecimal(item["Exclusive"].ToString());
+                                        DocH.Tax = Convert.ToDecimal(item["Tax"].ToString());
+                                        DocH.Rounding = Convert.ToDecimal(item["Rounding"].ToString());
+                                        DocH.Total = Convert.ToDecimal(item["Total"].ToString());
+                                        DocH.DocType = 1;
+                                        DocH.Inclusive = Convert.ToBoolean(item["Inclusive"].ToString());
+                                        DocH.DiscountPercentage = Convert.ToDecimal(item["DiscountPercentage"].ToString());
+                                        DocH.TaxReference = string.Empty;
+                                        DocH.DocGUID = Guid.NewGuid();
+                                        DocH.Supplier_ExchangeRate = 1;
+                                        if (item["Supplier_ExchangeRate"] != null)
+                                        {
+                                            DocH.Supplier_ExchangeRate = Convert.ToDecimal(item["Supplier_ExchangeRate"]);
+                                            DocH.Supplier_CurrencyId = Convert.ToInt64(item["Supplier_CurrencyId"]);
+                                        }
+
+                                        if (item["TaxReference"] != null) DocH.TaxReference = item["TaxReference"].ToString();
+                                        _db.DocHeaders.Add(DocH);
+                                        try
+                                        {
+                                            _db.SaveChanges();
+                                        }
+                                    catch (System.Data.Entity.Validation.DbEntityValidationException ex)
+                                    {
+                                        var errorMessages = ex.EntityValidationErrors
+                                            .SelectMany(x => x.ValidationErrors)
+                                            .Select(x => x.PropertyName + ": " + x.ErrorMessage);
+
+                                        string fullErrorMessage = string.Join("; ", errorMessages);
+                                        string code = item?["Code"]?.ToString() ?? "Unknown";
+                                        string name = item?["Description"]?.ToString() ?? "Unknown";
+
+                                        string errMsg = $"CoID: {Userdetails.CoID} + LoadPurchaseOrders Entity error: PO {item["DocumentNumber"].ToString() ?? ""}: {fullErrorMessage}";
+                                        LogErrorToFile(errMsg);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        string code = item?["Code"]?.ToString() ?? "Unknown";
+                                        string name = item?["Description"]?.ToString() ?? "Unknown";
+                                        string errMsg = $"CoID: {Userdetails.CoID} + LoadPurchaseOrders error: PO {item["DocumentNumber"].ToString() ?? ""}: {ex.Message}";
+                                        LogErrorToFile(errMsg);
+                                    }
+
+                                        long currentDocId = Convert.ToInt64(item["ID"].ToString());
+                                        if (!compDocIds.Contains(currentDocId))
+                                        {
+                                            await LoadPOLines(currentDocId, Userdetails);
+                                        }
+
+                                    //await LoadPOLines(Convert.ToInt64(item["ID"].ToString()), Userdetails);
+                                    }
+                                }
+                                usedoc = 0;
                             }
-                            UpdateDate = true;
+                        }
+                        UpdateDate = true;
                         }
                         skipQty = skipQty + RetQty;
                     } while (skipQty < TotQty);
@@ -1080,6 +1095,7 @@ namespace SBMS.Classes
                     }
                 }
             }
+            _POisSyncRunning = false;
             return parsedJSON;
         }
 
@@ -1375,7 +1391,7 @@ namespace SBMS.Classes
                                     if (Userdetails.SageWeightField.ToLower().Contains("userfield"))
                                     {
                                         decimal unitmass = Convert.ToDecimal(item[Userdetails.SageWeightField]);
-                                        if (unitmass > 0) itm.NettMass = Convert.ToDecimal(item[Userdetails.SageWeightField] ?? 0, CultureInfo.InvariantCulture);
+                                        if (unitmass > 0) thisitm.NettMass = Convert.ToDecimal(item[Userdetails.SageWeightField] ?? 0, CultureInfo.InvariantCulture);
                                     }
                                     try
                                     {
@@ -1956,6 +1972,13 @@ namespace SBMS.Classes
         #region SalesOrders
         public async Task <JObject> LoadSalesOrders(UserDetails Userdetails)
         {
+            lock (_SOsyncLock)
+            {
+                if (_SOisSyncRunning)
+                    return new JObject();
+                _SOisSyncRunning = true;
+            }
+
             bool UpdateDate = false;
             double skipQty = 0; float TotQty = 0; int RetQty = 0;
             int usedoc = 0;
@@ -2000,6 +2023,7 @@ namespace SBMS.Classes
                     }
                     catch (Exception ex)
                     {
+                        _SOisSyncRunning = false;
                         string errMsg = $"CoID: {Userdetails.CoID} + LoadSalesOrders Entity error: Err 2005 - {ex.Message}: {ex.InnerException}";
                         LogErrorToFile(errMsg);
                         parsedJSON = new JObject
@@ -2047,7 +2071,6 @@ namespace SBMS.Classes
                                         ChkDoc.Total = Convert.ToDecimal(item["Total"].ToString());
                                         ChkDoc.Reference = item["Reference"].ToString();
                                         ChkDoc.Message = item["Message"].ToString();
-
                                         ChkDoc.DelAddress1 = item["DeliveryAddress01"].ToString() ?? "";
                                         ChkDoc.DelAddress2 = item["DeliveryAddress02"].ToString() ?? "";
                                         ChkDoc.DelAddress3 = item["DeliveryAddress03"].ToString() ?? "";
@@ -2076,13 +2099,13 @@ namespace SBMS.Classes
                                             LogErrorToFile(errMsg);
                                             string str = ex.Message; 
                                         }
-                                       
-                                        long currentDocId = Convert.ToInt64(item["ID"].ToString());
-                                        if (!compDocIds.Contains(currentDocId))
-                                        {
-                                            await LoadSOLines(currentDocId, Userdetails);
-                                        }
-                                        //await api.LoadSOLines(Convert.ToInt64(item["ID"].ToString()), Userdetails);
+                                        
+                                        await api.LoadSOLines(Convert.ToInt64(item["ID"].ToString()), Userdetails);
+                                        //long currentDocId = Convert.ToInt64(item["ID"].ToString());
+                                        //if (!compDocIds.Contains(currentDocId))
+                                        //{
+                                        //    await LoadSOLines(currentDocId, Userdetails);
+                                        //}
                                     }
                                     else
                                     {
@@ -2136,13 +2159,12 @@ namespace SBMS.Classes
                                             string errMsg = $"CoID: {Userdetails.CoID} + LoadSalesOrders error: PO {item["DocumentNumber"].ToString() ?? ""}: {ex.Message}";
                                             LogErrorToFile(errMsg);
                                         }
-
-                                        long currentDocId = Convert.ToInt64(item["ID"].ToString());
-                                        if (!compDocIds.Contains(currentDocId))
-                                        {
-                                            await LoadSOLines(currentDocId, Userdetails);
-                                        }
-                                        //await api.LoadSOLines(Convert.ToInt64(item["ID"].ToString()), Userdetails);
+                                        await api.LoadSOLines(Convert.ToInt64(item["ID"].ToString()), Userdetails);
+                                        //long currentDocId = Convert.ToInt64(item["ID"].ToString());
+                                        //if (!compDocIds.Contains(currentDocId))
+                                        //{
+                                        //    await LoadSOLines(currentDocId, Userdetails);
+                                        //}
 
                                         // get all user who need to be notified
                                         long CoID = Convert.ToInt32(Userdetails.CoID);
@@ -2161,23 +2183,23 @@ namespace SBMS.Classes
                                                 };
                                                 _db.Notifications.Add(Notif);
                                             }
-                                            try
-                                            {
-                                                _db.SaveChanges();
-                                            }
-                                            catch (System.Data.Entity.Validation.DbEntityValidationException ex)
-                                            {
-                                                var errorMessages = ex.EntityValidationErrors
-                                                    .SelectMany(x => x.ValidationErrors)
-                                                    .Select(x => x.PropertyName + ": " + x.ErrorMessage);
+                                                try
+                                                {
+                                                    _db.SaveChanges();
+                                                }
+                                                    catch (System.Data.Entity.Validation.DbEntityValidationException ex)
+                                                    {
+                                                        var errorMessages = ex.EntityValidationErrors
+                                                            .SelectMany(x => x.ValidationErrors)
+                                                            .Select(x => x.PropertyName + ": " + x.ErrorMessage);
 
-                                                string fullErrorMessage = string.Join("; ", errorMessages);
-                                                string code = item?["Code"]?.ToString() ?? "Unknown";
-                                                string name = item?["Description"]?.ToString() ?? "Unknown";
+                                                        string fullErrorMessage = string.Join("; ", errorMessages);
+                                                        string code = item?["Code"]?.ToString() ?? "Unknown";
+                                                        string name = item?["Description"]?.ToString() ?? "Unknown";
 
-                                                string errMsg = $"CoID: {Userdetails.CoID} + LoadSalesOrders Entity error: PO {item["DocumentNumber"].ToString() ?? ""}: {fullErrorMessage}";
-                                                LogErrorToFile(errMsg);
-                                            }
+                                                        string errMsg = $"CoID: {Userdetails.CoID} + LoadSalesOrders Entity error: PO {item["DocumentNumber"].ToString() ?? ""}: {fullErrorMessage}";
+                                                        LogErrorToFile(errMsg);
+                                                    }
                                             catch (Exception ex)
                                             {
                                                 string code = item?["Code"]?.ToString() ?? "Unknown";
@@ -2219,16 +2241,9 @@ namespace SBMS.Classes
                         string errMsg = $"CoID: {Userdetails.CoID} + Error saving LastCallDate for Sales Orders: {ex.Message}";
                         LogErrorToFile(errMsg);
                     }
-
-
-                    //LastItmCall.LastSODate = (DateTime)LastCallDt;
-                    //try
-                    //{
-                    //    _db.SaveChanges();
-                    //}
-                    //catch (Exception ex) { string str = ex.Message; }
                 }
             }
+            _SOisSyncRunning = false;
             return parsedJSON;
         }
 
@@ -2249,7 +2264,7 @@ namespace SBMS.Classes
                 {
                     parsedJSON = new JObject
                     {
-                        ["error"] = "Err 1643 - " + ex.Message
+                        ["error"] = "Err 2254 - " + ex.Message
                     };
                 }
 
@@ -2332,12 +2347,15 @@ namespace SBMS.Classes
                                 dl.ExchRate = obj.ExchRate;
                             }
                             _db.DocLines.Add(dl);
-                        }
-                        try
-                        {
-                            _db.SaveChanges();
-                        }
-                        catch (Exception ex) { string str = ex.Message; }
+                        } 
+                    }
+                    try
+                    {
+                        _db.SaveChanges();
+                    }
+                    catch (Exception ex) {
+                        string errMsg = $"CoID: {Userdetails.CoID} + Error Ln 2344 - Saving Sales Order Line: {ex.Message}";
+                        LogErrorToFile(errMsg);
                     }
                 }
             }

@@ -1,14 +1,15 @@
-﻿using SBMS.Classes;
+﻿using ClosedXML.Excel;
+using SBMS.Classes;
+using SBMS.Models;
 using System;
-using System.Data;
+using System.Collections.Generic;
 using System.IO;
 using System.Web.UI.WebControls;
-using System.Collections.Generic;
-using Irony;
+using System.Linq;
 
 namespace SBMS
 {
-    public partial class BespokeReports : BasePage
+    public partial class StockCountUpload : BasePage
     {
         private UserDetails CurrentUser
         {
@@ -40,9 +41,145 @@ namespace SBMS
             if (!IsPostBack)
             {
                 showhidebuttons();
-                LoadAvailableReports();
             }
         }
+
+        protected void btnProcess_Click(object sender, EventArgs e)
+        {
+            lblerr.Text = "";
+
+            if (!fileUpload.HasFile)
+            {
+                lblerr.Text = "Please select a file before uploading.";
+                return;
+            }
+
+            string ext = Path.GetExtension(fileUpload.FileName).ToLower();
+            if (ext != ".xlsx")
+            {
+                lblerr.Text = "Please upload an .xlsx file only.";
+                return;
+            }
+
+            ProcessUpload();
+        }
+
+        private void ProcessUpload()
+        {
+            try
+            {
+                using (var stream = new MemoryStream(fileUpload.FileBytes))
+                using (var wb = new XLWorkbook(stream))
+                {
+                    var firstSheet = wb.Worksheets.First();
+                    var countCell = firstSheet.Cell("B1").GetValue<string>();
+
+                    if (!int.TryParse(countCell, out int countID))
+                    {
+                        lblerr.Text = "Could not read Count ID from the workbook (expected in cell B1). " +
+                                      "Please ensure you are uploading a Data Fusion generated count sheet.";
+                        return;
+                    }
+
+                    int updatedLines = 0;
+                    int skippedLines = 0;
+                    int unmatchedLines = 0;
+                    var warnings = new List<string>();
+
+                    using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+                    {
+                        var countExists = _db.StockCountMasters.Any(c =>
+                            c.StCntID == countID && c.CompanyID == CurrentUser.CoID && (c.Complete == false || c.Complete == null));
+
+                        if (!countExists)
+                        {
+                            lblerr.Text = $"An active Count ID {countID} was not found for your company. " +
+                                           "Please check you are uploading the correct file.";
+                            return;
+                        }
+
+                        foreach (var ws in wb.Worksheets)
+                        {
+                            string storeCode = ws.Name.Trim();
+                            int headerRow = 7;
+                            int codeCol = 2;
+                            int count1Col = 4;
+                            int count2Col = 5;
+                            int lastRow = ws.LastRowUsed()?.RowNumber() ?? headerRow;
+
+                            for (int row = headerRow + 1; row <= lastRow; row++)
+                            {
+                                string itemCode = ws.Cell(row, codeCol).GetValue<string>().Trim();
+
+                                if (string.IsNullOrWhiteSpace(itemCode)) continue;
+                                decimal? count1 = null;
+                                decimal? count2 = null;
+
+                                string c1Val = ws.Cell(row, count1Col).GetValue<string>().Trim();
+                                string c2Val = ws.Cell(row, count2Col).GetValue<string>().Trim();
+
+                                if (!string.IsNullOrWhiteSpace(c1Val) && decimal.TryParse(c1Val, out decimal c1)) count1 = c1;
+                                if (!string.IsNullOrWhiteSpace(c2Val) &&decimal.TryParse(c2Val, out decimal c2)) count2 = c2;
+                                if (count1 == null && count2 == null)
+                                {
+                                    skippedLines++;
+                                    continue;
+                                }
+
+                                var line = _db.StockCountLines.FirstOrDefault(l =>
+                                    l.CompanyID == CurrentUser.CoID &&
+                                    l.CountID == countID &&
+                                    l.StoreCode == storeCode &&
+                                    l.ItemCode == itemCode);
+
+                                if (line == null)
+                                {
+                                    unmatchedLines++;
+                                    warnings.Add($"Row {row} on tab '{storeCode}': " +
+                                                 $"Item '{itemCode}' not found — skipped.");
+                                    continue;
+                                }
+
+                                if (count1 != null) line.Count1Qty = count1;
+                                if (count2 != null) line.Count2Qty = count2;
+
+                                updatedLines++;
+                            }
+                        }
+
+                        _db.SaveChanges();
+                    }
+
+                    // Show results
+                    pnlResults.Visible = true;
+                    lblCountInfo.Text = $"Count ID: {countID} — {fileUpload.FileName}";
+
+                    string resultHtml =
+                        $"<p style='color:green'>&#10003; {updatedLines} line(s) updated successfully.</p>";
+
+                    if (skippedLines > 0)
+                        resultHtml +=
+                            $"<p style='color:#888'>&#8212; {skippedLines} blank row(s) skipped.</p>";
+
+                    if (unmatchedLines > 0)
+                    {
+                        resultHtml +=
+                            $"<p style='color:orange'>&#9888; {unmatchedLines} row(s) could not be matched.</p>";
+                        resultHtml += "<ul style='color:orange; font-size:0.85em'>";
+                        foreach (var w in warnings)
+                            resultHtml += $"<li>{w}</li>";
+                        resultHtml += "</ul>";
+                    }
+
+                    lblUploadResult.Text = resultHtml;
+                }
+            }
+            catch (Exception ex)
+            {
+                lblerr.Text = $"Upload failed: {ex.Message}";
+            }
+        }
+
 
         private void showhidebuttons()
         {
@@ -76,7 +213,7 @@ namespace SBMS
             }
         }
 
-       protected void lbtnHome_Click(object sender, EventArgs e)
+        protected void lbtnHome_Click(object sender, EventArgs e)
         {
             Response.Redirect("~/Dashboard.aspx?user=" + CurrentUser.UserGuiD, false);
         }
@@ -223,168 +360,16 @@ namespace SBMS
             Response.Redirect("~/Dashboard.aspx?user=" + CurrentUser.UserGuiD, false);
         }
 
-        private void LoadAvailableReports()
+        protected void lbtnBack_Click(object sender, EventArgs e)
         {
-            long companyId = CurrentUser.CoID;
-            gvReports.DataSource = GetAvailableReports(companyId);
-            gvReports.DataBind();
-        }
-
-        private DataSet GetAvailableReports(long companyId)
-        {
-            DataSet dt = new DataSet();
-            dt = ApiUrlCall.GetSQLDataFromString("SELECT ReportID, ReportName FROM DynamicReports WHERE CompanyID = " + companyId);
-           return dt;
-        }
-
-        protected void gvReports_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            int reportId = Convert.ToInt32(gvReports.SelectedDataKey.Value);
-            Session["SelectedReportId"] = reportId;
-            LoadReportData(reportId);
-        }
-
-        private void LoadReportData(int reportId)
-        {
-            string storedProc = GetStoredProcName(reportId);
-            if (storedProc != null)
+            if (CurrentUser != null)
             {
-                DataTable dt = RunStoredProc(storedProc); 
-                if (dt != null)
-                {
-                    gvReportData.DataSource = dt;
-                    gvReportData.DataBind();
-                    gvReportData.HeaderRow.TableSection = TableRowSection.TableHeader;
-                    ViewState["ReportData"] = dt; // Save for paging/sorting
-                    lbtndwnload.Visible = true;      
-                }
-                else
-                {
-                    gvReportData.DataSource = null;
-                    gvReportData.DataBind();
-                    gvReportData.HeaderRow.TableSection = TableRowSection.TableHeader;
-                    lbtndwnload.Visible = false;
-                }
-            }
-        }
-
-        // Helper: Fetch the stored procedure name
-        private string GetStoredProcName(int reportId)
-        {
-            string storedProcName = null;
-            storedProcName = ApiUrlCall.GetSQLDataFromString("SELECT StoredProcName FROM DynamicReports WHERE ReportID = " + reportId).Tables[0].Rows[0][0].ToString();
-            return storedProcName;
-        }
-
-        // Helper: Run stored procedure and return DataTable
-        private DataTable RunStoredProc(string storedProcName)
-        {
-            var parameters = new Dictionary<string, object>
-                {
-                    { "@CoID", CurrentUser.CoID }
-                };
-
-            DataSet ds = new DataSet();
-            ds = ApiUrlCall.GetSQLDataFromStoredProc(storedProcName, parameters);
-            DataTable dt = ds.Tables[0];
-            return dt;
-        }
-
-        protected void btnDownloadExcel_Click(object sender, EventArgs e)
-        {
-           if (gvReportData.Rows.Count > 0)
-            {
-                ExportReportToExcel();
+                Response.Redirect("~/StockCounts.aspx?user=" + CurrentUser.UserGuiD, false);
             }
             else
             {
-                lblerr.Text = "No data available for export.";
+                Response.Redirect("~/Dashboard.aspx", true);
             }
         }
-
-        protected void ExportReportToExcel()
-        {
-            if (Session["SelectedReportId"] != null)
-            {
-                int reportId = Convert.ToInt32(Session["SelectedReportId"]);
-                string storedProc = GetStoredProcName(reportId);
-
-                DataTable dt = RunStoredProc(storedProc);
-
-                if (dt != null && dt.Rows.Count > 0)
-                {
-                    string fileName = $"Report_{storedProc.Replace("dbo.","")}_{DateTime.Now:yyyyMMdd_HHmmss}";
-                    string wsName = "ReportData";
-                    ExcelHelper.ExportToExcel(dt, fileName, wsName);
-                }
-                else
-                {
-                    lblerr.Text = "No data available for export.";
-                }
-            }
-            else
-            {
-                // Session has expired or reportId is not available, handle accordingly
-                lblerr.Text = "Session has expired or report was not selected. Please select a report again.";
-                // Optionally, redirect the user to the reports page or another page
-                Response.Redirect("ReportsPage.aspx"); // Change this to your reports page URL
-            }
-        }
-
-        protected void gvReportData_PageIndexChanging(object sender, GridViewPageEventArgs e)
-        {
-            gvReportData.PageIndex = e.NewPageIndex;
-
-            // Reload from ViewState (no SQL call needed)
-            if (ViewState["ReportData"] != null)
-            {
-                DataTable dt = ViewState["ReportData"] as DataTable;
-                gvReportData.DataSource = dt;
-                gvReportData.DataBind();
-            }
-        }
-
-        protected void gvReportData_Sorting(object sender, GridViewSortEventArgs e)
-        {
-            DataTable dt = ViewState["ReportData"] as DataTable;
-            if (dt != null)
-            {
-                string sortExpression = e.SortExpression;
-                string sortDirection = GetSortDirection(sortExpression);
-
-                dt.DefaultView.Sort = sortExpression + " " + sortDirection;
-                gvReportData.DataSource = dt.DefaultView;
-                gvReportData.DataBind();
-            }
-        }
-
-        private string GetSortDirection(string column)
-        {
-            string sortDirection = "ASC";
-
-            string sortExpression = ViewState["SortExpression"] as string;
-            if (sortExpression != null)
-            {
-                if (sortExpression == column)
-                {
-                    string lastDirection = ViewState["SortDirection"] as string;
-                    if ((lastDirection != null) && (lastDirection == "ASC"))
-                    {
-                        sortDirection = "DESC";
-                    }
-                }
-            }
-
-            ViewState["SortDirection"] = sortDirection;
-            ViewState["SortExpression"] = column;
-
-            return sortDirection;
-        }
-
-        protected void gvReports_RowDataBound(object sender, GridViewRowEventArgs e)
-        {
-            e.Row.Cells[1].Visible = false; // Hide the first column (ReportID)
-        }
-     
-    }
+    }  
 }

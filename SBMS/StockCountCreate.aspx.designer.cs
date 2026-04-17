@@ -60,6 +60,15 @@ namespace SBMS
         protected global::System.Web.UI.WebControls.LinkButton lbtnHome;
 
         /// <summary>
+        /// lbtnBack control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton lbtnBack;
+
+        /// <summary>
         /// lbtnLogOut control.
         /// </summary>
         /// <remarks>
@@ -121,6 +130,15 @@ namespace SBMS
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Label lblCountID;
+
+        /// <summary>
+        /// lbtnSave control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton lbtnSave;
 
         /// <summary>
         /// DDCateg control.

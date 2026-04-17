@@ -154,7 +154,19 @@ namespace SBMS.Models
     
             return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction<GetOpeningBalancesAllStores_Result>("GetOpeningBalancesAllStores", coIDParameter);
         }
-    
+
+        public virtual ObjectResult<GetOpeningBalancesByStore_Result> GetOpeningBalancesByStore(Nullable<long> coID, string storeCode)
+        {
+            var coIDParameter = coID.HasValue ?
+                new ObjectParameter("CoID", coID) :
+                new ObjectParameter("CoID", typeof(long));
+
+            var storeCodeParameter = storeCode != null ?
+                new ObjectParameter("storeCode", storeCode) :
+                new ObjectParameter("storeCode", typeof(string));
+
+            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction<GetOpeningBalancesByStore_Result>("GetOpeningBalancesByStore", coIDParameter, storeCodeParameter);
+        }
         public virtual ObjectResult<GetProdPlanMovementTransactions_Result> GetProdPlanMovementTransactions(Nullable<long> coID, Nullable<long> planLineid)
         {
             var coIDParameter = coID.HasValue ?
@@ -379,15 +391,15 @@ namespace SBMS.Models
             var coIDParameter = coID.HasValue ?
                 new ObjectParameter("CoID", coID) :
                 new ObjectParameter("CoID", typeof(long));
-
+    
             var searchTermParameter = searchTerm != null ?
                 new ObjectParameter("SearchTerm", searchTerm) :
                 new ObjectParameter("SearchTerm", typeof(string));
-
+    
             return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction<GetAllStockLevels_Result>("GetAllStockLevels", coIDParameter, searchTermParameter);
         }
     
-        public virtual ObjectResult<string> GetItemLinkedStores(Nullable<long> coID, Nullable<long> itmID)
+        public virtual ObjectResult<GetItemLinkedStores_Result> GetItemLinkedStores(Nullable<long> coID, Nullable<long> itmID)
         {
             var coIDParameter = coID.HasValue ?
                 new ObjectParameter("CoID", coID) :
@@ -397,7 +409,7 @@ namespace SBMS.Models
                 new ObjectParameter("itmID", itmID) :
                 new ObjectParameter("itmID", typeof(long));
     
-            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction<string>("GetItemLinkedStores", coIDParameter, itmIDParameter);
+            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction<GetItemLinkedStores_Result>("GetItemLinkedStores", coIDParameter, itmIDParameter);
         }
     
         public virtual ObjectResult<GetItemTransferHistoryByDate_Result> GetItemTransferHistoryByDate(Nullable<long> coID, Nullable<System.DateTime> frmdt, Nullable<System.DateTime> todt)

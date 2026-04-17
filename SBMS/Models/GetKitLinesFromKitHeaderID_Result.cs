@@ -17,6 +17,7 @@ namespace SBMS.Models
         public string KitCode { get; set; }
         public Nullable<int> KitLineNo { get; set; }
         public Nullable<long> ItemID { get; set; }
+        public int KLID { get; set; }
         public Nullable<decimal> FGQty { get; set; }
         public Nullable<int> KitHID { get; set; }
         public string Description { get; set; }

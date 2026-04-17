@@ -470,7 +470,7 @@ namespace SBMS
                             if (ThisItem.IsFromKit != null && (bool)ThisItem.IsFromKit)
                             {
                                 var Store = _db.GetItemLinkedStores(CurrentUser.CoID, Jcl.SelectionId).ToList().FirstOrDefault();
-                                Jcl.StoreCodeFrom = Store.ToString();
+                                Jcl.StoreCodeFrom = Store.StoreCode.ToString();
                                 Jcl.PickComplete = true;
                             }
                         }
@@ -863,7 +863,7 @@ namespace SBMS
                         if (ThisItem.IsFromKit != null && (bool)ThisItem.IsFromKit)
                         {
                             var Store = _db.GetItemLinkedStores(CurrentUser.CoID, Jcl.SelectionId).ToList().FirstOrDefault();
-                            Jcl.StoreCodeFrom = Store.ToString();
+                            Jcl.StoreCodeFrom = Store.StoreCode.ToString();
                             Jcl.PickComplete = true;
                         }
                     }

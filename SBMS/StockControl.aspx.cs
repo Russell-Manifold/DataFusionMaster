@@ -310,5 +310,17 @@ namespace SBMS
         {
 
         }
+
+        protected void imgItemConvert_Click(object sender, EventArgs e)
+        {
+            if (CurrentUser != null)
+            {
+                Response.Redirect("~/ItemConvertUOM.aspx?user=" + CurrentUser.UserGuiD, false);
+            }
+            else
+            {
+                Response.Redirect("~/Dashboard.aspx", true);
+            }
+        }
     }
 }

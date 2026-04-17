@@ -2010,13 +2010,13 @@ button,
 	text-decoration: none;
 	/*background-color: #2D4D63;*/
 	background-color: transparent;
-
+	text-align:center;
 	border: 0;
 	cursor: pointer;
 	background-image: linear-gradient(135deg, rgba(58, 99, 127, 0.95), rgba(34, 38, 41, 0.85)), url("images/overlay.png");
 	backdrop-filter: blur(10px); /* Softer blur */
 	-webkit-backdrop-filter: blur(10px);
-	font-size: 0.7em;
+	font-size: 0.8em;
 	padding: 0.3em 0.6em 0.5em 0.6em;
 	margin: 0.3em;
 	/*width: 6em;*/
@@ -2024,7 +2024,6 @@ button,
 	border-radius: 0.5em;
 	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25); /* Softer shadow */
 	transition: all 0.3s ease-in-out;
-	text-align: left;
 }
 	.buttonJC:hover {
 		background: linear-gradient(135deg, rgba(58, 99, 127, 0.75), rgba(80, 110, 130, 0.7)); /* Gentle lightening */

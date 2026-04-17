@@ -967,6 +967,7 @@
           <Property Name="AcceptBy" Type="varchar" MaxLength="50" />
           <Property Name="CountDate" Type="datetime" />
           <Property Name="LineFinished" Type="bit" Nullable="false" />
+          <Property Name="StoreCode" Type="varchar" MaxLength="6" />
         </EntityType>
         <EntityType Name="StockCountMaster">
           <Key>
@@ -1299,6 +1300,10 @@
         <Function Name="GetOpeningBalancesAllStores" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
           <Parameter Name="CoID" Type="bigint" Mode="In" />
         </Function>
+      <Function Name="GetOpeningBalancesByStore" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
+        <Parameter Name="CoID" Type="bigint" Mode="In" />
+        <Parameter Name="storeCode" Type="varchar" Mode="In" />
+      </Function>
         <Function Name="GetPickSlipMovementTransactions" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
           <Parameter Name="CoID" Type="bigint" Mode="In" />
           <Parameter Name="psid" Type="bigint" Mode="In" />
@@ -2078,6 +2083,10 @@
           <FunctionImport Name="GetOpeningBalancesAllStores" ReturnType="Collection(SBMSModel.GetOpeningBalancesAllStores_Result)">
           <Parameter Name="CoID" Mode="In" Type="Int64" />
           </FunctionImport>
+          <FunctionImport Name="GetOpeningBalancesByStore" ReturnType="Collection(SBMSModel.GetOpeningBalancesByStore_Result)">
+            <Parameter Name="CoID" Mode="In" Type="Int64" />
+            <Parameter Name="storeCode" Mode="In" Type="String" />
+          </FunctionImport>
           <FunctionImport Name="GetProdPlanMovementTransactions" ReturnType="Collection(SBMSModel.GetProdPlanMovementTransactions_Result)">
             <Parameter Name="CoID" Mode="In" Type="Int64" />
             <Parameter Name="planLineid" Mode="In" Type="Int64" />
@@ -2159,7 +2168,7 @@
           <Parameter Name="CoID" Mode="In" Type="Int64" />
           <Parameter Name="SearchTerm" Mode="In" Type="String" />
           </FunctionImport>
-          <FunctionImport Name="GetItemLinkedStores" ReturnType="Collection(String)">
+          <FunctionImport Name="GetItemLinkedStores" ReturnType="Collection(SBMSModel.GetItemLinkedStores_Result)">
             <Parameter Name="CoID" Mode="In" Type="Int64" />
             <Parameter Name="itmID" Mode="In" Type="Int64" />
           </FunctionImport>
@@ -2277,6 +2286,11 @@
           <Property Type="Int32" Name="ItmID" Nullable="false" />
           <Property Type="Int64" Name="ID" Nullable="false" />
         </ComplexType>
+        <ComplexType Name="GetItemLinkedStores_Result">
+          <Property Type="String" Name="StoreCode" Nullable="true" MaxLength="50" />
+          <Property Type="Int32" Name="StoreID" Nullable="true" />
+          <Property Type="Decimal" Name="QOH" Nullable="true" Precision="18" Scale="4" />
+        </ComplexType>
         <ComplexType Name="GetOpeningBalancesAllStores_Result">
           <Property Type="Int64" Name="TransID" Nullable="true" />
           <Property Type="Int64" Name="ItemID" Nullable="true" />
@@ -2291,6 +2305,14 @@
           <Property Type="Decimal" Name="PriceExclusive" Nullable="true" Precision="18" Scale="4" />
           <Property Type="Decimal" Name="TotalUnitPriceExclInclAdd" Nullable="true" Precision="18" Scale="4" />
           <Property Type="String" Name="Unit" Nullable="true" MaxLength="20" />
+        </ComplexType>
+        <ComplexType Name="GetOpeningBalancesByStore_Result">
+          <Property Type="Int64" Name="ItemID" Nullable="true" />
+          <Property Type="String" Name="Code" Nullable="true" MaxLength="50" />
+          <Property Type="String" Name="Unit" Nullable="true" MaxLength="20" />
+          <Property Type="String" Name="ItemDescription" Nullable="true" MaxLength="100" />
+          <Property Type="Decimal" Name="QOH" Nullable="true" Precision="18" Scale="4" />         
+          <Property Type="Decimal" Name="AverageCost" Nullable="true" Precision="18" Scale="4" />         
         </ComplexType>
         <ComplexType Name="GetProdPlanMovementTransactions_Result">
           <Property Type="String" Name="FromProcess" Nullable="true" MaxLength="50" />
@@ -2459,6 +2481,7 @@
           <Property Name="AcceptBy" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="CountDate" Type="DateTime" Precision="3" />
           <Property Name="LineFinished" Type="Boolean" Nullable="false" />
+          <Property Name="StoreCode" Type="String" MaxLength="6" FixedLength="false" Unicode="false" />
         </EntityType>
         <EntityType Name="StockCountMaster">
           <Key>
@@ -4039,6 +4062,18 @@
               </ComplexTypeMapping>
             </ResultMapping>
           </FunctionImportMapping>
+          <FunctionImportMapping FunctionImportName="GetOpeningBalancesByStore" FunctionName="SBMSModel.Store.GetOpeningBalancesByStore">
+            <ResultMapping>
+              <ComplexTypeMapping TypeName="SBMSModel.GetOpeningBalancesByStore_Result">
+               <ScalarProperty Name="ItemID" ColumnName="ItemID" />
+                <ScalarProperty Name="Code" ColumnName="Code" />
+                <ScalarProperty Name="Unit" ColumnName="Unit" />
+                <ScalarProperty Name="ItemDescription" ColumnName="ItemDescription" />
+                <ScalarProperty Name="QOH" ColumnName="QOH" />
+                <ScalarProperty Name="AverageCost" ColumnName="AverageCost" />
+               </ComplexTypeMapping>
+            </ResultMapping>
+          </FunctionImportMapping>
           <FunctionImportMapping FunctionImportName="GetProdPlanMovementTransactions" FunctionName="SBMSModel.Store.GetProdPlanMovementTransactions">
             <ResultMapping>
               <ComplexTypeMapping TypeName="SBMSModel.GetProdPlanMovementTransactions_Result">
@@ -4242,6 +4277,7 @@
                 <ScalarProperty Name="CompanyID" ColumnName="CompanyID" />
                 <ScalarProperty Name="CountID" ColumnName="CountID" />
                 <ScalarProperty Name="CtLineID" ColumnName="CtLineID" />
+                <ScalarProperty Name="StoreCode" ColumnName="StoreCode" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
@@ -4554,7 +4590,15 @@
               </ComplexTypeMapping>
             </ResultMapping>
           </FunctionImportMapping>
-          <FunctionImportMapping FunctionImportName="GetItemLinkedStores" FunctionName="SBMSModel.Store.GetItemLinkedStores" />
+          <FunctionImportMapping FunctionImportName="GetItemLinkedStores" FunctionName="SBMSModel.Store.GetItemLinkedStores">
+            <ResultMapping>
+              <ComplexTypeMapping TypeName="SBMSModel.GetItemLinkedStores_Result">
+                <ScalarProperty Name="StoreCode" ColumnName="StoreCode" />
+                <ScalarProperty Name="StoreID" ColumnName="StoreID" />
+                <ScalarProperty Name="QOH" ColumnName="QOH" />
+              </ComplexTypeMapping>
+            </ResultMapping>
+          </FunctionImportMapping>    
           <EntitySetMapping Name="DocHeaderAttachments">
             <EntityTypeMapping TypeName="SBMSModel.DocHeaderAttachment">
               <MappingFragment StoreEntitySet="DocHeaderAttachment">

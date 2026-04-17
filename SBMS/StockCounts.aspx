@@ -6,8 +6,8 @@
     <title>Stock Counts</title>
     <link id="Link3" runat="server" rel="shortcut icon" href="images/datafusionicon.ico" type="image/x-icon" />
     <link id="Link4" runat="server" rel="icon" href="images/datafusionicon.ico" type="image/ico" />
-    <%--<link rel="stylesheet" href="assets/css/main.css" />--%>
     <link rel="stylesheet" href="prologue/assets/css/main.css" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
     <form id="form1" runat="server">
@@ -45,42 +45,55 @@
         <div class="content">
             <div class="container">             
                  <div class="row 150%">
-                              <div class="col-12 col-12-wide" style="text-align:center">
-                                  <a href="https://mydatafusion.online" title="My Data Fusion website"><img src="images/Logo.png" style="border-radius:0.25em; float:left" class="logoImg" /></a>
+                     <div class="col-12 col-12-wide" style="text-align: center">
+                                <a href="https://mydatafusion.online" title="My Data Fusion website">   <img src="images/Logo.png" style="border-radius: 0.25em; float: left" class="logoImg" /></a>
+                                <asp:LinkButton ID="lbtnHome" runat="server" class="buttonC fa fa-home" onclick="lbtnHome_Click" style="float:left">&nbsp;</asp:LinkButton>
                                     <asp:Image ID="imgCoImg" runat="server"  style="float:right" class="logoImg" />
-                                    <h3 style="padding-top:2em; line-height:1em">Stock Counts</h3>
-                                </div>
-                             </div>
+                         <div style="float:left; margin-left:2em">
+                                Options: <asp:DropDownList ID="DDSelect" runat="server" AutoPostBack="true" OnSelectedIndexChanged="DDSelect_SelectedIndexChanged" >
+                                    <asp:ListItem>- Select - </asp:ListItem>
+                                    <asp:ListItem Value="0">Create New</asp:ListItem>
+                                    <asp:ListItem Value="1">Edit</asp:ListItem>
+                                    <asp:ListItem Value="2">Download Count worksheets</asp:ListItem>
+                                    <asp:ListItem Value="3">Upload Counted quantities</asp:ListItem>
+                                    <asp:ListItem Value="4">Combined Stores Variances</asp:ListItem>
+                                    <asp:ListItem Value="5">Close Off</asp:ListItem>
+                                    </asp:DropDownList>
+                             
+                            </div>
+                         <h3>Stock Counts</h3>
+                         </div>
+                 </div>  
                 <div class="row 150%">
                        <div class="col-12 col-12-wide">                         
                             <table>
                                     <tr>
-                                         <td style="border-right:2px solid gray; padding-right:1em"><asp:LinkButton ID="lbtnOpenNew" runat="server" style="float:right; font-size:1em;" CssClass="icon fa-edit buttonRed" ToolTip="Open New Stock Take" PostBackUrl="~/StockCountCreate.aspx">&nbsp;</asp:LinkButton><h3>Active Counts</h3></td>
+                                         <td>Count: </td>
+                                        <td><asp:DropDownList ID="DDStckCount" runat="server" style="width:10em" AutoPostBack="true" OnSelectedIndexChanged="DDStckCount_SelectedIndexChanged"></asp:DropDownList></td>
+                                        <td>Ref:</td>
+                                        <td><asp:Label ID="lblRef" runat="server" Text=""></asp:Label>&nbsp;</td>
                                         <td>&nbsp;Created Date</td>
                                         <td><asp:Label ID="lblDate" runat="server" Text=""></asp:Label>&nbsp;</td>
                                         <td>Created By<asp:Label ID="CntID" runat="server" Text="" style="display:none"></asp:Label></td>
-                                        <td><asp:Label ID="lblCreatedBy" runat="server" Text=""></asp:Label></td>
-                                        <td></td>
-                                        <td></td>
+                                        <td><asp:Label ID="lblCreatedBy" runat="server" Text=""></asp:Label></td>  
                                     </tr>
                                     <tr>
-                                        <td colspan="7"><hr /></td>
+                                        <td colspan="8"><hr /></td>
                                     </tr>
                                 <tr>
-                                    <td style="border-right:2px solid gray"><asp:DropDownList ID="DDStckCount" runat="server" style="width:10em" AutoPostBack="true" OnSelectedIndexChanged="DDStckCount_SelectedIndexChanged"></asp:DropDownList></td>    
-                                    <td>&nbsp;Category</td>
+                                     <td>&nbsp;Category</td>
                                         <td style="text-align:left"> <asp:DropDownList ID="DDCateg" runat="server" style="width:10em" AutoPostBack="true" OnSelectedIndexChanged="DDCateg_SelectedIndexChanged"></asp:DropDownList></td>
-                                        <td style="padding-left:2em">Filter</td>
+                                        <td>Filter</td>
                                         <td>
                                             <asp:Panel ID="Panel1" runat="server" DefaultButton="lbtnSearch">
-                                                 <asp:TextBox ID="txtFilter" runat="server" style="width:15em" placeholder="Code/Description"></asp:TextBox><asp:LinkButton ID="lbtnSearch" runat="server" CssClass="icon fa-search buttonRed" ToolTip="Search"></asp:LinkButton>
+                                                 <asp:TextBox ID="txtFilter" runat="server" style="width:15em" placeholder="Code/Description"></asp:TextBox><asp:LinkButton ID="lbtnSearch" runat="server" CssClass="fa fa-search-plus buttonRed" ToolTip="Search">&nbsp;</asp:LinkButton>
                                             </asp:Panel>
                                            </td>
-                                        <td style="padding-left:2em">Store</td>
+                                        <td>Store</td>
                                         <td><asp:DropDownList ID="DDStore" runat="server" style="width:10em;" AutoPostBack="true" OnSelectedIndexChanged="DDStore_SelectedIndexChanged"></asp:DropDownList></td>
+                                    <td></td>
                                     </tr>    
                                 </table>
-                            <cci:ConfirmButtonExtender ID="lbtnOpenNew_ConfirmButtonExtender1" runat="server" ConfirmText="Open New Stock Take? Are You Sure?" Enabled="True" TargetControlID="lbtnOpenNew"></cci:ConfirmButtonExtender>
                             <hr />
                                  
                             <asp:GridView ID="GridCntLines" runat="server" AutoGenerateColumns="false" CssClass="gridview" AllowSorting="true" OnSorting="GridCntLines_Sorting" OnRowDataBound="GridCntLines_RowDataBound" >
@@ -96,28 +109,10 @@
                                         <asp:BoundField DataField="ItemCode" ReadOnly="True" HeaderText="Code" SortExpression="ItemCode" />
                                         <asp:BoundField DataField="ItemDescription" ReadOnly="True" HeaderText="Item"  SortExpression="ItemCode"/>
                                         <asp:BoundField DataField="StoreCode" ReadOnly="True" HeaderText="Store"  SortExpression="StoreCode"/>
-                                        <asp:BoundField DataField="LotNumber" ReadOnly="True" HeaderText="Lot Number"  SortExpression="ItemCode"/>
                                         <asp:BoundField DataField="QtyOnHand" ReadOnly="True" HeaderText="On Hand"  SortExpression="ItemCode" />
-                                        <asp:TemplateField HeaderText="Count 1 Qty" ItemStyle-Width="3em" >
-                                            <ItemTemplate >
-                                                <asp:TextBox ID="txtC1Qty" runat="server" Text='<%# Eval("Count1Qty" , "{0}") ?? "" %>' style="width:7em; text-align:center"></asp:TextBox>
-                                            </ItemTemplate>
-                                        </asp:TemplateField>
-                                        <asp:TemplateField HeaderText="Count 2 Qty" ItemStyle-Width="3em" >
-                                            <ItemTemplate >
-                                                <asp:TextBox ID="txtC2Qty" runat="server" Text='<%# Eval("Count2Qty", "{0}") ?? "" %>' style="width:7em; text-align:center"></asp:TextBox>
-                                            </ItemTemplate>
-                                        </asp:TemplateField>
-                                        <asp:TemplateField HeaderText="Final Qty" ItemStyle-Width="3em" >
-                                            <ItemTemplate >
-                                                <asp:TextBox ID="txtFinalQty" runat="server" Text='<%# Eval("FinalQty", "{0}") ?? "" %>' style="width:7em; text-align:center"></asp:TextBox>
-                                            </ItemTemplate>
-                                        </asp:TemplateField>
-                                        <asp:TemplateField HeaderText="Complete" ItemStyle-Width="3em" >
-                                            <ItemTemplate >
-                                                <asp:CheckBox ID="chkCompl" runat="server" />
-                                            </ItemTemplate>
-                                        </asp:TemplateField>
+                                        <asp:BoundField DataField="Count1Qty" ReadOnly="True" HeaderText="Count 1"  SortExpression="Count1Qty" />
+                                        <asp:BoundField DataField="Count2Qty" ReadOnly="True" HeaderText="Count 2"  SortExpression="Count2Qty" />
+                                        <asp:BoundField DataField="FinalQty" ReadOnly="True" HeaderText="Final Qty"  SortExpression="FinalQty" />                                      
                                     </Columns>
                                 </asp:GridView>
                          </ div> 
@@ -125,6 +120,6 @@
                 </div>
         </div>
     </div>
-    </form>
+</form>
 </body>
 </html>

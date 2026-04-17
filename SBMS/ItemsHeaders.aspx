@@ -53,10 +53,10 @@
                                     <PagerStyle CssClass="gridViewPager" />
                                     <AlternatingRowStyle CssClass="gridViewAltRow" />
                                  <Columns>
-                                        <asp:TemplateField HeaderText="Item Code" ItemStyle-Width="8em" SortExpression="Code">
+                                        <asp:TemplateField HeaderText="Item Code" ItemStyle-Width="10em" SortExpression="Code">
                                             <ItemTemplate>
                                                 <asp:LinkButton ID="lbtnBOM" CommandArgument='<%# Eval("ID") %>' CommandName="lbtnBOM" runat="server"
-                                                    Text='<%# Eval("Code") %>' ToolTip="View Item" style="color:#4A82AB; font-weight:600; border:1px solid #4A82AB" width="120px"
+                                                    Text='<%# Eval("Code") %>' ToolTip="View Item" style="color:#4A82AB; font-weight:600; border:1px solid #4A82AB; width:8em; min-width:8em; max-width:10em"
                                                     OnClick="lbtnBOM_Click"></asp:LinkButton>
                                             </ItemTemplate>
                                         </asp:TemplateField>
