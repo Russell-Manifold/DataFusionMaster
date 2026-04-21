@@ -168,6 +168,24 @@ namespace SBMS
         protected global::System.Web.UI.WebControls.LinkButton ibtnRMD;
 
         /// <summary>
+        /// UpdateProgress1 control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.UpdateProgress UpdateProgress1;
+
+        /// <summary>
+        /// UpdatePanel1 control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.UpdatePanel UpdatePanel1;
+
+        /// <summary>
         /// lbtnHome control.
         /// </summary>
         /// <remarks>
@@ -186,15 +204,6 @@ namespace SBMS
         protected global::System.Web.UI.WebControls.Image imgCoImg;
 
         /// <summary>
-        /// DDSelect control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList DDSelect;
-
-        /// <summary>
         /// DDStckCount control.
         /// </summary>
         /// <remarks>
@@ -202,6 +211,24 @@ namespace SBMS
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.DropDownList DDStckCount;
+
+        /// <summary>
+        /// chkAll control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.CheckBox chkAll;
+
+        /// <summary>
+        /// DDSelect control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.DropDownList DDSelect;
 
         /// <summary>
         /// lblRef control.
@@ -240,6 +267,15 @@ namespace SBMS
         protected global::System.Web.UI.WebControls.Label lblCreatedBy;
 
         /// <summary>
+        /// DDStore control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.DropDownList DDStore;
+
+        /// <summary>
         /// DDCateg control.
         /// </summary>
         /// <remarks>
@@ -276,13 +312,13 @@ namespace SBMS
         protected global::System.Web.UI.WebControls.LinkButton lbtnSearch;
 
         /// <summary>
-        /// DDStore control.
+        /// lblStatus control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList DDStore;
+        protected global::System.Web.UI.WebControls.Label lblStatus;
 
         /// <summary>
         /// GridCntLines control.

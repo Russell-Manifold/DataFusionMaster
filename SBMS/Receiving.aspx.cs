@@ -309,6 +309,10 @@ namespace SBMS
                     {
                         TL.ReceiveQty = Convert.ToDecimal(ApiUrlCall.NumberToDecimal(TL.ReceiveQty.ToString(), CurrentUser.CompanyDecPlaces));
                     }
+                    if (TL.QtyLeft != null)
+                    {
+                        TL.QtyLeft = Convert.ToDecimal(ApiUrlCall.NumberToDecimal(TL.QtyLeft.ToString(), CurrentUser.CompanyDecPlaces));
+                    }
                 }
                 GridPOLines.DataSource = TempLines;
                 GridPOLines.DataBind();
@@ -385,35 +389,42 @@ namespace SBMS
             //e.Row.Cells[0].Visible = false;
             if (CurrentUser.CompanyUseLotNumbers == false)
             {
-                e.Row.Cells[12].Visible = false;
+                e.Row.Cells[11].Visible = false;
             }
             if (e.Row.RowType == DataControlRowType.DataRow)
             {
+                if(Convert.ToDecimal(e.Row.Cells[5].Text.ToString()) > (decimal)0)
+                {
+                    e.Row.Cells[5].BackColor = System.Drawing.Color.Honeydew;
+                    e.Row.Cells[5].Font.Bold = true;
+                }
+
+
                 if (e.Row.Cells[4].Text != e.Row.Cells[9].Text)
                 {
                     e.Row.Cells[9].BackColor = System.Drawing.Color.AntiqueWhite;
                 }
-                if (Convert.ToDecimal(e.Row.Cells[13].Text.ToString()) > (decimal)1.05 || Convert.ToDecimal(e.Row.Cells[13].Text.ToString()) < (decimal)0.95) e.Row.Cells[7].Style.Add("border", "1px solid red");
-                if (e.Row.Cells[14].Text.ToString() == "2")
+                if (Convert.ToDecimal(e.Row.Cells[13].Text.ToString()) > (decimal)1.05 || Convert.ToDecimal(e.Row.Cells[13].Text.ToString()) < (decimal)0.95) e.Row.Cells[8].Style.Add("border", "1px solid red");
+                if (e.Row.Cells[15].Text.ToString() == "2")
                 {
                     LinkButton lbtn = new LinkButton();
                     lbtn = (LinkButton)e.Row.FindControl("lbtnItmC");
                     lbtn.Enabled = false;
                     lbtn.ForeColor = System.Drawing.Color.DarkGray;
                 }
-                if (e.Row.Cells[10].Visible == true && e.Row.Cells[10].Text.ToString().Trim().Replace("&nbsp;","") != "")
+                if (e.Row.Cells[11].Visible == true && e.Row.Cells[11].Text.ToString().Trim().Replace("&nbsp;","") != "")
                 {
                     LinkButton lbtnLotNumAdd = new LinkButton();
                     lbtnLotNumAdd = (LinkButton)e.Row.FindControl("lbtnLotNumAdd");
                     lbtnLotNumAdd.Visible = true;
                 }
-                recqty += Convert.ToDecimal(e.Row.Cells[7].Text.ToString());
+                recqty += Convert.ToDecimal(e.Row.Cells[8].Text.ToString());
             }
             else if (e.Row.RowType == DataControlRowType.Footer)
             {
-                e.Row.Cells[7].Text = recqty.ToString();
+                e.Row.Cells[8].Text = recqty.ToString();
             }
-                e.Row.Cells[13].Visible = false;
+            e.Row.Cells[15].Visible = false;
             e.Row.Cells[14].Visible = false;
         }
 
@@ -445,7 +456,8 @@ namespace SBMS
             long lineid = Convert.ToInt64(lblLineID.Text);
             if (QtyLeft != 0 )
             {
-                 // insert row into outstandingReceiving table.
+                RBpoStatus.SelectedIndex = 1;
+                // insert row into outstandingReceiving table.
                 using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
                 {
                     var Docline = _db.TempDocLines.Where(x => x.LineID == lineid).FirstOrDefault();
@@ -457,7 +469,8 @@ namespace SBMS
                     if (Prerecqty > 0)
                     {
                         QtyLeft = QtyOrd - (Prerecqty + QtyRec);
-                    } 
+                    }
+                    Docline.QtyLeft = QtyLeft;
                     ReceivingOutstanding or = new ReceivingOutstanding
                     {
                         CompanyID = CurrentUser.CoID,
@@ -476,7 +489,8 @@ namespace SBMS
                         CreatedDate = DateTime.Now,
                         Archive = false
                     };
-                _db.ReceivingOutstandings.Add(or);
+                   
+                    _db.ReceivingOutstandings.Add(or);
                     if (chkAddLotNum.Checked == true)
                     {
                         // add new row to the document. 
@@ -553,7 +567,7 @@ namespace SBMS
                     }
                     try
                     {
-                        DateTime ubDate = Convert.ToDateTime(txtUseBy.Text);
+                        DateTime ubDate = Convert.ToDateTime(txtRecDate.Text);
                         LtNew.UseByDate = ubDate;
                     }
                     catch { }
@@ -1112,7 +1126,8 @@ namespace SBMS
                                 tempLine.Total = dl.Total;
                                 tempLine.Comments = dl.Comments;
                                 tempLine.QtyLeft = dl.QtyLeft;
-                                tempLine.ReceiveQty = dl.ReceiveQty;
+                                //tempLine.ReceiveQty = dl.ReceiveQty;
+                                tempLine.ReceiveQty = 0;
                                 tempLine.ToReceive = dl.ToReceive;
                                 tempLine.ReceiveComplete = true;
                                 tempLine.StoreCode = dl.StoreCode;
@@ -1249,7 +1264,14 @@ namespace SBMS
                         Head.Complete = true;
                         Head.CompBy = 0;
                         Head.CompleteDate = DateTime.Now;
-                        Head.SupplierInvNum = SuppInvNum.ToString();
+                        if (Head.SupplierInvNum != null)
+                        {
+                            Head.SupplierInvNum = Head.SupplierInvNum + "-" + SuppInvNum.ToString();
+                        }
+                        else
+                        {
+                            Head.SupplierInvNum = SuppInvNum.ToString();
+                        }
                         Head.InvNum = txtInvNum.Text.ToString().Replace("'", "'')");
                         Head.DNNum = txtDNNum.Text.ToString().Replace("'", "'')");
                     }

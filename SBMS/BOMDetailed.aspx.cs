@@ -83,18 +83,19 @@ namespace SBMS
 
                     chkActive.Checked = bomH.BomActive;
 
-                    var BomL = _db.GetBOMLinesFromBomHeaderID(bomH.BomHID, CurrentUser.CoID)
-                            .Select(bom => new BoMLine
-                            {
-                                BLID = bom.BLID,
-                                ItemCode = bom.ItemCode ?? "",
-                                BomCode = bom.BomCode ?? "",
-                                ItemID = bom.ItemID.GetValueOrDefault(),
-                                Description = bom.Description ?? "",
-                                RMQty = ApiUrlCall.NumberToDecimal(bom.RMQty.GetValueOrDefault(), CurrentUser.CompanyDecPlaces),
-                                AvCost = ApiUrlCall.NumberToDecimal(bom.AvCost.GetValueOrDefault(), CurrentUser.CompanyDecPlaces),
-                                BomUnit = bom.BomUnit ?? ""
-                            }).ToList();
+                    var BomL = GetSortedBomLines(_db, bomH.BomHID);
+                    //var BomL = _db.GetBOMLinesFromBomHeaderID(bomH.BomHID, CurrentUser.CoID)
+                    //        .Select(bom => new BoMLine
+                    //        {
+                    //            BLID = bom.BLID,
+                    //            ItemCode = bom.ItemCode ?? "",
+                    //            BomCode = bom.BomCode ?? "",
+                    //            ItemID = bom.ItemID.GetValueOrDefault(),
+                    //            Description = bom.Description ?? "",
+                    //            RMQty = ApiUrlCall.NumberToDecimal(bom.RMQty.GetValueOrDefault(), CurrentUser.CompanyDecPlaces),
+                    //            AvCost = ApiUrlCall.NumberToDecimal(bom.AvCost.GetValueOrDefault(), CurrentUser.CompanyDecPlaces),
+                    //            BomUnit = bom.BomUnit ?? ""
+                    //        }).ToList();
                     if (BomL == null)
                     {
                         BOMLine NewBomLine = new BOMLine();
@@ -108,7 +109,7 @@ namespace SBMS
                     {
                         if (BomL.Count > 0)
                         {
-                            var lastLine = BomL.Last();
+                            var lastLine = BomL.OrderByDescending(x => x.BLID).First();
                             if (lastLine != null && lastLine.Description != null && lastLine.Description != "") // Check if NewJCLine and JCID are not null
                             {
                                 BOMLine NewBomLine = new BOMLine();
@@ -129,18 +130,19 @@ namespace SBMS
                             _db.SaveChanges();
                         }
                     }
-                    BomL = _db.GetBOMLinesFromBomHeaderID(bomH.BomHID, CurrentUser.CoID)
-                            .Select(bom => new BoMLine
-                            {
-                                BLID = bom.BLID,
-                                ItemCode = bom.ItemCode ?? "",
-                                BomCode = bom.BomCode ?? "",
-                                ItemID = bom.ItemID.GetValueOrDefault(),
-                                Description = bom.Description ?? "",
-                                RMQty = ApiUrlCall.NumberToDecimal(bom.RMQty.GetValueOrDefault(), CurrentUser.CompanyDecPlaces),
-                                AvCost = ApiUrlCall.NumberToDecimal(bom.AvCost.GetValueOrDefault(), CurrentUser.CompanyDecPlaces),
-                                BomUnit = bom.BomUnit ?? ""
-                            }).ToList();
+                    BomL = GetSortedBomLines(_db, bomH.BomHID);
+                    //BomL = _db.GetBOMLinesFromBomHeaderID(bomH.BomHID, CurrentUser.CoID)
+                    //        .Select(bom => new BoMLine
+                    //        {
+                    //            BLID = bom.BLID,
+                    //            ItemCode = bom.ItemCode ?? "",
+                    //            BomCode = bom.BomCode ?? "",
+                    //            ItemID = bom.ItemID.GetValueOrDefault(),
+                    //            Description = bom.Description ?? "",
+                    //            RMQty = ApiUrlCall.NumberToDecimal(bom.RMQty.GetValueOrDefault(), CurrentUser.CompanyDecPlaces),
+                    //            AvCost = ApiUrlCall.NumberToDecimal(bom.AvCost.GetValueOrDefault(), CurrentUser.CompanyDecPlaces),
+                    //            BomUnit = bom.BomUnit ?? ""
+                    //        }).ToList();
 
                     foreach (BoMLine bl in BomL)
                     {
@@ -541,6 +543,43 @@ namespace SBMS
             doctype = "ItemAdjustment";
             ApiUrlCall Api = new ApiUrlCall();
             JObject parsedJSON = await Api.APIPostDocumentAsync(doctype, Item, CurrentUser);
+        }
+
+        protected void GridBOMLines_Sorting(object sender, GridViewSortEventArgs e)
+        {
+            ViewState["BOMSortExpression"] = e.SortExpression;
+            ViewState["BOMSortDirection"] = ViewState["BOMSortDirection"] as string == "ASC" ? "DESC" : "ASC";
+            LoadBom();
+        }
+
+        private List<BoMLine> GetSortedBomLines(SBMSEntities _db, int bomHID)
+        {
+            string sortExpression = ViewState["BOMSortExpression"] as string ?? "BLID";
+            string sortDirection = ViewState["BOMSortDirection"] as string ?? "ASC";
+
+            var BomL = _db.GetBOMLinesFromBomHeaderID(bomHID, CurrentUser.CoID)
+                .Select(bom => new BoMLine
+                {
+                    BLID = bom.BLID,
+                    ItemCode = bom.ItemCode ?? "",
+                    BomCode = bom.BomCode ?? "",
+                    ItemID = bom.ItemID.GetValueOrDefault(),
+                    Description = bom.Description ?? "",
+                    RMQty = ApiUrlCall.NumberToDecimal(bom.RMQty.GetValueOrDefault(), CurrentUser.CompanyDecPlaces),
+                    AvCost = ApiUrlCall.NumberToDecimal(bom.AvCost.GetValueOrDefault(), CurrentUser.CompanyDecPlaces),
+                    BomUnit = bom.BomUnit ?? ""
+                }).ToList();
+
+            // Separate blank line and sort the rest
+            var blankLine = BomL.Where(x => x.Description == "").ToList();
+            var sortedLines = BomL.Where(x => x.Description != "");
+
+            sortedLines = sortDirection == "ASC"
+                ? sortedLines.OrderBy(x => typeof(BoMLine).GetProperty(sortExpression)?.GetValue(x))
+                : sortedLines.OrderByDescending(x => typeof(BoMLine).GetProperty(sortExpression)?.GetValue(x));
+
+            // Append blank line at the end after sorting
+            return sortedLines.ToList().Concat(blankLine).ToList();
         }
     }
 }

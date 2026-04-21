@@ -57,7 +57,7 @@
                                     <hr />
                                 </asp:Panel>
                                 <h3>BOM Lines</h3>
-                                <asp:GridView ID="GridBOMLines" runat="server" AutoGenerateColumns="false" CssClass="gridviewS"  ToolTip="Open BOM" OnRowDataBound="GridBOMLines_RowDataBound" ShowFooter="true" >
+                                <asp:GridView ID="GridBOMLines" runat="server" AutoGenerateColumns="false" CssClass="gridviewS"  OnRowDataBound="GridBOMLines_RowDataBound" ShowFooter="true" AllowSorting="true" OnSorting="GridBOMLines_Sorting"  >
                                     <HeaderStyle CssClass="gridViewHeaderS" />
                                     <FooterStyle CssClass="gridViewHeaderS" />
                                     <RowStyle CssClass="gridViewRowS" />
@@ -65,14 +65,14 @@
                                     <FooterStyle CssClass="gridViewHeaderS" />
                                     <Columns>
                                         <asp:BoundField DataField="BLID"  />
-                                         <asp:TemplateField HeaderText="Line Item Code" ItemStyle-Width="10em" >
+                                         <asp:TemplateField HeaderText="Line Item Code" ItemStyle-Width="10em" SortExpression="ItemCode" >
                                             <ItemTemplate >
                                                 <asp:DropDownList ID="DDItemCode" runat="server" AutoPostBack="true" OnSelectedIndexChanged="DDItemCode_SelectedIndexChanged" Width="100px">
                                                           <asp:ListItem Value="0">-Item Code-</asp:ListItem>
                                                           </asp:DropDownList>
                                             </ItemTemplate>
                                         </asp:TemplateField>
-                                        <asp:BoundField HeaderText="Item Description" DataField="Description" ReadOnly="True"  />      
+                                        <asp:BoundField HeaderText="Item Description" DataField="Description" ReadOnly="True" SortExpression="Description"  />      
                                         <asp:TemplateField HeaderText="RM Qty" ItemStyle-HorizontalAlign="Center" HeaderStyle-HorizontalAlign="Center" FooterStyle-HorizontalAlign="Center">
                                             <ItemTemplate>
                                                 <asp:TextBox ID="txtBOMQty" runat="server" Width="6em" style="text-align:center" Text='<%# Eval("RMQty") %>'  onkeydown='<%# "triggerSaveOnEnter(event, \"" + ((GridViewRow)Container).FindControl("lbtnLineSave").ClientID + "\")" %>'></asp:TextBox>
@@ -81,7 +81,7 @@
                                             </asp:TemplateField>
                                          <asp:BoundField HeaderText="UOM" DataField="BomUnit" ReadOnly="True" ItemStyle-Width="2em" ItemStyle-HorizontalAlign="Center"  />
                                         <asp:BoundField HeaderText="Unit Cost" DataField="AvCost" ReadOnly="True" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right" FooterStyle-HorizontalAlign="Right" ItemStyle-Width="6em" />
-                                        <asp:BoundField HeaderText="Cost" DataField="AvRMCost" ReadOnly="True" ItemStyle-HorizontalAlign="Right" FooterStyle-HorizontalAlign="Right" ItemStyle-Width="6em" />
+                                        <asp:BoundField HeaderText="Cost" DataField="AvRMCost" ReadOnly="True" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right" FooterStyle-HorizontalAlign="Right" ItemStyle-Width="6em" />
                                         <asp:TemplateField ItemStyle-HorizontalAlign="Right" ItemStyle-Width="3em" >
                                                     <ItemTemplate>
                                                          <asp:LinkButton ID="lbtnLineSave" CommandArgument='<%# Eval("BLID") %>' CommandName="lbtnLineSave" runat="server" CssClass="fa fa-save buttonRed" ToolTip="Save BOM Line" OnClick="lbtnLineSave_Click"> </asp:LinkButton>
@@ -159,9 +159,9 @@
                                 <div style="width:100%; text-align:center; margin-top:7em ">
                                      <asp:LinkButton ID="lbtnSBCAUpdate" CssClass="icon fa-upload buttonIndex" runat="server" ToolTip="Update Sage with this BOM cost and new selling price?" OnClick="lbtnSBCAUpdate_Click" style="float:left"> Update Sage</asp:LinkButton>
                                     <cci:ConfirmButtonExtender ID="lbtnSBCAUpdate_ConfirmButtonExtender1" runat="server" ConfirmText="Confirm, Update Sage Accounting Average Cost?" Enabled="True" TargetControlID="lbtnSBCAUpdate"></cci:ConfirmButtonExtender>
-                                <cci:ConfirmButtonExtender ID="lbtnDeleteBom_ConfirmButtonExtender1" runat="server" ConfirmText="Delete this BOM? Are you sure?" Enabled="True" TargetControlID="lbtnDeleteBom"></cci:ConfirmButtonExtender>
-                                <asp:LinkButton ID="lbtnDeleteBom" runat="server" style="color:red; font-size:.8em; padding-right:2em; float:right" CssClass="icon fa-ban button" OnClick="lbtnDeleteBom_Click" > Delete BOM</asp:LinkButton>
-                                <asp:LinkButton ID="LbtnSaveBOM" runat="server" style="font-size:1em" CssClass="icon fa-save buttonSage" OnClick="LbtnSaveBOM_Click"> SAVE BOM</asp:LinkButton>
+                                    <cci:ConfirmButtonExtender ID="lbtnDeleteBom_ConfirmButtonExtender1" runat="server" ConfirmText="Delete this BOM? Are you sure?" Enabled="True" TargetControlID="lbtnDeleteBom"></cci:ConfirmButtonExtender>
+                                    <asp:LinkButton ID="lbtnDeleteBom" runat="server" style="color:red; font-size:.8em; padding-right:2em; float:right" CssClass="icon fa-ban button" OnClick="lbtnDeleteBom_Click" > Delete BOM</asp:LinkButton>
+                                    <asp:LinkButton ID="LbtnSaveBOM" runat="server" style="font-size:1em" CssClass="icon fa-save buttonSage" OnClick="LbtnSaveBOM_Click"> SAVE BOM</asp:LinkButton>
                                     </div>
                                     </asp:Panel>
                             </ContentTemplate>

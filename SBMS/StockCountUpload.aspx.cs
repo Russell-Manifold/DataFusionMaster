@@ -71,12 +71,24 @@ namespace SBMS
                 using (var stream = new MemoryStream(fileUpload.FileBytes))
                 using (var wb = new XLWorkbook(stream))
                 {
-                    var firstSheet = wb.Worksheets.First();
-                    var countCell = firstSheet.Cell("B1").GetValue<string>();
+                    // ── Read CountID from Instructions cover page ─────────────
+                    var coverSheet = wb.Worksheets.FirstOrDefault(w =>
+                        w.Name.Trim().Equals("Instructions",
+                        StringComparison.OrdinalIgnoreCase));
+
+                    if (coverSheet == null)
+                    {
+                        lblerr.Text = "Could not find the Instructions tab. " +
+                                      "Please ensure you are uploading a Data Fusion generated count sheet.";
+                        return;
+                    }
+
+                    var countCell = coverSheet.Cell("C5").GetValue<string>();
 
                     if (!int.TryParse(countCell, out int countID))
                     {
-                        lblerr.Text = "Could not read Count ID from the workbook (expected in cell B1). " +
+                        lblerr.Text = "Could not read Count ID from the workbook (expected in cell C5 " +
+                                      "of the Instructions tab). " +
                                       "Please ensure you are uploading a Data Fusion generated count sheet.";
                         return;
                     }
@@ -89,7 +101,9 @@ namespace SBMS
                     using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
                     {
                         var countExists = _db.StockCountMasters.Any(c =>
-                            c.StCntID == countID && c.CompanyID == CurrentUser.CoID && (c.Complete == false || c.Complete == null));
+                            c.StCntID == countID &&
+                            c.CompanyID == CurrentUser.CoID &&
+                            (c.Complete == false || c.Complete == null));
 
                         if (!countExists)
                         {
@@ -100,27 +114,56 @@ namespace SBMS
 
                         foreach (var ws in wb.Worksheets)
                         {
-                            string storeCode = ws.Name.Trim();
+                            // ── Skip non-data tabs ────────────────────────────
+                            string tabName = ws.Name.Trim();
+
+                            if (tabName.Equals("Instructions", StringComparison.OrdinalIgnoreCase) ||
+                                tabName.Equals("Collated", StringComparison.OrdinalIgnoreCase))
+                                continue;
+
+                            string storeCode = tabName;
                             int headerRow = 7;
                             int codeCol = 2;
                             int count1Col = 4;
                             int count2Col = 5;
+                            int finalCol = 6;
                             int lastRow = ws.LastRowUsed()?.RowNumber() ?? headerRow;
 
                             for (int row = headerRow + 1; row <= lastRow; row++)
                             {
-                                string itemCode = ws.Cell(row, codeCol).GetValue<string>().Trim();
+                                string itemCode = ws.Cell(row, codeCol)
+                                                   .GetValue<string>().Trim();
 
                                 if (string.IsNullOrWhiteSpace(itemCode)) continue;
+
                                 decimal? count1 = null;
                                 decimal? count2 = null;
+                                decimal? finalQty = null;
 
                                 string c1Val = ws.Cell(row, count1Col).GetValue<string>().Trim();
                                 string c2Val = ws.Cell(row, count2Col).GetValue<string>().Trim();
+                                string fVal = ws.Cell(row, finalCol).GetValue<string>().Trim();
 
-                                if (!string.IsNullOrWhiteSpace(c1Val) && decimal.TryParse(c1Val, out decimal c1)) count1 = c1;
-                                if (!string.IsNullOrWhiteSpace(c2Val) &&decimal.TryParse(c2Val, out decimal c2)) count2 = c2;
-                                if (count1 == null && count2 == null)
+                                if (!string.IsNullOrWhiteSpace(c1Val) &&
+                                    decimal.TryParse(c1Val, out decimal c1)) count1 = c1;
+
+                                if (!string.IsNullOrWhiteSpace(c2Val) &&
+                                    decimal.TryParse(c2Val, out decimal c2)) count2 = c2;
+
+                                if (!string.IsNullOrWhiteSpace(fVal) &&
+                                    decimal.TryParse(fVal, out decimal fq)) finalQty = fq;
+
+                                // ── FinalQty logic ────────────────────────────
+                                // If not manually set: Count2 wins if both entered,
+                                // otherwise whichever was entered
+                                if (!finalQty.HasValue)
+                                {
+                                    if (count2.HasValue) finalQty = count2;
+                                    else if (count1.HasValue) finalQty = count1;
+                                }
+
+                                // Skip if nothing was entered at all
+                                if (count1 == null && count2 == null && finalQty == null)
                                 {
                                     skippedLines++;
                                     continue;
@@ -140,8 +183,9 @@ namespace SBMS
                                     continue;
                                 }
 
-                                if (count1 != null) line.Count1Qty = count1;
-                                if (count2 != null) line.Count2Qty = count2;
+                                if (count1.HasValue) line.Count1Qty = count1;
+                                if (count2.HasValue) line.Count2Qty = count2;
+                                if (finalQty.HasValue) line.FinalQty = finalQty;
 
                                 updatedLines++;
                             }
@@ -150,7 +194,7 @@ namespace SBMS
                         _db.SaveChanges();
                     }
 
-                    // Show results
+                    // ── Show results ──────────────────────────────────────────
                     pnlResults.Visible = true;
                     lblCountInfo.Text = $"Count ID: {countID} — {fileUpload.FileName}";
 

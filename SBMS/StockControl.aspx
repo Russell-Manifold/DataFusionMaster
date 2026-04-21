@@ -75,13 +75,7 @@
                                         <asp:LinkButton ID="imgbTrfB" runat="server" OnClick="imgbTrfB_Click" CssClass="button buttonLarge" ToolTip="Carry out an inter-store transfer" >Bulk Item Transfer</asp:LinkButton><br /><br />
                                         <asp:LinkButton ID="imgItemAdjust" runat="server" OnClick="imgItemAdjust_Click" CssClass="button buttonLarge" ToolTip="Carry out an item adjustment with the option of updating Sage Accounting" >Item Adjustment</asp:LinkButton><br /><br />
                                         <asp:LinkButton ID="imgItemConvert" runat="server" OnClick="imgItemConvert_Click" CssClass="button buttonLarge" ToolTip="Convert an items to a different unit of measure" >Convert Item to Different Item Code</asp:LinkButton><br /><br />
-                                    <hr />
-                                     <h4 style="text-align:center">Counts</h4>
-                                    <asp:LinkButton ID="lbtnStckCount" runat="server" CssClass="button buttonLarge" OnClick="lbtnStckCount_Click" ToolTip="Plan and record stock takes." >Stock Counts</asp:LinkButton><br /><br />   
                                     
-                                    <hr />
-                                         <h4 style="text-align:center">Custom Reports</h4>
-                                        <asp:LinkButton ID="lbtnCustom" runat="server" CssClass="button buttonLarge" OnClick="lbtnCustom_Click"  ToolTip="View custom reports created for you." >My Customised</asp:LinkButton><br /><br />           
                                 </div>     
                             </div>
                                 <div class="col-6 col-12-wide" style="text-align: center;">
@@ -90,7 +84,13 @@
                                     <asp:LinkButton ID="lbtnSOH" runat="server" OnClick="lbtnSOH_Click" CssClass="button buttonLarge" ToolTip="View stock balances by store"  >Stock/Lot Balances</asp:LinkButton><br /><br />
                                      <asp:LinkButton ID="lbtnPickGP" runat="server" OnClick="lbtnPickGP_Click" CssClass="button buttonLarge" ToolTip="Analyse picking slips and view GP per each one"  >Picking Slip GP Analysis</asp:LinkButton><br /><br />
                                      <asp:LinkButton ID="lbtnItemGP" runat="server" OnClick="lbtnItemGP_Click" CssClass="button buttonLarge" ToolTip="Analyse item sale and view GP per item"  >Item Sales GP Analysis</asp:LinkButton><br /><br />
-                                </div>
+                               
+                            <hr />
+                                 <h4 style="text-align:center">Counts</h4>
+                                <asp:LinkButton ID="lbtnStckCount" runat="server" CssClass="button buttonLarge" OnClick="lbtnStckCount_Click" ToolTip="Plan and record stock takes." >Stock Counts</asp:LinkButton><br /><br />   
+                                <hr />
+                                     <h4 style="text-align:center">Custom Reports</h4>
+                                    <asp:LinkButton ID="lbtnCustom" runat="server" CssClass="button buttonLarge" OnClick="lbtnCustom_Click"  ToolTip="View custom reports created for you." >My Customised</asp:LinkButton><br /><br />           
                             </div>                   
                         </div>
                       </ContentTemplate>

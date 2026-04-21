@@ -54,13 +54,20 @@
                         <h3 style="padding-top: 1.5em; line-height: 1em">Convert item to alternate item code</h3>
                         <h4>
                             <asp:Label ID="lblerr" runat="server" Text=" " ForeColor="Red">&nbsp;</asp:Label></h4>
+                                        <asp:UpdateProgress ID="UpdateProgress1" runat="server" AssociatedUpdatePanelID="UpdatePanel1">
+                                       <ProgressTemplate>
+                                           <div style="position: fixed; text-align: center; height: 100%; width: 100%; top: 0; right: 0; left: 0; z-index: 9999999; background-color: #000000; opacity: 0.5;">
+                                              <asp:Image ID="imgUpdateProgress" runat="server" ImageUrl="~/images/tenorwait.gif" AlternateText="Loading ..." ToolTip="Loading ..." style="padding: 10px; padding-top:15%; border-radius:1.5em" />
+                                           </div>
+                                         </ProgressTemplate>
+                                   </asp:UpdateProgress>
                     </div>
                 </div>
-                         <asp:UpdatePanel ID="UpdatePanel1" runat="server">
+  
+             <asp:UpdatePanel ID="UpdatePanel1" runat="server">
              <ContentTemplate>
                 <div class="row 150%">
-           
-                            <div class="col-12 col-12-m" style="text-align: center">
+                             <div class="col-12 col-12-m" style="text-align: center">
                                 <table style="width:600px; margin:auto">
                                     <tr>
                                         <td>Select Store</td>

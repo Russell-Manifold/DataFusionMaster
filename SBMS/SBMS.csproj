@@ -234,6 +234,7 @@
   <ItemGroup>
     <Content Include="assets\css\images\overlay.png" />
     <Content Include="assets\js\buttonDisable.js" />
+    <Content Include="StockCountVariances.aspx" />
     <Content Include="StockCountUpload.aspx" />
     <Content Include="ItemConvertUOM.aspx" />
     <Content Include="CommonScripts.ascx" />
@@ -933,6 +934,14 @@
     <Content Include="scripts\jquery-3.7.1.min.map" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Models\GetStckCountVariances_Result.cs" />
+    <Compile Include="StockCountVariances.aspx.cs">
+      <DependentUpon>StockCountVariances.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="StockCountVariances.aspx.designer.cs">
+      <DependentUpon>StockCountVariances.aspx</DependentUpon>
+    </Compile>
     <Compile Include="StockCountUpload.aspx.cs">
       <DependentUpon>StockCountUpload.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>

@@ -26,6 +26,9 @@ namespace SBMS.Models
         public Nullable<decimal> Count1Qty { get; set; }
         public Nullable<decimal> Count2Qty { get; set; }
         public Nullable<decimal> FinalQty { get; set; }
+        public Nullable<decimal> Variance { get; set; }
         public Nullable<bool> LineFinished { get; set; }
+        public string CreateBy { get; set; }
+        public string CloseBy { get; set; }
     }
 }

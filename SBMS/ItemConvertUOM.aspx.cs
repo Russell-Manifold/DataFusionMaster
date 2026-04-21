@@ -230,7 +230,7 @@ namespace SBMS
         {
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {
-                var Stores = _db.Stores.Where(x => x.CompanyID == CurrentUser.CoID && x.StoreActive == true && x.StoreCode != "CoD" && x.StoreCode != "CoR" && x.AllowPicking == true).ToList();
+                var Stores = _db.Stores.Where(x => x.CompanyID == CurrentUser.CoID && x.StoreActive == true && x.StoreCode != "CoD" && x.StoreCode != "CoR").ToList();
                 if (Stores.Any())
                 {
                     DDStore.DataSource = Stores;
@@ -486,7 +486,7 @@ namespace SBMS
 
             // Show success message with conversion details
             string successMessage = $"Successfully converted {convertFromQty} {fromItem.Unit} of {fromItem.Code} to {convertToQty} {toItem.Unit} of {toItem.Code} " +
-                                   $"(Ratio: 1:{conversionRatio:F2}). Cost per {toItem.Unit}: {toCost:C}";
+                                   $"(Ratio: 1:{conversionRatio:F2}). Cost per {toItem.Unit}: {toCost}";
             AlertHelper.ShowSweetAlert(this, successMessage, "success");
 
             // Clear the form

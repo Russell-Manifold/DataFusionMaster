@@ -1,4 +1,5 @@
-﻿using DocumentFormat.OpenXml.Drawing.Charts;
+﻿using ClosedXML.Excel;
+using DocumentFormat.OpenXml.Drawing.Charts;
 using SBMS.Classes;
 using SBMS.Models;
 using System;
@@ -7,6 +8,7 @@ using System.Data;
 using System.IO;
 using System.Linq;
 using System.Linq.Dynamic.Core;
+using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -112,17 +114,17 @@ namespace SBMS
                 // Step 3: Commit updates to DB
                 _db.SaveChanges();
 
-                var query = _db.ReceivingOutstandings.Where(x => x.CompanyID == CurrentUser.CoID && x.Archive==false).AsQueryable();
+                var query = _db.ReceivingOutstandings.Where(x => x.CompanyID == CurrentUser.CoID).AsQueryable();
 
                 if (txtfind.Text.ToString().Trim().Length > 1)
                 {
                     query = query.Where(x=>x.PONumber.Contains(findstr) || x.Supplier.Contains(findstr));
                 }
-                else if (!chkArchived.Checked)
+                if (!chkArchived.Checked)
                 {
                     query = query.Where(x => x.Archive == false);
-                } 
-                else if (chkArchived.Checked)
+                } else
+                if (chkArchived.Checked)
                 {
                     query = query.Where(x => x.Archive == true);
                 }
@@ -385,6 +387,75 @@ namespace SBMS
 
         protected void lbtnDownload_Click(object sender, EventArgs e)
         {
+            var data = GetSortedDocHeaders(string.Empty, "ASC"); // or pass current sort state
+            ExportToExcel(data);
+        }
+
+        private void ExportToExcel(List<ReceivingOutstanding> data)
+        {
+            using (var workbook = new XLWorkbook())
+            {
+                var ws = workbook.Worksheets.Add("Receiving Outstanding");
+
+                // --- Header row ---
+                var headers = new[]
+                {
+            "PO Number", "PO Doc ID", "Item Code", "Supplier",
+            "Orig Qty", "Rec Qty", "Archive", "Archive By", "Archive Date"
+            // Adjust these to match your actual ReceivingOutstanding properties
+        };
+
+                for (int i = 0; i < headers.Length; i++)
+                {
+                    var cell = ws.Cell(1, i + 1);
+                    cell.Value = headers[i];
+                    cell.Style.Font.Bold = true;
+                    cell.Style.Fill.BackgroundColor = XLColor.FromArgb(0, 112, 192); // blue header
+                    cell.Style.Font.FontColor = XLColor.White;
+                    cell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                }
+
+                // --- Data rows ---
+                int row = 2;
+                foreach (var item in data)
+                {
+                    ws.Cell(row, 1).Value = item.PONumber;
+                    ws.Cell(row, 2).Value = item.PODocID;
+                    ws.Cell(row, 3).Value = item.ItemCode;
+                    ws.Cell(row, 4).Value = item.Supplier;
+                    ws.Cell(row, 5).Value = item.OrigQty ?? 0;
+                    ws.Cell(row, 6).Value = item.RecQty ?? 0;
+                    ws.Cell(row, 7).Value = (bool)item.Archive ? "Yes" : "No";
+                    ws.Cell(row, 8).Value = item.ArchiveBy;
+                    ws.Cell(row, 9).Value = item.ArchiveDate.HasValue
+                        ? item.ArchiveDate.Value.ToString("yyyy-MM-dd")
+                        : string.Empty;
+
+                    // Zebra striping
+                    if (row % 2 == 0)
+                    {
+                        ws.Row(row).Style.Fill.BackgroundColor = XLColor.FromArgb(235, 241, 250);
+                    }
+
+                    row++;
+                }
+
+                // --- Auto-fit columns ---
+                ws.Columns().AdjustToContents();
+
+                workbook.SaveAs(Server.MapPath($"~/inputcsv/{CurrentUser.UserGuiD.ToString().Replace(" ", "").Replace("-", "")}-RO.xlsx"));
+                string file = $"ReceivingOutstanding_{DateTime.Now:yyyyMMdd_HHmm}.xlsx";
+                string filepath = (Server.MapPath($"~/inputcsv/{CurrentUser.UserGuiD.ToString().Replace(" ", "").Replace("-", "")}-RO.xlsx"));
+
+                Response.Clear();
+                Response.ContentType = "application/vnd.ms-excel";
+                Response.AppendHeader("Content-Disposition", "attachment; filename=" + file);
+                Response.Cache.SetCacheability(HttpCacheability.NoCache);
+                Response.TransmitFile(filepath);
+                Response.Flush();
+                Response.End();
+                System.IO.File.Delete(filepath);
+            }
         }
 
         protected void lbtnArchive_Click(object sender, EventArgs e)

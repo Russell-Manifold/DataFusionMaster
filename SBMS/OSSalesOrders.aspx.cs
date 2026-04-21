@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Linq.Dynamic.Core;
 using System.Web.Services.Description;
+using System.Web.UI;
 using System.Web.UI.WebControls;
 
 namespace SBMS
@@ -21,11 +22,12 @@ namespace SBMS
                 return Session["UserDetails"] as UserDetails;
             }
         }
-        protected  async void Page_Load(object sender, EventArgs e)
+        protected void Page_Load(object sender, EventArgs e)
         {
             if (CurrentUser == null)
             {
-                Response.Redirect("~/Login.aspx", false); Context.ApplicationInstance.CompleteRequest();
+                Response.Redirect("~/Login.aspx", false);
+                Context.ApplicationInstance.CompleteRequest();
                 return;
             }
             SessionValidator.ValidateUserSession(CurrentUser);
@@ -49,21 +51,27 @@ namespace SBMS
             }
 
             lblUsername.Text = $":.. {CurrentUser.UserName} ..:";
+
             if (!IsPostBack)
             {
                 showhidebuttons();
                 lblDir.Text = "ASC";
-                ApiUrlCall api = new ApiUrlCall();
-                JObject SOResult = await api.LoadSalesOrders(CurrentUser);
-                if (SOResult != null && SOResult["error"] != null)
+
+                // Use RegisterAsyncTask instead of await in async void
+                RegisterAsyncTask(new PageAsyncTask(async () =>
                 {
-                    string message = SOResult["error"].ToString();
-                    string errMsg = $"CoID: {CurrentUser.CoID} + OS SalesOrder Error 54 - {message} ";
-                    api.LogErrorToFile(errMsg);
-                    AlertHelper.ShowSweetAlert(this, message, "error");
-                }
-                BindData();
-                LoadDD();
+                    ApiUrlCall api = new ApiUrlCall();
+                    JObject SOResult = await api.LoadSalesOrders(CurrentUser);
+                    if (SOResult != null && SOResult["error"] != null)
+                    {
+                        string message = SOResult["error"].ToString();
+                        string errMsg = $"CoID: {CurrentUser.CoID} + OS SalesOrder Error 54 - {message} ";
+                        api.LogErrorToFile(errMsg);
+                        AlertHelper.ShowSweetAlert(this, message, "error");
+                    }
+                    BindData();
+                    LoadDD();
+                }));
             }
         }
         public List<GetListOfDocHeadersByType_Result> GetSortedDocHeaders(string sortExpression, string sortDirection)
@@ -79,6 +87,10 @@ namespace SBMS
                     query = query.Where(x => x.DocumentNumber.ToLower().Contains(findstr) || x.CustSupName.ToLower().Contains(findstr) || x.Reference.ToLower().Contains(findstr));
                 } 
                 if (!chkCompl.Checked) 
+                {
+                    query = query.Where(x => x.Complete == false);
+                }
+                if (chkActive.Checked) 
                 {
                     query = query.Where(x => x.Active == true);
                 }
@@ -561,5 +573,6 @@ namespace SBMS
                 }
             }
         }
+
     }
 }

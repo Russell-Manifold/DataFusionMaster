@@ -324,7 +324,20 @@ namespace SBMS.Models
     
             return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction<GetStckCountDetails_Result>("GetStckCountDetails", coIDParameter, countidParameter);
         }
-    
+
+        public virtual ObjectResult<GetStckCountVariances_Result> GetStckCountVariances(Nullable<long> coID, Nullable<int> countid)
+        {
+            var coIDParameter = coID.HasValue ?
+                new ObjectParameter("CoID", coID) :
+                new ObjectParameter("CoID", typeof(long));
+
+            var countidParameter = countid.HasValue ?
+                new ObjectParameter("countid", countid) :
+                new ObjectParameter("countid", typeof(int));
+
+            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction<GetStckCountVariances_Result>("GetStckCountVariances", coIDParameter, countidParameter);
+        }
+
         public virtual ObjectResult<GetStockCountList_Result> GetStockCountList(Nullable<long> coID)
         {
             var coIDParameter = coID.HasValue ?

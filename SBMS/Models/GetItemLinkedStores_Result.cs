@@ -6,6 +6,6 @@ namespace SBMS.Models
     {
         public string StoreCode { get; set; }
         public int StoreID { get; set; }
-        public decimal QOH { get; set; }
+        public decimal? QOH { get; set; }
     }
 }

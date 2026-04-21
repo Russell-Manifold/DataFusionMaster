@@ -1344,6 +1344,10 @@
           <Parameter Name="CoID" Type="bigint" Mode="In" />
           <Parameter Name="countid" Type="int" Mode="In" />
         </Function>
+      <Function Name="GetStckCountVariances" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
+        <Parameter Name="CoID" Type="bigint" Mode="In" />
+        <Parameter Name="countid" Type="int" Mode="In" />
+      </Function>
         <Function Name="GetStockCountList" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
           <Parameter Name="CoID" Type="bigint" Mode="In" />
         </Function>
@@ -2141,6 +2145,10 @@
             <Parameter Name="CoID" Mode="In" Type="Int64" />
             <Parameter Name="countid" Mode="In" Type="Int32" />
           </FunctionImport>
+          <FunctionImport Name="GetStckCountVariances" ReturnType="Collection(SBMSModel.GetStckCountVariances_Result)">
+            <Parameter Name="CoID" Mode="In" Type="Int64" />
+            <Parameter Name="countid" Mode="In" Type="Int32" />
+          </FunctionImport>
           <FunctionImport Name="GetStockCountList" ReturnType="Collection(SBMSModel.GetStockCountList_Result)">
           <Parameter Name="CoID" Mode="In" Type="Int64" />
           </FunctionImport>
@@ -2470,7 +2478,7 @@
           <Property Name="CompanyID" Type="Int64" Nullable="false" />
           <Property Name="ItemID" Type="Int64" Nullable="false" />
           <Property Name="ItemCode" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
-          <Property Name="ItemDescription" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="ItemDescription" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
           <Property Name="LotNumber" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="StoreID" Type="Int32" />
           <Property Name="QtyOnHand" Type="Decimal" Precision="18" Scale="2" />
@@ -2540,7 +2548,19 @@
           <Property Type="Decimal" Name="Count1Qty" Nullable="true" Precision="18" Scale="2" />
           <Property Type="Decimal" Name="Count2Qty" Nullable="true" Precision="18" Scale="2" />
           <Property Type="Decimal" Name="FinalQty" Nullable="true" Precision="18" Scale="2" />
+          <Property Type="Decimal" Name="Variance" Nullable="true" Precision="18" Scale="2" />
           <Property Type="Boolean" Name="LineFinished" Nullable="true" />
+          <Property Type="String" Name="CreateBy" Nullable="true" MaxLength="50" />
+          <Property Type="String" Name="CloseBy" Nullable="true" MaxLength="50" />
+        </ComplexType>
+        <ComplexType Name="GetStckCountVariances_Result">
+          <Property Type="String" Name="Code" Nullable="true" MaxLength="50" />
+          <Property Type="String" Name="Description" Nullable="true" MaxLength="100" />
+          <Property Type="String" Name="CategoryDescript" Nullable="true" MaxLength="100" />
+          <Property Type="Decimal" Name="SystemQOH" Nullable="false" Precision="18" Scale="2" />
+          <Property Type="Decimal" Name="TotalCountedQty" Nullable="false" Precision="18" Scale="2" />
+          <Property Type="Decimal" Name="Variance" Nullable="false" Precision="18" Scale="2" />
+          <Property Type="String" Name="CountStatus" Nullable="true" MaxLength="100" />
         </ComplexType>
         <ComplexType Name="GetStockCountList_Result">
           <Property Type="String" Name="Code" Nullable="true" MaxLength="50" />
@@ -4349,7 +4369,23 @@
                 <ScalarProperty Name="Count1Qty" ColumnName="Count1Qty" />
                 <ScalarProperty Name="Count2Qty" ColumnName="Count2Qty" />
                 <ScalarProperty Name="FinalQty" ColumnName="FinalQty" />
+                <ScalarProperty Name="Variance" ColumnName="Variance" />
                 <ScalarProperty Name="LineFinished" ColumnName="LineFinished" />
+                <ScalarProperty Name="CreateBy" ColumnName="CreateBy" />
+                <ScalarProperty Name="CloseBy" ColumnName="CloseBy" />
+              </ComplexTypeMapping>
+            </ResultMapping>
+          </FunctionImportMapping>
+          <FunctionImportMapping FunctionImportName="GetStckCountVariances" FunctionName="SBMSModel.Store.GetStckCountVariances">
+            <ResultMapping>
+              <ComplexTypeMapping TypeName="SBMSModel.GetStckCountVariances_Result">
+                <ScalarProperty Name="Code" ColumnName="Code" />
+                <ScalarProperty Name="Description" ColumnName="Description" />
+                <ScalarProperty Name="CategoryDescript" ColumnName="CategoryDescript" />
+                <ScalarProperty Name="SystemQOH" ColumnName="SystemQOH" />
+                <ScalarProperty Name="TotalCountedQty" ColumnName="TotalCountedQty" />
+                <ScalarProperty Name="Variance" ColumnName="Variance" />
+                <ScalarProperty Name="CountStatus" ColumnName="CountStatus" />
               </ComplexTypeMapping>
             </ResultMapping>
           </FunctionImportMapping>

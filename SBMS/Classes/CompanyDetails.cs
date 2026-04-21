@@ -11,8 +11,8 @@ namespace SBMS.Classes
         public string GenLoginEncrypted { get; set; }
         public long CoID { get; set; }
         public bool UseJobCards { get; set; }
-        public bool UseProduction { get; set; }
 
+        public bool UseProduction { get; set; }
 
     }
 } 

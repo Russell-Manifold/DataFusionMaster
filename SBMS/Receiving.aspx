@@ -115,10 +115,9 @@
                                                 </asp:TemplateField>
                                                 <asp:BoundField HeaderText="Description" DataField="ItemDescription" ReadOnly="True"  />
                                                 <asp:BoundField HeaderText="Unit" DataField="Unit" ReadOnly="True" ItemStyle-Width="2em"  />
-                                                <asp:BoundField HeaderText="Order_Qty" DataField="Quantity" ReadOnly="True" ItemStyle-HorizontalAlign="Center"  ItemStyle-Width="7em"/>    
+                                                <asp:BoundField HeaderText="Order_Qty" DataField="Quantity" ReadOnly="True" ItemStyle-HorizontalAlign="Center" HeaderStyle-HorizontalAlign="Center" ItemStyle-Width="7em"/>    
+                                                <asp:BoundField HeaderText="Qty_Left" DataField="QtyLeft" ReadOnly="True" ItemStyle-HorizontalAlign="Center"  HeaderStyle-HorizontalAlign="Center" ItemStyle-Width="7em"/>
                                                 <asp:BoundField HeaderText="Excl_Price" DataField="UnitPriceExclusive" ReadOnly="True" DataFormatString="{0:N2}" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right"  />
-                                                <%--<asp:BoundField HeaderText="Disc%" DataField="DiscountPercentage" ReadOnly="True" DataFormatString="{0:p}" ItemStyle-HorizontalAlign="Center" ItemStyle-Width="5em"   />--%>
-                                                <%--<asp:BoundField HeaderText="Discount" DataField="Discount" ReadOnly="True" DataFormatString="{0:N2}" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" ItemStyle-Width="5em"  />--%>
                                                 <asp:BoundField HeaderText="PO Total" DataField="Total" ReadOnly="True" DataFormatString="{0:N2}" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right"  />    
                                                 <asp:BoundField HeaderText="Receive_Qty" DataField="ReceiveQty" ReadOnly="True" ItemStyle-HorizontalAlign="Center" ItemStyle-Width="7em" FooterStyle-HorizontalAlign="Center" />    
                                                 <asp:TemplateField HeaderText="To_Receive" ItemStyle-Width="7em" ItemStyle-HorizontalAlign="Center">
@@ -216,14 +215,18 @@
                             OnClientClick="disableReceiveButtons('<%= lbtnReset.ClientID %>', '<%= lbtnPrintRN.ClientID %>', '<%= lbtnReceiveFinish.ClientID %>', 'Receive & Generate GRN); return true;" >
                             &nbsp;Receive & Generate GRN</asp:LinkButton>
                         <cci:ConfirmButtonExtender ID="lbtnRecAll_ConfirmButtonExtender" runat="server" ConfirmText="Confirm - Receive all items as shown?" Enabled="True" TargetControlID="lbtnReceiveFinish"></cci:ConfirmButtonExtender>
-                          <div style="font-size:.8em; text-align:center; color:orange">Receiving a PO will generate an "Unpaid" Supplier invoice in Sage. Verification and payment processing is to be completed using Sage.</div>
+                          
+                        <div style="float:right">
+                        <strong>Receiving complete?</strong>
+                         <asp:RadioButtonList ID="RBpoStatus" runat="server" RepeatDirection="Horizontal">
+                             <asp:ListItem Value="0" Selected="True">Yes</asp:ListItem>
+                             <asp:ListItem Value="1">No</asp:ListItem>
+                        </asp:RadioButtonList>
+                            </div>
+                         <div style="font-size:.8em; text-align:center; color:orange">Receiving a PO will generate an "Unpaid" Supplier invoice in Sage. Verification and payment processing is to be completed using Sage.</div>
                     </div>
                     <div class="2u 12u$(medium)" style="text-align:left">     
-                   <strong>Receiving complete?</strong>
-                        <asp:RadioButtonList ID="RBpoStatus" runat="server" RepeatDirection="Horizontal">
-                            <asp:ListItem Value="0" Selected="True">Yes</asp:ListItem>
-                            <asp:ListItem Value="1">No</asp:ListItem>
-                       </asp:RadioButtonList>
+                   
                        </div>
                     <div class="1u 12u$(medium)">&nbsp;</div>
                 </div>

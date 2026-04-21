@@ -32,9 +32,26 @@ namespace SBMS
                 return Session["UserDetails"] as UserDetails;
             }
         }
+
         protected async void Page_Load(object sender, EventArgs e)
         {
-            docguid = Request.QueryString["docid"];
+            // Always restore docguid from QueryString or ViewState
+            if (Request.QueryString["docid"] != null)
+            {
+                docguid = Request.QueryString["docid"];
+                ViewState["docguid"] = docguid;
+            }
+            else
+            {
+                docguid = ViewState["docguid"] as string;
+            }
+
+            // Always restore docid from label on postback
+            if (IsPostBack && lblDocID.Text.Length > 0)
+            {
+                docid = Convert.ToInt64(lblDocID.Text);
+            }
+
             bool AutoUpdate = false;
             try
             {
@@ -62,11 +79,10 @@ namespace SBMS
 
                 if (AutoUpdate)
                 {
-                    // Auto-post order
                     if (await PostOrder() == "OK")
                     {
                         lbtnPost.Style.Add("display", "none");
-                        lblErr.Text =  "Sales Order updated in Sage."; 
+                        lblErr.Text = "Sales Order updated in Sage.";
                         lbtnTaxInv.Style.Add("display", "none");
                         if (CurrentUser.AutoGenTaxInvoice)
                         {
@@ -88,6 +104,64 @@ namespace SBMS
                 }
             }
         }
+
+        //protected async void Page_Load(object sender, EventArgs e)
+        //{
+        //    docguid = Request.QueryString["docid"];
+        //    bool AutoUpdate = false;
+        //    try
+        //    {
+        //        if (Request.QueryString["autosave"] != null)
+        //            AutoUpdate = Convert.ToBoolean(Request.QueryString["autosave"]);
+        //    }
+        //    catch { }
+
+        //    if (CurrentUser == null)
+        //    {
+        //        Response.Redirect("~/Login.aspx", false);
+        //        Context.ApplicationInstance.CompleteRequest();
+        //        return;
+        //    }
+
+        //    if (!IsPostBack)
+        //    {
+        //        // Load company image
+        //        string imgname = CurrentUser.CoID + ".png";
+        //        string imgPath = $"~/images/CoImages/{imgname}";
+        //        imgCoImg.ImageUrl = File.Exists(Server.MapPath(imgPath)) ? ResolveUrl(imgPath) : ResolveUrl("~/images/CoImages/0000.png");
+
+        //        // Load the order
+        //        LoadOrder();
+
+        //        if (AutoUpdate)
+        //        {
+        //            // Auto-post order
+        //            if (await PostOrder() == "OK")
+        //            {
+        //                lbtnPost.Style.Add("display", "none");
+        //                lblErr.Text =  "Sales Order updated in Sage."; 
+        //                lbtnTaxInv.Style.Add("display", "none");
+        //                if (CurrentUser.AutoGenTaxInvoice)
+        //                {
+        //                    lbtnTaxInv.Style.Add("display", "inline-block");
+        //                }
+        //            }
+        //        }
+        //        else
+        //        {
+        //            lbtnTaxInv.Style.Add("display", "none");
+        //        }
+        //    }
+        //    else
+        //    {
+        //        string eventTarget = Request["__EVENTTARGET"];
+        //        if (eventTarget == "GenerateInvoice")
+        //        {
+        //            lbtnTaxInv_Click(sender, EventArgs.Empty);
+        //        }
+        //    }
+        //}
+
         private void LoadOrder()
         {
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))

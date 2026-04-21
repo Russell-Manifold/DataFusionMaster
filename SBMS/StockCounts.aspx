@@ -43,55 +43,73 @@
  </div>
 <div id="main"> 
         <div class="content">
-            <div class="container">             
+            <div class="container">
+                 <asp:UpdateProgress ID="UpdateProgress1" runat="server" AssociatedUpdatePanelID="UpdatePanel1">
+                        <ProgressTemplate>
+                            <div style="position: fixed; text-align: center; height: 100%; width: 100%; top: 0; right: 0; left: 0; z-index: 9999999; background-color: #000000; opacity: 0.5;">
+                                <asp:Image ID="imgUpdateProgress" runat="server" ImageUrl="~/images/tenorwait.gif" AlternateText="Loading ..." ToolTip="Loading ..." style="padding: 10px; padding-top:15%; border-radius:1.5em" />
+                            </div>
+                        </ProgressTemplate>
+                    </asp:UpdateProgress>
+                <asp:UpdatePanel ID="UpdatePanel1" runat="server">
+                    <ContentTemplate>
                  <div class="row 150%">
                      <div class="col-12 col-12-wide" style="text-align: center">
                                 <a href="https://mydatafusion.online" title="My Data Fusion website">   <img src="images/Logo.png" style="border-radius: 0.25em; float: left" class="logoImg" /></a>
-                                <asp:LinkButton ID="lbtnHome" runat="server" class="buttonC fa fa-home" onclick="lbtnHome_Click" style="float:left">&nbsp;</asp:LinkButton>
+                                <asp:LinkButton ID="lbtnHome" runat="server" class="buttonC fa fa-home" onclick="lbtnHome_Click" style="float:left">&nbsp;&nbsp;</asp:LinkButton>
                                     <asp:Image ID="imgCoImg" runat="server"  style="float:right" class="logoImg" />
-                         <div style="float:left; margin-left:2em">
-                                Options: <asp:DropDownList ID="DDSelect" runat="server" AutoPostBack="true" OnSelectedIndexChanged="DDSelect_SelectedIndexChanged" >
-                                    <asp:ListItem>- Select - </asp:ListItem>
-                                    <asp:ListItem Value="0">Create New</asp:ListItem>
-                                    <asp:ListItem Value="1">Edit</asp:ListItem>
-                                    <asp:ListItem Value="2">Download Count worksheets</asp:ListItem>
-                                    <asp:ListItem Value="3">Upload Counted quantities</asp:ListItem>
-                                    <asp:ListItem Value="4">Combined Stores Variances</asp:ListItem>
-                                    <asp:ListItem Value="5">Close Off</asp:ListItem>
-                                    </asp:DropDownList>
-                             
-                            </div>
-                         <h3>Stock Counts</h3>
+                         
+                         <div style="float:left; margin-left:2em; display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                            <asp:DropDownList ID="DDStckCount" runat="server" style="width:20em; font-weight:600; color:#4282C1" AutoPostBack="true" OnSelectedIndexChanged="DDStckCount_SelectedIndexChanged"></asp:DropDownList>
+                            <asp:CheckBox ID="chkAll" runat="server" Text="Show Closed" AutoPostBack="true" OnCheckedChanged="chkAll_CheckedChanged" Font-Size="Smaller" />
+                            <asp:DropDownList ID="DDSelect" runat="server" AutoPostBack="true" style="font-weight:600; color:#4282C1"
+                                OnSelectedIndexChanged="DDSelect_SelectedIndexChanged"
+                                onchange="if(this.value==='5'){ if(!confirm('Are you sure you want to Close Off this Stock Count? This cannot be undone.')){ this.selectedIndex=0; return false; } }">
+                                <asp:ListItem>- Options -</asp:ListItem>
+                                <asp:ListItem Value="0">Create New Count</asp:ListItem>
+                                <asp:ListItem Value="1">Open/Edit Count</asp:ListItem>
+                                <asp:ListItem Value="2">Download Count Worksheets</asp:ListItem>
+                                <asp:ListItem Value="3">Upload Counted Quantities</asp:ListItem>
+                                <asp:ListItem Value="4">Count Totals Variances</asp:ListItem>
+                                <asp:ListItem Value="5">Close Off</asp:ListItem>
+                            </asp:DropDownList>
+                                </div>
+                         <br />
+                         <h3><br />Stock Counts</h3>
                          </div>
-                 </div>  
+                    
+                 </div> 
+                
                 <div class="row 150%">
                        <div class="col-12 col-12-wide">                         
                             <table>
                                     <tr>
-                                         <td>Count: </td>
-                                        <td><asp:DropDownList ID="DDStckCount" runat="server" style="width:10em" AutoPostBack="true" OnSelectedIndexChanged="DDStckCount_SelectedIndexChanged"></asp:DropDownList></td>
+                                        <td></td>
+                                        <td colspan="2"></td>
                                         <td>Ref:</td>
-                                        <td><asp:Label ID="lblRef" runat="server" Text=""></asp:Label>&nbsp;</td>
+                                        <td style="text-align:left"><asp:Label ID="lblRef" runat="server" Text=""></asp:Label>&nbsp;</td>
                                         <td>&nbsp;Created Date</td>
-                                        <td><asp:Label ID="lblDate" runat="server" Text=""></asp:Label>&nbsp;</td>
+                                        <td style="text-align:left"><asp:Label ID="lblDate" runat="server" Text=""></asp:Label>&nbsp;</td>
                                         <td>Created By<asp:Label ID="CntID" runat="server" Text="" style="display:none"></asp:Label></td>
-                                        <td><asp:Label ID="lblCreatedBy" runat="server" Text=""></asp:Label></td>  
+                                        <td style="text-align:left"><asp:Label ID="lblCreatedBy" runat="server" Text=""></asp:Label></td>  
                                     </tr>
                                     <tr>
                                         <td colspan="8"><hr /></td>
                                     </tr>
                                 <tr>
-                                     <td>&nbsp;Category</td>
-                                        <td style="text-align:left"> <asp:DropDownList ID="DDCateg" runat="server" style="width:10em" AutoPostBack="true" OnSelectedIndexChanged="DDCateg_SelectedIndexChanged"></asp:DropDownList></td>
+                                    <td>Store</td>
+                                    <td style="text-align:left"><asp:DropDownList ID="DDStore" runat="server" style="width:10em;" AutoPostBack="true" OnSelectedIndexChanged="DDStore_SelectedIndexChanged"></asp:DropDownList></td> 
+                                    <td>&nbsp;Category</td>
+                                    <td style="text-align:left"> <asp:DropDownList ID="DDCateg" runat="server" style="width:10em" AutoPostBack="true" OnSelectedIndexChanged="DDCateg_SelectedIndexChanged"></asp:DropDownList></td>
                                         <td>Filter</td>
-                                        <td>
+                                        <td style="text-align:left">
                                             <asp:Panel ID="Panel1" runat="server" DefaultButton="lbtnSearch">
                                                  <asp:TextBox ID="txtFilter" runat="server" style="width:15em" placeholder="Code/Description"></asp:TextBox><asp:LinkButton ID="lbtnSearch" runat="server" CssClass="fa fa-search-plus buttonRed" ToolTip="Search">&nbsp;</asp:LinkButton>
                                             </asp:Panel>
-                                           </td>
-                                        <td>Store</td>
-                                        <td><asp:DropDownList ID="DDStore" runat="server" style="width:10em;" AutoPostBack="true" OnSelectedIndexChanged="DDStore_SelectedIndexChanged"></asp:DropDownList></td>
+                                           </td> 
                                     <td></td>
+                                    <td>Status:</td>
+                                    <td><asp:Label ID="lblStatus" runat="server" Text=""></asp:Label>&nbsp;</td>
                                     </tr>    
                                 </table>
                             <hr />
@@ -112,14 +130,38 @@
                                         <asp:BoundField DataField="QtyOnHand" ReadOnly="True" HeaderText="On Hand"  SortExpression="ItemCode" />
                                         <asp:BoundField DataField="Count1Qty" ReadOnly="True" HeaderText="Count 1"  SortExpression="Count1Qty" />
                                         <asp:BoundField DataField="Count2Qty" ReadOnly="True" HeaderText="Count 2"  SortExpression="Count2Qty" />
-                                        <asp:BoundField DataField="FinalQty" ReadOnly="True" HeaderText="Final Qty"  SortExpression="FinalQty" />                                      
+                                        <asp:BoundField DataField="FinalQty" ReadOnly="True" HeaderText="Final Qty"  SortExpression="FinalQty" />     
+                                        <%--add checkbox for count complete--%>
+                                           <asp:TemplateField ItemStyle-HorizontalAlign="Center" ItemStyle-Width="1.5em"><HeaderTemplate >Complete</HeaderTemplate>
+                                               <ItemTemplate>
+                                                <asp:CheckBox ID="chkComplete" runat="server" Checked='<%# Eval("LineFinished")%>'  Text=" "   />
+                                            </ItemTemplate>
+                                        </asp:TemplateField>
+                                        <%--Add variance column--%>
+                                        <asp:BoundField DataField="Variance" ReadOnly="True" HeaderText="Variance"  SortExpression="Variance" DataFormatString="{0:N2}" ItemStyle-HorizontalAlign="Right"  HeaderStyle-HorizontalAlign="Right" />                                     
                                     </Columns>
                                 </asp:GridView>
                          </ div> 
                     </div>
+                            </ContentTemplate>
+                            <Triggers>
+                                <asp:PostBackTrigger ControlID="DDSelect" />
+                            </Triggers>
+                        </asp:UpdatePanel>
                 </div>
         </div>
     </div>
+     <script type="text/javascript">
+         function confirmCloseOff(ddl) {
+             if (ddl.value === '5') {
+                 if (confirm('Are you sure you want to Close Off this Stock Count? This cannot be undone.')) {
+                     __doPostBack('<%= DDSelect.UniqueID %>', '');
+                 }
+                 return false; // always return false — we handle postback manually above
+             }
+             return true; // all other values — let AutoPostBack fire normally
+         }
+</script>
 </form>
 </body>
 </html>

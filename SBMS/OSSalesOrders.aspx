@@ -56,7 +56,6 @@
                                 <a href="https://mydatafusion.online" title="My Data Fusion website"><img src="images/Logo.png" style="border-radius: 0.25em; float: left" class="logoImg" /></a>
                                 <asp:Image ID="imgCoImg" runat="server" Style="float: right" class="logoImg" />
                                 <asp:LinkButton ID="lbtnSOs" runat="server" class="buttonC fa fa-chevron-circle-right" PostBackUrl="~/SalesOrdersIncomplete.aspx" style="float:left; margin:1em">&nbsp;Sales Order Tracking</asp:LinkButton>
-                                <h3 style="padding-top: 2em; line-height: 1em">Sales Orders <asp:Label ID="lblpoqty" runat="server" Text=""></asp:Label></h3>
                             </div>
                         </div>
                         <div class="row 150%">
@@ -73,6 +72,7 @@
                                 <div style="display:none">
                                 <asp:Label ID="lblDir" runat="server" Text=""></asp:Label>
                                 </div> 
+                                  <h3 style="line-height: 1em; margin:auto; text-align:center">Sales Orders <asp:Label ID="lblpoqty" runat="server" Text=""></asp:Label></h3>
                                 <asp:Panel ID="Panel1" runat="server" DefaultButton="lbtnfind" style="width:100%">
                                     <table style="width: 100%">
                                         <tr>
@@ -81,7 +81,8 @@
                                             <td style="text-align: center">SO Status &nbsp;<asp:DropDownList ID="DDSOStatus" runat="server" Width="100px" AutoPostBack="true" OnSelectedIndexChanged="DDSOStatus_SelectedIndexChanged"></asp:DropDownList></td>
                                             <td style="text-align: center">Due Date <= &nbsp;<asp:DropDownList ID="DDueDate" runat="server" Width="100px" AutoPostBack="true" OnSelectedIndexChanged="DDSOStatus_SelectedIndexChanged"></asp:DropDownList></td>
                                             <td style="text-align: center">Delivery &nbsp;<asp:DropDownList ID="dlDelivery" runat="server" Width="100px" AutoPostBack="true" OnSelectedIndexChanged="DDSOStatus_SelectedIndexChanged"></asp:DropDownList></td>
-                                            <td style="text-align: left; margin-top:1em"><asp:CheckBox ID="chkCompl" runat="server" Text=" Show Completed" AutoPostBack="true" OnCheckedChanged="chkCompl_CheckedChanged" /></td>
+                                            <td style="text-align: left; margin-top:1em"><asp:CheckBox ID="chkCompl" runat="server" Text="Completed" AutoPostBack="true" OnCheckedChanged="chkCompl_CheckedChanged" /></td>
+                                            <td style="text-align: left; margin-top:1em"><asp:CheckBox ID="chkActive" runat="server" Text="Active" AutoPostBack="true" OnCheckedChanged="chkCompl_CheckedChanged" Checked="true" /></td>
                                             <td><asp:LinkButton ID="lbtnDownload" runat="server" CssClass="fa fa-download buttonRed" ToolTip="Download to excel" OnClick="lbtnDownload_Click"></asp:LinkButton></td>
                                         </tr>
                                     </table>   

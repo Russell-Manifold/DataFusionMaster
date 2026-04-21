@@ -170,7 +170,11 @@ namespace SBMS
             e.Row.Cells[0].Visible = false;
             if (e.Row.RowType == DataControlRowType.Header || e.Row.RowType == DataControlRowType.DataRow)
             {
-                if (e.Row.Cells[7].Text == "Invoiced")
+                if (e.Row.Cells[4].Text.ToString().Length > 26)
+                {
+                    e.Row.Cells[4].Text = e.Row.Cells[4].Text.Substring(0, 26) + "...";
+                }
+                    if (e.Row.Cells[7].Text == "Invoiced")
                 {
                     e.Row.Cells[7].BackColor = System.Drawing.Color.Red;
                     e.Row.Cells[7].ForeColor = System.Drawing.Color.White;
