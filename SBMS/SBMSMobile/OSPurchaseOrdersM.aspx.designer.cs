@@ -15,24 +15,6 @@ namespace SBMS
     {
 
         /// <summary>
-        /// Link3 control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlLink Link3;
-
-        /// <summary>
-        /// Link4 control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlLink Link4;
-
-        /// <summary>
         /// form1 control.
         /// </summary>
         /// <remarks>
@@ -51,6 +33,24 @@ namespace SBMS
         protected global::System.Web.UI.ScriptManager ScriptManager1;
 
         /// <summary>
+        /// UpdateProgress1 control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.UpdateProgress UpdateProgress1;
+
+        /// <summary>
+        /// lbtnBack control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton lbtnBack;
+
+        /// <summary>
         /// lbtnHome control.
         /// </summary>
         /// <remarks>
@@ -60,31 +60,40 @@ namespace SBMS
         protected global::System.Web.UI.WebControls.LinkButton lbtnHome;
 
         /// <summary>
-        /// lblpoqty control.
+        /// lblUsername control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblpoqty;
+        protected global::System.Web.UI.WebControls.Label lblUsername;
 
         /// <summary>
-        /// lblDir control.
+        /// lbtnLogOut control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblDir;
+        protected global::System.Web.UI.WebControls.LinkButton lbtnLogOut;
 
         /// <summary>
-        /// Panel1 control.
+        /// upMain control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Panel Panel1;
+        protected global::System.Web.UI.UpdatePanel upMain;
+
+        /// <summary>
+        /// pnlFilter control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlFilter;
 
         /// <summary>
         /// txtfind control.
@@ -96,21 +105,40 @@ namespace SBMS
         protected global::System.Web.UI.WebControls.TextBox txtfind;
 
         /// <summary>
-        /// lbtnfind control.
+        /// lbtnFind control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton lbtnfind;
+        protected global::System.Web.UI.WebControls.LinkButton lbtnFind;
+        protected global::System.Web.UI.WebControls.LinkButton lbtnSort;
 
         /// <summary>
-        /// GridPOs control.
+        /// ddStatus control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.GridView GridPOs;
+        protected global::System.Web.UI.WebControls.DropDownList ddStatus;
+
+        /// <summary>
+        /// rptPOs control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Repeater rptPOs;
+
+        /// <summary>
+        /// lblEmpty control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblEmpty;
     }
 }

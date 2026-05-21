@@ -60,7 +60,12 @@ namespace SBMS
                 return;
             }
 
-            docguid = Guid.Parse(Request.QueryString["docid"]);
+            if (!Guid.TryParse(Request.QueryString["docid"], out docguid))
+            {
+                Response.Redirect("~/Dashboard.aspx?user=" + CurrentUser.UserGuiD, false);
+                Context.ApplicationInstance.CompleteRequest();
+                return;
+            }
             LotNumCheck = "OK";
             if (!IsPostBack)
             {
@@ -178,23 +183,45 @@ namespace SBMS
         protected void lbtnRecAll_Click(object sender, EventArgs e)
         {
             docid = Convert.ToInt64(lblDocID.Text);
+
+            // validate store selection up-front so we never write "-Select-" as a StoreCode
+            string selectedStore = DDStore.SelectedValue?.ToString() ?? "";
+            string selectedStoreText = DDStore.SelectedItem?.Text ?? "";
+            if (string.IsNullOrWhiteSpace(selectedStore) || selectedStoreText == "-Select-" || selectedStore == "-Select-")
+            {
+                AlertHelper.ShowSweetAlert(this, "Please select a valid Store before receiving all items.", "warning");
+                return;
+            }
+
             int recnum = GetLotNum(CurrentUser.CoID);
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {
-                var Lines = _db.DocLines.Where(x => x.DocID == docid).OrderBy(x => x.LineID).ToList();
-                foreach (DocLine dl in Lines)
+                var Lines = _db.TempDocLines.Where(x => x.DocID == docid).OrderBy(x => x.LineID).ToList();
+                foreach (TempDocLine dl in Lines)
                 {
+                    decimal qtyToRec = dl.QtyLeft ?? (dl.Quantity ?? 0);
+                    if (qtyToRec <= 0) continue;
+
                     if (dl.ItemType == 0)
                     {
-                        dl.ReceiveQty = dl.Quantity;
+                        dl.ReceiveQty = qtyToRec;
                         dl.QtyLeft = 0;
                         dl.ToReceive = true;
-                        dl.StoreCode = DDStore.SelectedValue.ToString();
-                        bool Itm = (bool)_db.ItemsMasters.FirstOrDefault(x => x.CompanyID == CurrentUser.CoID && x.ID == dl.SelectionId).IsLotTracked;
-                        if (Itm == true) 
-                        { 
-                            dl.LotNumber = DateTime.Today.ToString("ddMMyyyy") + DDStore.SelectedValue.ToString() + recnum.ToString();
-                            // save new Lot Number to db
+                        dl.StoreCode = selectedStore;
+                        var itmMaster = _db.ItemsMasters.FirstOrDefault(x => x.CompanyID == CurrentUser.CoID && x.ID == dl.SelectionId);
+                        bool Itm = itmMaster != null && (itmMaster.IsLotTracked == true);
+                        if (Itm == true)
+                        {
+                            // ensure a unique lot number even under concurrent receive activity
+                            string candidate;
+                            do
+                            {
+                                candidate = DateTime.Today.ToString("ddMMyyyy") + selectedStore + recnum.ToString();
+                                if (!CheckLotNumberExists(candidate)) break;
+                                recnum++;
+                            } while (true);
+
+                            dl.LotNumber = candidate;
                             LotTrackingMaster LtNew = new LotTrackingMaster();
                             LtNew.LotNumber = dl.LotNumber;
                             LtNew.CreatedDate = DateTime.Now;
@@ -202,17 +229,37 @@ namespace SBMS
                             LtNew.ItemCode = dl.ItemCode;
                             LtNew.ItemId = dl.SelectionId;
                             LtNew.LotActive = true;
-                            LtNew.LotQuantity = dl.Quantity ?? 0m;
-                        _db.LotTrackingMasters.Add(LtNew);
+                            LtNew.LotQuantity = qtyToRec;
+                            _db.LotTrackingMasters.Add(LtNew);
+                            recnum++;
                         }
                     }
                     else
                     {
-                        dl.ReceiveQty = dl.Quantity;
+                        dl.ReceiveQty = qtyToRec;
                         dl.QtyLeft = 0;
                         dl.ToReceive = true;
                     }
-                    recnum++;
+
+                    ReceivingOutstanding or = new ReceivingOutstanding
+                    {
+                        CompanyID = CurrentUser.CoID,
+                        PONumber = txtDocNum.Text,
+                        PODocID = docid,
+                        Supplier = txtSuppName.Text,
+                        SupplierID = Convert.ToInt64(lblSupplierID.Text),
+                        ItemCode = dl.ItemCode,
+                        SelectionId = dl.SelectionId,
+                        ItemDescription = dl.ItemDescription,
+                        OrigQty = dl.Quantity ?? 0,
+                        RecQty = qtyToRec,
+                        QtyLeft = 0,
+                        LineID = dl.LineID,
+                        CreatedBy = CurrentUser.RoleID,
+                        CreatedDate = DateTime.Now,
+                        Archive = false
+                    };
+                    _db.ReceivingOutstandings.Add(or);
                 }
                 try
                 {
@@ -220,10 +267,11 @@ namespace SBMS
                 }
                 catch (Exception ex)
                 {
-                    string str = ex.Message;
+                    new ApiUrlCall().LogErrorToFile(ex.ToString());
+                    AlertHelper.ShowSweetAlert(this, "Receive All failed: " + ex.Message, "error");
+                    return;
                 }
             }
-            LoadLines();
             BindGrid();
         }
         protected void LoadLines()
@@ -238,6 +286,20 @@ namespace SBMS
 
                 // get lines from DocLines
                 var Lines = _db.DocLines.Where(x => x.DocID == docid).OrderBy(x=>x.LineID).ToList();
+
+                foreach (var line in Lines)
+                {
+                    decimal Prerecqty = _db.ReceivingOutstandings
+                             .Where(x => x.ItemCode == line.ItemCode && x.PODocID == docid && x.Archive == false)
+                             .Sum(x => (decimal?)x.RecQty) ?? 0;
+
+                    decimal newQtyLeft = (line.Quantity ?? 0) - Prerecqty;
+                    if (newQtyLeft < 0) newQtyLeft = 0;
+                    line.QtyLeft = newQtyLeft;
+                    line.ReceiveQty = 0;
+                }
+                _db.SaveChanges();
+
                 // Copy them into the TempDocLines
 
                 var tempLines = Lines.Select(line => new TempDocLine
@@ -288,24 +350,21 @@ namespace SBMS
                 bool containsServ = false; PnlServices.Style.Add("display", "none"); ViewState["pnlServicesDisplay"] = "none";
                 foreach (var TL in TempLines)
                 {
-                    if (containsServ == false)
+                    // detect service / addcost lines (but keep iterating so EVERY row gets formatted)
+                    if (containsServ == false && (TL.ItemType == 1 || TL.ItemType == 2))
                     {
-                        if (TL.ItemType == 1 || TL.ItemType ==2)
-                        {
-                            RBAllocateCosts.Enabled = true;
-                            PnlServices.Style.Add("display", "inline-block");
-                            ViewState["pnlServicesDisplay"] = "inline-block";
-                            PnlServices.Style.Add("max-width", "50%");
-                            containsServ = true;
-                            if (TL.ItemType == 2) RBAllocateCosts.Enabled = false;
-                            break;
-                        }
+                        RBAllocateCosts.Enabled = true;
+                        PnlServices.Style.Add("display", "inline-block");
+                        ViewState["pnlServicesDisplay"] = "inline-block";
+                        PnlServices.Style.Add("max-width", "50%");
+                        containsServ = true;
+                        if (TL.ItemType == 2) RBAllocateCosts.Enabled = false;
                     }
                     if (TL.Quantity != null)
                     {
                         TL.Quantity = Convert.ToDecimal(ApiUrlCall.NumberToDecimal(TL.Quantity.ToString(), CurrentUser.CompanyDecPlaces));
                     }
-                    if (TL.Quantity != null)
+                    if (TL.ReceiveQty != null)
                     {
                         TL.ReceiveQty = Convert.ToDecimal(ApiUrlCall.NumberToDecimal(TL.ReceiveQty.ToString(), CurrentUser.CompanyDecPlaces));
                     }
@@ -329,17 +388,28 @@ namespace SBMS
             {
                 var TempLines = _db.TempDocLines.Where(x => x.DocID == docid).ToList();
                 // do all other calcs here before binding
-                decimal OrdQty = 0, recqty = 0, LineVal = 0, LineTax = 0, LineExTax = 0; ;
                 foreach (TempDocLine tl in TempLines)
                 {
-                    OrdQty = (decimal)tl.Quantity;
-                    if (tl.ReceiveQty != null) recqty = (decimal)tl.ReceiveQty;
-                    if (tl.Total != null) LineVal = (decimal)tl.Total;
-                    if (tl.Tax != null) LineTax = (decimal)tl.Tax;
-                    if (tl.Exclusive != null && tl.ItemType != 2) LineExTax = (decimal)tl.Exclusive;
-                    if (OrdQty > 0) tl.ReceiveTotal = (LineVal / OrdQty) * recqty;
-                    if (OrdQty > 0) tl.ReceiveTotalTax = (LineTax / OrdQty) * recqty;
-                    if (OrdQty > 0) tl.ReceiveTotalExcl = (LineExTax / OrdQty) * recqty;
+                    // reset per-line — never inherit the previous row's values
+                    decimal OrdQty = tl.Quantity ?? 0;
+                    decimal recqty = tl.ReceiveQty ?? 0;
+                    decimal LineVal = tl.Total ?? 0;
+                    decimal LineTax = tl.Tax ?? 0;
+                    decimal LineExTax = (tl.Exclusive != null && tl.ItemType != 2) ? (decimal)tl.Exclusive : 0;
+
+                    if (OrdQty > 0)
+                    {
+                        tl.ReceiveTotal = (LineVal / OrdQty) * recqty;
+                        tl.ReceiveTotalTax = (LineTax / OrdQty) * recqty;
+                        tl.ReceiveTotalExcl = (LineExTax / OrdQty) * recqty;
+                    }
+                    else
+                    {
+                        tl.ReceiveTotal = 0;
+                        tl.ReceiveTotalTax = 0;
+                        tl.ReceiveTotalExcl = 0;
+                    }
+
                     if (recqty > 0)
                     {
                         tl.QtyVar = Math.Round(OrdQty / recqty, 2);
@@ -348,9 +418,13 @@ namespace SBMS
                     {
                         tl.QtyVar = 0;
                     }
-                    if (OrdQty > 0) RecValue += (decimal)tl.ReceiveTotal;
-                    if (OrdQty > 0) RecTax += (decimal)tl.ReceiveTotalTax;
-                    if (OrdQty > 0) RecEx += (decimal)tl.ReceiveTotalExcl;
+
+                    if (OrdQty > 0)
+                    {
+                        RecValue += tl.ReceiveTotal ?? 0;
+                        RecTax += tl.ReceiveTotalTax ?? 0;
+                        RecEx += tl.ReceiveTotalExcl ?? 0;
+                    }
                 }
                 _db.SaveChanges();
             }
@@ -444,8 +518,6 @@ namespace SBMS
             try
             {
                 QtyRec = decimal.TryParse(txtQtyReceive.Text.Replace(" ", "").Replace("\u00A0", "").Replace(",", ""), NumberStyles.Any, CultureInfo.InvariantCulture, out decimal resultRec) ? resultRec : 0;
-                QtyOrd = decimal.TryParse(txtordqty.Text.Replace(" ", "").Replace("\u00A0", "").Replace(",", ""), NumberStyles.Any, CultureInfo.InvariantCulture, out decimal resultOrd) ? resultOrd : 0;
-                QtyLeft = QtyOrd - QtyRec;
             } catch (Exception ex)
             {
                 string message = "Receiving Qty Error - Unable to continue: " + ex.Message;
@@ -454,23 +526,29 @@ namespace SBMS
             }
            
             long lineid = Convert.ToInt64(lblLineID.Text);
-            if (QtyLeft != 0 )
+            
+            using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {
-                RBpoStatus.SelectedIndex = 1;
-                // insert row into outstandingReceiving table.
-                using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+                var Docline = _db.TempDocLines.Where(x => x.LineID == lineid).FirstOrDefault();
+                long docid = Convert.ToInt64(lblDocID.Text);
+                
+                QtyOrd = Docline.Quantity ?? 0;
+                
+                decimal Prerecqty = _db.ReceivingOutstandings
+                         .Where(x => x.ItemCode == Docline.ItemCode && x.PODocID == docid && x.Archive==false)
+                         .Sum(x => (decimal?)x.RecQty) ?? 0;
+                         
+                QtyLeft = QtyOrd - (Prerecqty + QtyRec);
+                if (QtyLeft < 0) QtyLeft = 0;
+                Docline.QtyLeft = QtyLeft;
+
+                if (QtyLeft > 0)
                 {
-                    var Docline = _db.TempDocLines.Where(x => x.LineID == lineid).FirstOrDefault();
-                    long docid = Convert.ToInt64(lblDocID.Text);
-                    // check for part received quantities and calculate balance
-                    decimal Prerecqty = _db.ReceivingOutstandings
-                             .Where(x => x.ItemCode == Docline.ItemCode && x.PODocID == docid && x.Archive==false)
-                             .Sum(x => (decimal?)x.RecQty) ?? 0;
-                    if (Prerecqty > 0)
-                    {
-                        QtyLeft = QtyOrd - (Prerecqty + QtyRec);
-                    }
-                    Docline.QtyLeft = QtyLeft;
+                    RBpoStatus.SelectedIndex = 1;
+                }
+
+                if (QtyRec > 0)
+                {
                     ReceivingOutstanding or = new ReceivingOutstanding
                     {
                         CompanyID = CurrentUser.CoID,
@@ -491,19 +569,44 @@ namespace SBMS
                     };
                    
                     _db.ReceivingOutstandings.Add(or);
-                    if (chkAddLotNum.Checked == true)
-                    {
-                        // add new row to the document. 
-                        TempDocLine Tdl = new TempDocLine();
-                        Tdl = Docline;
-                        Tdl.LotNumber = lblLotNum.Text;
-                        Tdl.ReceiveQty = QtyRec;
-                        _db.TempDocLines.Add(Tdl);
-                        _db.SaveChanges();
-                        lineid = Tdl.LineID;
-                    }
-                    _db.SaveChanges();
                 }
+                
+                if (chkAddLotNum.Checked == true)
+                {
+                    // add new row to the document safely by creating a fresh record instead of an object reference
+                    TempDocLine Tdl = new TempDocLine
+                    {
+                        DocID = Docline.DocID,
+                        SBCALineID = Docline.SBCALineID,
+                        SelectionId = Docline.SelectionId,
+                        ItemCode = Docline.ItemCode,
+                        ItemDescription = Docline.ItemDescription,
+                        LineType = Docline.LineType,
+                        Quantity = Docline.Quantity,
+                        UnitPriceExclusive = Docline.UnitPriceExclusive,
+                        UnitPriceInclusive = Docline.UnitPriceInclusive,
+                        TaxPercentage = Docline.TaxPercentage,
+                        DiscountPercentage = Docline.DiscountPercentage,
+                        Exclusive = Docline.Exclusive,
+                        Discount = Docline.Discount,
+                        Tax = Docline.Tax,
+                        Total = Docline.Total,
+                        Comments = Docline.Comments,
+                        QtyLeft = Docline.QtyLeft,
+                        ToReceive = Docline.ToReceive,
+                        ReceiveComplete = Docline.ReceiveComplete,
+                        StoreCode = Docline.StoreCode,
+                        ItemType = Docline.ItemType,
+                        LineTaxTypeID = Docline.LineTaxTypeID,
+                        ExchRate = Docline.ExchRate,
+                        LotNumber = lblLotNum.Text,
+                        ReceiveQty = QtyRec
+                    };
+                    _db.TempDocLines.Add(Tdl);
+                    _db.SaveChanges();
+                    lineid = Tdl.LineID;
+                }
+                _db.SaveChanges();
             }
 
             if (DDStore.Enabled == true)
@@ -540,6 +643,7 @@ namespace SBMS
                 var Docline = _db.TempDocLines.Where(x => x.LineID == lineid).FirstOrDefault();
                 if(DDStore.Enabled == true) Docline.StoreCode = DDStoreEdit.SelectedValue.ToString();
                 Docline.ReceiveQty = QtyRec;
+                Docline.QtyLeft = QtyLeft < 0 ? 0 : QtyLeft;
                 if (lblLotNum.Enabled == true) Docline.LotNumber = lblLotNum.Text;
                 Docline.ToReceive = true;
                 Docline.ReceiveComplete = false;
@@ -593,19 +697,24 @@ namespace SBMS
             docid = Convert.ToInt64(lblDocID.Text);
             decimal exchRate =1;
             string SuppInvN = "";
-            if (txtDNNum.Text.Trim().ToString().Length < 3)
+
+            // require at least one of Delivery Note # or Supplier Invoice # to be a real value (>= 3 chars)
+            string dnTrim = (txtDNNum.Text ?? "").Trim();
+            string invTrim = (txtInvNum.Text ?? "").Trim();
+            if (dnTrim.Length < 3 && invTrim.Length < 3)
             {
-                string warnMsg = "Please capture a Delivery Note # longer that 3 characters.";
-                AlertHelper.ShowSweetAlert(this, warnMsg, "warning");
-                return;
-            } 
-            if (txtDNNum.Text.Trim().ToString().Length < 3 && txtInvNum.Text.Trim().ToString().Length < 3)
-            {
-                string warnMsg = "Please capture an Invoice # longer that 3 characters.";
+                string warnMsg = "Please capture a Delivery Note # or Supplier Invoice # of at least 3 characters.";
                 AlertHelper.ShowSweetAlert(this, warnMsg, "warning");
                 return;
             }
-           
+            DateTime dt1 = DateTime.Today;
+            if (!DateTime.TryParse(txtRecDate.Text, out dt1))
+            {
+                string warnMsg = "Please capture a valid Receiving Date.";
+                AlertHelper.ShowSweetAlert(this, warnMsg, "warning");
+                return;
+            }
+
             try
             {
                 DateTime dt = Convert.ToDateTime(txtRecDate.Text);
@@ -627,13 +736,14 @@ namespace SBMS
                     var Head = _db.DocHeaders.Where(x => x.DocID == docid).FirstOrDefault();
 
                     // check if Supplier Inv Num has already been received
-                    if (txtInvNum.ToString().Trim().Length < 1)
+                    // prefer the supplier invoice # when present, otherwise fall back to the delivery note #
+                    if (invTrim.Length >= 1)
                     {
-                        SuppInvN = txtInvNum.Text.Trim().ToString();
+                        SuppInvN = invTrim;
                     }
                     else
                     {
-                        SuppInvN = txtDNNum.Text.Trim().ToString();
+                        SuppInvN = dnTrim;
                     }
                     // check and update Foreign Currency rate
                     int SuppInvNumb = _db.DocHeaders.Where(x => x.CompanyID == CurrentUser.CoID && x.SupplierInvNum == SuppInvN).Count();
@@ -641,6 +751,7 @@ namespace SBMS
                     {
                         string warnMsg = "Supplier Invoice number already used, unable to duplicate.";
                         AlertHelper.ShowSweetAlert(this, warnMsg, "warning");
+                        return;
                     }
 
                     var FLines = _db.TempDocLines.Where(x => x.DocID == docid && x.ToReceive == true && x.ReceiveComplete == false).ToList();
@@ -648,6 +759,7 @@ namespace SBMS
                     {
                         string message = "Please receive line items before continuing.";
                         AlertHelper.ShowSweetAlert(this, message, "warning");
+                        return;
                     }
 
                     #region create new documents preparing for Sage
@@ -657,11 +769,11 @@ namespace SBMS
                     SupplierInvoiceHeader DocH = new SupplierInvoiceHeader();
 
                     //ID = Head.DocID,
-                    DocH.DueDate = DateTime.Now;
+                    DocH.DueDate = dt1;
                     DocH.SupplierId = (long)Head.CustSuppID;
                     DocH.SupplierName = Head.CustSupName.ToString();
                     DocH.StatusId = 1;
-                    DocH.Date = DateTime.Now;
+                    DocH.Date = dt1;
                     DocH.Inclusive = (bool)Head.Inclusive;
                     DocH.DiscountPercentage = (decimal)Head.DiscountPercentage;
                     DocH.TaxReference = Head.TaxReference.ToString();
@@ -917,16 +1029,17 @@ namespace SBMS
                             // update internal lines and create relevantr records
                             if (dl.ToReceive == true)
                             {
+                                decimal dlRecQty = dl.ReceiveQty ?? 0;
                                 if (RBAllocateCosts.SelectedValue.ToString() == "1")
                                 {
                                     decimal totalPriceExclusive = (decimal)FLines.Where(x => x.ItemType == 0).Sum(x => x.Exclusive);
                                     decimal AddCost = (decimal)FLines.Where(x => x.ItemType > 0).Sum(x => x.UnitPriceExclusive * x.ReceiveQty);
-                                    // get total value of docLines                            
+                                    // get total value of docLines
                                     ThisLineVal = (decimal)dl.Exclusive;
-                                    AddCostPerc = ThisLineVal / totalPriceExclusive;
+                                    AddCostPerc = totalPriceExclusive != 0 ? ThisLineVal / totalPriceExclusive : 0;
                                     AddCostPropValue = AddCostPerc * AddCost;
                                     ThisItemNettCost = (decimal)dl.Exclusive + AddCostPropValue;
-                                    ThisItemUnitNett = ThisItemNettCost / (decimal)dl.ReceiveQty;
+                                    ThisItemUnitNett = dlRecQty != 0 ? ThisItemNettCost / dlRecQty : 0;
                                 }
                                 else
                                 {
@@ -934,7 +1047,7 @@ namespace SBMS
                                     AddCostPerc = 0;
                                     AddCostPropValue = 0;
                                     ThisItemNettCost = (decimal)dl.Exclusive;
-                                    ThisItemUnitNett = ThisItemNettCost / (decimal)dl.ReceiveQty;
+                                    ThisItemUnitNett = dlRecQty != 0 ? ThisItemNettCost / dlRecQty : 0;
                                 }
 
                                 if (dl.ItemType == 0)
@@ -1088,11 +1201,11 @@ namespace SBMS
                             // update internal lines and create relevant records
                             if (dl.ToReceive == true)
                             {
-                                // this line value / total value = % of which this line value is of total. 
+                                // this line value / total value = % of which this line value is of total.
                                 // apply perc to additional costs
                                 // reverse calculate unit price based on line quantity.
-                                decimal linevalue = (decimal)dl.ReceiveTotalExcl;
-                                decimal qty = (decimal)dl.ReceiveQty;
+                                decimal linevalue = dl.ReceiveTotalExcl ?? 0;
+                                decimal qty = dl.ReceiveQty ?? 0;
                                 decimal linevalueperc = 0;
                                 if (linevalue != 0 && DocValue != 0)
                                 {
@@ -1102,15 +1215,15 @@ namespace SBMS
                                 decimal linevalAddCosts = 0;
                                 decimal unitAddCosts = 0;
                                 decimal newunitcost = 0;
-                                if (linevalue != 0 && DocValue != 0)
+                                if (linevalue != 0 && DocValue != 0 && qty != 0)
                                 {
-                                    newunitcost = (decimal)(linevalue / qty);
+                                    newunitcost = linevalue / qty;
                                 }
-                                if (totAddCosts > 0)
+                                if (totAddCosts > 0 && qty != 0)
                                 {
                                     linevalAddCosts = linevalueperc * totAddCosts;
                                     unitAddCosts = linevalAddCosts / qty;
-                                    newunitcost = (decimal)(unitAddCosts + (linevalue / qty));
+                                    newunitcost = unitAddCosts + (linevalue / qty);
                                 }
                                 #region data fusion stock transactions
                                 var tempLine = _db.DocLines.Where(x => x.SBCALineID == dl.SBCALineID).FirstOrDefault();
@@ -1306,14 +1419,15 @@ namespace SBMS
             }
             catch (Exception ex)
             {
-                // Handle errors
+                new ApiUrlCall().LogErrorToFile(ex.ToString());
+                AlertHelper.ShowSweetAlert(this, "Receive Finish failed: " + ex.Message, "error");
             }
             finally
             {
                 // Re-enable buttons when process completes
                 ScriptManager.RegisterStartupScript(this, this.GetType(), "EnableReceiveButtons",  "enableReceiveButtons();", true);
             }
-        }  
+        }
 
         public async Task <string> SendSupplierInvoice(string Doc)
         {
@@ -1431,7 +1545,7 @@ namespace SBMS
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {
                 var Docline = _db.TempDocLines.Where(x => x.LineID == lineid).FirstOrDefault();
-                txtordqty.Text = ApiUrlCall.NumberToDecimal(Docline.Quantity.ToString(), CurrentUser.CompanyDecPlaces).ToString();
+                txtordqty.Text = ApiUrlCall.NumberToDecimal((Docline.QtyLeft ?? Docline.Quantity).ToString(), CurrentUser.CompanyDecPlaces).ToString();
                 txtQtyReceive.Text = ApiUrlCall.NumberToDecimal(Docline.ReceiveQty.ToString(), CurrentUser.CompanyDecPlaces).ToString(); 
                 lblItemdescr.Text = Docline.ItemDescription.ToString();
                 txtNumPieces.Text = txtQtyReceive.Text;
@@ -1630,8 +1744,14 @@ namespace SBMS
                     lblLotNum.Text = DateTime.Today.ToString("ddMMyyyy") + DDStoreEdit.SelectedValue.ToString() + recnum.ToString();
                 }
                 //chkAccept.Style.Add("display", "none");
-                decimal OrdQty = Convert.ToDecimal(txtordqty.Text);
-                decimal RecQty = Convert.ToDecimal(txtQtyReceive.Text);
+                decimal OrdQty =0;
+                decimal RecQty =0;
+                try
+                {
+                    OrdQty = Convert.ToDecimal(txtordqty.Text);
+                    RecQty = Convert.ToDecimal(txtQtyReceive.Text);
+                }
+                catch { }
                 decimal BalQty = OrdQty - RecQty;
                 //if (RecQty >= (OrdQty * 1.05m) || RecQty <= (OrdQty * 0.95m))
                 //{

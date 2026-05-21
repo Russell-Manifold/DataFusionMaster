@@ -234,6 +234,8 @@
   <ItemGroup>
     <Content Include="assets\css\images\overlay.png" />
     <Content Include="assets\js\buttonDisable.js" />
+    <Content Include="SBMSMobile\NotificationsM.aspx" />
+    <Content Include="SBMSMobile\ReceivingM.aspx" />
     <Content Include="StockCountVariances.aspx" />
     <Content Include="StockCountUpload.aspx" />
     <Content Include="ItemConvertUOM.aspx" />
@@ -615,6 +617,10 @@
     <Content Include="SBMSMobile\icons\icon-512.png" />
     <Content Include="SBMSMobile\install.html" />
     <Content Include="SBMSMobile\OSPurchaseOrdersM.aspx" />
+    <Content Include="SBMSMobile\OSPickingSlipsM.aspx" />
+    <Content Include="SBMSMobile\PickingSlipM.aspx" />
+    <Content Include="SBMSMobile\StockCountsM.aspx" />
+    <Content Include="SBMSMobile\StockCountLineM.aspx" />
     <Content Include="StockControl.aspx" />
     <Content Include="prologue\assets\sass\libs\_breakpoints.scss" />
     <Content Include="prologue\assets\sass\libs\_functions.scss" />
@@ -792,6 +798,7 @@
     <Content Include="ProdLineTrackingHistory.aspx" />
     <Content Include="JobTrackingStatic.aspx" />
     <Content Include="js\ProdPlankanbanscript.js" />
+    <Content Include="Helper.aspx" />
     <Content Include="Login.aspx" />
     <Content Include="images\fgmrp.png" />
     <Content Include="images\Forecasta.png" />
@@ -934,7 +941,23 @@
     <Content Include="scripts\jquery-3.7.1.min.map" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Classes\ConfigEncryptionHelper.cs" />
+    <Compile Include="Classes\EncryptApiKeyUtility.cs" />
     <Compile Include="Models\GetStckCountVariances_Result.cs" />
+    <Compile Include="SBMSMobile\NotificationsM.aspx.cs">
+      <DependentUpon>NotificationsM.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="SBMSMobile\NotificationsM.aspx.designer.cs">
+      <DependentUpon>NotificationsM.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="SBMSMobile\ReceivingM.aspx.cs">
+      <DependentUpon>ReceivingM.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="SBMSMobile\ReceivingM.aspx.designer.cs">
+      <DependentUpon>ReceivingM.aspx</DependentUpon>
+    </Compile>
     <Compile Include="StockCountVariances.aspx.cs">
       <DependentUpon>StockCountVariances.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -958,6 +981,8 @@
     </Compile>
     <Compile Include="Classes\AlertHelper.cs" />
     <Compile Include="Classes\Authentication.cs" />
+    <Compile Include="Classes\ChatService.cs" />
+    <Compile Include="Classes\HelpService.cs" />
     <Compile Include="Classes\BasePage.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
@@ -1186,6 +1211,7 @@
     <Compile Include="Models\GetOneDocHeaderFromDocID_Result.cs">
       <DependentUpon>SBMS.tt</DependentUpon>
     </Compile>
+    <Compile Include="Models\HelpArticle.cs" />
     <Compile Include="Models\GetOneItemFromBarcode_Result.cs">
       <DependentUpon>SBMS.tt</DependentUpon>
     </Compile>
@@ -1392,6 +1418,34 @@
     <Compile Include="SBMSMobile\OSPurchaseOrdersM.aspx.designer.cs">
       <DependentUpon>OSPurchaseOrdersM.aspx</DependentUpon>
     </Compile>
+    <Compile Include="SBMSMobile\OSPickingSlipsM.aspx.cs">
+      <DependentUpon>OSPickingSlipsM.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="SBMSMobile\OSPickingSlipsM.aspx.designer.cs">
+      <DependentUpon>OSPickingSlipsM.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="SBMSMobile\PickingSlipM.aspx.cs">
+      <DependentUpon>PickingSlipM.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="SBMSMobile\PickingSlipM.aspx.designer.cs">
+      <DependentUpon>PickingSlipM.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="SBMSMobile\StockCountsM.aspx.cs">
+      <DependentUpon>StockCountsM.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="SBMSMobile\StockCountsM.aspx.designer.cs">
+      <DependentUpon>StockCountsM.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="SBMSMobile\StockCountLineM.aspx.cs">
+      <DependentUpon>StockCountLineM.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="SBMSMobile\StockCountLineM.aspx.designer.cs">
+      <DependentUpon>StockCountLineM.aspx</DependentUpon>
+    </Compile>
     <Compile Include="StockControl.aspx.cs">
       <DependentUpon>StockControl.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -1494,6 +1548,13 @@
     </Compile>
     <Compile Include="JobTrackingStatic.aspx.designer.cs">
       <DependentUpon>JobTrackingStatic.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Helper.aspx.cs">
+      <DependentUpon>Helper.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Helper.aspx.designer.cs">
+      <DependentUpon>Helper.aspx</DependentUpon>
     </Compile>
     <Compile Include="Login.aspx.cs">
       <DependentUpon>Login.aspx</DependentUpon>

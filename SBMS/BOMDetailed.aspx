@@ -20,7 +20,8 @@
                         <asp:LinkButton ID="LinkButton1" runat="server" class="buttonC icon fa-angle-double-left" PostBackUrl="~/BOMHeaders.aspx">&nbsp;BOMs</asp:LinkButton>
                         <asp:LinkButton ID="lbtnCopy" runat="server" class="buttonC icon fa-copy" OnClick="LbtnCopy_Click">&nbsp;Copy BOM</asp:LinkButton>
                         <asp:LinkButton ID="lbtnBack" runat="server" class="buttonC icon fa-align-left" PostBackUrl="~/ItemsHeaders.aspx" >&nbsp;Items</asp:LinkButton>
-                        <asp:LinkButton ID="lbtnLogOut" runat="server" class="buttonTransparent icon fa-eject" style="float:right" OnClick="lbtnLogOut_Click">&nbsp;</asp:LinkButton><br />
+                        <asp:LinkButton ID="lbtnLogOut" runat="server" class="buttonTransparent icon fa-eject" style="float:right" OnClick="lbtnLogOut_Click">&nbsp;</asp:LinkButton>
+                        <asp:LinkButton ID="lbtnDownload" runat="server" class="buttonC icon fa-download" style="float:right" OnClick="lbtnDownload_Click" ToolTip="Download BOM to Excel">&nbsp;Excel</asp:LinkButton><br />
                         <h3 style="padding-top:0; line-height:1em">Bill Of Materials Master</h3>                    
                     </div>
                     <div class="2u 12u$(medium)"><asp:Image ID="imgCoImg" runat="server"  style="float:right" class="logoImg" /></div>

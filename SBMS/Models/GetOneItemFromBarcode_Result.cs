@@ -16,7 +16,7 @@ namespace SBMS.Models
         public string Description { get; set; }
         public string Code { get; set; }
         public string Unit { get; set; }
-        public int ItmID { get; set; }
         public long ID { get; set; }
+        public int QtyPerBarcode { get; set; }
     }
 }

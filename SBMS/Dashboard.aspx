@@ -38,8 +38,10 @@
                      <div class="2u 12u$(medium)">
                           <asp:LinkButton ID="lbtnLogOut" runat="server" class="buttonC icon fa-eject" OnClick="lbtnLogOut_Click" style="float:right;" ToolTip="Log Out">&nbsp;Log Out&nbsp;</asp:LinkButton>
                             <asp:LinkButton ID="lbtnAdmin" runat="server" class="buttonC icon fa-gears" style="float:right; margin-right:1em" ToolTip="Config, Settings and Master file management" PostBackUrl="~/ConfigMaster.aspx">&nbsp;&nbsp;</asp:LinkButton>
-                         </div>
-                    <div class="2u 12u$(medium)"><asp:Image ID="imgCoImg" runat="server"  style="float:right" class="logoImg" /></div>
+                     </div>
+                    <div class="2u 12u$(medium)"><asp:Image ID="imgCoImg" runat="server"  style="float:right" class="logoImg" />
+                        <asp:CheckBox ID="chkMobile" runat="server" Text="Mobile" AutoPostBack="true" style="float:right;" OnCheckedChanged="chkMobile_CheckedChanged"/>
+                    </div>
                     </div>
                         <div class="row 150%">
                             <div class="2u 12u$(medium)">&nbsp;</div>
@@ -94,6 +96,69 @@
                 <a href="https://mydatafusion.online/learningCenter.aspx" class="button special icon fa-lightbulb" target="_blank"> Learn more from the Learning Hub >></a>
             </section>
                 </div>
+
+        <%-- Floating Help Button — always visible at bottom-right --%>
+        <asp:LinkButton ID="lbtnHelper" runat="server" OnClick="lbtnHelper_Click"
+            CssClass="floating-help-btn" ToolTip="Get help using Data Fusion">
+            <span class="floating-help-icon">?</span>
+            <span class="floating-help-label">Help</span>
+        </asp:LinkButton>
+
+        <style>
+            .floating-help-btn {
+                display: inline-flex;
+                align-items: center;
+                gap: .5em;
+                background: #4282C1;
+                color: #fff;
+                padding: .7em 1.1em;
+                border-radius: 2em;
+                text-decoration: none;
+                font-weight: 600;
+                font-size: 1.05em;
+                box-shadow: 0 4px 18px rgba(66,130,193,.45);
+                cursor: pointer;
+                position: fixed;
+                bottom: 3.5rem;
+                right: 1.5rem;
+                z-index: 9999;
+                transition: box-shadow .2s, transform .15s, background .2s;
+            }
+            .floating-help-btn:hover {
+                background: #356a9e;
+                box-shadow: 0 6px 22px rgba(66,130,193,.6);
+                transform: translateY(-1px);
+            }
+            .floating-help-icon {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 1.6em; height: 1.6em;
+                background: rgba(255,255,255,.25);
+                border-radius: 50%;
+                font-size: 1.15em;
+                font-weight: 700;
+            }
+            .floating-help-label { font-size: .9em; }
+
+            @media screen and (max-width: 736px) {
+                .floating-help-btn {
+                    bottom: 2.2rem;
+                    right: 1rem;
+                    padding: .55em .9em;
+                    font-size: .95em;
+                }
+            }
+            @media screen and (max-width: 480px) {
+                .floating-help-btn {
+                    bottom: 1.8rem;
+                    right: .75rem;
+                    padding: .45em .75em;
+                    font-size: .85em;
+                }
+                .floating-help-label { display: none; }
+            }
+        </style>
         <script>
             function showDiv() {
                 document.getElementById('myHiddenDiv').style.display = "";

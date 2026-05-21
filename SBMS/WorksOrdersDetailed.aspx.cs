@@ -502,7 +502,16 @@ namespace SBMS
                 }
 
                 LoadWOLines();
-                AlertHelper.ShowSweetAlert(this, "Successfully Saved.", "success");
+                if (string.IsNullOrWhiteSpace(lblFCRef.Text))
+                {
+                    AlertHelper.ShowSweetAlert(this,
+                        "Line saved. Please capture a Reference for this Works Order before exiting.",
+                        "warning");
+                }
+                else
+                {
+                    AlertHelper.ShowSweetAlert(this, "Successfully Saved.", "success");
+                }
             }
         }
 
@@ -603,13 +612,40 @@ namespace SBMS
 
         }
 
+        protected void LinkButton2_Click(object sender, EventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(lblFCRef.Text))
+            {
+                AlertHelper.ShowSweetAlert(this,
+                    "Please capture a Reference for this Works Order before exiting.",
+                    "warning");
+                return;
+            }
+            Response.Redirect("~/WorksOrdersHeaders.aspx", false);
+            Context.ApplicationInstance.CompleteRequest();
+        }
+
         protected void lbtnHome_Click(object sender, EventArgs e)
         {
+            if (string.IsNullOrWhiteSpace(lblFCRef.Text))
+            {
+                AlertHelper.ShowSweetAlert(this,
+                    "Please capture a Reference for this Works Order before exiting.",
+                    "warning");
+                return;
+            }
             Response.Redirect("~/Dashboard.aspx?user=" + CurrentUser.UserGuiD, false);
         }
 
         protected void lbtnLogOut_Click(object sender, EventArgs e)
         {
+            if (string.IsNullOrWhiteSpace(lblFCRef.Text))
+            {
+                AlertHelper.ShowSweetAlert(this,
+                    "Please capture a Reference for this Works Order before exiting.",
+                    "warning");
+                return;
+            }
             ApiUrlCall.LogOut(CurrentUser.UserGuiD); Response.Cookies["Login"].Expires = DateTime.Now.AddDays(-1);
             Session.Clear();
             Response.Redirect("~/Login.aspx", false); Context.ApplicationInstance.CompleteRequest();

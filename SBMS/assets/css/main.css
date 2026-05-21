@@ -26,7 +26,6 @@
 	article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, section {
 		display: block;
 	}
-do
 
 body {
 	line-height: 1;
@@ -4275,9 +4274,11 @@ input[type="radio"] {
         
 		/* Footer */
 
-        #footer {
-            padding: .5em 0 1em 0;
-        }
+			#footer {
+				padding: 0.15em 0 0.15em 0 !important;
+				font-size: 0.55em !important;
+				line-height: 1.2 !important;
+			}
 
 				#footer .copyright {
 					line-height: inherit;

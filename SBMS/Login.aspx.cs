@@ -80,7 +80,8 @@ namespace SBMS
                 {
                     password = Encoding.UTF8.GetString(Convert.FromBase64String(Request.Cookies["Login"]["Password"]));
                 }
-                catch { };
+                catch { }
+                ;
             }
 
             if (UserLogin(username, password))
@@ -100,15 +101,15 @@ namespace SBMS
 
                 // Set FormsAuthentication cookie
                 FormsAuthentication.SetAuthCookie(username, true);
-                
-                   // Retrieve user details
+
+                // Retrieve user details
                 userDets = Session["UserDetails"] as UserDetails;
 
                 #region uservalidation
                 string jsonString = "{ \"Username\": \"" + username + "\", \"Password\": \"" + password + "\" }";
                 ApiUrlCall Api = new ApiUrlCall();
                 string RetStr = await Api.ValidateUserAsync("Company", jsonString, userDets);
-                              
+
                 bool isValid = true;
                 lnkSage.Visible = false;
                 if (RetStr != "OK")
@@ -139,7 +140,12 @@ namespace SBMS
                         if (!string.IsNullOrEmpty(returnUrl) && returnUrl.StartsWith("/"))
                             Response.Redirect(returnUrl, false);
                         else
-                            Response.Redirect("~/Dashboard.aspx?user=" + userDets.UserGuiD, false);
+                        {
+                            string dashboard = IsMobileDevice()
+                                ? "~/SBMSMobile/DashboardM.aspx?user="
+                                : "~/Dashboard.aspx?user=";
+                            Response.Redirect(dashboard + userDets.UserGuiD, false);
+                        }
                     }
                 }
                 else
@@ -178,7 +184,8 @@ namespace SBMS
                 }
                 else
                 {
-                    if (CheckUserLogginedIn(username, pwd)) {
+                    if (CheckUserLogginedIn(username, pwd))
+                    {
                         if (userList.Count > 0)
                         {
                             setUserDetails(username, pwd, userList.First().CompanyID);
@@ -188,14 +195,14 @@ namespace SBMS
                         {
                             AlertHelper.ShowSweetAlert(this, "User not linked to a company, please contact system administrator", "error", "Login Error");
                             return false;
-                        }                
+                        }
                     }
                     else
                     {
-                        return false;  
+                        return false;
                     }
                 }
-            }  
+            }
         }
 
         protected bool CheckUserLogginedIn(string username, string pwd)
@@ -241,7 +248,7 @@ namespace SBMS
                             }
                         }
                         else { }
-                    }         
+                    }
                 }
                 return true;
             }
@@ -252,7 +259,7 @@ namespace SBMS
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {
 
-                var user = _db.UsersMasters.Where(x => x.Useremail == username && x.Active == true && x.CompanyID == CompanyID).FirstOrDefault(); 
+                var user = _db.UsersMasters.Where(x => x.Useremail == username && x.Active == true && x.CompanyID == CompanyID).FirstOrDefault();
                 UserDetails userDetails = new UserDetails
                 {
                     UserName = user.FirstName,
@@ -371,10 +378,11 @@ namespace SBMS
         protected void btnLogUserOut_Click(object sender, EventArgs e)
         {
             string RsTr = LogUserOut(txtUsername.Text);
-            if (RsTr  == "OK")
+            if (RsTr == "OK")
             {
-                lblErr.Text ="Successfully Logged Out";
-            } else
+                lblErr.Text = "Successfully Logged Out";
+            }
+            else
             {
                 lblErr.Text = RsTr;
             }
@@ -421,7 +429,7 @@ namespace SBMS
             btnSaveYes.Style.Add("display", "none");
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {
-               int roles = _db.RolesMasters.Where(x => x.CompanyID == userDets.CoID).Count();
+                int roles = _db.RolesMasters.Where(x => x.CompanyID == userDets.CoID).Count();
                 if (roles < 1)
                 {
                     // add default roles
@@ -485,7 +493,7 @@ namespace SBMS
                     rlm.IsPicker = false;
                     rlm.IsProduction = false;
                     _db.RolesMasters.Add(rlm);
-                   
+
                     try
                     {
                         _db.SaveChanges();
@@ -495,7 +503,7 @@ namespace SBMS
                         string str = ex.Message;
                     }
                 }
-                   
+
                 int StorCount = _db.Stores.Where(x => x.CompanyID == userDets.CoID).Count();
                 if (StorCount < 1)
                 {
@@ -578,7 +586,7 @@ namespace SBMS
                         string str = ex.Message;
                     }
                 }
-                
+
                 int PSCount = _db.PickSlipProcesses.Where(x => x.CompanyID == userDets.CoID).Count();
                 if (PSCount < 1)
                 {
@@ -661,8 +669,8 @@ namespace SBMS
                     //    string str = ex.Message;
                     //}
                 }
-                
-                ApiUrlCall api = new ApiUrlCall();   
+
+                ApiUrlCall api = new ApiUrlCall();
                 var errors = await api.LoadItems(userDets);
                 if (errors.Count > 0)
                 {
@@ -751,7 +759,7 @@ namespace SBMS
                 {
                     lblErr.Text = $"Error linking items to stores, unable to continue: {ex.Message}";
                 }
-             
+
                 // get RM store ID
                 //int rmstore = _db.Stores.Where(x => x.AllowReceiving == true && x.CompanyID == userDets.CoID).Select(x => x.StoreID).FirstOrDefault();
                 //// update opening balancs and add transaction records
@@ -814,7 +822,7 @@ namespace SBMS
             Panel1.Style.Add("display", "none");
             PnlNewP.Style.Add("display", "none");
         }
-        
+
         protected int GetLotNum(long CoID)
         {
             int lotno = 0;
@@ -830,7 +838,7 @@ namespace SBMS
             return lotno;
         }
 
-       protected void lbtnPnlNewclose_Click(object sender, EventArgs e)
+        protected void lbtnPnlNewclose_Click(object sender, EventArgs e)
         {
             PnlNewUser.Style.Add("display", "none");
             Panel1.Style.Add("display", "inline-block");
@@ -894,14 +902,14 @@ namespace SBMS
             LinkCoGo();
         }
 
-       protected async void LinkCoGo() 
+        protected async void LinkCoGo()
         {
             string username = txtUsername.Text.Trim();
             string password = txtPwd.Text;
             if (setUserDetails(username, password, Convert.ToInt64(DDCompanyList.SelectedValue)))
-                {
+            {
 
-               // Remember Me: save username, password, last login date
+                // Remember Me: save username, password, last login date
                 if (chkRememberMe.Checked)
                 {
                     Response.Cookies["Login"]["Username"] = username;
@@ -952,9 +960,15 @@ namespace SBMS
                         // Handle returnUrl
                         string returnUrl = Request.QueryString["returnUrl"];
                         if (!string.IsNullOrEmpty(returnUrl) && returnUrl.StartsWith("/"))
+                        {
                             Response.Redirect(returnUrl, false);
+                        }
                         else
-                            Response.Redirect("~/Dashboard.aspx?user=" + userDets.UserGuiD, false);
+                        {
+                            bool isMobile = IsMobileDevice();
+                            string dashboard = isMobile ? "~/SBMSMobile/DashboardM.aspx?user=" : "~/Dashboard.aspx?user=";
+                            Response.Redirect(dashboard + userDets.UserGuiD, false);
+                        }
                     }
                 }
                 else
@@ -968,6 +982,22 @@ namespace SBMS
                 lblErr.Text = "Email address not validated, Unable to continue";
                 return;
             }
+        }
+
+
+        private bool IsMobileDevice()
+        {
+            string userAgent = Request.UserAgent?.ToLower() ?? "";
+            bool mobileAgent = userAgent.Contains("iphone") ||
+                               userAgent.Contains("android") ||
+                               userAgent.Contains("ipad")    ||
+                               userAgent.Contains("mobile");
+
+            // hfScreenWidth is set by window.onload JS — catches narrow desktop/tablet browsers too
+            int.TryParse(hfScreenWidth.Value, out int screenWidth);
+            bool smallScreen = screenWidth > 0 && screenWidth <= 768;
+
+            return mobileAgent || smallScreen;
         }
     }
 }

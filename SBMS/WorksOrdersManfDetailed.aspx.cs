@@ -356,6 +356,24 @@ namespace SBMS
 
         protected void lbtnAutoManf_Click(object sender, EventArgs e)
         {
+            using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+            {
+                var WOHeader = _db.WorksOrderHeaders
+                    .Where(x => x.CompanyID == CoID && x.ID == woid)
+                    .FirstOrDefault();
+                if (WOHeader == null)
+                {
+                    AlertHelper.ShowSweetAlert(this, "Works Order not found.", "error");
+                    return;
+                }
+                if (WOHeader.Active == false || WOHeader.Status == "Complete")
+                {
+                    AlertHelper.ShowSweetAlert(this,
+                        "This Works Order has already been manufactured and cannot be processed again.",
+                        "warning");
+                    return;
+                }
+            }
             Response.Redirect($"~/WorksOrdersManf.aspx?woid={woid}");
         }
     }

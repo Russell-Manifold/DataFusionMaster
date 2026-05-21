@@ -1,4 +1,5 @@
-﻿using DocumentFormat.OpenXml.Math;
+﻿using ClosedXML.Excel;
+using DocumentFormat.OpenXml.Math;
 using DocumentFormat.OpenXml.Spreadsheet;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -543,6 +544,102 @@ namespace SBMS
             doctype = "ItemAdjustment";
             ApiUrlCall Api = new ApiUrlCall();
             JObject parsedJSON = await Api.APIPostDocumentAsync(doctype, Item, CurrentUser);
+        }
+
+        protected void lbtnDownload_Click(object sender, EventArgs e)
+        {
+            using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+            {
+                var bomH = _db.BOMHeaders.Where(x => x.CompanyID == CurrentUser.CoID && x.BomHID == bomid).FirstOrDefault();
+                if (bomH == null) return;
+
+                var bomLines = GetSortedBomLines(_db, (int)bomid)
+                    .Where(x => x.Description != null && x.Description != "")
+                    .ToList();
+
+                foreach (var bl in bomLines)
+                {
+                    if (bl.AvCost > 0 && bl.RMQty > 0)
+                        bl.AvRMCost = ApiUrlCall.NumberToDecimal(bl.AvCost * bl.RMQty, CurrentUser.CompanyDecPlaces);
+                }
+
+                using (var workbook = new XLWorkbook())
+                {
+                    var ws = workbook.Worksheets.Add("BOM");
+
+                    // --- BOM Header section ---
+                    ws.Cell(1, 1).Value = "BOM Code";
+                    ws.Cell(1, 2).Value = bomH.BOMCode ?? "";
+                    ws.Cell(2, 1).Value = "Description";
+                    ws.Cell(2, 2).Value = bomH.BomDescript ?? "";
+                    ws.Cell(3, 1).Value = "Finished Good Code";
+                    ws.Cell(3, 2).Value = bomH.FGCode ?? "";
+                    ws.Cell(4, 1).Value = "Finished Good Description";
+                    ws.Cell(4, 2).Value = bomH.FGDescript ?? "";
+                    ws.Cell(5, 1).Value = "Active";
+                    ws.Cell(5, 2).Value = bomH.BomActive ? "Yes" : "No";
+                    ws.Cell(6, 1).Value = "Additional Cost 1";
+                    ws.Cell(6, 2).Value = bomH.AddCost01 ?? 0;
+                    ws.Cell(7, 1).Value = "Additional Cost 2";
+                    ws.Cell(7, 2).Value = bomH.AddCost02 ?? 0;
+                    ws.Cell(8, 1).Value = "Additional Cost 3";
+                    ws.Cell(8, 2).Value = bomH.AddCost03 ?? 0;
+
+                    for (int r = 1; r <= 8; r++)
+                        ws.Cell(r, 1).Style.Font.Bold = true;
+
+                    // --- BOM Lines header ---
+                    int headerRow = 10;
+                    var lineHeaders = new[] { "Item Code", "Description", "RM Qty", "UOM", "Unit Cost", "Cost" };
+                    for (int i = 0; i < lineHeaders.Length; i++)
+                    {
+                        var cell = ws.Cell(headerRow, i + 1);
+                        cell.Value = lineHeaders[i];
+                        cell.Style.Font.Bold = true;
+                        cell.Style.Fill.BackgroundColor = XLColor.FromArgb(0, 112, 192);
+                        cell.Style.Font.FontColor = XLColor.White;
+                        cell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                    }
+
+                    // --- BOM Lines data ---
+                    int row = headerRow + 1;
+                    foreach (var bl in bomLines)
+                    {
+                        ws.Cell(row, 1).Value = bl.ItemCode;
+                        ws.Cell(row, 2).Value = bl.Description;
+                        ws.Cell(row, 3).Value = bl.RMQty;
+                        ws.Cell(row, 4).Value = bl.BomUnit;
+                        ws.Cell(row, 5).Value = bl.AvCost;
+                        ws.Cell(row, 6).Value = bl.AvRMCost;
+                        if (row % 2 == 0)
+                            ws.Row(row).Style.Fill.BackgroundColor = XLColor.FromArgb(235, 241, 250);
+                        row++;
+                    }
+
+                    // Totals row
+                    ws.Cell(row, 2).Value = "Total";
+                    ws.Cell(row, 2).Style.Font.Bold = true;
+                    ws.Cell(row, 3).Value = bomLines.Sum(x => x.RMQty);
+                    ws.Cell(row, 6).Value = bomLines.Sum(x => x.AvRMCost);
+                    ws.Cell(row, 6).Style.Font.Bold = true;
+
+                    ws.Columns().AdjustToContents();
+
+                    string fileName = $"BOM_{bomH.BOMCode}_{DateTime.Now:yyyyMMdd_HHmm}.xlsx";
+                    using (var ms = new System.IO.MemoryStream())
+                    {
+                        workbook.SaveAs(ms);
+                        ms.Seek(0, System.IO.SeekOrigin.Begin);
+                        Response.Clear();
+                        Response.ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+                        Response.AppendHeader("Content-Disposition", "attachment; filename=" + fileName);
+                        Response.Cache.SetCacheability(HttpCacheability.NoCache);
+                        Response.BinaryWrite(ms.ToArray());
+                        Response.Flush();
+                        Response.End();
+                    }
+                }
+            }
         }
 
         protected void GridBOMLines_Sorting(object sender, GridViewSortEventArgs e)

@@ -1,0 +1,462 @@
+/* =============================================================
+   SBMS Mobile UI — Shared Component Library
+   Reference this from any mobile page after main.css.
+   All classes use the mob- prefix to avoid conflicts.
+   ============================================================= */
+
+/* ── Base ──────────────────────────────────────────────────── */
+html, body { margin: 0; padding: 0; background: #f0f2f5; -webkit-overflow-scrolling: touch; }
+input, select, textarea { font-size: 16px; }
+
+/* ── Topbar ────────────────────────────────────────────────── */
+/* Forces the correct blue regardless of main.css cascade */
+.mob-topbar { background: #4282C1; }
+/* Prevent long titles truncating on narrow screens */
+.mob-topbar .mob-topbar-title { font-size: .82em; }
+
+/* ── Document summary header ───────────────────────────────── */
+/* Shows doc number, counterparty, due date, status badge.
+   Sits immediately below the fixed topbar. */
+.mob-doc-header {
+    background: #e8f0fb;
+    border-left: 4px solid #4282C1;
+    padding: .65em 1em .55em;
+    margin-top: 3.2em;          /* clears fixed topbar */
+}
+.mob-doc-header-main {
+    display: flex;
+    align-items: baseline;
+    gap: .4em;
+    flex-wrap: wrap;
+}
+.mob-doc-num {
+    font-weight: 700;
+    font-size: .95em;
+    color: #1a3d6e;
+    letter-spacing: .01em;
+}
+.mob-doc-secondary {
+    font-size: .85em;
+    color: #445;
+}
+.mob-doc-meta {
+    display: flex;
+    align-items: center;
+    gap: .55em;
+    margin-top: .28em;
+    flex-wrap: wrap;
+}
+.mob-doc-meta-item {
+    font-size: .78em;
+    color: #557;
+}
+/* Status / count pill (amber by default) */
+.mob-doc-badge {
+    font-size: .71em;
+    font-weight: 700;
+    background: #fff3cd;
+    color: #7a5c00;
+    border-radius: 1em;
+    padding: .22em .7em;
+}
+/* Green variant — e.g. "All received", "Complete" */
+.mob-doc-badge.success {
+    background: #d4edda;
+    color: #155724;
+}
+/* Blue variant — informational */
+.mob-doc-badge.info {
+    background: #cce5ff;
+    color: #004085;
+}
+
+/* Global selection indicator (e.g. "Receiving into: FG Store") */
+.mob-doc-selection-strip {
+    display: flex;
+    align-items: center;
+    gap: .35em;
+    margin-top: .35em;
+    font-size: .78em;
+    flex-wrap: wrap;
+    color: #2d6a2d;
+}
+.mob-doc-selection-strip strong { font-weight: 700; color: #1e4d1e; }
+.mob-selection-change-link {
+    color: #4282C1 !important;
+    text-decoration: underline;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    font-size: 1em;
+}
+
+/* ── One-time selection modal ──────────────────────────────── */
+/* Full-screen dim overlay with centred card.
+   Use for any "choose once, applies to all lines" selection. */
+.mob-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.55);
+    z-index: 300;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.2em;
+}
+.mob-modal-box {
+    background: #fff;
+    border-radius: .8em;
+    padding: 1.6em 1.3em 1.3em;
+    width: 100%;
+    max-width: 22em;
+    box-shadow: 0 10px 35px rgba(0,0,0,.28);
+}
+.mob-modal-icon {
+    font-size: 2em;
+    display: block;
+    margin-bottom: .3em;
+    line-height: 1;
+}
+.mob-modal-box h3 {
+    margin: 0 0 .3em 0;
+    font-size: 1.05em;
+    font-weight: 700;
+    color: #1a3d6e;
+}
+.mob-modal-box p {
+    font-size: .84em;
+    color: #666;
+    margin: 0 0 1em 0;
+    line-height: 1.45;
+}
+.mob-modal-select {
+    width: 100%;
+    height: 2.9em;
+    border: 1px solid #ccc;
+    border-radius: .45em;
+    padding: 0 .65em;
+    font-size: 1em;
+    margin-bottom: .7em;
+    background: #fff;
+    display: block;
+    box-sizing: border-box;
+}
+.mob-modal-error {
+    display: block;
+    color: #721c24;
+    background: #f8d7da;
+    border-radius: .35em;
+    padding: .35em .7em;
+    font-size: .82em;
+    margin-bottom: .6em;
+}
+.mob-modal-confirm {
+    display: block;
+    width: 100%;
+    height: 3.1em;
+    background: #4282C1;
+    color: #fff !important;
+    border: none;
+    border-radius: .5em;
+    font-size: .98em;
+    font-weight: 700;
+    cursor: pointer;
+    text-align: center;
+    line-height: 3.1em;
+    text-decoration: none;
+    letter-spacing: .01em;
+}
+.mob-modal-confirm:active { background: #2f5f9a; }
+.mob-modal-cancel {
+    display: block;
+    width: 100%;
+    margin-top: .65em;
+    text-align: center;
+    font-size: .85em;
+    color: #888 !important;
+    text-decoration: none;
+    padding: .4em 0;
+    cursor: pointer;
+    background: none;
+    border: none;
+}
+.mob-modal-cancel:active { color: #555 !important; }
+
+/* ── Barcode scan bar ──────────────────────────────────────── */
+/* Flex wrapper gives an integrated ✕ button inside the border */
+.mob-scan-bar {
+    background: #fff;
+    border-bottom: 1px solid #e2e3e5;
+    padding: .65em .8em;
+}
+.mob-scan-wrap {
+    display: flex;
+    align-items: stretch;
+    border: 2px solid #4282C1;
+    border-radius: .5em;
+    overflow: hidden;
+}
+.mob-scan-wrap:focus-within { border-color: #2f5f9a; }
+.mob-scan-wrap input[type="text"] {
+    flex: 1;
+    border: none;
+    padding: 0 .75em;
+    height: 2.9em;
+    font-size: 1em;
+    background: transparent;
+    min-width: 0;
+}
+.mob-scan-wrap input[type="text"]:focus { outline: none; }
+.mob-scan-clear {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f0f1f2;
+    color: #666;
+    border-left: 1px solid #dde;
+    width: 3em;
+    font-size: .88em;
+    cursor: pointer;
+    text-decoration: none;
+    flex-shrink: 0;
+    transition: background .15s;
+}
+.mob-scan-clear:active { background: #dde0e4; }
+
+/* ── Feedback banner ───────────────────────────────────────── */
+.mob-feedback {
+    display: none;
+    padding: .45em .8em;
+    font-size: .84em;
+    font-weight: 600;
+}
+.mob-feedback.found    { display: block; background: #d4edda; color: #155724; }
+.mob-feedback.notfound { display: block; background: #f8d7da; color: #721c24; }
+
+/* ── Line list ─────────────────────────────────────────────── */
+/* Bottom padding clears the fixed toolbar */
+.mob-linelist { padding: .5em .6em 5.4em .6em; }
+
+/* ── Line cards ─────────────────────────────────────────────── */
+.mob-linecard {
+    background: #fff;
+    border-radius: .6em;
+    box-shadow: 0 1px 5px rgba(0,0,0,.09);
+    margin-bottom: .7em;
+    overflow: hidden;
+    border-left: 4px solid transparent;
+    transition: border-color .2s, opacity .25s;
+}
+.mob-linecard.matched {
+    border-left-color: #4282C1;
+    box-shadow: 0 2px 12px rgba(66,130,193,.28);
+}
+.mob-linecard.received {
+    opacity: .6;
+    border-left-color: #28a745;
+}
+/* Card body is a flex row: content left, action button right */
+.mob-linecard-body { display: flex; align-items: stretch; }
+.mob-card-main { flex: 1; padding: .9em .9em .85em 1em; min-width: 0; }
+
+/* Card text elements */
+.mob-item-code  { font-weight: 700; font-size: 1em; color: #1a1a2e; }
+.mob-item-unit  { font-size: .74em; color: #999; margin-top: .08em; }
+.mob-item-descr { font-size: .84em; color: #556; margin-top: .25em; line-height: 1.35; }
+
+/* ── Pill badges ────────────────────────────────────────────── */
+.mob-qty-row {
+    display: flex;
+    gap: .4em;
+    align-items: center;
+    margin-top: .55em;
+    flex-wrap: wrap;
+}
+.mob-qty-badge {
+    font-size: .71em;
+    font-weight: 700;
+    border-radius: 1em;
+    padding: .24em .72em;
+}
+.mob-qty-badge.ordered   { background: #ebebeb; color: #555; }
+.mob-qty-badge.remaining { background: #fff3cd; color: #7a5c00; }
+.mob-qty-badge.picked    { background: #d4edda; color: #155724; }
+.mob-qty-badge.short     { background: #f8d7da; color: #721c24; }
+
+/* ✓ Received / Saved inline badge on the item code line */
+.mob-saved-badge {
+    display: inline-block;
+    font-size: .68em;
+    font-weight: 700;
+    background: #d4edda;
+    color: #155724;
+    border-radius: 1em;
+    padding: .2em .65em;
+    margin-left: .4em;
+    vertical-align: middle;
+}
+
+/* ── Qty input row ──────────────────────────────────────────── */
+.mob-qty-input-row {
+    display: flex;
+    align-items: center;
+    gap: .55em;
+    margin-top: .6em;
+}
+.mob-qty-label {
+    font-size: .78em;
+    color: #778;
+    font-weight: 600;
+    white-space: nowrap;
+}
+.mob-qty-input-row input[type="number"],
+.mob-qty-input-row input[type="text"] {
+    width: 6em;
+    height: 2.7em;
+    border: 1px solid #ccc;
+    border-radius: .45em;
+    text-align: center;
+    font-size: 1.05em;
+    font-weight: 600;
+    color: #222;
+}
+.mob-qty-input-row input:focus { outline: none; border-color: #4282C1; }
+
+/* Lot number label (hidden by default; shown via inline style from code-behind) */
+.mob-lot-label {
+    font-size: .75em;
+    color: #666;
+    margin-top: .3em;
+    display: none;
+}
+
+/* ── Right-side action button (checkmark strip) ─────────────── */
+/* Sits as flex sibling of mob-card-main; spans full card height */
+.mob-action-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 3.4em;
+    background: #4282C1;
+    color: #fff !important;
+    border: none;
+    border-left: 1px solid rgba(0,0,0,.07);
+    font-size: 1.6em;
+    font-weight: 700;
+    cursor: pointer;
+    text-decoration: none;
+    flex-shrink: 0;
+    transition: background .15s;
+}
+.mob-action-btn:active    { background: #2f5f9a; }
+.mob-action-btn[disabled] { background: #c8d5e2; color: rgba(255,255,255,.55) !important; cursor: default; }
+
+/* ── Empty state ────────────────────────────────────────────── */
+.mob-empty { text-align: center; padding: 3em 1em; color: #aaa; font-size: .95em; }
+
+/* ── Action panel (finalise / confirm slide-up) ─────────────── */
+/* Fixed panel above the toolbar; shown on demand */
+.mob-action-panel {
+    position: fixed;
+    bottom: 4.33em; left: 0; right: 0;
+    background: #fff;
+    border-top: 2px solid #4282C1;
+    padding: .85em 2em 1em;
+    z-index: 101;
+    box-shadow: 0 -4px 16px rgba(0,0,0,.15);
+}
+.mob-action-panel h4 {
+    margin: 0 0 .65em 0;
+    font-size: .95em;
+    font-weight: 700;
+    color: #1a3d6e;
+}
+.mob-panel-row { display: flex; flex-direction: column; margin-bottom: .55em; }
+.mob-panel-row label { font-size: .78em; color: #556; margin-bottom: .2em; }
+.mob-panel-row input[type="text"],
+.mob-panel-row input[type="date"] {
+    height: 2.5em;
+    border: 1px solid #ccc;
+    border-radius: .4em;
+    padding: 0 .7em;
+    font-size: 1em;
+}
+.mob-panel-check {
+    display: flex;
+    align-items: center;
+    gap: .5em;
+    font-size: .85em;
+    margin-bottom: .55em;
+}
+.mob-panel-error {
+    display: block;
+    color: #721c24;
+    background: #f8d7da;
+    border-radius: .35em;
+    padding: .35em .7em;
+    font-size: .82em;
+    margin-bottom: .5em;
+}
+.mob-panel-buttons { display: flex; gap: .5em; }
+.mob-btn-cancel {
+    flex: 0 0 5em;
+    height: 2.7em;
+    background: #e2e3e5;
+    color: #333;
+    border: none;
+    border-radius: .45em;
+    font-size: .9em;
+    cursor: pointer;
+    text-align: center;
+    line-height: 2.7em;
+    text-decoration: none;
+}
+.mob-btn-confirm {
+    flex: 1;
+    height: 2.7em;
+    background: #28a745;
+    color: #fff;
+    border: none;
+    border-radius: .45em;
+    font-size: .88em;
+    cursor: pointer;
+    text-align: center;
+    line-height: 2.7em;
+    text-decoration: none;
+    font-weight: 700;
+}
+.mob-btn-confirm:active   { background: #1e7e34; }
+.mob-btn-confirm:disabled { background: #aaa; cursor: default; }
+
+/* ── Bottom toolbar ─────────────────────────────────────────── */
+.mob-toolbar {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: #fff;
+    border-top: 1px solid #e2e3e5;
+    display: flex;
+    gap: .5em;
+    padding: .5em .8em;
+    z-index: 100;
+}
+.mob-toolbar button,
+.mob-toolbar a {
+    flex: 1;
+    height: 3.1em;
+    border: none;
+    border-radius: .5em;
+    font-size: .95em;
+    font-weight: 700;
+    cursor: pointer;
+    text-align: center;
+    line-height: 3.1em;
+    text-decoration: none;
+    letter-spacing: .01em;
+}
+/* Green — primary terminal action (Finalise, Close Off, Submit) */
+.mob-btn-primary  { background: #28a745; color: #fff !important; margin:.5em}
+.mob-btn-primary:active  { background: #1e7e34; }
+/* Blue — secondary action (Receive All, Pick All, etc.) */
+.mob-btn-secondary { background: #4282C1; color: #fff !important; }
+.mob-btn-secondary:active { background: #2f5f9a; }

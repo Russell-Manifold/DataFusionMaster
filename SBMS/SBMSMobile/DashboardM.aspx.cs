@@ -18,7 +18,7 @@ namespace SBMS
                 Response.Redirect("~/LoginM.aspx", false); Context.ApplicationInstance.CompleteRequest();
                 return;
             }
-            //lblUserName.Text = $":.. {userDets.UserName} ..:";
+            lblUsername.Text = userDets.UserName;
             if (!IsPostBack)
             {
                 string imgname = userDets.CoID + ".png";
@@ -57,7 +57,35 @@ namespace SBMS
 
         protected void ibtnPickSlips_Click(object sender, EventArgs e)
         {
+            if (userDets != null)
+            {
+                Response.Redirect("~/SBMSMobile/OSPickingSlipsM.aspx?user=" + userDets.UserGuiD, false);
+            }
+            else
+            {
+                Response.Redirect("~/Dashboard.aspx", true);
+            }
+        }
 
+        protected void ibtnStockCount_Click(object sender, EventArgs e)
+        {
+            if (userDets != null)
+            {
+                Response.Redirect("~/SBMSMobile/StockCountsM.aspx?user=" + userDets.UserGuiD, false);
+            }
+            else
+            {
+                Response.Redirect("~/Dashboard.aspx", true);
+            }
+        }
+
+        protected void lbtnLogOut_Click(object sender, EventArgs e)
+        {
+            ApiUrlCall.LogOut(userDets.UserGuiD);
+            Response.Cookies["Login"].Expires = DateTime.Now.AddDays(-1);
+            Session.Clear();
+            Response.Redirect("~/Login.aspx", false);
+            Context.ApplicationInstance.CompleteRequest();
         }
     }
 }

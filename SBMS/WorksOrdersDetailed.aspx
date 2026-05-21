@@ -16,7 +16,7 @@
                 <div class="row 150%">
                     <div class="2u 12u$(medium)"><a href="https://mydatafusion.online" title="My Data Fusion website"><img src="images/logo.png" style="float:left" class="logoImg"/></a></div>        
                     <div class="8u 12u$(medium)">
-                        <asp:LinkButton ID="LinkButton2" runat="server" class="buttonC icon fa-arrow-left" PostBackUrl="~/WorksOrdersHeaders.aspx" ToolTip="View all open works orders">&nbsp;Works Orders</asp:LinkButton>
+                        <asp:LinkButton ID="LinkButton2" runat="server" class="buttonC icon fa-arrow-left" OnClick="LinkButton2_Click" ToolTip="View all open works orders">&nbsp;Works Orders</asp:LinkButton>
                         <asp:LinkButton ID="lbtnMRPThis" runat="server" class="buttonC icon fa-book" ToolTip="View Materials Requirements for this Works Order." OnClick="lbtnMRPThis_Click">&nbsp;Raw Materials Demands: This Works Order</asp:LinkButton>
                         <h3 id="woheader" runat="server" style="padding-top:1em; line-height:1em"></h3>                    
                     </div>

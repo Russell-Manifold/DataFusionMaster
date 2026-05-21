@@ -25,7 +25,7 @@ namespace SBMS.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("MANIFOLDSERVER\\SQL2022;initial catalog=SBMS;user id=sa;password=M@nif0LD;")]
+        [global::System.Configuration.DefaultSettingValueAttribute("SYNCFLO-DESKTOP\\SYNCFLOSQL;initial catalog=SBMS;user id=sa;password=M@nif0LD;")]
         public string constring {
             get {
                 return ((string)(this["constring"]));

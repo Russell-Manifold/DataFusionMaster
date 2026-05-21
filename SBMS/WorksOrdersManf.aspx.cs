@@ -105,12 +105,15 @@ namespace SBMS
                 var WOHeader = _db.WorksOrderHeaders.Where(x => x.CompanyID == CoID && x.ID == woid).FirstOrDefault();
                 if (WOHeader != null)
                 {
-                    if (WOHeader.Active == false)
+                    if (WOHeader.Active == false || WOHeader.Status == "Complete")
                     {
                         chkCompl.Checked = true;
                         LbtnSaveWO.Enabled = false;
                         LbtnSaveWO.Visible = false;
                         LbtnSaveWO.ToolTip = "This Works Order is Closed, no further changes allowed.";
+                        LbtnUpdateWO.Enabled = false;
+                        LbtnUpdateWO.Visible = false;
+                        LbtnUpdateWO.ToolTip = "This Works Order has already been manufactured.";
                     }
 
                     woheader.InnerText = "Allocate Items: Manufacture WO-" + WOHeader.WONum;
@@ -141,11 +144,6 @@ namespace SBMS
                     if (WOHeader.Message != null) txtwomsg.Text = WOHeader.Message.ToString() ?? "";
                     if (WOHeader.WOrderBy != null) lblCreatedBy.Text = WOHeader.WOrderBy.ToString() ?? "";
                     DDStatus.SelectedValue = WOHeader.Status ?? "";
-                    if (WOHeader.Active == false)
-                    {
-                        LbtnUpdateWO.Style.Add("display", "none");
-                        LbtnSaveWO.Style.Add("display", "none");
-                    }
                 }
             }
         }
@@ -2393,13 +2391,41 @@ namespace SBMS
         {
             try
             {
+                // Hard guard: refuse to manufacture a WO that is already closed.
+                // This catches double-click races, stale-page postbacks, and two
+                // users hitting Manufacture concurrently from different sessions.
+                using (SBMSEntities _dbGuard = new SBMSEntities(Config.GetConnectionString()))
+                {
+                    var headerCheck = _dbGuard.WorksOrderHeaders
+                        .Where(x => x.CompanyID == CurrentUser.CoID && x.ID == woid)
+                        .FirstOrDefault();
+                    if (headerCheck == null)
+                    {
+                        AlertHelper.ShowSweetAlert(this, "Works Order not found, unable to continue.", "error");
+                        return;
+                    }
+                    if (headerCheck.Active == false || headerCheck.Status == "Complete")
+                    {
+                        LbtnUpdateWO.Enabled = false;
+                        LbtnUpdateWO.Visible = false;
+                        LbtnSaveWO.Enabled = false;
+                        LbtnSaveWO.Visible = false;
+                        AlertHelper.ShowSweetAlert(this,
+                            "This Works Order has already been manufactured and cannot be processed again.",
+                            "warning");
+                        return;
+                    }
+                }
+
                 // Your existing long-running process
                 SaveWO();
                 string Retstr = await ExtractAccordionHeaderDetails(sender);
                 if (Retstr == "OK")
                 {
-                    LbtnUpdateWO.Attributes.Add("style", "display:none"); // Disable button
-                    LbtnSaveWO.Attributes.Add("style", "display:none"); // Disable button
+                    LbtnUpdateWO.Enabled = false;
+                    LbtnUpdateWO.Visible = false;
+                    LbtnSaveWO.Enabled = false;
+                    LbtnSaveWO.Visible = false;
                     AlertHelper.ShowSweetAlert(this, "Successfully Saved", "success");
                     return;
                 }
@@ -2411,9 +2437,10 @@ namespace SBMS
             }
             catch (Exception ex)
             {
-                // Show error in your existing label
+                new ApiUrlCall().LogErrorToFile(ex.ToString());
                 lblReccount.Text = "Error during transfer: " + ex.Message;
                 lblReccount.ForeColor = System.Drawing.Color.Red;
+                AlertHelper.ShowSweetAlert(this, "Error during transfer: " + ex.Message, "error");
             }
             finally
             {
@@ -3493,6 +3520,23 @@ namespace SBMS
             // ONLY AFTER ALL API CALLS SUCCEED: Update local DB completion status
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {
+                // Atomic re-check inside the same context — if another caller (different
+                // session / second tab / double-click) already flipped Active to false,
+                // bail before re-writing line state. The Sage adjustments above have
+                // already been deduped by SentKeys, so this is the last safety net.
+                long wonumGuard = Convert.ToInt64(lblwoid.Text);
+                var headerGuard = _db.WorksOrderHeaders
+                    .Where(x => x.CompanyID == CurrentUser.CoID && x.WONum == wonumGuard)
+                    .FirstOrDefault();
+                if (headerGuard == null)
+                {
+                    return "Works Order header missing during completion.";
+                }
+                if (headerGuard.Active == false || headerGuard.Status == "Complete")
+                {
+                    return "This Works Order was already completed by another process.";
+                }
+
                 // FIX 6: Start from index 0 (was 1, silently skipping the first pane's DB update)
                 for (int i = 0; i < AccordionWOLines.Panes.Count; i++)
                 {
@@ -3524,17 +3568,18 @@ namespace SBMS
                 }
                 _db.SaveChanges();
 
-                long wonum = Convert.ToInt64(lblwoid.Text);
-                var woh = _db.WorksOrderHeaders.Where(x => x.CompanyID == CurrentUser.CoID && x.WONum == wonum).FirstOrDefault();
-                woh.Status = "Complete";
-                woh.Active = false;
-                woh.WOrderCloseOffDate = DateTime.Now;
-                woh.WOrderCloseBy = CurrentUser.RoleID.ToString();
+                // headerGuard is already tracked by this context — reuse it.
+                headerGuard.Status = "Complete";
+                headerGuard.Active = false;
+                headerGuard.WOrderCloseOffDate = DateTime.Now;
+                headerGuard.WOrderCloseBy = CurrentUser.RoleID.ToString();
                 _db.SaveChanges();
             }
 
-            LbtnUpdateWO.Style.Add("display", "none");
-            LbtnSaveWO.Style.Add("display", "none");
+            LbtnUpdateWO.Enabled = false;
+            LbtnUpdateWO.Visible = false;
+            LbtnSaveWO.Enabled = false;
+            LbtnSaveWO.Visible = false;
             return "OK";
         }
 

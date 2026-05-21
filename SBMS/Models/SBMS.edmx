@@ -968,6 +968,7 @@
           <Property Name="CountDate" Type="datetime" />
           <Property Name="LineFinished" Type="bit" Nullable="false" />
           <Property Name="StoreCode" Type="varchar" MaxLength="6" />
+          <Property Name="CountExpression" Type="varchar" MaxLength="200" />
         </EntityType>
         <EntityType Name="StockCountMaster">
           <Key>
@@ -2291,8 +2292,8 @@
           <Property Type="String" Name="Description" Nullable="true" MaxLength="100" />
           <Property Type="String" Name="Code" Nullable="true" MaxLength="50" />
           <Property Type="String" Name="Unit" Nullable="true" MaxLength="20" />
-          <Property Type="Int32" Name="ItmID" Nullable="false" />
           <Property Type="Int64" Name="ID" Nullable="false" />
+          <Property Type="Int32" Name="QtyPerBarcode" Nullable="false" />
         </ComplexType>
         <ComplexType Name="GetItemLinkedStores_Result">
           <Property Type="String" Name="StoreCode" Nullable="true" MaxLength="50" />
@@ -2490,6 +2491,7 @@
           <Property Name="CountDate" Type="DateTime" Precision="3" />
           <Property Name="LineFinished" Type="Boolean" Nullable="false" />
           <Property Name="StoreCode" Type="String" MaxLength="6" FixedLength="false" Unicode="false" />
+          <Property Name="CountExpression" Type="String" MaxLength="200" FixedLength="false" Unicode="false" />
         </EntityType>
         <EntityType Name="StockCountMaster">
           <Key>
@@ -4058,8 +4060,8 @@
                 <ScalarProperty Name="Description" ColumnName="Description" />
                 <ScalarProperty Name="Code" ColumnName="Code" />
                 <ScalarProperty Name="Unit" ColumnName="Unit" />
-                <ScalarProperty Name="ItmID" ColumnName="ItmID" />
                 <ScalarProperty Name="ID" ColumnName="ID" />
+                <ScalarProperty Name="QtyPerBarcode" ColumnName="QtyPerBarcode" />
               </ComplexTypeMapping>
             </ResultMapping>
           </FunctionImportMapping>
@@ -4298,6 +4300,7 @@
                 <ScalarProperty Name="CountID" ColumnName="CountID" />
                 <ScalarProperty Name="CtLineID" ColumnName="CtLineID" />
                 <ScalarProperty Name="StoreCode" ColumnName="StoreCode" />
+                <ScalarProperty Name="CountExpression" ColumnName="CountExpression" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>

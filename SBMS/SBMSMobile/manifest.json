@@ -2,10 +2,10 @@
   "name": "Data Fusion Mobile",
   "short_name": "DFM",
   "description": "Barcode scanning WMS",
-  "start_url": "/",
+  "start_url": "https://mydatafusion.online/zademo/Login.aspx",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#000000",
+  "theme_color": "#4282C1",
   "orientation": "portrait",
   "icons": [
     {

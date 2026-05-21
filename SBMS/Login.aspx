@@ -6,8 +6,103 @@
     <title>Data Fusion</title>
     <link id="Link3" runat="server" rel="shortcut icon" href="images/datafusionicon.ico" type="image/x-icon" />
     <link id="Link4" runat="server" rel="icon" href="images/datafusionicon.ico" type="image/ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
     <link rel="stylesheet" href="assets/css/main.css" />
-     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        /* Login page responsive overrides */
+        .login-logo-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            padding: 0.5em 0;
+        }
+        .login-logo-row .logoImg {
+            float: none !important;
+            max-height: 5em;
+            max-width: 7em;
+        }
+        .login-logo-row .lbtnNewProfile-wrap {
+            flex: 1;
+            text-align: right;
+        }
+        .login-input {
+            width: 100%;
+            max-width: 22em;
+            box-sizing: border-box;
+        }
+        .login-panel {
+            padding: 1em;
+        }
+        @media screen and (max-width: 736px) {
+            .login-logo-row {
+                justify-content: center;
+                gap: 0.5em;
+            }
+            .login-logo-row .lbtnNewProfile-wrap {
+                width: 100%;
+                text-align: center;
+                margin-top: 0.5em;
+            }
+            .login-input {
+                max-width: 100%;
+                font-size: 1.1em;
+                padding: 0.4em;
+                height: auto;
+                min-height: 2.6em;
+            }
+            .login-panel {
+                padding: 0.5em 0.25em;
+            }
+            .login-col-center {
+                padding-bottom: 2em !important;
+            }
+            .HellowWorldPopup {
+                min-width: 0 !important;
+                width: 95vw !important;
+                max-width: 98vw !important;
+                box-sizing: border-box;
+            }
+        }
+        @media screen and (max-width: 480px) {
+            .login-input {
+                font-size: 1.2em;
+                min-height: 3em;
+            }
+        }
+
+        /* Login page: drastically shrink footer on mobile so the form is usable */
+        @media screen and (max-width: 736px) {
+            .login-footer {
+                padding: 0.25em 0.25em !important;
+                font-size: 0.5em !important;
+                line-height: 1.2 !important;
+            }
+            .login-footer .button.special {
+                font-size: 0.9em;
+                padding: 0.3em 0.8em;
+            }
+            .login-footer #copyright ul:first-of-type {
+                display: none;
+            }
+            .login-footer #copyright ul:last-of-type {
+                margin-top: 0.15em;
+            }
+        }
+        @media screen and (max-width: 480px) {
+            .login-footer {
+                padding: 0.15em 0.15em !important;
+                font-size: 0.45em !important;
+            }
+            .login-footer #copyright ul:first-of-type {
+                display: none;
+            }
+            .login-footer #copyright ul:last-of-type {
+                margin-top: 0.1em;
+            }
+        }
+    </style>
 </head>
 <body>
     <form id="form1" runat="server">
@@ -16,25 +111,30 @@
         <div class="content">
            <div class="container"> 
                 <div class="row 150%">
-                            <div class="12u 12u$(medium)">  
-                                <a href="https://mydatafusion.online" title="My Data Fusion website"><img src="images/logo.png" style="float:left" class="logoImg"/></a>
-                                 <a href="https://mydatafusion.online" title="My Data Fusion website"><img src="images/logo.png" style="float:right" class="logoImg"/></a>
-                                 <br /><asp:LinkButton ID="lbtnNewProfile" runat="server" class="buttonC icon fa-edit"  style="float:right; font-size:small" ToolTip="Create a new profile, (No Credit Card details required)" OnClick="lbtnNewProfile_Click">&nbsp;New Profile&nbsp;</asp:LinkButton>
-                             </div>
+                            <div class="12u 12u$(medium)">
+                                <div class="login-logo-row">
+                                    <a href="https://mydatafusion.online" title="My Data Fusion website">
+                                        <img src="images/logo.png" class="logoImg" />
+                                    </a>
+                                    <div class="lbtnNewProfile-wrap">
+                                        <asp:LinkButton ID="lbtnNewProfile" runat="server" class="buttonC icon fa-edit" style="font-size:small" ToolTip="Create a new profile, (No Credit Card details required)" OnClick="lbtnNewProfile_Click">&nbsp;New Profile&nbsp;</asp:LinkButton>
+                                    </div>
+                                </div>
+                            </div>
                     </div>
                  <div class="row 150%">
-                     <div class="4u 12u$(medium)">&nbsp;</div>
-                        <div class="4u 12u$(medium)" style="text-align:center; padding-bottom:9em">
+                     <div class="4u 12u$(medium)">&nbsp;<asp:HiddenField ID="hfScreenWidth" runat="server" /></div>
+                        <div class="4u 12u$(medium) login-col-center" style="text-align:center; padding-bottom:9em">
                             <div id='myHiddenDiv' runat="server" style='display: none'>
                                     <div style="padding: .5em;">
                                     <img src="images/tenorwait.gif" id='myAnimatedImage' align='absmiddle' class="funkygif" style="border-radius:.5em"  />
                                    </div>
                             </div>
-                            <asp:Panel ID="Panel1" runat="server" DefaultButton="lbtnlogin">
+                            <asp:Panel ID="Panel1" runat="server" DefaultButton="lbtnlogin" CssClass="login-panel">
                                 
                                 <h2>Data Fusion <span style="font-size:.5em" >By Syncflo</span><br />Log In</h2>
-                                Username: <br /><asp:TextBox ID="txtUsername" runat="server" style="width:20em;" placeholder ="Sage Login Username"></asp:TextBox><br />
-                                Password: <br /><asp:TextBox ID="txtPwd" runat="server" style="width:20em" TextMode="Password" placeholder="Sage Password"></asp:TextBox><br />
+                                Username: <br /><asp:TextBox ID="txtUsername" runat="server" CssClass="login-input" placeholder="Sage Login Username"></asp:TextBox><br />
+                                Password: <br /><asp:TextBox ID="txtPwd" runat="server" CssClass="login-input" TextMode="Password" placeholder="Sage Password"></asp:TextBox><br />
                                 <br /><asp:CheckBox ID="chkRememberMe" runat="server" Text="Keep me logged in today" /><br/>
                                 <asp:LinkButton ID="lbtnlogin" runat="server" OnClick="lbtnlogin_Click" CssClass="icon fa-door-open buttonSage" >Login</asp:LinkButton><br />
                                 <asp:Label ID="lblErr" runat="server" Text="" ForeColor="Red"></asp:Label><br /><br />
@@ -95,7 +195,7 @@
                      <div class="4u 12u$(medium)">&nbsp;</div>
                     </div> 
                 </div>
-            <section id="footer" class="wrapper">
+            <section id="footer" class="wrapper login-footer">
                 <a href="https://mydatafusion.online/learningCenter.aspx" class="button special icon fa-lightbulb" target="_blank"> Learn more from the Learning Hub >></a>
             <div id="copyright">
 				<ul class="copyright">
@@ -164,6 +264,11 @@
         setTimeout('document.images["myAnimatedImage"].src="images/tenorwait.gif"', 200);
     }
     </script>
+    <script>
+        window.onload = function () {
+            document.getElementById('<%= hfScreenWidth.ClientID %>').value = screen.width;
+        };
+</script>
 </body>
 </html>
 

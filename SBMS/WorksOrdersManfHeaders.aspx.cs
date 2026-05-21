@@ -159,7 +159,34 @@ namespace SBMS
         {
             LinkButton lbtnFC = (LinkButton)sender;
             GridViewRow row = (GridViewRow)lbtnFC.NamingContainer;
-            Response.Redirect("~/WorksOrdersManf.aspx?woid=" + lbtnFC.CommandArgument);
+
+            long woidArg;
+            if (!long.TryParse(lbtnFC.CommandArgument, out woidArg))
+            {
+                AlertHelper.ShowSweetAlert(this, "Invalid Works Order selected.", "error");
+                return;
+            }
+
+            using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+            {
+                var WOHeader = _db.WorksOrderHeaders
+                    .Where(x => x.CompanyID == CoID && x.ID == woidArg)
+                    .FirstOrDefault();
+                if (WOHeader == null)
+                {
+                    AlertHelper.ShowSweetAlert(this, "Works Order not found.", "error");
+                    return;
+                }
+                if (WOHeader.Active == false || WOHeader.Status == "Complete")
+                {
+                    AlertHelper.ShowSweetAlert(this,
+                        "This Works Order has already been manufactured and cannot be opened for manufacturing again.",
+                        "warning");
+                    return;
+                }
+            }
+
+            Response.Redirect("~/WorksOrdersManf.aspx?woid=" + woidArg);
         }
 
         protected void GridWOs_RowDataBound(object sender, GridViewRowEventArgs e)

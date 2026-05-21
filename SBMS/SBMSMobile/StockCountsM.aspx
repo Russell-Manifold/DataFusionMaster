@@ -1,0 +1,149 @@
+<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="StockCountsM.aspx.cs" Inherits="SBMS.StockCountsM" %>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head runat="server">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Stock Counts</title>
+    <link rel="shortcut icon" href="../images/datafusionicon.ico" type="image/x-icon" />
+    <link rel="stylesheet" href="css/main.css" />
+    <link rel="stylesheet" href="css/mobile-ui.css" />
+    <link rel="manifest" href="../SBMSMobile/manifest.json" />
+    <meta name="theme-color" content="#4282C1" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Data Fusion" />
+    <link rel="apple-touch-icon" href="../SBMSMobile/icons/icon-192.png" />
+    <meta name="format-detection" content="telephone=no" />
+    <style>
+        .mob-store-picker {
+            background: #fff;
+            border-radius: 10px;
+            padding: 1rem;
+            margin: .5rem 1rem;
+            box-shadow: 0 1px 6px rgba(0,0,0,.06);
+        }
+        .mob-store-picker label {
+            display: block;
+            font-size: .82em;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: .35em;
+        }
+        .mob-store-picker select {
+            width: 100%;
+            height: 2.8em;
+            border: 1.5px solid #ccc;
+            border-radius: .5em;
+            padding: 0 .5em;
+            font-size: 1em;
+            background: #fff;
+        }
+        .mob-start-btn {
+            display: block;
+            margin: 1rem;
+            padding: .85rem;
+            background: #4caf50;
+            color: #fff;
+            font-size: 1.1em;
+            font-weight: 700;
+            text-align: center;
+            border-radius: 10px;
+            text-decoration: none;
+            box-shadow: 0 2px 8px rgba(76,175,80,.3);
+            transition: background .15s;
+        }
+        .mob-start-btn:active {
+            background: #388e3c;
+        }
+        .mob-start-btn.disabled {
+            background: #bbb;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+    </style>
+</head>
+<body>
+<form id="form1" runat="server">
+    <asp:ScriptManager ID="ScriptManager1" runat="server" />
+
+    <%-- Loading overlay --%>
+    <asp:UpdateProgress ID="UpdateProgress1" runat="server" AssociatedUpdatePanelID="upMain">
+        <ProgressTemplate>
+            <div style="position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:999;
+                        display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.1em;">
+                Loading&hellip;
+            </div>
+        </ProgressTemplate>
+    </asp:UpdateProgress>
+
+    <%-- Top bar --%>
+    <div class="mob-topbar">
+        <div class="mob-topbar-left">
+            <asp:LinkButton ID="lbtnBack" runat="server" OnClick="lbtnBack_Click" CssClass="mob-topbar-back">&#8592; Back</asp:LinkButton>
+            <asp:LinkButton ID="lbtnHome" runat="server" OnClick="lbtnHome_Click" CssClass="mob-topbar-icon" title="Home">&#127968;</asp:LinkButton>
+        </div>
+        <span class="mob-topbar-title">&#128202; Stock Counts</span>
+        <div class="mob-topbar-right">
+            <asp:Label ID="lblUsername" runat="server" style="display:none;" />
+            <asp:LinkButton ID="lbtnLogOut" runat="server" OnClick="lbtnLogOut_Click" CssClass="mob-topbar-logout">Log Out</asp:LinkButton>
+        </div>
+    </div>
+
+    <asp:UpdatePanel ID="upMain" runat="server">
+    <ContentTemplate>
+
+        <%-- Count selector --%>
+        <asp:Panel ID="pnlCountSelect" runat="server" CssClass="mob-filterbar" DefaultButton="lbtnLoadCount"
+            style="justify-content:space-between;">
+            <asp:DropDownList ID="ddCounts" runat="server"
+                style="flex:1;min-width:0;max-width:none;height:2.7em;border:1px solid #ccc;border-radius:.4em;padding:0 .4em;font-size:.9em;" />
+            <asp:LinkButton ID="lbtnLoadCount" runat="server" OnClick="lbtnLoadCount_Click"
+                CssClass="mob-find-btn" style="margin-left:auto;">&#128269;</asp:LinkButton>
+            <asp:CheckBox ID="chkShowClosed" runat="server" AutoPostBack="true"
+                OnCheckedChanged="chkShowClosed_CheckedChanged" Text="Closed"
+                style="font-size:.75em;color:#888;white-space:nowrap;margin-left:.5em;" />
+        </asp:Panel>
+
+        <%-- Count header --%>
+        <asp:Panel ID="pnlCountHeader" runat="server" Visible="false">
+            <div class="mob-doc-header">
+                <div class="mob-doc-header-main">
+                    <span class="mob-doc-num"><asp:Label ID="lblCountRef" runat="server" /></span>
+                    <span class="mob-doc-secondary" style="margin-left:.5em;">
+                        <asp:Label ID="lblCountStatus" runat="server" />
+                    </span>
+                </div>
+                <div class="mob-doc-meta">
+                    <span class="mob-doc-meta-item">Created: <asp:Label ID="lblCountDate" runat="server" /></span>
+                    <span class="mob-doc-meta-item">By: <asp:Label ID="lblCreatedBy" runat="server" /></span>
+                    <span class="mob-doc-badge"><asp:Label ID="lblLineCount" runat="server" /> line(s) total</span>
+                </div>
+            </div>
+
+            <%-- Store picker --%>
+            <div class="mob-store-picker">
+                <label>&#128230; Pick the store you are counting:</label>
+                <asp:DropDownList ID="ddStore" runat="server" style="width:100%;height:2.8em;border:1.5px solid #ccc;border-radius:.5em;padding:0 .5em;font-size:1em;background:#fff;" />
+            </div>
+
+            <%-- Start Counting button --%>
+            <asp:LinkButton ID="lbtnStartCounting" runat="server" OnClick="lbtnStartCounting_Click"
+                CssClass="mob-start-btn">&#128202; Start Counting</asp:LinkButton>
+        </asp:Panel>
+
+    </ContentTemplate>
+    </asp:UpdatePanel>
+</form>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    if (!window.matchMedia('(display-mode: standalone)').matches) {
+        window.addEventListener('load', function () {
+            document.body.style.height = (window.screen.height + 50) + 'px';
+            setTimeout(function () { window.scrollTo(0, 1); }, 50);
+            setTimeout(function () { document.body.style.height = ''; }, 600);
+        });
+    }
+</script>
+</body>
+</html>

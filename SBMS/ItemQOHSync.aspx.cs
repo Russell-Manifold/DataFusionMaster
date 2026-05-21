@@ -5,6 +5,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Web;
+using System.Web.Services.Description;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -230,6 +231,11 @@ namespace SBMS
 
         protected void lbtnUpdateYes_Click(object sender, EventArgs e)
         {
+            if (DDStoreTo.SelectedIndex == 0) 
+            {
+                AlertHelper.ShowSweetAlert(this, "Please select a store to Sync items to", "error");
+            }
+            
             int Reccount = 0, StorScr = 0, batchcnt = 200;
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {

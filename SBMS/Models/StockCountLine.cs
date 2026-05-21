@@ -31,5 +31,6 @@ namespace SBMS.Models
         public Nullable<System.DateTime> CountDate { get; set; }
         public bool LineFinished { get; set; }
         public string StoreCode { get; set; }
+        public string CountExpression { get; set; }
     }
 }

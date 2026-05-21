@@ -60,6 +60,7 @@ namespace SBMS
 
         private void showhidebuttons()
         {
+            chkMobile.Visible = ApiUrlCall.dbName == "MyDataFusionDemo2";
             if (userDets.UATMode == false) lbluat.Style.Add("display", "none");
             if (userDets.CanReceive != true) ibtmWorksOrders.Style.Add("display", "none");
             if (userDets.CanViewPickSlips != true) ibtnPickSlips.Style.Add("display", "none");
@@ -103,6 +104,12 @@ namespace SBMS
             Session.Clear();
             Response.Cookies["Login"].Expires = DateTime.Now.AddDays(-1);
             Response.Redirect("~/Login.aspx", false); Context.ApplicationInstance.CompleteRequest();
+        }
+
+        protected void lbtnHelper_Click(object sender, EventArgs e)
+        {
+            Response.Redirect("~/Helper.aspx", false);
+            Context.ApplicationInstance.CompleteRequest();
         }
 
         protected void DDProgBoard_SelectedIndexChanged(object sender, EventArgs e)
@@ -317,7 +324,27 @@ namespace SBMS
                 Response.Redirect("~/Dashboard.aspx", true);
             }
         }
-        // 
 
+        protected void CheckBox1_CheckedChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        protected void chkMobile_CheckedChanged(object sender, EventArgs e)
+        {
+            if (userDets != null)
+            {
+                if (userDets.ExpiryDate <= DateTime.Now)
+                {
+                    AlertHelper.ShowSweetAlert(this, "Your subscription has expired, unable to continue. Please contact support for renewal", "error", "Login Error");
+                    return;
+                }
+                Response.Redirect("~/SBMSMobile/DashboardM.aspx?user=" + userDets.UserGuiD, false);
+            }
+            else
+            {
+                Response.Redirect("~/Dashboard.aspx", true);
+            }
+        }
     }
 }

@@ -143,7 +143,7 @@
                                    </tr>
                                     <tr>
                                        <td>Use Module 2 (Job Cards, Forecasting + more)</td>
-                                       <td><asp:CheckBox ID="chkMod2" runat="server" Checked="true" Enabled="false" /></td>
+                                       <td><asp:CheckBox ID="chkMod2" runat="server" Checked="false" Enabled="false" /></td>
                                    </tr>
                                     <tr>
                                        <td>Use Module 3 (BOM's, Kit's, Manufacturing + more)</td>
