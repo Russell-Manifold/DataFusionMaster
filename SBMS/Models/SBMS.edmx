@@ -3142,7 +3142,7 @@
           <Property Name="SupplierID" Type="Int64" />
           <Property Name="ItemCode" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="SelectionId" Type="Int64" />
-          <Property Name="ItemDescription" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="ItemDescription" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
           <Property Name="OrigQty" Type="Decimal" Precision="18" Scale="4" />
           <Property Name="RecQty" Type="Decimal" Precision="18" Scale="4" />
           <Property Name="QtyLeft" Type="Decimal" Precision="18" Scale="4" />
@@ -3162,7 +3162,7 @@
           <ReferentialConstraint>
             <Principal Role="ReceivingOutstanding">
               <PropertyRef Name="id" />
-            </Principal>
+            </Principal> 
             <Dependent Role="ReceivingOutstanding1">
               <PropertyRef Name="id" />
             </Dependent>

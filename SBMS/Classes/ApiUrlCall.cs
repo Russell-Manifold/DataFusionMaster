@@ -33,10 +33,10 @@ namespace SBMS.Classes
         //public SBMSEntities(string connectionString) : base(connectionString) { }
 
        //  for demo version data
-      public static string dbName = $"MyDataFusionDemo2";
+      //public static string dbName = $"MyDataFusionDemo2";
        // LIVE data
       /// <summary>
-      //public static string dbName = $"MyDataFusion";
+      public static string dbName = $"MyDataFusion";
       /// </summary>
 
         public static string constr = $"Data Source=SYNCFLO-DESKTOP\\SYNCFLOSQL;Initial Catalog={dbName};Persist Security Info=True;User ID=sa;Password=M@nif0LD";
@@ -46,11 +46,11 @@ namespace SBMS.Classes
         static DateTime CustDT = Convert.ToDateTime("01 Jan 2015"), SuppDT = Convert.ToDateTime("01 Jan 2015"), ItemDT = Convert.ToDateTime("01 Jan 2015"), PODT = Convert.ToDateTime("01 Jan 2015"), InvoiceDT = Convert.ToDateTime("01 Jan 2015"), CNoteDT = Convert.ToDateTime("01 Jan 2015");
         static DateTime SuppInvDT = Convert.ToDateTime("01 Jan 2015"), SuppRetDT = Convert.ToDateTime("01 Jan 2015"), JrnlDT = Convert.ToDateTime("01 Jan 2015"), QuoteDT = Convert.ToDateTime("01 Jan 2015"), SOrdDT = Convert.ToDateTime("01 Jan 2015"), GLegDT = Convert.ToDateTime("01 Jan 2015");
 
-      //public static string sageurl = "https://accounting.sageone.co.za/api/2.0.0/";
-      //public static string APIKey = "5850E392-0FE8-43B4-9EEB-18D2B28B115C";
+      public static string sageurl = "https://accounting.sageone.co.za/api/2.0.0/";
+      public static string APIKey = "5850E392-0FE8-43B4-9EEB-18D2B28B115C";
         
-       public static string sageurl = "https://resellers.accounting.sageone.co.za/api/2.0.0/";
-       public static string APIKey = "2B7B61BA-41B8-4212-B2A2-77B8734BA688";
+       //public static string sageurl = "https://resellers.accounting.sageone.co.za/api/2.0.0/";
+       //public static string APIKey = "2B7B61BA-41B8-4212-B2A2-77B8734BA688";
 
         // Syncflo SBCA profile - SANDBOX KEY
         //public static string APIKey = "934D4C3F-FF4D-4311-9380-F21ACB54DCBB";
@@ -1311,12 +1311,16 @@ namespace SBMS.Classes
                                         if (item["YesNoUserField3"] != null) itm.YesNoUserField3 = Convert.ToBoolean(item["YesNoUserField3"].ToString() ?? "");
                                     }
                                     catch { }
-                                    if (Userdetails.SageWeightField.ToLower().Contains("userfield"))    
+                                    try
                                     {
-                                        decimal unitmass = Convert.ToDecimal(item[Userdetails.SageWeightField]);
-                                        if (unitmass >0) itm.NettMass = Convert.ToDecimal(item[Userdetails.SageWeightField]?? 0, CultureInfo.InvariantCulture);
+                                        if (Userdetails.SageWeightField.ToLower().Contains("userfield"))
+                                        {
+                                            decimal unitmass = Convert.ToDecimal(item[Userdetails.SageWeightField]);
+                                            if (unitmass > 0) itm.NettMass = Convert.ToDecimal(item[Userdetails.SageWeightField] ?? 0, CultureInfo.InvariantCulture);
+                                        }
                                     }
-
+                                    catch { }
+                                    
                                     try
                                     {
                                         itm.TotQOH_MDF = _db.ItemTransactions.Where(it => it.CompanyID == Userdetails.CoID && it.ItemID == itemid).Sum(it => it.Qty) ?? 0;

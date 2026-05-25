@@ -196,11 +196,16 @@ namespace SBMS
             int recnum = GetLotNum(CurrentUser.CoID);
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {
+                long.TryParse(lblSupplierID.Text, out long supplierIdParsed);
+
                 var Lines = _db.TempDocLines.Where(x => x.DocID == docid).OrderBy(x => x.LineID).ToList();
                 foreach (TempDocLine dl in Lines)
                 {
                     decimal qtyToRec = dl.QtyLeft ?? (dl.Quantity ?? 0);
                     if (qtyToRec <= 0) continue;
+
+                    // Preserve manually-typed ReceiveQty — Select All only fills empty lines.
+                    if ((dl.ReceiveQty ?? 0) > 0) continue;
 
                     if (dl.ItemType == 0)
                     {
@@ -239,27 +244,42 @@ namespace SBMS
                         dl.ReceiveQty = qtyToRec;
                         dl.QtyLeft = 0;
                         dl.ToReceive = true;
+                        dl.StoreCode = selectedStore;
                     }
 
-                    ReceivingOutstanding or = new ReceivingOutstanding
+                    // If an unarchived outstanding row already exists for this line, update it
+                    // instead of inserting a duplicate (handles double-clicks and re-runs).
+                    var existingOS = _db.ReceivingOutstandings.FirstOrDefault(
+                        x => x.LineID == dl.LineID && x.PODocID == docid && x.Archive == false);
+                    if (existingOS != null)
                     {
-                        CompanyID = CurrentUser.CoID,
-                        PONumber = txtDocNum.Text,
-                        PODocID = docid,
-                        Supplier = txtSuppName.Text,
-                        SupplierID = Convert.ToInt64(lblSupplierID.Text),
-                        ItemCode = dl.ItemCode,
-                        SelectionId = dl.SelectionId,
-                        ItemDescription = dl.ItemDescription,
-                        OrigQty = dl.Quantity ?? 0,
-                        RecQty = qtyToRec,
-                        QtyLeft = 0,
-                        LineID = dl.LineID,
-                        CreatedBy = CurrentUser.RoleID,
-                        CreatedDate = DateTime.Now,
-                        Archive = false
-                    };
-                    _db.ReceivingOutstandings.Add(or);
+                        existingOS.RecQty = qtyToRec;
+                        existingOS.QtyLeft = 0;
+                        existingOS.CreatedBy = CurrentUser.RoleID;
+                        existingOS.CreatedDate = DateTime.Now;
+                    }
+                    else
+                    {
+                        ReceivingOutstanding or = new ReceivingOutstanding
+                        {
+                            CompanyID = CurrentUser.CoID,
+                            PONumber = txtDocNum.Text,
+                            PODocID = docid,
+                            Supplier = txtSuppName.Text,
+                            SupplierID = supplierIdParsed,
+                            ItemCode = dl.ItemCode,
+                            SelectionId = dl.SelectionId,
+                            ItemDescription = dl.ItemDescription,
+                            OrigQty = dl.Quantity ?? 0,
+                            RecQty = qtyToRec,
+                            QtyLeft = 0,
+                            LineID = dl.LineID,
+                            CreatedBy = CurrentUser.RoleID,
+                            CreatedDate = DateTime.Now,
+                            Archive = false
+                        };
+                        _db.ReceivingOutstandings.Add(or);
+                    }
                 }
                 try
                 {
@@ -530,8 +550,13 @@ namespace SBMS
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {
                 var Docline = _db.TempDocLines.Where(x => x.LineID == lineid).FirstOrDefault();
+                if (Docline == null)
+                {
+                    AlertHelper.ShowSweetAlert(this, "Receiving line not found, please refresh and try again.", "error");
+                    return;
+                }
                 long docid = Convert.ToInt64(lblDocID.Text);
-                
+
                 QtyOrd = Docline.Quantity ?? 0;
                 
                 decimal Prerecqty = _db.ReceivingOutstandings
@@ -641,6 +666,11 @@ namespace SBMS
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {
                 var Docline = _db.TempDocLines.Where(x => x.LineID == lineid).FirstOrDefault();
+                if (Docline == null)
+                {
+                    AlertHelper.ShowSweetAlert(this, "Receiving line not found, please refresh and try again.", "error");
+                    return;
+                }
                 if(DDStore.Enabled == true) Docline.StoreCode = DDStoreEdit.SelectedValue.ToString();
                 Docline.ReceiveQty = QtyRec;
                 Docline.QtyLeft = QtyLeft < 0 ? 0 : QtyLeft;
@@ -1545,9 +1575,14 @@ namespace SBMS
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {
                 var Docline = _db.TempDocLines.Where(x => x.LineID == lineid).FirstOrDefault();
-                txtordqty.Text = ApiUrlCall.NumberToDecimal((Docline.QtyLeft ?? Docline.Quantity).ToString(), CurrentUser.CompanyDecPlaces).ToString();
-                txtQtyReceive.Text = ApiUrlCall.NumberToDecimal(Docline.ReceiveQty.ToString(), CurrentUser.CompanyDecPlaces).ToString(); 
-                lblItemdescr.Text = Docline.ItemDescription.ToString();
+                if (Docline == null)
+                {
+                    AlertHelper.ShowSweetAlert(this, "Receiving line not found, please refresh and try again.", "error");
+                    return;
+                }
+                txtordqty.Text = ApiUrlCall.NumberToDecimal((Docline.QtyLeft ?? Docline.Quantity ?? 0).ToString(), CurrentUser.CompanyDecPlaces).ToString();
+                txtQtyReceive.Text = ApiUrlCall.NumberToDecimal((Docline.ReceiveQty ?? 0).ToString(), CurrentUser.CompanyDecPlaces).ToString();
+                lblItemdescr.Text = Docline.ItemDescription ?? string.Empty;
                 txtNumPieces.Text = txtQtyReceive.Text;
                 chkEdit.Checked = (Boolean)Docline.ReceiveComplete;
                 if (Docline.StoreCode != null)

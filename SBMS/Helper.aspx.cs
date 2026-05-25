@@ -36,68 +36,76 @@ namespace SBMS
 
         protected async void lbtnAsk_Click(object sender, EventArgs e)
         {
-            string question = (txtQuestion.Text ?? "").Trim();
-            if (question.Length < 3)
-            {
-                AlertHelper.ShowSweetAlert(this, "Please enter a question (at least 3 characters).", "warning");
-                return;
-            }
-
-            pnlEmpty.Visible = false;
-            pnlAnswer.Visible = false;
-
-            // ── Tier 1: Check cache ──────────────────────────────────────
-            string currentModule = GetModuleFromReferrer();
-            var cached = HelpSvc.Search(question, currentModule, CurrentUser.CoID, maxResults: 1);
-
-            if (cached.Count > 0 && cached[0].UsageCount > 0)
-            {
-                // Found a published match
-                var match = cached[0];
-                HelpSvc.IncrementUsage(match.Id);
-                DisplayAnswer(question, match.Answer, "cached &bull; matched: " + match.Question);
-                return;
-            }
-
-            // ── Tier 2: Check unpublished (exact match) ─────────────────
-            var allResults = HelpSvc.Search(question, currentModule, CurrentUser.CoID, maxResults: 3);
-            if (allResults.Count > 0)
-            {
-                var best = allResults[0];
-                HelpSvc.IncrementUsage(best.Id);
-                DisplayAnswer(question, best.Answer, "library &bull; matched: " + best.Question);
-                return;
-            }
-
-            // ── Tier 3: Call Claude ─────────────────────────────────────
-            pnlAnswer.Visible = true;
-            lblAnswerQuestion.Text = question;
-            litAnswer.Text = "<div class='help-answer-loading'>&#128640; Thinking&hellip;</div>";
-            lblSource.Text = "";
-
-            var chatSvc = new ChatService();
-            string aiAnswer = await chatSvc.AskAsync(question);
-
-            // Save as unpublished for admin review
             try
             {
-                HelpSvc.Insert(new HelpArticle
+                string question = (txtQuestion.Text ?? "").Trim();
+                if (question.Length < 3)
                 {
-                    Question    = question,
-                    Answer      = aiAnswer,
-                    Keywords    = GenerateKeywords(question),
-                    Module      = currentModule,
-                    PageUrl     = Request.UrlReferrer?.AbsolutePath ?? "",
-                    UsageCount  = 1,
-                    CreatedBy   = CurrentUser.UserName,
-                    CreatedDate = DateTime.Now,
-                    Published   = false,
-                    CompanyID   = CurrentUser.CoID
-                });
-            }
-            catch { }
+                    AlertHelper.ShowSweetAlert(this, "Please enter a question (at least 3 characters).", "warning");
+                    return;
+                }
 
-            DisplayAnswer(question, aiAnswer, "Claude AI &bull; awaiting review");
+                pnlEmpty.Visible = false;
+                pnlAnswer.Visible = false;
+
+                // ── Tier 1: Check cache ──────────────────────────────────────
+                string currentModule = GetModuleFromReferrer();
+                var cached = HelpSvc.Search(question, currentModule, CurrentUser.CoID, maxResults: 1);
+
+                if (cached.Count > 0 && cached[0].UsageCount > 0)
+                {
+                    // Found a published match
+                    var match = cached[0];
+                    HelpSvc.IncrementUsage(match.Id);
+                    DisplayAnswer(question, match.Answer, "cached &bull; matched: " + match.Question);
+                    return;
+                }
+
+                // ── Tier 2: Check unpublished (exact match) ─────────────────
+                var allResults = HelpSvc.Search(question, currentModule, CurrentUser.CoID, maxResults: 3);
+                if (allResults.Count > 0)
+                {
+                    var best = allResults[0];
+                    HelpSvc.IncrementUsage(best.Id);
+                    DisplayAnswer(question, best.Answer, "library &bull; matched: " + best.Question);
+                    return;
+                }
+
+                // ── Tier 3: Call Claude ─────────────────────────────────────
+                pnlAnswer.Visible = true;
+                lblAnswerQuestion.Text = question;
+                litAnswer.Text = "<div class='help-answer-loading'>&#128640; Thinking&hellip;</div>";
+                lblSource.Text = "";
+
+                var chatSvc = new ChatService();
+                string aiAnswer = await chatSvc.AskAsync(question);
+
+                // Save as unpublished for admin review
+                try
+                {
+                    HelpSvc.Insert(new HelpArticle
+                    {
+                        Question    = question,
+                        Answer      = aiAnswer,
+                        Keywords    = GenerateKeywords(question),
+                        Module      = currentModule,
+                        PageUrl     = Request.UrlReferrer?.AbsolutePath ?? "",
+                        UsageCount  = 1,
+                        CreatedBy   = CurrentUser.UserName,
+                        CreatedDate = DateTime.Now,
+                        Published   = false,
+                        CompanyID   = CurrentUser.CoID
+                    });
+                }
+                catch { }
+
+                DisplayAnswer(question, aiAnswer, "Claude AI &bull; awaiting review");
+            }
+            catch (Exception ex)
+            {
+                try { new ApiUrlCall().LogErrorToFile($"CoID:{CurrentUser?.CoID} Helper lbtnAsk_Click – {ex}"); } catch { }
+                AlertHelper.ShowSweetAlert(this, "Sorry, something went wrong getting your answer. Please try again.", "error");
+            }
         }
 
         protected void lbtnHome_Click(object sender, EventArgs e)

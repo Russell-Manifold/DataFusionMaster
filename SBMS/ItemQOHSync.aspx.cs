@@ -231,11 +231,12 @@ namespace SBMS
 
         protected void lbtnUpdateYes_Click(object sender, EventArgs e)
         {
-            if (DDStoreTo.SelectedIndex == 0) 
+            if (DDStoreTo.SelectedIndex == 0)
             {
                 AlertHelper.ShowSweetAlert(this, "Please select a store to Sync items to", "error");
+                return;
             }
-            
+
             int Reccount = 0, StorScr = 0, batchcnt = 200;
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {

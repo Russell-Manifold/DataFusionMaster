@@ -11,12 +11,20 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         /* Login page responsive overrides */
+        /* No header bar on this page, so remove the space reserved for it */
+        #page-wrapper {
+            padding-top: 0;
+        }
         .login-logo-row {
             display: flex;
             align-items: center;
             justify-content: space-between;
             flex-wrap: wrap;
-            padding: 0.5em 0;
+            padding: 0.15em 0;
+        }
+        /* Pull the login form's heading up tight against the logo row */
+        .login-panel h2 {
+            margin-top: 0.25em;
         }
         .login-logo-row .logoImg {
             float: none !important;

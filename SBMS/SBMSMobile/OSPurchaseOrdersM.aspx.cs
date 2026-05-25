@@ -46,12 +46,20 @@ namespace SBMS
             if (!IsPostBack)
             {
                 ApiUrlCall api = new ApiUrlCall();
-                JObject result = await api.LoadPurchaseOrders(CurrentUser);
-                if (result != null && result["error"] != null)
+                try
                 {
-                    api.LogErrorToFile(
-                        $"CoID: {CurrentUser.CoID} OSPurchaseOrdersM Error - {result["error"]}");
-                    AlertHelper.ShowSweetAlert(this, result["error"].ToString(), "error");
+                    JObject result = await api.LoadPurchaseOrders(CurrentUser);
+                    if (result != null && result["error"] != null)
+                    {
+                        api.LogErrorToFile(
+                            $"CoID: {CurrentUser.CoID} OSPurchaseOrdersM Error - {result["error"]}");
+                        AlertHelper.ShowSweetAlert(this, result["error"].ToString(), "error");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    try { api.LogErrorToFile($"CoID: {CurrentUser.CoID} OSPurchaseOrdersM Page_Load – {ex}"); } catch { }
+                    AlertHelper.ShowSweetAlert(this, "Unable to refresh purchase orders right now. Showing the latest cached list.", "warning");
                 }
 
                 LoadStatusDropdown();
