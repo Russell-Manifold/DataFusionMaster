@@ -58,5 +58,7 @@ namespace SBMS.Models
         public Nullable<long> CurrencyID { get; set; }
         public Nullable<decimal> ExchRate { get; set; }
         public Nullable<decimal> localCurrLineVal { get; set; }
+        public Nullable<bool> RemovedFromPO { get; set; }
+        public Nullable<System.DateTime> RemovedFromPODate { get; set; }
     }
 }

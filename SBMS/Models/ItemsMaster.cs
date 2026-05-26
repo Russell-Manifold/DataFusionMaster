@@ -61,6 +61,6 @@ namespace SBMS.Models
         public decimal ReorderLevel { get; set; }
         public decimal MinReOrderQty { get; set; }
         public bool IsLotTracked { get; set; }
-        public Nullable<decimal> UOMConvert { get; set; }
+        public decimal UOMConvert { get; set; }
     }
 }

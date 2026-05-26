@@ -248,7 +248,8 @@ namespace SBMS
             {
                 using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
                 {
-                    var _items = _db.GetOpeningBalancesByStore(CurrentUser.CoID, DDStore.SelectedValue).ToList();
+                    long Storeid = Convert.ToInt64(DDStore.SelectedValue);
+                    var _items = _db.GetOpeningBalancesByStore(CurrentUser.CoID.ToString(), Storeid).ToList();
                     if (_items.Any())
                     {
                         // Store directly in ViewState

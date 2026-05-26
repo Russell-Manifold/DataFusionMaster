@@ -65,6 +65,10 @@
                         <table style="width:100%">
                             <tr>
                                 <td></td>
+                            <td colspan="7" style="text-align:center"><asp:Label ID="lblRefreshSummary" runat="server" Text="" style="color:#b35900; font-size:1em; display:none"></asp:Label></td>
+                            </tr>
+                            <tr>
+                                <td></td>
                             <td colspan="7" style="text-align:center"><asp:Label ID="lblSaveStatus" runat="server" Text="" style="color:red; font-size:1.2em"></asp:Label></td>
                             </tr>
                            <tr>

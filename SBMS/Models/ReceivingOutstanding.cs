@@ -34,8 +34,6 @@ namespace SBMS.Models
         public Nullable<System.DateTime> ArchiveDate { get; set; }
         public string ReOrderPONum { get; set; }
         public Nullable<System.DateTime> ReOrdPODate { get; set; }
-    
-        public virtual ReceivingOutstanding ReceivingOutstanding1 { get; set; }
-        public virtual ReceivingOutstanding ReceivingOutstanding2 { get; set; }
+        public Nullable<long> SBCALineID { get; set; }
     }
 }

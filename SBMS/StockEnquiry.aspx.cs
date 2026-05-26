@@ -151,7 +151,8 @@ namespace SBMS
                     ? txtfind.Text.Trim()
                     : null;
 
-                var CurrStock = _db.GetAllStockLevels(CurrentUser.CoID, searchTerm).ToList();
+                int Coid = Convert.ToInt32(CurrentUser.CoID);
+                var CurrStock = _db.GetAllStockLevels(Coid, searchTerm).ToList();
 
                 WriteToCsv(CurrStock, filePath);
             }
@@ -257,8 +258,8 @@ namespace SBMS
                 string searchTerm = txtfind.Text.Trim().Length > 0
                     ? txtfind.Text.Trim()
                     : null;
-
-                var stockLevels = _db.GetAllStockLevels(CurrentUser.CoID, searchTerm).ToList();
+                int Coid = Convert.ToInt32(CurrentUser.CoID);
+                var stockLevels = _db.GetAllStockLevels(Coid, searchTerm).ToList();
                 DataTable data = stockLevels.ToDataTable();
            
                 /// // Add pivot table sheet

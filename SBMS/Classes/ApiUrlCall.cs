@@ -33,10 +33,10 @@ namespace SBMS.Classes
         //public SBMSEntities(string connectionString) : base(connectionString) { }
 
        //  for demo version data
-      //public static string dbName = $"MyDataFusionDemo2";
+      public static string dbName = $"MyDataFusionDemo2";
        // LIVE data
       /// <summary>
-      public static string dbName = $"MyDataFusion";
+      //public static string dbName = $"MyDataFusion";
       /// </summary>
 
         public static string constr = $"Data Source=SYNCFLO-DESKTOP\\SYNCFLOSQL;Initial Catalog={dbName};Persist Security Info=True;User ID=sa;Password=M@nif0LD";
@@ -46,11 +46,11 @@ namespace SBMS.Classes
         static DateTime CustDT = Convert.ToDateTime("01 Jan 2015"), SuppDT = Convert.ToDateTime("01 Jan 2015"), ItemDT = Convert.ToDateTime("01 Jan 2015"), PODT = Convert.ToDateTime("01 Jan 2015"), InvoiceDT = Convert.ToDateTime("01 Jan 2015"), CNoteDT = Convert.ToDateTime("01 Jan 2015");
         static DateTime SuppInvDT = Convert.ToDateTime("01 Jan 2015"), SuppRetDT = Convert.ToDateTime("01 Jan 2015"), JrnlDT = Convert.ToDateTime("01 Jan 2015"), QuoteDT = Convert.ToDateTime("01 Jan 2015"), SOrdDT = Convert.ToDateTime("01 Jan 2015"), GLegDT = Convert.ToDateTime("01 Jan 2015");
 
-      public static string sageurl = "https://accounting.sageone.co.za/api/2.0.0/";
-      public static string APIKey = "5850E392-0FE8-43B4-9EEB-18D2B28B115C";
+      //public static string sageurl = "https://accounting.sageone.co.za/api/2.0.0/";
+      //public static string APIKey = "5850E392-0FE8-43B4-9EEB-18D2B28B115C";
         
-       //public static string sageurl = "https://resellers.accounting.sageone.co.za/api/2.0.0/";
-       //public static string APIKey = "2B7B61BA-41B8-4212-B2A2-77B8734BA688";
+       public static string sageurl = "https://resellers.accounting.sageone.co.za/api/2.0.0/";
+       public static string APIKey = "2B7B61BA-41B8-4212-B2A2-77B8734BA688";
 
         // Syncflo SBCA profile - SANDBOX KEY
         //public static string APIKey = "934D4C3F-FF4D-4311-9380-F21ACB54DCBB";
@@ -1098,8 +1098,9 @@ namespace SBMS.Classes
             return parsedJSON;
         }
 
-        public async Task LoadPOLines(long poid, UserDetails Userdetails)
+        public async Task<POReconcileSummary> LoadPOLines(long poid, UserDetails Userdetails)
         {
+            var summary = new POReconcileSummary();
             DataSet ds = new DataSet();
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {
@@ -1110,15 +1111,35 @@ namespace SBMS.Classes
                 string requestUrl = sageurl + "PurchaseOrder/GET/" + poid + "?includeDetail={True}&includeSupplierDetails={True}&apikey={" + APIKey + "}&CompanyID=" + Userdetails.CoID;
                 JObject parsedJSON = await ApiCallAsync(requestUrl, Userdetails);
 
-                if (parsedJSON.Count > 0)
+                // Safety guard: only reconcile if Sage returned a usable PO with a Lines array.
+                // - parsedJSON.Count == 0      -> network/timeout/empty body, do nothing
+                // - parsedJSON["error"] set    -> non-2xx response, do nothing
+                // - parsedJSON["Lines"] null   -> shape we don't recognise, do nothing
+                // A legitimately empty array (PO with zero lines) IS allowed - we will then
+                // delete/hide every local line as appropriate.
+                if (parsedJSON.Count == 0 || parsedJSON["error"] != null || parsedJSON["Lines"] == null)
                 {
-                    List<DocumentLine> myObjects = JsonConvert.DeserializeObject<List<DocumentLine>>(parsedJSON["Lines"].ToString());   
-                    foreach (DocumentLine obj in myObjects)
+                    summary.Skipped = true;
+                    return summary;
+                }
+
+                List<DocumentLine> myObjects = JsonConvert.DeserializeObject<List<DocumentLine>>(parsedJSON["Lines"].ToString());
+                if (myObjects == null) myObjects = new List<DocumentLine>();
+
+                // Collect the set of Sage line IDs returned so we can detect deletions afterwards.
+                var sageLineIds = new HashSet<long>(myObjects.Select(o => o.ID));
+
+                foreach (DocumentLine obj in myObjects)
+                {
+                    // check if line exists and update,
+                    var Line = _db.DocLines.Where(x => x.SBCALineID == obj.ID).FirstOrDefault();
+                    if (Line != null)
                     {
-                        // check if line exists and update, 
-                        var Line = _db.DocLines.Where(x => x.SBCALineID == obj.ID).FirstOrDefault();
-                        if (Line != null)
-                        {
+                        // Track quantity change for the refresh banner.
+                        decimal prevQty = Line.Quantity ?? 0;
+                        decimal newQty = Convert.ToDecimal(obj.Quantity);
+                        if (prevQty != newQty) summary.QtyChanged++;
+
                             Line.Discount = obj.Discount;
                             Line.DiscountPercentage = obj.DiscountPercentage;
                             Line.Exclusive = obj.Exclusive;
@@ -1162,6 +1183,7 @@ namespace SBMS.Classes
                         }
                         else
                         {
+                            summary.Added++;
                             DocLine dl = new DocLine();
                             dl.SBCALineID = obj.ID;
                             dl.Discount = obj.Discount;
@@ -1217,11 +1239,53 @@ namespace SBMS.Classes
                             _db.DocLines.Add(dl);
                         }
                     }
+
+                // -------------------------------------------------------------
+                // Reconcile local DocLines against the Sage line set.
+                //
+                // Sage line still present  -> already updated in the loop above.
+                // Sage line removed, NO receivings        -> delete locally (safe).
+                // Sage line removed, HAS receivings       -> DO NOTHING locally.
+                //   We deliberately keep the local DocLine active so the user
+                //   can still process the receipt and the supplier invoice goes
+                //   out with the full line set. The Sage-side discrepancy is
+                //   surfaced via the refresh banner and reconciled manually
+                //   in Sage afterwards.
+                // -------------------------------------------------------------
+                var localLines = _db.DocLines
+                                    .Where(x => x.DocID == poid)
+                                    .ToList();
+
+                foreach (var local in localLines)
+                {
+                    if (sageLineIds.Contains(local.SBCALineID)) continue;
+
+                    // Does this line have ANY receivings (open or archived)?
+                    // Match by SBCALineID for modern rows, fall back to
+                    // (PODocID + ItemCode) for legacy NULL-SBCALineID rows.
+                    bool hasReceivings = _db.ReceivingOutstandings.Any(x =>
+                            x.PODocID == poid
+                         && (x.SBCALineID == local.SBCALineID
+                             || (x.SBCALineID == null && x.ItemCode == local.ItemCode)));
+
+                    if (hasReceivings)
+                    {
+                        // Keep the line untouched. Just flag for the banner so
+                        // the user knows to reconcile Sage after processing.
+                        summary.Hidden++;
+                    }
+                    else
+                    {
+                        _db.DocLines.Remove(local);
+                        summary.Removed++;
+                    }
                 }
+
                 _db.SaveChanges();
             }
+            return summary;
         }
-              
+
         public async Task<List<string>> LoadItems(UserDetails Userdetails)
         {
             bool UpdateDate = false;

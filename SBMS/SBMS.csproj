@@ -943,7 +943,38 @@
   <ItemGroup>
     <Compile Include="Classes\ConfigEncryptionHelper.cs" />
     <Compile Include="Classes\EncryptApiKeyUtility.cs" />
-    <Compile Include="Models\GetStckCountVariances_Result.cs" />
+    <Compile Include="Models\GetAllStockLevelsByLotNumber_ExclStore_Result.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\GetAllStockLevelsByLotNumber_Result.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\GetItemDemmandsAll_Result.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\GetOpeningBalancesAllStores_No_LotNum_Result.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\GetStckCountVariances_Result.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\GetValidateBarcode_Result.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\SBMS1.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\sp_DeliverySchedule_Result.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\sp_GetItemsForDisplay_Result.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\StockCountLine.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
     <Compile Include="SBMSMobile\NotificationsM.aspx.cs">
       <DependentUpon>NotificationsM.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -1224,8 +1255,12 @@
     <Compile Include="Models\GetOpeningBalancesAllStores_Result.cs">
       <DependentUpon>SBMS.tt</DependentUpon>
     </Compile>
-    <Compile Include="Models\GetItemLinkedStores_Result.cs" />
-    <Compile Include="Models\GetOpeningBalancesByStore_Result.cs" />
+    <Compile Include="Models\GetItemLinkedStores_Result.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\GetOpeningBalancesByStore_Result.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
     <Compile Include="Models\GetPickSlipMovementTransactions_Result.cs">
       <DependentUpon>SBMS.tt</DependentUpon>
     </Compile>
@@ -1331,9 +1366,6 @@
     <Compile Include="Models\RolesMaster.cs">
       <DependentUpon>SBMS.tt</DependentUpon>
     </Compile>
-    <Compile Include="Models\StockCountLine.cs">
-      <DependentUpon>SBMS.tt</DependentUpon>
-    </Compile>
     <Compile Include="Models\StockCountMaster.cs">
       <DependentUpon>SBMS.tt</DependentUpon>
     </Compile>
@@ -1341,6 +1373,7 @@
       <DependentUpon>SBMS.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\SupplierAdjustment.cs" />
+    <Compile Include="Models\POReconcileSummary.cs" />
     <Compile Include="Models\TaxTypesMaster.cs">
       <DependentUpon>SBMS.tt</DependentUpon>
     </Compile>

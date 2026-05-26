@@ -87,7 +87,7 @@ namespace SBMS
             string filterText = txtFilter.Text;
 
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
-            {
+            { 
                 var allLines = _db.Database.SqlQuery<GetStckCountVariances_Result>(
                         "EXEC GetStckCountVariances @CoID, @CountID",
                         new System.Data.SqlClient.SqlParameter("@CoID", CurrentUser.CoID),

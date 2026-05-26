@@ -51,6 +51,6 @@ namespace SBMS.Models
         public Nullable<int> LineTaxTypeID { get; set; }
         public decimal AddCostsAmount { get; set; }
         public string AddCostsReason { get; set; }
-        public Nullable<decimal> ExchRate { get; set; }
+        public decimal ExchRate { get; set; }
     }
 }

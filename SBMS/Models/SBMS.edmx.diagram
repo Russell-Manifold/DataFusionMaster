@@ -35,7 +35,6 @@
         <EntityTypeShape EntityType="SBMSModel.WorkStation" Width="1.5" PointX="14.75" PointY="18.75" IsExpanded="true" />
         <EntityTypeShape EntityType="SBMSModel.Notification" Width="1.5" PointX="17.375" PointY="18.75" />
         <EntityTypeShape EntityType="SBMSModel.RolesMaster" Width="1.5" PointX="19.375" PointY="18.75" />
-        <EntityTypeShape EntityType="SBMSModel.StockCountLine" Width="1.5" PointX="21.75" PointY="0.75" />
         <EntityTypeShape EntityType="SBMSModel.StockCountMaster" Width="1.5" PointX="0.75" PointY="21.75" />
         <EntityTypeShape EntityType="SBMSModel.BundlesHeader" Width="1.5" PointX="21.375" PointY="5.75" />
         <EntityTypeShape EntityType="SBMSModel.BundlesLine" Width="1.5" PointX="7.375" PointY="21.75" />
@@ -59,6 +58,7 @@
         <EntityTypeShape EntityType="SBMSModel.ItemTransferLine" Width="1.5" PointX="23.375" PointY="19.75" />
         <AssociationConnector Association="SBMSModel.FK_ItemTransferLines_ItemTransferLines" />
         <EntityTypeShape EntityType="SBMSModel.ItemTransferHeader" Width="1.5" PointX="24.375" PointY="0.75" />
+        <EntityTypeShape EntityType="SBMSModel.StockCountLine" Width="1.5" PointX="23.375" PointY="25.75" />
       </Diagram>
     </edmx:Diagrams>
   </edmx:Designer>

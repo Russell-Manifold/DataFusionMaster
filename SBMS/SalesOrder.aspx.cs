@@ -1196,7 +1196,7 @@ namespace SBMS
                         ItemTrans.TotalLineValExcl = ItemTrans.PriceExclusive * ItemTrans.Qty;
                         ItemTrans.TransactionReference = lblDocNum.Text + " Complete - Issued to Sage";
                         ItemTrans.LotNumber = dl.LotNumber;
-                        ItemTrans.ExchRate = dl.ExchRate;
+                        ItemTrans.ExchRate = (decimal)dl.ExchRate;
                         _db.ItemTransactions.Add(ItemTrans);
 
                         Itm.QuantityOnHand = Itm.QuantityOnHand + ItemTrans.Qty;

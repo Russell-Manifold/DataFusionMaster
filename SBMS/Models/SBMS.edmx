@@ -311,7 +311,7 @@
           <Property Name="Customer_CurrencyId" Type="bigint" />
           <Property Name="DocCost" Type="decimal" Precision="18" Scale="4" />
           <Property Name="DocGP" Type="decimal" Precision="18" Scale="4" />
-          <Property Name="PostAddress5" Type="varchar" MaxLength="200" />   
+          <Property Name="PostAddress5" Type="varchar" MaxLength="200" />
         </EntityType>
         <EntityType Name="DocHeaderAttachment">
           <Key>
@@ -371,8 +371,10 @@
           <Property Name="isBundleLine" Type="bit" />
           <Property Name="CompanyID" Type="bigint" />
           <Property Name="CurrencyID" Type="bigint" />
-          <Property Name="ExchRate" Type="decimal" Precision="18" Scale="4" />
+          <Property Name="ExchRate" Type="decimal" Precision="12" Scale="4" />
           <Property Name="localCurrLineVal" Type="decimal" Precision="18" Scale="4" />
+          <Property Name="RemovedFromPO" Type="bit" />
+          <Property Name="RemovedFromPODate" Type="datetime" />
         </EntityType>
         <EntityType Name="DocTypes">
           <Key>
@@ -490,7 +492,7 @@
           <Property Name="ReorderLevel" Type="decimal" Precision="10" Scale="0" Nullable="false" />
           <Property Name="MinReOrderQty" Type="decimal" Precision="10" Scale="0" Nullable="false" />
           <Property Name="IsLotTracked" Type="bit" Nullable="false" />
-          <Property Name="UOMConvert" Type="decimal" Precision="10" Scale="4" />
+          <Property Name="UOMConvert" Type="decimal" Precision="10" Scale="4" Nullable="false" />
         </EntityType>
         <EntityType Name="ItemsReorderLevels">
           <Key>
@@ -548,7 +550,8 @@
           <Property Name="TransactionDate" Type="datetime" />
           <Property Name="ByRoleID" Type="int" />
           <Property Name="TransactionReference" Type="varchar" MaxLength="100" />
-          <Property Name="ExchRate" Type="decimal" Precision="18" Scale="4" />
+          <Property Name="ExchRate" Type="decimal" Precision="18" Scale="4" Nullable="false" />
+          <Property Name="LotNum" Type="varchar" MaxLength="50" StoreGeneratedPattern="Computed" Nullable="false" />
         </EntityType>
         <EntityType Name="ItemTransferHeaders">
           <Key>
@@ -630,7 +633,7 @@
           <Property Name="IsLotTracked" Type="bit" Nullable="false" />
           <Property Name="ItemTransLineID" Type="bigint" />
           <Property Name="LinePickQty" Type="decimal" Precision="18" Scale="4" />
-          <Property Name="LinePickBy" Type="int"/>
+          <Property Name="LinePickBy" Type="int" />
         </EntityType>
         <EntityType Name="JobCardsMaster">
           <Key>
@@ -912,6 +915,7 @@
           <Property Name="ArchiveDate" Type="datetime" />
           <Property Name="ReOrderPONum" Type="varchar" MaxLength="50" />
           <Property Name="ReOrdPODate" Type="datetime" />
+          <Property Name="SBCALineID" Type="bigint" />
         </EntityType>
         <EntityType Name="RolesMaster">
           <Key>
@@ -968,7 +972,7 @@
           <Property Name="CountDate" Type="datetime" />
           <Property Name="LineFinished" Type="bit" Nullable="false" />
           <Property Name="StoreCode" Type="varchar" MaxLength="6" />
-          <Property Name="CountExpression" Type="varchar" MaxLength="200" />
+          <Property Name="CountExpression" Type="varchar" MaxLength="500" />
         </EntityType>
         <EntityType Name="StockCountMaster">
           <Key>
@@ -1053,7 +1057,7 @@
           <Property Name="LineTaxTypeID" Type="int" />
           <Property Name="AddCostsAmount" Type="decimal" Precision="18" Scale="2" Nullable="false" />
           <Property Name="AddCostsReason" Type="varchar" MaxLength="100" />
-          <Property Name="ExchRate" Type="decimal" Precision="18" Scale="4" />
+          <Property Name="ExchRate" Type="decimal" Precision="18" Scale="4" Nullable="false" />
         </EntityType>
         <EntityType Name="UsersMaster">
           <Key>
@@ -1207,18 +1211,6 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
-        <Association Name="FK_ReceivingOutstanding_ReceivingOutstanding">
-          <End Role="ReceivingOutstanding" Type="Self.ReceivingOutstanding" Multiplicity="1" />
-          <End Role="ReceivingOutstanding1" Type="Self.ReceivingOutstanding" Multiplicity="0..1" />
-          <ReferentialConstraint>
-            <Principal Role="ReceivingOutstanding">
-              <PropertyRef Name="id" />
-            </Principal>
-            <Dependent Role="ReceivingOutstanding1">
-              <PropertyRef Name="id" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
         <Function Name="GetActiveLotNumbersLinkedToStores" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
           <Parameter Name="CoID" Type="bigint" Mode="In" />
         </Function>
@@ -1229,8 +1221,14 @@
           <Parameter Name="CoID" Type="bigint" Mode="In" />
         </Function>
         <Function Name="GetAllStockLevels" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
+          <Parameter Name="CoID" Type="int" Mode="In" />
+          <Parameter Name="SearchTerm" Type="nvarchar" Mode="In" />
+        </Function>
+        <Function Name="GetAllStockLevelsByLotNumber" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
           <Parameter Name="CoID" Type="bigint" Mode="In" />
-          <Parameter Name="SearchTerm" Type="varchar" Mode="In" />
+        </Function>
+        <Function Name="GetAllStockLevelsByLotNumber_ExclStore" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
+          <Parameter Name="CoID" Type="bigint" Mode="In" />
         </Function>
         <Function Name="GetBOMLinesFromBomCode" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
           <Parameter Name="bomCode" Type="varchar" Mode="In" />
@@ -1249,6 +1247,9 @@
           <Parameter Name="CoID" Type="bigint" Mode="In" />
         </Function>
         <Function Name="GetFGOpenBalances" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
+          <Parameter Name="CoID" Type="bigint" Mode="In" />
+        </Function>
+        <Function Name="GetItemDemmandsAll" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
           <Parameter Name="CoID" Type="bigint" Mode="In" />
         </Function>
         <Function Name="GetItemLinkedStores" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
@@ -1301,10 +1302,13 @@
         <Function Name="GetOpeningBalancesAllStores" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
           <Parameter Name="CoID" Type="bigint" Mode="In" />
         </Function>
-      <Function Name="GetOpeningBalancesByStore" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
-        <Parameter Name="CoID" Type="bigint" Mode="In" />
-        <Parameter Name="storeCode" Type="varchar" Mode="In" />
-      </Function>
+        <Function Name="GetOpeningBalancesAllStores_No_LotNum" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
+          <Parameter Name="CoID" Type="bigint" Mode="In" />
+        </Function>
+        <Function Name="GetOpeningBalancesByStore" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
+          <Parameter Name="storeCode" Type="varchar" Mode="In" />
+          <Parameter Name="CoID" Type="bigint" Mode="In" />
+        </Function>
         <Function Name="GetPickSlipMovementTransactions" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
           <Parameter Name="CoID" Type="bigint" Mode="In" />
           <Parameter Name="psid" Type="bigint" Mode="In" />
@@ -1345,10 +1349,10 @@
           <Parameter Name="CoID" Type="bigint" Mode="In" />
           <Parameter Name="countid" Type="int" Mode="In" />
         </Function>
-      <Function Name="GetStckCountVariances" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
-        <Parameter Name="CoID" Type="bigint" Mode="In" />
-        <Parameter Name="countid" Type="int" Mode="In" />
-      </Function>
+        <Function Name="GetStckCountVariances" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
+          <Parameter Name="CoID" Type="bigint" Mode="In" />
+          <Parameter Name="countid" Type="int" Mode="In" />
+        </Function>
         <Function Name="GetStockCountList" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
           <Parameter Name="CoID" Type="bigint" Mode="In" />
         </Function>
@@ -1359,6 +1363,18 @@
         <Function Name="GetUserFromCreds" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
           <Parameter Name="username" Type="varchar" Mode="In" />
           <Parameter Name="pwd" Type="varchar" Mode="In" />
+        </Function>
+        <Function Name="GetValidateBarcode" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
+          <Parameter Name="CoID" Type="bigint" Mode="In" />
+          <Parameter Name="itmCode" Type="varchar" Mode="In" />
+        </Function>
+        <Function Name="sp_DeliverySchedule" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
+          <Parameter Name="CoID" Type="bigint" Mode="In" />
+        </Function>
+        <Function Name="sp_GetItemsForDisplay" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
+          <Parameter Name="CompanyID" Type="bigint" Mode="In" />
+          <Parameter Name="SearchText" Type="nvarchar" Mode="In" />
+          <Parameter Name="ExcludeZeroQty" Type="bit" Mode="In" />
         </Function>
         <EntityContainer Name="SBMSModelStoreContainer">
           <EntitySet Name="AccountsMaster" EntityType="Self.AccountsMaster" Schema="dbo" store:Type="Tables" />
@@ -1420,10 +1436,6 @@
             <End Role="ItemTransferLines" EntitySet="ItemTransferLines" />
             <End Role="ItemTransferLines1" EntitySet="ItemTransferLines" />
           </AssociationSet>
-          <AssociationSet Name="FK_ReceivingOutstanding_ReceivingOutstanding" Association="Self.FK_ReceivingOutstanding_ReceivingOutstanding">
-            <End Role="ReceivingOutstanding" EntitySet="ReceivingOutstanding" />
-            <End Role="ReceivingOutstanding1" EntitySet="ReceivingOutstanding" />
-          </AssociationSet>
         </EntityContainer>
       </Schema></edmx:StorageModels>
     <!-- CSDL content -->
@@ -1461,7 +1473,7 @@
           <Property Name="RMQty" Type="Decimal" Precision="18" Scale="6" />
           <Property Name="CompanyID" Type="Int64" />
           <Property Name="BomHID" Type="Int32" />
-          <Property Name="BomUnit" Type="String" MaxLength="20" />
+          <Property Name="BomUnit" Type="String" MaxLength="20" Unicode="false" FixedLength="false" />
         </EntityType>
         <EntityType Name="DelivMethod">
           <Key>
@@ -1577,8 +1589,10 @@
           <Property Name="isBundleLine" Type="Boolean" />
           <Property Name="CompanyID" Type="Int64" />
           <Property Name="CurrencyID" Type="Int64" />
-          <Property Name="ExchRate" Type="Decimal" Precision="18" Scale="4" />
+          <Property Name="ExchRate" Type="Decimal" Precision="12" Scale="4" />
           <Property Name="localCurrLineVal" Type="Decimal" Precision="18" Scale="4" />
+          <Property Name="RemovedFromPO" Type="Boolean" />
+          <Property Name="RemovedFromPODate" Type="DateTime" Precision="3" />
         </EntityType>
         <EntityType Name="DocType">
           <Key>
@@ -1685,7 +1699,7 @@
           <Property Name="ReorderLevel" Type="Decimal" Nullable="false" Precision="10" Scale="0" />
           <Property Name="MinReOrderQty" Type="Decimal" Nullable="false" Precision="10" Scale="0" />
           <Property Name="IsLotTracked" Type="Boolean" Nullable="false" />
-          <Property Name="UOMConvert" Type="Decimal" Precision="10" Scale="4" />
+          <Property Name="UOMConvert" Type="Decimal" Precision="10" Scale="4" Nullable="false" />
         </EntityType>
         <EntityType Name="ItemsReorderLevel">
           <Key>
@@ -1743,7 +1757,8 @@
           <Property Name="TransactionDate" Type="DateTime" Precision="3" />
           <Property Name="ByRoleID" Type="Int32" />
           <Property Name="TransactionReference" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
-          <Property Name="ExchRate" Type="Decimal" Precision="18" Scale="4" />
+          <Property Name="ExchRate" Type="Decimal" Precision="18" Scale="4" Nullable="false" />
+          <Property Name="LotNum" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="false" annotation:StoreGeneratedPattern="Computed" />
         </EntityType>
         <EntityType Name="JobCardLine">
           <Key>
@@ -2003,7 +2018,7 @@
           <Property Name="LineTaxTypeID" Type="Int32" />
           <Property Name="AddCostsAmount" Type="Decimal" Precision="18" Scale="2" Nullable="false" />
           <Property Name="AddCostsReason" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
-          <Property Name="ExchRate" Type="Decimal" Precision="18" Scale="4" />
+          <Property Name="ExchRate" Type="Decimal" Precision="18" Scale="4" Nullable="false" />
         </EntityType>
         <EntityType Name="UsersMaster">
           <Key>
@@ -2089,8 +2104,8 @@
           <Parameter Name="CoID" Mode="In" Type="Int64" />
           </FunctionImport>
           <FunctionImport Name="GetOpeningBalancesByStore" ReturnType="Collection(SBMSModel.GetOpeningBalancesByStore_Result)">
-            <Parameter Name="CoID" Mode="In" Type="Int64" />
             <Parameter Name="storeCode" Mode="In" Type="String" />
+            <Parameter Name="CoID" Mode="In" Type="Int64" />
           </FunctionImport>
           <FunctionImport Name="GetProdPlanMovementTransactions" ReturnType="Collection(SBMSModel.GetProdPlanMovementTransactions_Result)">
             <Parameter Name="CoID" Mode="In" Type="Int64" />
@@ -2134,7 +2149,6 @@
           </FunctionImport>
           <EntitySet Name="Notifications" EntityType="SBMSModel.Notification" />
           <EntitySet Name="RolesMasters" EntityType="SBMSModel.RolesMaster" />
-          <EntitySet Name="StockCountLines" EntityType="SBMSModel.StockCountLine" />
           <EntitySet Name="StockCountMasters" EntityType="SBMSModel.StockCountMaster" />
           <FunctionImport Name="GetAllActiveJobCards" ReturnType="Collection(SBMSModel.GetAllActiveJobCards_Result)">
           <Parameter Name="CoID" Mode="In" Type="Int64" />
@@ -2143,10 +2157,6 @@
           <Parameter Name="CoID" Mode="In" Type="Int64" />
           </FunctionImport>
           <FunctionImport Name="GetStckCountDetails" ReturnType="Collection(SBMSModel.GetStckCountDetails_Result)">
-            <Parameter Name="CoID" Mode="In" Type="Int64" />
-            <Parameter Name="countid" Mode="In" Type="Int32" />
-          </FunctionImport>
-          <FunctionImport Name="GetStckCountVariances" ReturnType="Collection(SBMSModel.GetStckCountVariances_Result)">
             <Parameter Name="CoID" Mode="In" Type="Int64" />
             <Parameter Name="countid" Mode="In" Type="Int32" />
           </FunctionImport>
@@ -2174,8 +2184,8 @@
             <Parameter Name="DocID" Mode="In" Type="String" />
           </FunctionImport>
           <FunctionImport Name="GetAllStockLevels" ReturnType="Collection(SBMSModel.GetAllStockLevels_Result)">
-          <Parameter Name="CoID" Mode="In" Type="Int64" />
-          <Parameter Name="SearchTerm" Mode="In" Type="String" />
+            <Parameter Name="CoID" Mode="In" Type="Int32" />
+            <Parameter Name="SearchTerm" Mode="In" Type="String" />
           </FunctionImport>
           <FunctionImport Name="GetItemLinkedStores" ReturnType="Collection(SBMSModel.GetItemLinkedStores_Result)">
             <Parameter Name="CoID" Mode="In" Type="Int64" />
@@ -2222,10 +2232,6 @@
           <EntitySet Name="TaxTypesMasters" EntityType="SBMSModel.TaxTypesMaster" />
           <EntitySet Name="CompanyMasters" EntityType="SBMSModel.CompanyMaster" />
           <EntitySet Name="ReceivingOutstandings" EntityType="SBMSModel.ReceivingOutstanding" />
-          <AssociationSet Name="FK_ReceivingOutstanding_ReceivingOutstanding" Association="SBMSModel.FK_ReceivingOutstanding_ReceivingOutstanding">
-            <End Role="ReceivingOutstanding" EntitySet="ReceivingOutstandings" />
-            <End Role="ReceivingOutstanding1" EntitySet="ReceivingOutstandings" />
-          </AssociationSet>
           <EntitySet Name="DynamicReports" EntityType="SBMSModel.DynamicReport" />
           <AssociationSet Name="FK_DocHeaderAttachments_DocHeaderAttachments" Association="SBMSModel.FK_DocHeaderAttachments_DocHeaderAttachments">
             <End Role="DocHeaderAttachment" EntitySet="DocHeaderAttachments" />
@@ -2243,6 +2249,35 @@
             <Parameter Name="KitHID" Mode="In" Type="Int32" />
             <Parameter Name="coid" Mode="In" Type="Int64" />
           </FunctionImport>
+          <FunctionImport Name="GetAllStockLevelsByLotNumber" ReturnType="Collection(SBMSModel.GetAllStockLevelsByLotNumber_Result)">
+          <Parameter Name="CoID" Mode="In" Type="Int64" />
+          </FunctionImport>
+          <FunctionImport Name="GetAllStockLevelsByLotNumber_ExclStore" ReturnType="Collection(SBMSModel.GetAllStockLevelsByLotNumber_ExclStore_Result)">
+          <Parameter Name="CoID" Mode="In" Type="Int64" />
+          </FunctionImport>
+          <FunctionImport Name="GetItemDemmandsAll" ReturnType="Collection(SBMSModel.GetItemDemmandsAll_Result)">
+          <Parameter Name="CoID" Mode="In" Type="Int64" />
+          </FunctionImport>
+          <FunctionImport Name="GetOpeningBalancesAllStores_No_LotNum" ReturnType="Collection(SBMSModel.GetOpeningBalancesAllStores_No_LotNum_Result)">
+          <Parameter Name="CoID" Mode="In" Type="Int64" />
+          </FunctionImport>
+          <FunctionImport Name="GetValidateBarcode" ReturnType="Collection(SBMSModel.GetValidateBarcode_Result)">
+            <Parameter Name="CoID" Mode="In" Type="Int64" />
+            <Parameter Name="itmCode" Mode="In" Type="String" />
+          </FunctionImport>
+          <FunctionImport Name="sp_DeliverySchedule" ReturnType="Collection(SBMSModel.sp_DeliverySchedule_Result)">
+          <Parameter Name="CoID" Mode="In" Type="Int64" />
+          </FunctionImport>
+          <FunctionImport Name="sp_GetItemsForDisplay" ReturnType="Collection(SBMSModel.sp_GetItemsForDisplay_Result)">
+            <Parameter Name="CompanyID" Mode="In" Type="Int64" />
+            <Parameter Name="SearchText" Mode="In" Type="String" />
+            <Parameter Name="ExcludeZeroQty" Mode="In" Type="Boolean" />
+          </FunctionImport>
+          <FunctionImport Name="GetStckCountVariances" ReturnType="Collection(SBMSModel.GetStckCountVariances_Result)">
+            <Parameter Name="CoID" Mode="In" Type="Int64" />
+            <Parameter Name="countid" Mode="In" Type="Int32" />
+          </FunctionImport>
+          <EntitySet Name="StockCountLines" EntityType="SBMSModel.StockCountLine" />
         </EntityContainer>
         <ComplexType Name="GetActiveLotNumbersLinkedToStores_Result">
           <Property Type="String" Name="LotNumber" Nullable="true" MaxLength="50" />
@@ -2470,29 +2505,6 @@
           <Property Name="CanFillWorksOrders" Type="Boolean" Nullable="false" />
           <Property Name="CanViewRMD" Type="Boolean" Nullable="false" />
         </EntityType>
-        <EntityType Name="StockCountLine">
-          <Key>
-            <PropertyRef Name="CtLineID" />
-          </Key>
-          <Property Name="CtLineID" Type="Int64" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="CountID" Type="Int32" Nullable="false" />
-          <Property Name="CompanyID" Type="Int64" Nullable="false" />
-          <Property Name="ItemID" Type="Int64" Nullable="false" />
-          <Property Name="ItemCode" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
-          <Property Name="ItemDescription" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
-          <Property Name="LotNumber" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
-          <Property Name="StoreID" Type="Int32" />
-          <Property Name="QtyOnHand" Type="Decimal" Precision="18" Scale="2" />
-          <Property Name="Count1Qty" Type="Decimal" Precision="18" Scale="2" />
-          <Property Name="Count2Qty" Type="Decimal" Precision="18" Scale="2" />
-          <Property Name="FinalQty" Type="Decimal" Precision="18" Scale="2" />
-          <Property Name="CountBy" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
-          <Property Name="AcceptBy" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
-          <Property Name="CountDate" Type="DateTime" Precision="3" />
-          <Property Name="LineFinished" Type="Boolean" Nullable="false" />
-          <Property Name="StoreCode" Type="String" MaxLength="6" FixedLength="false" Unicode="false" />
-          <Property Name="CountExpression" Type="String" MaxLength="200" FixedLength="false" Unicode="false" />
-        </EntityType>
         <EntityType Name="StockCountMaster">
           <Key>
             <PropertyRef Name="StCntID" />
@@ -2554,15 +2566,6 @@
           <Property Type="Boolean" Name="LineFinished" Nullable="true" />
           <Property Type="String" Name="CreateBy" Nullable="true" MaxLength="50" />
           <Property Type="String" Name="CloseBy" Nullable="true" MaxLength="50" />
-        </ComplexType>
-        <ComplexType Name="GetStckCountVariances_Result">
-          <Property Type="String" Name="Code" Nullable="true" MaxLength="50" />
-          <Property Type="String" Name="Description" Nullable="true" MaxLength="100" />
-          <Property Type="String" Name="CategoryDescript" Nullable="true" MaxLength="100" />
-          <Property Type="Decimal" Name="SystemQOH" Nullable="false" Precision="18" Scale="2" />
-          <Property Type="Decimal" Name="TotalCountedQty" Nullable="false" Precision="18" Scale="2" />
-          <Property Type="Decimal" Name="Variance" Nullable="false" Precision="18" Scale="2" />
-          <Property Type="String" Name="CountStatus" Nullable="true" MaxLength="100" />
         </ComplexType>
         <ComplexType Name="GetStockCountList_Result">
           <Property Type="String" Name="Code" Nullable="true" MaxLength="50" />
@@ -3153,21 +3156,8 @@
           <Property Name="ArchiveDate" Type="DateTime" Precision="3" />
           <Property Name="ReOrderPONum" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="ReOrdPODate" Type="DateTime" Precision="3" />
-          <NavigationProperty Name="ReceivingOutstanding1" Relationship="SBMSModel.FK_ReceivingOutstanding_ReceivingOutstanding" FromRole="ReceivingOutstanding" ToRole="ReceivingOutstanding1" />
-          <NavigationProperty Name="ReceivingOutstanding2" Relationship="SBMSModel.FK_ReceivingOutstanding_ReceivingOutstanding" FromRole="ReceivingOutstanding1" ToRole="ReceivingOutstanding" />
+          <Property Name="SBCALineID" Type="Int64" />
         </EntityType>
-        <Association Name="FK_ReceivingOutstanding_ReceivingOutstanding">
-          <End Type="SBMSModel.ReceivingOutstanding" Role="ReceivingOutstanding" Multiplicity="1" />
-          <End Type="SBMSModel.ReceivingOutstanding" Role="ReceivingOutstanding1" Multiplicity="0..1" />
-          <ReferentialConstraint>
-            <Principal Role="ReceivingOutstanding">
-              <PropertyRef Name="id" />
-            </Principal> 
-            <Dependent Role="ReceivingOutstanding1">
-              <PropertyRef Name="id" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
         <EntityType Name="DynamicReport">
           <Key>
             <PropertyRef Name="ReportID" />
@@ -3351,6 +3341,129 @@
           <Property Type="String" Name="Description" Nullable="true" MaxLength="100" />
           <Property Type="Decimal" Name="AvCost" Nullable="true" Precision="18" Scale="4" />
         </ComplexType>
+        <ComplexType Name="GetAllStockLevelsByLotNumber_Result">
+          <Property Type="String" Name="ItemCode" Nullable="true" MaxLength="50" />
+          <Property Type="String" Name="Description" Nullable="true" MaxLength="100" />
+          <Property Type="String" Name="CategoryDescript" Nullable="true" MaxLength="100" />
+          <Property Type="Decimal" Name="Sum_Qty" Nullable="true" Precision="38" Scale="4" />
+          <Property Type="String" Name="StoreCode" Nullable="true" MaxLength="6" />
+          <Property Type="String" Name="LotNumber" Nullable="true" MaxLength="50" />
+          <Property Type="Decimal" Name="Unit_Cost" Nullable="true" Precision="18" Scale="4" />
+          <Property Type="String" Name="Value_On_Hand" Nullable="false" MaxLength="1" />
+          <Property Type="String" Name="TextUserField1" Nullable="true" MaxLength="100" />
+          <Property Type="String" Name="TextUserField2" Nullable="true" MaxLength="100" />
+          <Property Type="String" Name="TextUserField3" Nullable="true" MaxLength="100" />
+          <Property Type="Decimal" Name="NumericUserField1" Nullable="true" Precision="18" Scale="4" />
+          <Property Type="Decimal" Name="NumericUserField2" Nullable="true" Precision="18" Scale="4" />
+          <Property Type="Decimal" Name="NumericUserField3" Nullable="true" Precision="18" Scale="4" />
+        </ComplexType>
+        <ComplexType Name="GetAllStockLevelsByLotNumber_ExclStore_Result">
+          <Property Type="String" Name="ItemCode" Nullable="true" MaxLength="50" />
+          <Property Type="String" Name="Description" Nullable="true" MaxLength="100" />
+          <Property Type="String" Name="CategoryDescript" Nullable="true" MaxLength="100" />
+          <Property Type="Decimal" Name="Sum_Qty" Nullable="true" Precision="38" Scale="4" />
+          <Property Type="String" Name="StoreCode" Nullable="true" MaxLength="6" />
+          <Property Type="String" Name="LotNumber" Nullable="true" MaxLength="50" />
+          <Property Type="Decimal" Name="Unit_Cost" Nullable="true" Precision="18" Scale="4" />
+          <Property Type="String" Name="Value_On_Hand" Nullable="false" MaxLength="1" />
+          <Property Type="String" Name="TextUserField1" Nullable="true" MaxLength="100" />
+          <Property Type="String" Name="TextUserField2" Nullable="true" MaxLength="100" />
+          <Property Type="String" Name="TextUserField3" Nullable="true" MaxLength="100" />
+          <Property Type="Decimal" Name="NumericUserField1" Nullable="true" Precision="18" Scale="4" />
+          <Property Type="Decimal" Name="NumericUserField2" Nullable="true" Precision="18" Scale="4" />
+          <Property Type="Decimal" Name="NumericUserField3" Nullable="true" Precision="18" Scale="4" />
+        </ComplexType>
+        <ComplexType Name="GetItemDemmandsAll_Result">
+          <Property Type="String" Name="Document" Nullable="true" MaxLength="250" />
+          <Property Type="String" Name="ItemCode" Nullable="true" MaxLength="50" />
+          <Property Type="String" Name="Category" Nullable="true" MaxLength="100" />
+          <Property Type="String" Name="Trn" Nullable="false" MaxLength="2" />
+          <Property Type="String" Name="Description" Nullable="true" MaxLength="100" />
+          <Property Type="Decimal" Name="Qty" Nullable="true" Precision="18" Scale="4" />
+          <Property Type="String" Name="Year_Mth_Week" Nullable="true" MaxLength="4000" />
+          <Property Type="DateTime" Name="Due_Date" Nullable="true" Precision="23" />
+        </ComplexType>
+        <ComplexType Name="GetOpeningBalancesAllStores_No_LotNum_Result">
+          <Property Type="Int64" Name="TransID" Nullable="true" />
+          <Property Type="Int64" Name="ItemID" Nullable="true" />
+          <Property Type="String" Name="ItemCode" Nullable="true" MaxLength="50" />
+          <Property Type="String" Name="ItemDescription" Nullable="true" MaxLength="100" />
+          <Property Type="String" Name="Category" Nullable="true" MaxLength="100" />
+          <Property Type="Decimal" Name="TotalOnHand" Nullable="true" Precision="18" Scale="4" />
+          <Property Type="String" Name="StoreCode" Nullable="true" MaxLength="6" />
+          <Property Type="Int64" Name="StoreID" Nullable="true" />
+          <Property Type="Decimal" Name="QOH" Nullable="true" Precision="38" Scale="4" />
+          <Property Type="Decimal" Name="PriceExclusive" Nullable="true" Precision="18" Scale="4" />
+          <Property Type="Decimal" Name="TotalUnitPriceExclInclAdd" Nullable="true" Precision="18" Scale="4" />
+          <Property Type="String" Name="Unit" Nullable="true" MaxLength="20" />
+        </ComplexType>
+        <ComplexType Name="GetValidateBarcode_Result">
+          <Property Type="Int32" Name="QtyPerBarcode" Nullable="true" />
+          <Property Type="Int64" Name="ItemID" Nullable="true" />
+        </ComplexType>
+        <ComplexType Name="sp_DeliverySchedule_Result">
+          <Property Type="String" Name="DueDate" Nullable="true" MaxLength="4000" />
+          <Property Type="String" Name="Number" Nullable="true" MaxLength="100" />
+          <Property Type="String" Name="Customer" Nullable="true" MaxLength="250" />
+          <Property Type="String" Name="Sales_Rep" Nullable="true" MaxLength="50" />
+          <Property Type="String" Name="DelAddress1" Nullable="true" MaxLength="200" />
+          <Property Type="String" Name="Note" Nullable="false" MaxLength="1" />
+          <Property Type="String" Name="Payment" Nullable="true" MaxLength="200" />
+          <Property Type="String" Name="Status" Nullable="true" MaxLength="50" />
+          <Property Type="Decimal" Name="Weight" Nullable="true" Precision="38" Scale="6" />
+          <Property Type="String" Name="Delivery" Nullable="false" MaxLength="1" />
+        </ComplexType>
+        <ComplexType Name="sp_GetItemsForDisplay_Result">
+          <Property Type="Int64" Name="ID" Nullable="false" />
+          <Property Type="String" Name="Code" Nullable="true" MaxLength="50" />
+          <Property Type="String" Name="Description" Nullable="true" MaxLength="100" />
+          <Property Type="String" Name="CategoryDescript" Nullable="true" MaxLength="100" />
+          <Property Type="Boolean" Name="Physical" Nullable="true" />
+          <Property Type="Boolean" Name="IsLotTracked" Nullable="false" />
+          <Property Type="Boolean" Name="IsFinishedGoods" Nullable="true" />
+          <Property Type="Boolean" Name="IsFromBOM" Nullable="true" />
+          <Property Type="Boolean" Name="IsFromKit" Nullable="true" />
+          <Property Type="Boolean" Name="IsBOMComponent" Nullable="true" />
+          <Property Type="Boolean" Name="IsKitComponent" Nullable="true" />
+          <Property Type="Decimal" Name="QuantityOnHand" Nullable="false" Precision="18" Scale="4" />
+          <Property Type="Decimal" Name="QuantityReserved" Nullable="false" Precision="18" Scale="4" />
+          <Property Type="Decimal" Name="ReorderLevel" Nullable="true" Precision="12" Scale="0" />
+          <Property Type="Decimal" Name="TotQOH_MDF" Nullable="false" Precision="38" Scale="4" />
+          <Property Type="Decimal" Name="TotQPicked" Nullable="false" Precision="38" Scale="4" />
+          <Property Type="Decimal" Name="TotQJCard" Nullable="false" Precision="38" Scale="4" />
+        </ComplexType>
+        <ComplexType Name="GetStckCountVariances_Result">
+          <Property Type="String" Name="ItemCode" Nullable="true" MaxLength="50" />
+          <Property Type="String" Name="ItemDescription" Nullable="true" MaxLength="100" />
+          <Property Type="String" Name="CategoryDescript" Nullable="true" MaxLength="100" />
+          <Property Type="Decimal" Name="SystemQOH" Nullable="true" Precision="38" Scale="2" />
+          <Property Type="Decimal" Name="TotalCountedQty" Nullable="true" Precision="38" Scale="2" />
+          <Property Type="Decimal" Name="Variance" Nullable="true" Precision="38" Scale="2" />
+          <Property Type="String" Name="CountStatus" Nullable="false" MaxLength="10" />
+        </ComplexType>
+        <EntityType Name="StockCountLine">
+          <Key>
+            <PropertyRef Name="CtLineID" />
+          </Key>
+          <Property Name="CtLineID" Type="Int64" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="CountID" Type="Int32" Nullable="false" />
+          <Property Name="CompanyID" Type="Int64" Nullable="false" />
+          <Property Name="ItemID" Type="Int64" Nullable="false" />
+          <Property Name="ItemCode" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="ItemDescription" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
+          <Property Name="LotNumber" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="StoreID" Type="Int32" />
+          <Property Name="QtyOnHand" Type="Decimal" Precision="18" Scale="2" />
+          <Property Name="Count1Qty" Type="Decimal" Precision="18" Scale="2" />
+          <Property Name="Count2Qty" Type="Decimal" Precision="18" Scale="2" />
+          <Property Name="FinalQty" Type="Decimal" Precision="18" Scale="2" />
+          <Property Name="CountBy" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="AcceptBy" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="CountDate" Type="DateTime" Precision="3" />
+          <Property Name="LineFinished" Type="Boolean" Nullable="false" />
+          <Property Name="StoreCode" Type="String" MaxLength="6" FixedLength="false" Unicode="false" />
+          <Property Name="CountExpression" Type="String" MaxLength="500" FixedLength="false" Unicode="false" />
+        </EntityType>
         </Schema>
     </edmx:ConceptualModels>
     <!-- C-S mapping content -->
@@ -3466,6 +3579,8 @@
           <EntitySetMapping Name="DocLines">
             <EntityTypeMapping TypeName="SBMSModel.DocLine">
               <MappingFragment StoreEntitySet="DocLines">
+                <ScalarProperty Name="RemovedFromPODate" ColumnName="RemovedFromPODate" />
+                <ScalarProperty Name="RemovedFromPO" ColumnName="RemovedFromPO" />
                 <ScalarProperty Name="CompanyID" ColumnName="CompanyID" />
                 <ScalarProperty Name="isBundleLine" ColumnName="isBundleLine" />
                 <ScalarProperty Name="isKitLine" ColumnName="isKitLine" />
@@ -3657,6 +3772,7 @@
           <EntitySetMapping Name="ItemTransactions">
             <EntityTypeMapping TypeName="SBMSModel.ItemTransaction">
               <MappingFragment StoreEntitySet="ItemTransaction">
+                <ScalarProperty Name="LotNum" ColumnName="LotNum" />
                 <ScalarProperty Name="TrnID" ColumnName="TrnID" />
                 <ScalarProperty Name="CompanyID" ColumnName="CompanyID" />
                 <ScalarProperty Name="DocumentID" ColumnName="DocumentID" />
@@ -4280,30 +4396,6 @@
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
-          <EntitySetMapping Name="StockCountLines">
-            <EntityTypeMapping TypeName="SBMSModel.StockCountLine">
-              <MappingFragment StoreEntitySet="StockCountLines">
-                <ScalarProperty Name="LineFinished" ColumnName="LineFinished" />
-                <ScalarProperty Name="CountDate" ColumnName="CountDate" />
-                <ScalarProperty Name="AcceptBy" ColumnName="AcceptBy" />
-                <ScalarProperty Name="CountBy" ColumnName="CountBy" />
-                <ScalarProperty Name="FinalQty" ColumnName="FinalQty" />
-                <ScalarProperty Name="Count2Qty" ColumnName="Count2Qty" />
-                <ScalarProperty Name="Count1Qty" ColumnName="Count1Qty" />
-                <ScalarProperty Name="QtyOnHand" ColumnName="QtyOnHand" />
-                <ScalarProperty Name="StoreID" ColumnName="StoreID" />
-                <ScalarProperty Name="LotNumber" ColumnName="LotNumber" />
-                <ScalarProperty Name="ItemDescription" ColumnName="ItemDescription" />
-                <ScalarProperty Name="ItemCode" ColumnName="ItemCode" />
-                <ScalarProperty Name="ItemID" ColumnName="ItemID" />
-                <ScalarProperty Name="CompanyID" ColumnName="CompanyID" />
-                <ScalarProperty Name="CountID" ColumnName="CountID" />
-                <ScalarProperty Name="CtLineID" ColumnName="CtLineID" />
-                <ScalarProperty Name="StoreCode" ColumnName="StoreCode" />
-                <ScalarProperty Name="CountExpression" ColumnName="CountExpression" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
           <EntitySetMapping Name="StockCountMasters">
             <EntityTypeMapping TypeName="SBMSModel.StockCountMaster">
               <MappingFragment StoreEntitySet="StockCountMaster">
@@ -4376,19 +4468,6 @@
                 <ScalarProperty Name="LineFinished" ColumnName="LineFinished" />
                 <ScalarProperty Name="CreateBy" ColumnName="CreateBy" />
                 <ScalarProperty Name="CloseBy" ColumnName="CloseBy" />
-              </ComplexTypeMapping>
-            </ResultMapping>
-          </FunctionImportMapping>
-          <FunctionImportMapping FunctionImportName="GetStckCountVariances" FunctionName="SBMSModel.Store.GetStckCountVariances">
-            <ResultMapping>
-              <ComplexTypeMapping TypeName="SBMSModel.GetStckCountVariances_Result">
-                <ScalarProperty Name="Code" ColumnName="Code" />
-                <ScalarProperty Name="Description" ColumnName="Description" />
-                <ScalarProperty Name="CategoryDescript" ColumnName="CategoryDescript" />
-                <ScalarProperty Name="SystemQOH" ColumnName="SystemQOH" />
-                <ScalarProperty Name="TotalCountedQty" ColumnName="TotalCountedQty" />
-                <ScalarProperty Name="Variance" ColumnName="Variance" />
-                <ScalarProperty Name="CountStatus" ColumnName="CountStatus" />
               </ComplexTypeMapping>
             </ResultMapping>
           </FunctionImportMapping>
@@ -5035,6 +5114,7 @@
           <EntitySetMapping Name="ReceivingOutstandings">
             <EntityTypeMapping TypeName="SBMSModel.ReceivingOutstanding">
               <MappingFragment StoreEntitySet="ReceivingOutstanding">
+                <ScalarProperty Name="SBCALineID" ColumnName="SBCALineID" />
                 <ScalarProperty Name="ReOrdPODate" ColumnName="ReOrdPODate" />
                 <ScalarProperty Name="ReOrderPONum" ColumnName="ReOrderPONum" />
                 <ScalarProperty Name="ArchiveDate" ColumnName="ArchiveDate" />
@@ -5224,6 +5304,162 @@
               </ComplexTypeMapping>
             </ResultMapping>
           </FunctionImportMapping>
+          <FunctionImportMapping FunctionImportName="GetAllStockLevelsByLotNumber" FunctionName="SBMSModel.Store.GetAllStockLevelsByLotNumber">
+            <ResultMapping>
+              <ComplexTypeMapping TypeName="SBMSModel.GetAllStockLevelsByLotNumber_Result">
+                <ScalarProperty Name="ItemCode" ColumnName="ItemCode" />
+                <ScalarProperty Name="Description" ColumnName="Description" />
+                <ScalarProperty Name="CategoryDescript" ColumnName="CategoryDescript" />
+                <ScalarProperty Name="Sum_Qty" ColumnName="Sum_Qty" />
+                <ScalarProperty Name="StoreCode" ColumnName="StoreCode" />
+                <ScalarProperty Name="LotNumber" ColumnName="LotNumber" />
+                <ScalarProperty Name="Unit_Cost" ColumnName="Unit_Cost" />
+                <ScalarProperty Name="Value_On_Hand" ColumnName="Value_On_Hand" />
+                <ScalarProperty Name="TextUserField1" ColumnName="TextUserField1" />
+                <ScalarProperty Name="TextUserField2" ColumnName="TextUserField2" />
+                <ScalarProperty Name="TextUserField3" ColumnName="TextUserField3" />
+                <ScalarProperty Name="NumericUserField1" ColumnName="NumericUserField1" />
+                <ScalarProperty Name="NumericUserField2" ColumnName="NumericUserField2" />
+                <ScalarProperty Name="NumericUserField3" ColumnName="NumericUserField3" />
+              </ComplexTypeMapping>
+            </ResultMapping>
+          </FunctionImportMapping>
+          <FunctionImportMapping FunctionImportName="GetAllStockLevelsByLotNumber_ExclStore" FunctionName="SBMSModel.Store.GetAllStockLevelsByLotNumber_ExclStore">
+            <ResultMapping>
+              <ComplexTypeMapping TypeName="SBMSModel.GetAllStockLevelsByLotNumber_ExclStore_Result">
+                <ScalarProperty Name="ItemCode" ColumnName="ItemCode" />
+                <ScalarProperty Name="Description" ColumnName="Description" />
+                <ScalarProperty Name="CategoryDescript" ColumnName="CategoryDescript" />
+                <ScalarProperty Name="Sum_Qty" ColumnName="Sum_Qty" />
+                <ScalarProperty Name="StoreCode" ColumnName="StoreCode" />
+                <ScalarProperty Name="LotNumber" ColumnName="LotNumber" />
+                <ScalarProperty Name="Unit_Cost" ColumnName="Unit_Cost" />
+                <ScalarProperty Name="Value_On_Hand" ColumnName="Value_On_Hand" />
+                <ScalarProperty Name="TextUserField1" ColumnName="TextUserField1" />
+                <ScalarProperty Name="TextUserField2" ColumnName="TextUserField2" />
+                <ScalarProperty Name="TextUserField3" ColumnName="TextUserField3" />
+                <ScalarProperty Name="NumericUserField1" ColumnName="NumericUserField1" />
+                <ScalarProperty Name="NumericUserField2" ColumnName="NumericUserField2" />
+                <ScalarProperty Name="NumericUserField3" ColumnName="NumericUserField3" />
+              </ComplexTypeMapping>
+            </ResultMapping>
+          </FunctionImportMapping>
+          <FunctionImportMapping FunctionImportName="GetItemDemmandsAll" FunctionName="SBMSModel.Store.GetItemDemmandsAll">
+            <ResultMapping>
+              <ComplexTypeMapping TypeName="SBMSModel.GetItemDemmandsAll_Result">
+                <ScalarProperty Name="Document" ColumnName="Document" />
+                <ScalarProperty Name="ItemCode" ColumnName="ItemCode" />
+                <ScalarProperty Name="Category" ColumnName="Category" />
+                <ScalarProperty Name="Trn" ColumnName="Trn" />
+                <ScalarProperty Name="Description" ColumnName="Description" />
+                <ScalarProperty Name="Qty" ColumnName="Qty" />
+                <ScalarProperty Name="Year_Mth_Week" ColumnName="Year_Mth_Week" />
+                <ScalarProperty Name="Due_Date" ColumnName="Due_Date" />
+              </ComplexTypeMapping>
+            </ResultMapping>
+          </FunctionImportMapping>
+          <FunctionImportMapping FunctionImportName="GetOpeningBalancesAllStores_No_LotNum" FunctionName="SBMSModel.Store.GetOpeningBalancesAllStores_No_LotNum">
+            <ResultMapping>
+              <ComplexTypeMapping TypeName="SBMSModel.GetOpeningBalancesAllStores_No_LotNum_Result">
+                <ScalarProperty Name="TransID" ColumnName="TransID" />
+                <ScalarProperty Name="ItemID" ColumnName="ItemID" />
+                <ScalarProperty Name="ItemCode" ColumnName="ItemCode" />
+                <ScalarProperty Name="ItemDescription" ColumnName="ItemDescription" />
+                <ScalarProperty Name="Category" ColumnName="Category" />
+                <ScalarProperty Name="TotalOnHand" ColumnName="TotalOnHand" />
+                <ScalarProperty Name="StoreCode" ColumnName="StoreCode" />
+                <ScalarProperty Name="StoreID" ColumnName="StoreID" />
+                <ScalarProperty Name="QOH" ColumnName="QOH" />
+                <ScalarProperty Name="PriceExclusive" ColumnName="PriceExclusive" />
+                <ScalarProperty Name="TotalUnitPriceExclInclAdd" ColumnName="TotalUnitPriceExclInclAdd" />
+                <ScalarProperty Name="Unit" ColumnName="Unit" />
+              </ComplexTypeMapping>
+            </ResultMapping>
+          </FunctionImportMapping>
+          <FunctionImportMapping FunctionImportName="GetValidateBarcode" FunctionName="SBMSModel.Store.GetValidateBarcode">
+            <ResultMapping>
+              <ComplexTypeMapping TypeName="SBMSModel.GetValidateBarcode_Result">
+                <ScalarProperty Name="QtyPerBarcode" ColumnName="QtyPerBarcode" />
+                <ScalarProperty Name="ItemID" ColumnName="ItemID" />
+              </ComplexTypeMapping>
+            </ResultMapping>
+          </FunctionImportMapping>
+          <FunctionImportMapping FunctionImportName="sp_DeliverySchedule" FunctionName="SBMSModel.Store.sp_DeliverySchedule">
+            <ResultMapping>
+              <ComplexTypeMapping TypeName="SBMSModel.sp_DeliverySchedule_Result">
+                <ScalarProperty Name="DueDate" ColumnName="DueDate" />
+                <ScalarProperty Name="Number" ColumnName="Number" />
+                <ScalarProperty Name="Customer" ColumnName="Customer" />
+                <ScalarProperty Name="Sales_Rep" ColumnName="Sales Rep" />
+                <ScalarProperty Name="DelAddress1" ColumnName="DelAddress1" />
+                <ScalarProperty Name="Note" ColumnName="Note" />
+                <ScalarProperty Name="Payment" ColumnName="Payment" />
+                <ScalarProperty Name="Status" ColumnName="Status" />
+                <ScalarProperty Name="Weight" ColumnName="Weight" />
+                <ScalarProperty Name="Delivery" ColumnName="Delivery" />
+              </ComplexTypeMapping>
+            </ResultMapping>
+          </FunctionImportMapping>
+          <FunctionImportMapping FunctionImportName="sp_GetItemsForDisplay" FunctionName="SBMSModel.Store.sp_GetItemsForDisplay">
+            <ResultMapping>
+              <ComplexTypeMapping TypeName="SBMSModel.sp_GetItemsForDisplay_Result">
+                <ScalarProperty Name="ID" ColumnName="ID" />
+                <ScalarProperty Name="Code" ColumnName="Code" />
+                <ScalarProperty Name="Description" ColumnName="Description" />
+                <ScalarProperty Name="CategoryDescript" ColumnName="CategoryDescript" />
+                <ScalarProperty Name="Physical" ColumnName="Physical" />
+                <ScalarProperty Name="IsLotTracked" ColumnName="IsLotTracked" />
+                <ScalarProperty Name="IsFinishedGoods" ColumnName="IsFinishedGoods" />
+                <ScalarProperty Name="IsFromBOM" ColumnName="IsFromBOM" />
+                <ScalarProperty Name="IsFromKit" ColumnName="IsFromKit" />
+                <ScalarProperty Name="IsBOMComponent" ColumnName="IsBOMComponent" />
+                <ScalarProperty Name="IsKitComponent" ColumnName="IsKitComponent" />
+                <ScalarProperty Name="QuantityOnHand" ColumnName="QuantityOnHand" />
+                <ScalarProperty Name="QuantityReserved" ColumnName="QuantityReserved" />
+                <ScalarProperty Name="ReorderLevel" ColumnName="ReorderLevel" />
+                <ScalarProperty Name="TotQOH_MDF" ColumnName="TotQOH_MDF" />
+                <ScalarProperty Name="TotQPicked" ColumnName="TotQPicked" />
+                <ScalarProperty Name="TotQJCard" ColumnName="TotQJCard" />
+              </ComplexTypeMapping>
+            </ResultMapping>
+          </FunctionImportMapping>
+          <FunctionImportMapping FunctionImportName="GetStckCountVariances" FunctionName="SBMSModel.Store.GetStckCountVariances">
+            <ResultMapping>
+              <ComplexTypeMapping TypeName="SBMSModel.GetStckCountVariances_Result">
+                <ScalarProperty Name="ItemCode" ColumnName="ItemCode" />
+                <ScalarProperty Name="ItemDescription" ColumnName="ItemDescription" />
+                <ScalarProperty Name="CategoryDescript" ColumnName="CategoryDescript" />
+                <ScalarProperty Name="SystemQOH" ColumnName="SystemQOH" />
+                <ScalarProperty Name="TotalCountedQty" ColumnName="TotalCountedQty" />
+                <ScalarProperty Name="Variance" ColumnName="Variance" />
+                <ScalarProperty Name="CountStatus" ColumnName="CountStatus" />
+              </ComplexTypeMapping>
+            </ResultMapping>
+          </FunctionImportMapping>
+          <EntitySetMapping Name="StockCountLines">
+            <EntityTypeMapping TypeName="SBMSModel.StockCountLine">
+              <MappingFragment StoreEntitySet="StockCountLines">
+                <ScalarProperty Name="CountExpression" ColumnName="CountExpression" />
+                <ScalarProperty Name="StoreCode" ColumnName="StoreCode" />
+                <ScalarProperty Name="LineFinished" ColumnName="LineFinished" />
+                <ScalarProperty Name="CountDate" ColumnName="CountDate" />
+                <ScalarProperty Name="AcceptBy" ColumnName="AcceptBy" />
+                <ScalarProperty Name="CountBy" ColumnName="CountBy" />
+                <ScalarProperty Name="FinalQty" ColumnName="FinalQty" />
+                <ScalarProperty Name="Count2Qty" ColumnName="Count2Qty" />
+                <ScalarProperty Name="Count1Qty" ColumnName="Count1Qty" />
+                <ScalarProperty Name="QtyOnHand" ColumnName="QtyOnHand" />
+                <ScalarProperty Name="StoreID" ColumnName="StoreID" />
+                <ScalarProperty Name="LotNumber" ColumnName="LotNumber" />
+                <ScalarProperty Name="ItemDescription" ColumnName="ItemDescription" />
+                <ScalarProperty Name="ItemCode" ColumnName="ItemCode" />
+                <ScalarProperty Name="ItemID" ColumnName="ItemID" />
+                <ScalarProperty Name="CompanyID" ColumnName="CompanyID" />
+                <ScalarProperty Name="CountID" ColumnName="CountID" />
+                <ScalarProperty Name="CtLineID" ColumnName="CtLineID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
           </EntityContainerMapping>
       </Mapping>
     </edmx:Mappings>

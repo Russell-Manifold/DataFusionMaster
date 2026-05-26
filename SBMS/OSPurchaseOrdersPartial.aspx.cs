@@ -91,26 +91,60 @@ namespace SBMS
             {
                 string findstr = txtfind.Text.ToString();
                 
-                // updated where receiving is complete
-                var matchingGroups = _db.ReceivingOutstandings.Where(x => x.CompanyID == CurrentUser.CoID && x.Archive == false)
+                // Auto-archive any fully-received line groups.
+                //
+                // Modern rows are grouped by (PODocID, SBCALineID) - each PO line is its
+                // own group, even if two lines share an ItemCode. Legacy rows (SBCALineID
+                // NULL because they predate the column) fall back to (PODocID, ItemCode).
+                var modernGroups = _db.ReceivingOutstandings
+                       .Where(x => x.CompanyID == CurrentUser.CoID
+                                && x.Archive == false
+                                && x.SBCALineID != null)
+                       .GroupBy(x => new { x.PODocID, x.SBCALineID })
+                       .Where(g => g.Sum(x => (decimal?)x.RecQty ?? 0) >= g.Max(x => x.OrigQty ?? 0))
+                       .Select(g => new { g.Key.PODocID, g.Key.SBCALineID })
+                       .ToList();
+
+                foreach (var group in modernGroups)
+                {
+                    var itemsToUpdate = _db.ReceivingOutstandings
+                        .Where(x => x.PODocID == group.PODocID
+                                 && x.SBCALineID == group.SBCALineID
+                                 && x.CompanyID == CurrentUser.CoID);
+
+                    foreach (var item in itemsToUpdate)
+                    {
+                        item.Archive = true;
+                        item.ArchiveBy = 0;
+                        item.ArchiveDate = DateTime.Now;
+                    }
+                }
+
+                var legacyGroups = _db.ReceivingOutstandings
+                       .Where(x => x.CompanyID == CurrentUser.CoID
+                                && x.Archive == false
+                                && x.SBCALineID == null)
                        .GroupBy(x => new { x.PODocID, x.ItemCode })
                        .Where(g => g.Sum(x => (decimal?)x.RecQty ?? 0) >= g.Max(x => x.OrigQty ?? 0))
                        .Select(g => new { g.Key.PODocID, g.Key.ItemCode })
                        .ToList();
 
-                // Step 2: For each group, update the matching lines
-                foreach (var group in matchingGroups)
+                foreach (var group in legacyGroups)
                 {
                     var itemsToUpdate = _db.ReceivingOutstandings
-                        .Where(x => x.PODocID == group.PODocID && x.ItemCode == group.ItemCode && x.CompanyID == CurrentUser.CoID);
+                        .Where(x => x.PODocID == group.PODocID
+                                 && x.ItemCode == group.ItemCode
+                                 && x.SBCALineID == null
+                                 && x.CompanyID == CurrentUser.CoID);
 
                     foreach (var item in itemsToUpdate)
                     {
                         item.Archive = true;
-                        item.ArchiveBy =0;
+                        item.ArchiveBy = 0;
                         item.ArchiveDate = DateTime.Now;
                     }
                 }
+
                 // Step 3: Commit updates to DB
                 _db.SaveChanges();
 

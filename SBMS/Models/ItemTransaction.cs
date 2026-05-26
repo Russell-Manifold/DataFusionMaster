@@ -39,6 +39,7 @@ namespace SBMS.Models
         public Nullable<System.DateTime> TransactionDate { get; set; }
         public Nullable<int> ByRoleID { get; set; }
         public string TransactionReference { get; set; }
-        public Nullable<decimal> ExchRate { get; set; }
+        public decimal ExchRate { get; set; }
+        public string LotNum { get; set; }
     }
 }

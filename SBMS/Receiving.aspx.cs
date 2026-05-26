@@ -135,13 +135,14 @@ namespace SBMS
                         int islines = _db.DocLines.Where(x => x.DocID == docid).Count();
                         LoadOtherDetails();
                         ApiUrlCall api = new ApiUrlCall();
+                        POReconcileSummary refreshSummary = null;
                         if (islines > 0)
                         {
                             if (Convert.ToBoolean(Request.QueryString["updt"]) == true)
                             {
                                 if (thispo.Complete != true)
                                 {
-                                    await api.LoadPOLines(docid, CurrentUser);
+                                    refreshSummary = await api.LoadPOLines(docid, CurrentUser);
                                 }
                                 LoadLines();
                                 BindGrid();
@@ -161,10 +162,18 @@ namespace SBMS
                         {
                             if (thispo.Complete != true)
                             {
-                                await api.LoadPOLines(docid, CurrentUser);
+                                refreshSummary = await api.LoadPOLines(docid, CurrentUser);
                             }
                             LoadLines();
                             BindGrid();
+                        }
+
+                        // Surface what changed during the Sage refresh so the user can see
+                        // why lines may have appeared / disappeared / shifted in quantity.
+                        if (refreshSummary != null && refreshSummary.HasChanges)
+                        {
+                            lblRefreshSummary.Text = refreshSummary.ToBannerText();
+                            lblRefreshSummary.Style["display"] = "inline-block";
                         }
                         LoadStores();
                         LoadAttachments(docid);
@@ -249,14 +258,22 @@ namespace SBMS
 
                     // If an unarchived outstanding row already exists for this line, update it
                     // instead of inserting a duplicate (handles double-clicks and re-runs).
-                    var existingOS = _db.ReceivingOutstandings.FirstOrDefault(
-                        x => x.LineID == dl.LineID && x.PODocID == docid && x.Archive == false);
+                    // Match by SBCALineID (stable across page loads); fall back to TempDocLines.LineID
+                    // only for legacy rows that have no SBCALineID yet.
+                    long dlSbcaLineId = dl.SBCALineID;
+                    var existingOS = _db.ReceivingOutstandings.FirstOrDefault(x =>
+                            x.PODocID == docid
+                         && x.Archive == false
+                         && (x.SBCALineID == dlSbcaLineId
+                             || (x.SBCALineID == null && x.LineID == dl.LineID)));
                     if (existingOS != null)
                     {
                         existingOS.RecQty = qtyToRec;
                         existingOS.QtyLeft = 0;
                         existingOS.CreatedBy = CurrentUser.RoleID;
                         existingOS.CreatedDate = DateTime.Now;
+                        // Back-fill stable identity on legacy rows as we touch them.
+                        if (existingOS.SBCALineID == null) existingOS.SBCALineID = dlSbcaLineId;
                     }
                     else
                     {
@@ -274,6 +291,7 @@ namespace SBMS
                             RecQty = qtyToRec,
                             QtyLeft = 0,
                             LineID = dl.LineID,
+                            SBCALineID = dlSbcaLineId,
                             CreatedBy = CurrentUser.RoleID,
                             CreatedDate = DateTime.Now,
                             Archive = false
@@ -304,13 +322,24 @@ namespace SBMS
                 _db.TempDocLines.RemoveRange(tempLinesToDelete);
                 _db.SaveChanges();
 
-                // get lines from DocLines
-                var Lines = _db.DocLines.Where(x => x.DocID == docid).OrderBy(x=>x.LineID).ToList();
+                // get lines from DocLines. Lines that were removed from the Sage PO
+                // after part-receiving stay active locally - the receipt is finished
+                // through this app and reconciled in Sage manually afterwards.
+                var Lines = _db.DocLines
+                              .Where(x => x.DocID == docid)
+                              .OrderBy(x => x.LineID)
+                              .ToList();
 
                 foreach (var line in Lines)
                 {
+                    // Sum receivings against this line. New rows are joined by SBCALineID
+                    // (the stable Sage identity); legacy rows with NULL SBCALineID fall back
+                    // to (PODocID + ItemCode) for the same PO.
                     decimal Prerecqty = _db.ReceivingOutstandings
-                             .Where(x => x.ItemCode == line.ItemCode && x.PODocID == docid && x.Archive == false)
+                             .Where(x => x.PODocID == docid
+                                      && x.Archive == false
+                                      && (x.SBCALineID == line.SBCALineID
+                                          || (x.SBCALineID == null && x.ItemCode == line.ItemCode)))
                              .Sum(x => (decimal?)x.RecQty) ?? 0;
 
                     decimal newQtyLeft = (line.Quantity ?? 0) - Prerecqty;
@@ -558,11 +587,17 @@ namespace SBMS
                 long docid = Convert.ToInt64(lblDocID.Text);
 
                 QtyOrd = Docline.Quantity ?? 0;
-                
+
+                // Sum receivings against this line by SBCALineID; fall back to ItemCode
+                // for legacy rows that pre-date the SBCALineID column.
+                long sbcaLineId = Docline.SBCALineID;
                 decimal Prerecqty = _db.ReceivingOutstandings
-                         .Where(x => x.ItemCode == Docline.ItemCode && x.PODocID == docid && x.Archive==false)
+                         .Where(x => x.PODocID == docid
+                                  && x.Archive == false
+                                  && (x.SBCALineID == sbcaLineId
+                                      || (x.SBCALineID == null && x.ItemCode == Docline.ItemCode)))
                          .Sum(x => (decimal?)x.RecQty) ?? 0;
-                         
+
                 QtyLeft = QtyOrd - (Prerecqty + QtyRec);
                 if (QtyLeft < 0) QtyLeft = 0;
                 Docline.QtyLeft = QtyLeft;
@@ -588,11 +623,12 @@ namespace SBMS
                         RecQty = QtyRec,
                         QtyLeft = QtyLeft,
                         LineID = Convert.ToInt64(lblLineID.Text),
+                        SBCALineID = sbcaLineId,
                         CreatedBy = CurrentUser.RoleID,
                         CreatedDate = DateTime.Now,
                         Archive = false
                     };
-                   
+
                     _db.ReceivingOutstandings.Add(or);
                 }
                 
@@ -2334,16 +2370,21 @@ namespace SBMS
 
                 using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
                 {
-                    var itemL = _db.ReceivingOutstandings
-                        .Where(x => x.CompanyID == CurrentUser.CoID && x.LineID == lineid)
-                        .FirstOrDefault();
+                    // Resolve the TempDocLine for this grid row so we have its stable
+                    // SBCALineID (the autonumber LineID rotates each time TempDocLines
+                    // is rebuilt, so we can't trust it across page loads).
+                    var tempL = _db.TempDocLines.FirstOrDefault(x => x.LineID == lineid);
 
-                    if (itemL != null)
+                    if (tempL != null)
                     {
-                        long itmID = (long)itemL.SelectionId;
+                        long sbcaLineId = tempL.SBCALineID;
 
+                        // Sum by SBCALineID with the usual legacy ItemCode fallback.
                         decimal Prerecqty = _db.ReceivingOutstandings
-                            .Where(x => x.SelectionId == itmID && x.PODocID == docid && x.Archive == false)
+                            .Where(x => x.PODocID == docid
+                                     && x.Archive == false
+                                     && (x.SBCALineID == sbcaLineId
+                                         || (x.SBCALineID == null && x.ItemCode == tempL.ItemCode)))
                             .Sum(x => (decimal?)x.RecQty) ?? 0;
 
                         if (Prerecqty > 0)

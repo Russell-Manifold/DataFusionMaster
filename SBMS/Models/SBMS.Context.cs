@@ -18,7 +18,6 @@ namespace SBMS.Models
     public partial class SBMSEntities : DbContext
     {
         public SBMSEntities(string connectionString) : base(connectionString) { }
-
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
             throw new UnintentionalCodeFirstException();
@@ -54,7 +53,6 @@ namespace SBMS.Models
         public virtual DbSet<WorkStation> WorkStations { get; set; }
         public virtual DbSet<Notification> Notifications { get; set; }
         public virtual DbSet<RolesMaster> RolesMasters { get; set; }
-        public virtual DbSet<StockCountLine> StockCountLines { get; set; }
         public virtual DbSet<StockCountMaster> StockCountMasters { get; set; }
         public virtual DbSet<BundlesHeader> BundlesHeaders { get; set; }
         public virtual DbSet<BundlesLine> BundlesLines { get; set; }
@@ -75,6 +73,7 @@ namespace SBMS.Models
         public virtual DbSet<DIUpdateLog> DIUpdateLogs { get; set; }
         public virtual DbSet<ItemTransferLine> ItemTransferLines { get; set; }
         public virtual DbSet<ItemTransferHeader> ItemTransferHeaders { get; set; }
+        public virtual DbSet<StockCountLine> StockCountLines { get; set; }
     
         public virtual ObjectResult<GetActiveLotNumbersLinkedToStores_Result> GetActiveLotNumbersLinkedToStores(Nullable<long> coID)
         {
@@ -154,19 +153,20 @@ namespace SBMS.Models
     
             return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction<GetOpeningBalancesAllStores_Result>("GetOpeningBalancesAllStores", coIDParameter);
         }
-
-        public virtual ObjectResult<GetOpeningBalancesByStore_Result> GetOpeningBalancesByStore(Nullable<long> coID, string storeCode)
+    
+        public virtual ObjectResult<GetOpeningBalancesByStore_Result> GetOpeningBalancesByStore(string storeCode, Nullable<long> coID)
         {
-            var coIDParameter = coID.HasValue ?
-                new ObjectParameter("CoID", coID) :
-                new ObjectParameter("CoID", typeof(long));
-
             var storeCodeParameter = storeCode != null ?
                 new ObjectParameter("storeCode", storeCode) :
                 new ObjectParameter("storeCode", typeof(string));
-
-            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction<GetOpeningBalancesByStore_Result>("GetOpeningBalancesByStore", coIDParameter, storeCodeParameter);
+    
+            var coIDParameter = coID.HasValue ?
+                new ObjectParameter("CoID", coID) :
+                new ObjectParameter("CoID", typeof(long));
+    
+            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction<GetOpeningBalancesByStore_Result>("GetOpeningBalancesByStore", storeCodeParameter, coIDParameter);
         }
+    
         public virtual ObjectResult<GetProdPlanMovementTransactions_Result> GetProdPlanMovementTransactions(Nullable<long> coID, Nullable<long> planLineid)
         {
             var coIDParameter = coID.HasValue ?
@@ -324,20 +324,7 @@ namespace SBMS.Models
     
             return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction<GetStckCountDetails_Result>("GetStckCountDetails", coIDParameter, countidParameter);
         }
-
-        public virtual ObjectResult<GetStckCountVariances_Result> GetStckCountVariances(Nullable<long> coID, Nullable<int> countid)
-        {
-            var coIDParameter = coID.HasValue ?
-                new ObjectParameter("CoID", coID) :
-                new ObjectParameter("CoID", typeof(long));
-
-            var countidParameter = countid.HasValue ?
-                new ObjectParameter("countid", countid) :
-                new ObjectParameter("countid", typeof(int));
-
-            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction<GetStckCountVariances_Result>("GetStckCountVariances", coIDParameter, countidParameter);
-        }
-
+    
         public virtual ObjectResult<GetStockCountList_Result> GetStockCountList(Nullable<long> coID)
         {
             var coIDParameter = coID.HasValue ?
@@ -399,11 +386,11 @@ namespace SBMS.Models
             return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction<GetOneDocHeaderFromDocID_Result>("GetOneDocHeaderFromDocID", coIDParameter, docIDParameter);
         }
     
-        public virtual ObjectResult<GetAllStockLevels_Result> GetAllStockLevels(Nullable<long> coID, string searchTerm)
+        public virtual ObjectResult<GetAllStockLevels_Result> GetAllStockLevels(Nullable<int> coID, string searchTerm)
         {
             var coIDParameter = coID.HasValue ?
                 new ObjectParameter("CoID", coID) :
-                new ObjectParameter("CoID", typeof(long));
+                new ObjectParameter("CoID", typeof(int));
     
             var searchTermParameter = searchTerm != null ?
                 new ObjectParameter("SearchTerm", searchTerm) :
@@ -536,6 +523,94 @@ namespace SBMS.Models
                 new ObjectParameter("coid", typeof(long));
     
             return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction<GetKitLinesFromKitHeaderID_Result1>("GetKitLinesFromKitHeaderID1", kitHIDParameter, coidParameter);
+        }
+    
+        public virtual ObjectResult<GetAllStockLevelsByLotNumber_Result> GetAllStockLevelsByLotNumber(Nullable<long> coID)
+        {
+            var coIDParameter = coID.HasValue ?
+                new ObjectParameter("CoID", coID) :
+                new ObjectParameter("CoID", typeof(long));
+    
+            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction<GetAllStockLevelsByLotNumber_Result>("GetAllStockLevelsByLotNumber", coIDParameter);
+        }
+    
+        public virtual ObjectResult<GetAllStockLevelsByLotNumber_ExclStore_Result> GetAllStockLevelsByLotNumber_ExclStore(Nullable<long> coID)
+        {
+            var coIDParameter = coID.HasValue ?
+                new ObjectParameter("CoID", coID) :
+                new ObjectParameter("CoID", typeof(long));
+    
+            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction<GetAllStockLevelsByLotNumber_ExclStore_Result>("GetAllStockLevelsByLotNumber_ExclStore", coIDParameter);
+        }
+    
+        public virtual ObjectResult<GetItemDemmandsAll_Result> GetItemDemmandsAll(Nullable<long> coID)
+        {
+            var coIDParameter = coID.HasValue ?
+                new ObjectParameter("CoID", coID) :
+                new ObjectParameter("CoID", typeof(long));
+    
+            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction<GetItemDemmandsAll_Result>("GetItemDemmandsAll", coIDParameter);
+        }
+    
+        public virtual ObjectResult<GetOpeningBalancesAllStores_No_LotNum_Result> GetOpeningBalancesAllStores_No_LotNum(Nullable<long> coID)
+        {
+            var coIDParameter = coID.HasValue ?
+                new ObjectParameter("CoID", coID) :
+                new ObjectParameter("CoID", typeof(long));
+    
+            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction<GetOpeningBalancesAllStores_No_LotNum_Result>("GetOpeningBalancesAllStores_No_LotNum", coIDParameter);
+        }
+    
+        public virtual ObjectResult<GetValidateBarcode_Result> GetValidateBarcode(Nullable<long> coID, string itmCode)
+        {
+            var coIDParameter = coID.HasValue ?
+                new ObjectParameter("CoID", coID) :
+                new ObjectParameter("CoID", typeof(long));
+    
+            var itmCodeParameter = itmCode != null ?
+                new ObjectParameter("itmCode", itmCode) :
+                new ObjectParameter("itmCode", typeof(string));
+    
+            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction<GetValidateBarcode_Result>("GetValidateBarcode", coIDParameter, itmCodeParameter);
+        }
+    
+        public virtual ObjectResult<sp_DeliverySchedule_Result> sp_DeliverySchedule(Nullable<long> coID)
+        {
+            var coIDParameter = coID.HasValue ?
+                new ObjectParameter("CoID", coID) :
+                new ObjectParameter("CoID", typeof(long));
+    
+            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction<sp_DeliverySchedule_Result>("sp_DeliverySchedule", coIDParameter);
+        }
+    
+        public virtual ObjectResult<sp_GetItemsForDisplay_Result> sp_GetItemsForDisplay(Nullable<long> companyID, string searchText, Nullable<bool> excludeZeroQty)
+        {
+            var companyIDParameter = companyID.HasValue ?
+                new ObjectParameter("CompanyID", companyID) :
+                new ObjectParameter("CompanyID", typeof(long));
+    
+            var searchTextParameter = searchText != null ?
+                new ObjectParameter("SearchText", searchText) :
+                new ObjectParameter("SearchText", typeof(string));
+    
+            var excludeZeroQtyParameter = excludeZeroQty.HasValue ?
+                new ObjectParameter("ExcludeZeroQty", excludeZeroQty) :
+                new ObjectParameter("ExcludeZeroQty", typeof(bool));
+    
+            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction<sp_GetItemsForDisplay_Result>("sp_GetItemsForDisplay", companyIDParameter, searchTextParameter, excludeZeroQtyParameter);
+        }
+    
+        public virtual ObjectResult<GetStckCountVariances_Result> GetStckCountVariances(Nullable<long> coID, Nullable<int> countid)
+        {
+            var coIDParameter = coID.HasValue ?
+                new ObjectParameter("CoID", coID) :
+                new ObjectParameter("CoID", typeof(long));
+    
+            var countidParameter = countid.HasValue ?
+                new ObjectParameter("countid", countid) :
+                new ObjectParameter("countid", typeof(int));
+    
+            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction<GetStckCountVariances_Result>("GetStckCountVariances", coIDParameter, countidParameter);
         }
     }
 }
