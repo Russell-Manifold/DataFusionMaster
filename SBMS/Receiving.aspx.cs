@@ -256,23 +256,24 @@ namespace SBMS
                         dl.StoreCode = selectedStore;
                     }
 
-                    // If an unarchived outstanding row already exists for this line, update it
-                    // instead of inserting a duplicate (handles double-clicks and re-runs).
-                    // Match by SBCALineID (stable across page loads); fall back to TempDocLines.LineID
-                    // only for legacy rows that have no SBCALineID yet.
+                    // Within-session double-click protection only. We match by
+                    // TempDocLines.LineID which is stable WITHIN a session but freshly
+                    // minted each page load, so prior-cycle OS rows never match here.
+                    // That's exactly what we want: each new receive cycle inserts a
+                    // fresh OS row instead of overwriting earlier receipt history.
+                    // (Cross-session sums use SBCALineID elsewhere - see LoadLines.)
                     long dlSbcaLineId = dl.SBCALineID;
                     var existingOS = _db.ReceivingOutstandings.FirstOrDefault(x =>
                             x.PODocID == docid
                          && x.Archive == false
-                         && (x.SBCALineID == dlSbcaLineId
-                             || (x.SBCALineID == null && x.LineID == dl.LineID)));
+                         && x.LineID == dl.LineID);
                     if (existingOS != null)
                     {
                         existingOS.RecQty = qtyToRec;
                         existingOS.QtyLeft = 0;
                         existingOS.CreatedBy = CurrentUser.RoleID;
                         existingOS.CreatedDate = DateTime.Now;
-                        // Back-fill stable identity on legacy rows as we touch them.
+                        // Back-fill stable identity if this within-session row lacks one.
                         if (existingOS.SBCALineID == null) existingOS.SBCALineID = dlSbcaLineId;
                     }
                     else
@@ -792,6 +793,68 @@ namespace SBMS
                 return;
             }
 
+            // ---------------------------------------------------------------------
+            // Partial-receive guard.
+            //
+            // If the user has flagged Receiving Complete = Yes BUT some line on the
+            // PO still has ordered > received-so-far, we interrupt with a confirm.
+            // This prevents accidentally closing a PO in Sage when only part has
+            // been received. The user can override by clicking Yes on the prompt -
+            // we set hfPartialOverride = "1" client-side and re-post.
+            //
+            // Receivings for the current batch are already persisted as
+            // ReceivingOutstandings by per-line Save or Select All before we get
+            // here, so the sum below is the full picture.
+            // ---------------------------------------------------------------------
+            if (RBpoStatus.SelectedValue == "0" && hfPartialOverride.Value != "1")
+            {
+                bool isPartial;
+                using (SBMSEntities _dbChk = new SBMSEntities(Config.GetConnectionString()))
+                {
+                    isPartial = _dbChk.DocLines
+                        .Where(dl => dl.DocID == docid)
+                        .Any(dl =>
+                            (dl.Quantity ?? 0) >
+                            (_dbChk.ReceivingOutstandings
+                                   .Where(r => r.PODocID == docid
+                                            && r.Archive == false
+                                            && (r.SBCALineID == dl.SBCALineID
+                                                || (r.SBCALineID == null && r.ItemCode == dl.ItemCode)))
+                                   .Sum(r => (decimal?)r.RecQty) ?? 0));
+                }
+
+                if (isPartial)
+                {
+                    string confirmJs =
+                        "Swal.fire({" +
+                        "  icon: 'warning'," +
+                        "  title: 'PO not fully received'," +
+                        "  html: 'You have received only <b>part</b> of this PO but flagged <b>Receiving Complete = Yes</b>.<br/><br/>" +
+                                "Continuing will close the PO in Sage and any unreceived lines will be removed.<br/><br/>" +
+                                "Are you sure?'," +
+                        "  showCancelButton: true," +
+                        "  confirmButtonText: 'Yes, close anyway'," +
+                        "  cancelButtonText: 'No, keep PO open'," +
+                        "  reverseButtons: true," +
+                        "  focusCancel: true" +
+                        "}).then(function(result) {" +
+                        "  if (result.isConfirmed) {" +
+                        "    document.getElementById('" + hfPartialOverride.ClientID + "').value = '1';" +
+                        "    __doPostBack('" + lbtnReceiveFinish.UniqueID + "', '');" +
+                        "  } else {" +
+                        "    if (typeof enableReceiveButtons === 'function') enableReceiveButtons();" +
+                        "  }" +
+                        "});";
+
+                    ScriptManager.RegisterStartupScript(
+                        this, this.GetType(), "PartialReceiveConfirm", confirmJs, true);
+                    return;
+                }
+            }
+
+            // Reset the override so a subsequent receive starts clean.
+            hfPartialOverride.Value = "";
+
             try
             {
                 ApiUrlCall api = new ApiUrlCall();
@@ -1015,15 +1078,23 @@ namespace SBMS
                             //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                             if (RBpoStatus.SelectedValue == "0")
                             {
+                                // Header-only PO status update. The previous version
+                                // reused jsonBody (the supplier-invoice payload) and
+                                // sent it back to PurchaseOrder/Save - that included
+                                // a Lines array containing ONLY the lines being
+                                // received in this batch, so Sage would truncate the
+                                // PO to just those lines. We strip Lines out and
+                                // send only what we want to change.
                                 var jObj = JObject.Parse(jsonBody);
                                 jObj["ID"] = docid;
                                 jObj["StatusId"] = "4";
                                 jObj["DueDate"]?.Parent.Remove();
                                 jObj["DeliveryDate"] = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss");
+                                jObj["Lines"]?.Parent.Remove();   // <-- do NOT touch PO lines on this update
 
                                 // Re-serialize back to string
                                 string updatedJsonBody = jObj.ToString(Formatting.Indented);
-                                // change status of PO to Invoiced., 
+                                // change status of PO to Invoiced.,
                                 string doctype = "";
                                 doctype = "PurchaseOrder";
                                 ApiUrlCall Api = new ApiUrlCall();
@@ -1434,7 +1505,6 @@ namespace SBMS
                         }
                     }
 
-
                     //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
                     // SET DOC HEADER VALUES
@@ -1446,6 +1516,10 @@ namespace SBMS
                         if (Head.SupplierInvNum != null)
                         {
                             Head.SupplierInvNum = Head.SupplierInvNum + "-" + SuppInvNum.ToString();
+                            if (Head.SupplierInvNum.Length > 50)
+                            {
+                                Head.SupplierInvNum = Head.SupplierInvNum.Substring(0, 50);
+                            }
                         }
                         else
                         {

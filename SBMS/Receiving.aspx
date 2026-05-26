@@ -13,6 +13,7 @@
 <body>
     <form id="form1" runat="server">
          <asp:ScriptManager ID="ScriptManager1" runat="server"></asp:ScriptManager>
+         <asp:HiddenField ID="hfPartialOverride" runat="server" Value="" />
         <div class="content">
             <asp:UpdatePanel ID="UpdatePanel2" runat="server">
                 <ContentTemplate>

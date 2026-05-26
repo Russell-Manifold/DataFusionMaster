@@ -551,7 +551,6 @@
           <Property Name="ByRoleID" Type="int" />
           <Property Name="TransactionReference" Type="varchar" MaxLength="100" />
           <Property Name="ExchRate" Type="decimal" Precision="18" Scale="4" Nullable="false" />
-          <Property Name="LotNum" Type="varchar" MaxLength="50" StoreGeneratedPattern="Computed" Nullable="false" />
         </EntityType>
         <EntityType Name="ItemTransferHeaders">
           <Key>
@@ -1758,7 +1757,6 @@
           <Property Name="ByRoleID" Type="Int32" />
           <Property Name="TransactionReference" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
           <Property Name="ExchRate" Type="Decimal" Precision="18" Scale="4" Nullable="false" />
-          <Property Name="LotNum" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="false" annotation:StoreGeneratedPattern="Computed" />
         </EntityType>
         <EntityType Name="JobCardLine">
           <Key>
@@ -3772,7 +3770,6 @@
           <EntitySetMapping Name="ItemTransactions">
             <EntityTypeMapping TypeName="SBMSModel.ItemTransaction">
               <MappingFragment StoreEntitySet="ItemTransaction">
-                <ScalarProperty Name="LotNum" ColumnName="LotNum" />
                 <ScalarProperty Name="TrnID" ColumnName="TrnID" />
                 <ScalarProperty Name="CompanyID" ColumnName="CompanyID" />
                 <ScalarProperty Name="DocumentID" ColumnName="DocumentID" />
