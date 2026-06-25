@@ -14,6 +14,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 using System.Web.Services.Description;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -208,7 +209,9 @@ namespace SBMS
                 long.TryParse(lblSupplierID.Text, out long supplierIdParsed);
 
                 var Lines = _db.TempDocLines.Where(x => x.DocID == docid).OrderBy(x => x.LineID).ToList();
-                foreach (TempDocLine dl in Lines)
+                try
+                {
+                    foreach (TempDocLine dl in Lines)
                 {
                     decimal qtyToRec = dl.QtyLeft ?? (dl.Quantity ?? 0);
                     if (qtyToRec <= 0) continue;
@@ -235,7 +238,7 @@ namespace SBMS
                                 recnum++;
                             } while (true);
 
-                            dl.LotNumber = candidate;
+                                dl.LotNumber = candidate;
                             LotTrackingMaster LtNew = new LotTrackingMaster();
                             LtNew.LotNumber = dl.LotNumber;
                             LtNew.CreatedDate = DateTime.Now;
@@ -300,14 +303,40 @@ namespace SBMS
                         _db.ReceivingOutstandings.Add(or);
                     }
                 }
-                try
-                {
+                
                     _db.SaveChanges();
                 }
+                //catch (Exception ex)
+                //{
+                //    new ApiUrlCall().LogErrorToFile(ex.ToString());
+                //   // AlertHelper.ShowSweetAlert(this, "Receive All failed: " + ex.Message, "error");
+                //    Exception inner = ex;
+                //   while (inner.InnerException != null) inner = inner.InnerException;
+
+                //    AlertHelper.ShowSweetAlert(this, "Receive All failed: " + inner.Message, "error");
+                //    return;
+                //}
                 catch (Exception ex)
                 {
                     new ApiUrlCall().LogErrorToFile(ex.ToString());
-                    AlertHelper.ShowSweetAlert(this, "Receive All failed: " + ex.Message, "error");
+
+                    Exception inner = ex;
+                    while (inner.InnerException != null) inner = inner.InnerException;
+
+                    string msg = "Receive All failed: " + inner.Message;
+
+                    // collapse to a single safe line: no quotes, no backslashes, no line breaks
+                    var sb = new System.Text.StringBuilder(msg.Length);
+                    foreach (char c in msg)
+                    {
+                        if (c == '\r' || c == '\n' || c == '\t') sb.Append(' ');
+                        else if (c == '\'' || c == '"' || c == '\\' || c == '`') sb.Append(' ');
+                        else if (c < 32) continue;            // drop other control chars
+                        else sb.Append(c);
+                    }
+                    msg = sb.ToString();
+
+                    AlertHelper.ShowSweetAlert(this, msg, "error");
                     return;
                 }
             }
@@ -346,7 +375,10 @@ namespace SBMS
                     decimal newQtyLeft = (line.Quantity ?? 0) - Prerecqty;
                     if (newQtyLeft < 0) newQtyLeft = 0;
                     line.QtyLeft = newQtyLeft;
-                    line.ReceiveQty = 0;
+                    // Do NOT wipe ReceiveQty here. It carries the in-progress staged quantity
+                    // (captured on the scanner, or in a prior desktop session) into TempDocLines
+                    // below, so receiving resumes and hands off across devices. The finalize resets
+                    // it on DocLines after a successful submit, so there is no stale re-receive.
                 }
                 _db.SaveChanges();
 
@@ -370,8 +402,11 @@ namespace SBMS
                     Tax = line.Tax,
                     Total = line.Total,
                     Comments = line.Comments,
-                    QtyLeft = line.QtyLeft,
+                    // Show outstanding AFTER the staged accept + reject (e.g. scanner counts), so a
+                    // line counted 5-of-5 shows Qty_Left 0. DocLine.QtyLeft stays as committed-remaining.
+                    QtyLeft = Math.Max(0m, (line.QtyLeft ?? 0) - (line.ReceiveQty ?? 0) - line.RejectQty),
                     ReceiveQty = line.ReceiveQty,
+                    RejectQty = line.RejectQty,
                     ToReceive = line.ToReceive,
                     ReceiveComplete = line.ReceiveComplete,
                     StoreCode = line.StoreCode,
@@ -422,6 +457,8 @@ namespace SBMS
                     {
                         TL.QtyLeft = Convert.ToDecimal(ApiUrlCall.NumberToDecimal(TL.QtyLeft.ToString(), CurrentUser.CompanyDecPlaces));
                     }
+                    // Reject uses the same decimal places as the other qty fields; default 0.
+                    TL.RejectQty = Convert.ToDecimal(ApiUrlCall.NumberToDecimal((TL.RejectQty ?? 0).ToString(), CurrentUser.CompanyDecPlaces));
                 }
                 GridPOLines.DataSource = TempLines;
                 GridPOLines.DataBind();
@@ -513,7 +550,7 @@ namespace SBMS
             //e.Row.Cells[0].Visible = false;
             if (CurrentUser.CompanyUseLotNumbers == false)
             {
-                e.Row.Cells[11].Visible = false;
+                e.Row.Cells[12].Visible = false;
             }
             if (e.Row.RowType == DataControlRowType.DataRow)
             {
@@ -524,19 +561,19 @@ namespace SBMS
                 }
 
 
-                if (e.Row.Cells[4].Text != e.Row.Cells[9].Text)
+                if (e.Row.Cells[4].Text != e.Row.Cells[10].Text)
                 {
-                    e.Row.Cells[9].BackColor = System.Drawing.Color.AntiqueWhite;
+                    e.Row.Cells[10].BackColor = System.Drawing.Color.AntiqueWhite;
                 }
-                if (Convert.ToDecimal(e.Row.Cells[13].Text.ToString()) > (decimal)1.05 || Convert.ToDecimal(e.Row.Cells[13].Text.ToString()) < (decimal)0.95) e.Row.Cells[8].Style.Add("border", "1px solid red");
-                if (e.Row.Cells[15].Text.ToString() == "2")
+                if (Convert.ToDecimal(e.Row.Cells[14].Text.ToString()) > (decimal)1.05 || Convert.ToDecimal(e.Row.Cells[14].Text.ToString()) < (decimal)0.95) e.Row.Cells[8].Style.Add("border", "1px solid red");
+                if (e.Row.Cells[16].Text.ToString() == "2")
                 {
                     LinkButton lbtn = new LinkButton();
                     lbtn = (LinkButton)e.Row.FindControl("lbtnItmC");
                     lbtn.Enabled = false;
                     lbtn.ForeColor = System.Drawing.Color.DarkGray;
                 }
-                if (e.Row.Cells[11].Visible == true && e.Row.Cells[11].Text.ToString().Trim().Replace("&nbsp;","") != "")
+                if (e.Row.Cells[12].Visible == true && e.Row.Cells[12].Text.ToString().Trim().Replace("&nbsp;","") != "")
                 {
                     LinkButton lbtnLotNumAdd = new LinkButton();
                     lbtnLotNumAdd = (LinkButton)e.Row.FindControl("lbtnLotNumAdd");
@@ -548,8 +585,8 @@ namespace SBMS
             {
                 e.Row.Cells[8].Text = recqty.ToString();
             }
+            e.Row.Cells[16].Visible = false;
             e.Row.Cells[15].Visible = false;
-            e.Row.Cells[14].Visible = false;
         }
 
         protected void lbtnReceive_Click(object sender, EventArgs e)
@@ -946,7 +983,7 @@ namespace SBMS
                             DL.TaxTypeId = (int)dl.LineTaxTypeID;
                             DL.Description = dl.ItemDescription;
                             DL.LineType = (int)dl.LineType;  // 0 = Inventory Item
-                            DL.Quantity = (decimal)dl.ReceiveQty;
+                            DL.Quantity = (decimal)dl.ReceiveQty + (dl.RejectQty ?? 0);   // bill accept + reject; reject is split to the reject store after the GRN
                             DL.UnitPriceExclusive = (decimal)dl.UnitPriceExclusive;
                             DL.UnitPriceInclusive = (decimal)dl.UnitPriceInclusive;
                             DL.Unit = dl.Unit;
@@ -1201,7 +1238,8 @@ namespace SBMS
                                     tempLine.Total = dl.Total;
                                     tempLine.Comments = dl.Comments;
                                     tempLine.QtyLeft = dl.QtyLeft;
-                                    tempLine.ReceiveQty = dl.ReceiveQty;
+                                    tempLine.ReceiveQty = 0;   // reset on submit so the line reopens clean (matches no-add-costs branch)
+                                    tempLine.RejectQty = 0;
                                     tempLine.ToReceive = dl.ToReceive;
                                     tempLine.ReceiveComplete = true;
                                     tempLine.StoreCode = dl.StoreCode;
@@ -1378,6 +1416,7 @@ namespace SBMS
                                 tempLine.QtyLeft = dl.QtyLeft;
                                 //tempLine.ReceiveQty = dl.ReceiveQty;
                                 tempLine.ReceiveQty = 0;
+                                tempLine.RejectQty = 0;
                                 tempLine.ToReceive = dl.ToReceive;
                                 tempLine.ReceiveComplete = true;
                                 tempLine.StoreCode = dl.StoreCode;
@@ -1505,12 +1544,71 @@ namespace SBMS
                         }
                     }
 
+                    // === Split each line's rejected portion into the reject store ===
+                    // Reject was billed on the supplier invoice as part of the total, so local
+                    // stock matches Sage. Booked CoR -> IsRejectStore (no add-cost uplift on the
+                    // reject portion; flag if add-costs + rejects need exact averaging).
+                    var rejStore = _db.Stores.FirstOrDefault(x => x.CompanyID == CurrentUser.CoID
+                                       && x.IsRejectStore == true && x.StoreActive == true);
+                    if (rejStore != null)
+                    {
+                        long rejStoreId = rejStore.StoreID;
+                        long corStoreId = getstoreid("CoR");
+                        foreach (var dl in FLines)
+                        {
+                            decimal rejQty = dl.RejectQty ?? 0;
+                            if (rejQty <= 0 || dl.ItemType != 0) continue;
+
+                            var ItmConR = _db.ItemsMasters.Where(x => x.CompanyID == CurrentUser.CoID && x.ID == dl.SelectionId).FirstOrDefault();
+                            decimal ConvR = (decimal)(ItmConR != null ? ItmConR.UOMConvert : 1);
+                            if (ConvR == 0) ConvR = 1;
+                            decimal unitExcl = ((decimal)(dl.UnitPriceExclusive ?? 0) / (decimal)exchRate) / ConvR;
+
+                            ItemTransaction rTrans = new ItemTransaction();
+                            rTrans.CompanyID = CurrentUser.CoID;
+                            rTrans.DocumentID = dl.DocID;
+                            rTrans.TransactionType = "GRN";
+                            rTrans.ItemID = dl.SelectionId;
+                            rTrans.ItemCode = dl.ItemCode;
+                            rTrans.ItemDescription = dl.ItemDescription;
+                            rTrans.LotNumber = dl.LotNumber;
+                            rTrans.Unit = dl.Unit;
+                            rTrans.FromID = corStoreId;
+                            rTrans.ToID = rejStoreId;
+                            rTrans.Qty = rejQty * ConvR;
+                            rTrans.PriceExclusive = unitExcl;
+                            rTrans.AdditionalCosts = 0;
+                            rTrans.TotalUnitPriceExclInclAdd = unitExcl;
+                            rTrans.TotalLineValExcl = ((decimal)(dl.UnitPriceExclusive ?? 0) * rejQty) / (decimal)exchRate;
+                            rTrans.DocumentType = 2;
+                            rTrans.TransactionReference = SuppInvNum + " (Reject)";
+                            rTrans.TransactionDate = DateTime.Now;
+                            rTrans.ByRoleID = CurrentUser.RoleID;
+                            rTrans.ExchRate = (decimal)exchRate;
+                            _db.ItemTransactions.Add(rTrans);
+
+                            var ItSR = _db.ItemStoreLinkMasters.Where(x => x.CompanyID == CurrentUser.CoID && x.StoreID == (int?)rejStoreId && x.ItemID == dl.SelectionId).FirstOrDefault();
+                            if (ItSR == null)
+                            {
+                                _db.ItemStoreLinkMasters.Add(new ItemStoreLinkMaster
+                                {
+                                    CompanyID = CurrentUser.CoID,
+                                    ItemID = Convert.ToInt64(dl.SelectionId),
+                                    StoreID = (int?)rejStoreId,
+                                    Active = true,
+                                });
+                            }
+                        }
+                        _db.SaveChanges();
+                    }
+
                     //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
                     // SET DOC HEADER VALUES
                     if (LCount == FLines.Count)
                     {
                         Head.Complete = true;
+                        Head.RecStatus = 2;   // Submitted (supplier invoice posted to Sage)
                         Head.CompBy = 0;
                         Head.CompleteDate = DateTime.Now;
                         if (Head.SupplierInvNum != null)
@@ -1528,7 +1626,7 @@ namespace SBMS
                         Head.InvNum = txtInvNum.Text.ToString().Replace("'", "'')");
                         Head.DNNum = txtDNNum.Text.ToString().Replace("'", "'')");
                     }
-                    if (RBpoStatus.SelectedValue.ToString() == "1") Head.Complete = false;
+                    if (RBpoStatus.SelectedValue.ToString() == "1") { Head.Complete = false; Head.RecStatus = 0; }   // partial -> still in progress (Started)
 
                     //%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -2433,7 +2531,7 @@ namespace SBMS
 
             decimal QtyLeft = 0, QtyOrd = 0, QtyRec = 0;
 
-            if (row.Cells[9].Text.Trim().Replace("&nbsp;", "") != "")
+            if (row.Cells[10].Text.Trim().Replace("&nbsp;", "") != "")
             {
                 chkAddLotNum.Checked = true;
 

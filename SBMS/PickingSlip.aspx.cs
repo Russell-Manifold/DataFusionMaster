@@ -125,7 +125,7 @@ namespace SBMS
                     {
                         try
                         {
-                            DateTime dt = Convert.ToDateTime(thisPS.PSStartDate.ToString(), CultureInfo.InvariantCulture);
+                            DateTime dt = Convert.ToDateTime(thisPS.PSStartDate, CultureInfo.InvariantCulture);
                             txtIssueDate.Text = dt.ToString("dd MMM yyyy");
                             txtIssuedTo.Text = "Picking";
                         }
@@ -1488,6 +1488,7 @@ namespace SBMS
             long psid = Convert.ToInt64(lblPSid.Text);
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {
+
                 var PSH = _db.PickingSlipMasters.Where(x => x.CustomerID == CurrentUser.CoID && x.PSID == psid).FirstOrDefault();
                 _db.PickingSlipMasters.Remove(PSH);
 

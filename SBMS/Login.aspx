@@ -110,6 +110,19 @@
                 margin-top: 0.1em;
             }
         }
+
+        /* General size reduction for the whole login page on phones */
+        @media screen and (max-width: 736px) {
+            html { font-size: 13px !important; }
+            body, input, select, textarea, button, .button { font-size: 1rem !important; }
+            .login-panel h2 { font-size: 1.8rem; line-height: 1.2; }
+            .login-input { min-height: 2.6em; padding: .45em .6em; }
+            .buttonSage { font-size: 1rem; padding: .55em 1.2em; }
+            .login-panel { font-size: 1rem; }
+        }
+        @media screen and (max-width: 480px) {
+            html { font-size: 12px !important; }
+        }
     </style>
 </head>
 <body>

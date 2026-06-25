@@ -53,13 +53,19 @@ namespace SBMS
                 var WOHeader = _db.WorksOrderHeaders.Where(x => x.CompanyID == CoID && x.ID == woid).FirstOrDefault();
                 if (WOHeader != null)
                 {
-                    if (WOHeader.Active == false)
+                    // Once any batch has been part-manufactured, lock the order from editing
+                    // here so the ordered quantities can't drift out of sync with what has
+                    // already been posted to stock/Sage.
+                    bool started = _db.WorksOrderLines.Any(x => x.CompanyID == CoID && x.WOID == woid && x.Complete == true);
+                    if (WOHeader.Active == false || started)
                     {
                         GridWOLines.Enabled = false;
                         chkCompl.Checked = true;
                         LbtnSaveWO.Enabled = false;
                         LbtnSaveWO.Visible = false;
-                        LbtnSaveWO.ToolTip = "This Works Order is Closed, no further changes allowed.";
+                        LbtnSaveWO.ToolTip = started
+                            ? "This Works Order has been part-manufactured and can no longer be edited."
+                            : "This Works Order is Closed, no further changes allowed.";
                     }
                     woheader.InnerText = "WO-" + WOHeader.WONum;
                     if (WOHeader.CustSupName != null) lblFCCustName.Text = WOHeader.CustSupName.ToString() ?? "";

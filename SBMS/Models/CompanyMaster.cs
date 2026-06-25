@@ -51,5 +51,11 @@ namespace SBMS.Models
         public bool UsePacks { get; set; }
         public bool ShowManfCosts { get; set; }
         public string SageWeightField { get; set; }
+        public bool AllowSystemLotNumbers { get; set; }
+        public bool AllowScannerCount { get; set; }
+        public bool AllowScannerReceive { get; set; }
+        public bool AllowScannerPutAway { get; set; }
+        public string BinSegments { get; set; }
+        public string BinDelimiter { get; set; }
     }
 }

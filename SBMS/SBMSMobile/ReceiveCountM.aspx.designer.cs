@@ -11,7 +11,7 @@ namespace SBMS
 {
 
 
-    public partial class ReceivingM
+    public partial class ReceiveCountM
     {
 
         /// <summary>
@@ -96,6 +96,24 @@ namespace SBMS
         protected global::System.Web.UI.WebControls.Label lblPONum;
 
         /// <summary>
+        /// lblSupplier control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblSupplier;
+
+        /// <summary>
+        /// lblDueDate control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblDueDate;
+
+        /// <summary>
         /// lblLineCount control.
         /// </summary>
         /// <remarks>
@@ -150,30 +168,12 @@ namespace SBMS
         protected global::System.Web.UI.WebControls.Label lblEmpty;
 
         /// <summary>
-        /// pnlDone control.
+        /// lbtnMarkReady control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Panel pnlDone;
-
-        /// <summary>
-        /// lblDoneCount control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblDoneCount;
-
-        /// <summary>
-        /// rptDone control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Repeater rptDone;
+        protected global::System.Web.UI.WebControls.LinkButton lbtnMarkReady;
     }
 }

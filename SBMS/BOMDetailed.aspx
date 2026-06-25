@@ -128,7 +128,10 @@
                                             <td>New Selling Price:</td>
                                             <td style="text-align:right"><asp:TextBox ID="txtNewSell" runat="server" Width="70" style="text-align:right; font-size:1em">1.00</asp:TextBox>
                                                 <cci:FilteredTextBoxExtender ID="FilteredTextBoxExtender4" runat="server" TargetControlID="txtNewSell" FilterType="Custom, Numbers" ValidChars="." />
-                                            </td> 
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="2" style="text-align:right"><span id="sellCalcNote" style="color:#c0392b; font-size:.8em; display:none"></span></td>
                                         </tr>
                                          </table>
                                      </asp:Panel>
@@ -192,23 +195,45 @@
             var costLabel = document.getElementById('<%= lblNewBOMCost.ClientID %>');
             var gpInput = document.getElementById('<%= txtNewGP.ClientID %>');
             var sellInput = document.getElementById('<%= txtNewSell.ClientID %>');
+            var note = document.getElementById('sellCalcNote');
 
             if (!costLabel || !gpInput || !sellInput) return;
 
-            // Get values
-            var cost = parseFloat(costLabel.innerText.replace(/,/g, ''));
-            var gp = parseFloat(gpInput.value.replace(/,/g, ''));
+            function setNote(msg) {
+                if (!note) return;
+                note.innerText = msg || '';
+                note.style.display = msg ? 'block' : 'none';
+            }
 
-            if (isNaN(cost) || isNaN(gp) || gp >= 100) {
+            // Get values
+            var cost = parseFloat((costLabel.innerText || '').replace(/,/g, ''));
+            var gp = parseFloat((gpInput.value || '').replace(/,/g, ''));
+
+            // Each branch explains why no price could be produced, so the user can fix
+            // the input instead of submitting an empty box and hitting a server error.
+            if (isNaN(gp)) {
                 sellInput.value = '';
+                setNote('Enter a Required GP%.');
+                return;
+            }
+            if (gp >= 100) {
+                sellInput.value = '';
+                setNote('Required GP% must be below 100%.');
+                return;
+            }
+            if (isNaN(cost) || cost <= 0) {
+                sellInput.value = '';
+                setNote('This BOM has no cost to price from.');
                 return;
             }
 
             var newSell = cost / (1 - (gp / 100));
-            if (isFinite(newSell)) {
+            if (isFinite(newSell) && newSell > 0) {
                 sellInput.value = newSell.toFixed(2);
+                setNote('');
             } else {
                 sellInput.value = '';
+                setNote('Unable to calculate a selling price from these values.');
             }
         }
     </script>

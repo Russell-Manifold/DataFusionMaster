@@ -35,6 +35,12 @@ namespace SBMS.Classes
         public bool CanEditLotNumbers { get; set; }
         public bool CompanyUseLotNumbers { get; set; }
         public bool CompanyUseLotAddDetails { get; set; }
+        public bool CompanyAllowSystemLotNumbers { get; set; }
+        public bool AllowScannerCount { get; set; }
+        public bool AllowScannerReceive { get; set; }
+        public bool AllowScannerPutAway { get; set; }
+        public string BinSegments { get; set; }
+        public string BinDelimiter { get; set; }
         public int CompanyDecPlaces { get; set; }
 
         public bool CanStockControl { get; set; }

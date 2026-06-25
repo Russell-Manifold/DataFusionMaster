@@ -98,10 +98,22 @@
     <%-- Navigation grid --%>
     <div class="dash-grid">
 
+        <asp:LinkButton ID="imgbCount" runat="server" OnClick="imgbCount_Click"
+            CssClass="dash-tile" ToolTip="Count goods against a PO; the web does the receiving">
+            <img src="../images/receivingM.png" alt="Count" />
+            <span class="dash-tile-label">Count and Check</span>
+        </asp:LinkButton>
+
+        <asp:LinkButton ID="imgbReceive" runat="server" OnClick="imgbReceive_Click"
+            CssClass="dash-tile" ToolTip="Receive goods against a Purchase Order, straight into locations">
+            <img src="../images/receivingM.png" alt="Receive" />
+            <span class="dash-tile-label">Receive</span>
+        </asp:LinkButton>
+
         <asp:LinkButton ID="imgbRec" runat="server" OnClick="imgbRec_Click"
-            CssClass="dash-tile" ToolTip="Outstanding Purchase Orders and Receiving">
-            <img src="../images/receivingM.png" alt="Receiving" />
-            <span class="dash-tile-label">Receiving</span>
+            CssClass="dash-tile" ToolTip="Put received stock away into bins/locations">
+            <img src="../images/receivingM.png" alt="Put-away" />
+            <span class="dash-tile-label">Put-away</span>
         </asp:LinkButton>
 
         <asp:LinkButton ID="ibtnPickSlips" runat="server" OnClick="ibtnPickSlips_Click"

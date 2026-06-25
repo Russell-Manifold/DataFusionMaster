@@ -126,11 +126,52 @@
                                            </asp:Panel>
                                     </td>
                                    <td>Lot Tracking Advanced</td>
-                                  <td><asp:CheckBox ID="chkLotTrackAdd" runat="server"/></td>    
-                                    </tr>     
+                                  <td><asp:CheckBox ID="chkLotTrackAdd" runat="server"/></td>
+                                    </tr>
+                               <tr>
+                                   <td>System-Generated Lot Numbers</td>
+                                   <td><asp:CheckBox ID="chkSysLot" runat="server" /></td>
+                                   <td colspan="2" style="font-size:small;color:#666;">
+                                       On = the app auto-creates lot numbers (scanners can receive). Off = users enter their own lot numbers (receiving is web-only).
+                                   </td>
+                                    </tr>
                                         <tr>
                                         <td colspan="4"><hr /></td>
-                                    </tr> 
+                                    </tr>
+                               <tr>
+                                   <td colspan="4"><b>Scanner / Mobile Receiving Modes</b></td>
+                               </tr>
+                               <tr>
+                                   <td>1. Count &amp; Check<br /><span style="font-size:small;color:#666;">Scanner counts, web posts the receipt</span></td>
+                                   <td><asp:CheckBox ID="chkScanCount" runat="server" /></td>
+                                   <td>2. Direct Receive<br /><span style="font-size:small;color:#666;">Scanner receives straight into stock</span></td>
+                                   <td><asp:CheckBox ID="chkScanReceive" runat="server" /></td>
+                               </tr>
+                               <tr>
+                                   <td>3. Put-Away<br /><span style="font-size:small;color:#666;">Scanner relocates received stock</span></td>
+                                   <td><asp:CheckBox ID="chkScanPutAway" runat="server" /></td>
+                                   <td colspan="2" style="font-size:small;color:#666;">
+                                       Each switch shows / hides its tile on the mobile (scanner) dashboard.
+                                   </td>
+                               </tr>
+                                        <tr>
+                                        <td colspan="4"><hr /></td>
+                                    </tr>
+                               <tr>
+                                   <td colspan="4"><b>Bin / Location Naming</b></td>
+                               </tr>
+                               <tr>
+                                   <td>Bin ID segments<br /><span style="font-size:small;color:#666;">Comma-separated, in order, max 4 (e.g. Warehouse,Aisle,Row,Bin). Blank = free-text bins.</span></td>
+                                   <td colspan="3"><asp:TextBox ID="txtBinSegments" runat="server" Width="60%" placeholder="Warehouse,Aisle,Row,Bin" /></td>
+                               </tr>
+                               <tr>
+                                   <td>Segment separator</td>
+                                   <td><asp:TextBox ID="txtBinDelim" runat="server" Width="3em" MaxLength="3" Text="-" /></td>
+                                   <td colspan="2" style="font-size:small;color:#666;">e.g. <b>-</b> &rarr; WH1-A03-R2-B05  &nbsp; &nbsp;<span>(Max Length = 15 chars)</span></td>
+                               </tr>
+                                        <tr>
+                                        <td colspan="4"><hr /></td>
+                                    </tr>
                                <tr>
                                    <td>Use Auto Manufacture</td>
                                     <td><asp:CheckBox ID="chkAutoManf" runat="server" OnCheckedChanged="chkAutoManf_CheckedChanged" AutoPostBack="true" />
@@ -189,7 +230,7 @@
                                     </td>
                                    <td>Use BarCodes</td>
                                     <td><asp:CheckBox ID="chkBarCodes" runat="server"/></td>
-                                </tr> 
+                                </tr>
                                <tr>
                                    <td colspan="4"><hr /></td>
                                </tr> 

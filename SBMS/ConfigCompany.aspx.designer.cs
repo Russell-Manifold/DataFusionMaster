@@ -240,6 +240,60 @@ namespace SBMS
         protected global::System.Web.UI.WebControls.CheckBox chkLotTrackAdd;
 
         /// <summary>
+        /// chkSysLot control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.CheckBox chkSysLot;
+
+        /// <summary>
+        /// chkScanCount control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.CheckBox chkScanCount;
+
+        /// <summary>
+        /// chkScanReceive control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.CheckBox chkScanReceive;
+
+        /// <summary>
+        /// chkScanPutAway control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.CheckBox chkScanPutAway;
+
+        /// <summary>
+        /// txtBinSegments control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtBinSegments;
+
+        /// <summary>
+        /// txtBinDelim control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtBinDelim;
+
+        /// <summary>
         /// chkAutoManf control.
         /// </summary>
         /// <remarks>

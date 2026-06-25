@@ -52,5 +52,6 @@ namespace SBMS.Models
         public decimal AddCostsAmount { get; set; }
         public string AddCostsReason { get; set; }
         public decimal ExchRate { get; set; }
+        public Nullable<decimal> RejectQty { get; set; }
     }
 }

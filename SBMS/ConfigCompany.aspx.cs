@@ -96,6 +96,12 @@ namespace SBMS
                 chkManfCosts.Checked = (bool)Comp.ShowManfCosts;
 
                chkLotTrack.Checked = (bool)Comp.UseLotTracking;
+                chkSysLot.Checked = Comp.AllowSystemLotNumbers == true;
+                chkScanCount.Checked = Comp.AllowScannerCount == true;
+                chkScanReceive.Checked = Comp.AllowScannerReceive == true;
+                chkScanPutAway.Checked = Comp.AllowScannerPutAway == true;
+                txtBinSegments.Text = Comp.BinSegments ?? "";
+                txtBinDelim.Text = string.IsNullOrEmpty(Comp.BinDelimiter) ? "-" : Comp.BinDelimiter;
                 chkAutoManf.Checked = (bool)Comp.UseAutoManf;
                 chkAutoManfConf.Checked = false;
                 if (chkAutoManf.Checked)
@@ -147,6 +153,18 @@ namespace SBMS
                     Comp.UATMode = chkUAT.Checked;
                     Comp.UseLotTracking = uselotTrack;
                     CurrentUser.CompanyUseLotNumbers = uselotTrack;
+                    Comp.AllowSystemLotNumbers = chkSysLot.Checked;
+                    CurrentUser.CompanyAllowSystemLotNumbers = chkSysLot.Checked;
+                    Comp.AllowScannerCount = chkScanCount.Checked;
+                    CurrentUser.AllowScannerCount = chkScanCount.Checked;
+                    Comp.AllowScannerReceive = chkScanReceive.Checked;
+                    CurrentUser.AllowScannerReceive = chkScanReceive.Checked;
+                    Comp.AllowScannerPutAway = chkScanPutAway.Checked;
+                    CurrentUser.AllowScannerPutAway = chkScanPutAway.Checked;
+                    Comp.BinSegments = (txtBinSegments.Text ?? "").Trim();
+                    CurrentUser.BinSegments = Comp.BinSegments;
+                    Comp.BinDelimiter = string.IsNullOrWhiteSpace(txtBinDelim.Text) ? "-" : txtBinDelim.Text.Trim();
+                    CurrentUser.BinDelimiter = Comp.BinDelimiter;
                     Comp.ItemQtyDecPlaces = Convert.ToInt32(DDecPlaces.Text.ToString());
                     CurrentUser.CompanyDecPlaces = Convert.ToInt32(DDecPlaces.Text.ToString());
                     Comp.UseModule2 = chkMod2.Checked;

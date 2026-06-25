@@ -234,8 +234,11 @@
   <ItemGroup>
     <Content Include="assets\css\images\overlay.png" />
     <Content Include="assets\js\buttonDisable.js" />
+    <Content Include="SBMSMobile\css\mobile-ui.css" />
     <Content Include="SBMSMobile\NotificationsM.aspx" />
     <Content Include="SBMSMobile\ReceivingM.aspx" />
+    <Content Include="SBMSMobile\ReceiveScanM.aspx" />
+    <Content Include="SBMSMobile\ReceiveCountM.aspx" />
     <Content Include="StockCountVariances.aspx" />
     <Content Include="StockCountUpload.aspx" />
     <Content Include="ItemConvertUOM.aspx" />
@@ -943,6 +946,9 @@
   <ItemGroup>
     <Compile Include="Classes\ConfigEncryptionHelper.cs" />
     <Compile Include="Classes\EncryptApiKeyUtility.cs" />
+    <Compile Include="Models\CompanyMaster.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
     <Compile Include="Models\GetAllStockLevelsByLotNumber_ExclStore_Result.cs">
       <DependentUpon>SBMS.tt</DependentUpon>
     </Compile>
@@ -961,6 +967,9 @@
     <Compile Include="Models\GetValidateBarcode_Result.cs">
       <DependentUpon>SBMS.tt</DependentUpon>
     </Compile>
+    <Compile Include="Models\ReceivingOutstanding.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
     <Compile Include="Models\SBMS1.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -973,6 +982,9 @@
       <DependentUpon>SBMS.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\StockCountLine.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\Store.cs">
       <DependentUpon>SBMS.tt</DependentUpon>
     </Compile>
     <Compile Include="SBMSMobile\NotificationsM.aspx.cs">
@@ -988,6 +1000,20 @@
     </Compile>
     <Compile Include="SBMSMobile\ReceivingM.aspx.designer.cs">
       <DependentUpon>ReceivingM.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="SBMSMobile\ReceiveScanM.aspx.cs">
+      <DependentUpon>ReceiveScanM.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="SBMSMobile\ReceiveScanM.aspx.designer.cs">
+      <DependentUpon>ReceiveScanM.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="SBMSMobile\ReceiveCountM.aspx.cs">
+      <DependentUpon>ReceiveCountM.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="SBMSMobile\ReceiveCountM.aspx.designer.cs">
+      <DependentUpon>ReceiveCountM.aspx</DependentUpon>
     </Compile>
     <Compile Include="StockCountVariances.aspx.cs">
       <DependentUpon>StockCountVariances.aspx</DependentUpon>
@@ -1026,6 +1052,7 @@
     <Compile Include="Classes\KeepAlive.cs" />
     <Compile Include="Classes\PDFFooter.cs" />
     <Compile Include="Classes\SessionValidator.cs" />
+    <Compile Include="Classes\BinMask.cs" />
     <Compile Include="Classes\UserDetails.cs" />
     <Compile Include="CommonScripts.ascx.cs">
       <DependentUpon>CommonScripts.ascx</DependentUpon>
@@ -1149,9 +1176,6 @@
       <DependentUpon>SBMS.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\BundlesLine.cs">
-      <DependentUpon>SBMS.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Models\CompanyMaster.cs">
       <DependentUpon>SBMS.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\DashSalesModel.cs" />
@@ -1360,16 +1384,10 @@
     <Compile Include="Models\ReceivingAddCost.cs">
       <DependentUpon>SBMS.tt</DependentUpon>
     </Compile>
-    <Compile Include="Models\ReceivingOutstanding.cs">
-      <DependentUpon>SBMS.tt</DependentUpon>
-    </Compile>
     <Compile Include="Models\RolesMaster.cs">
       <DependentUpon>SBMS.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\StockCountMaster.cs">
-      <DependentUpon>SBMS.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Models\Store.cs">
       <DependentUpon>SBMS.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\SupplierAdjustment.cs" />
@@ -2084,7 +2102,7 @@
           <AutoAssignPort>True</AutoAssignPort>
           <DevelopmentServerPort>0</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>http://localhost:55065/</IISUrl>
+          <IISUrl>http://localhost:55069/</IISUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
           <UseCustomServer>False</UseCustomServer>
           <CustomServerUrl>

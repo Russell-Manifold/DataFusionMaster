@@ -65,6 +65,8 @@
                     <div class="8u 12u$(medium)">
                         <asp:LinkButton ID="LinkButton2" runat="server" class="buttonC icon fa-arrow-left" PostBackUrl="~/WorksOrdersManfHeaders.aspx" ToolTip="View all open works orders">&nbsp;Works Orders</asp:LinkButton>
                         <asp:LinkButton ID="lbtnMRPThis" runat="server" class="buttonC icon fa-book" ToolTip="View Materials Requirements for this Works Order." OnClick="lbtnMRPThis_Click">&nbsp;Raw Materials Allocations</asp:LinkButton>
+                        <asp:LinkButton ID="lbtnCloseRemaining" runat="server" class="buttonC icon fa-flag-checkered" ToolTip="Close the outstanding balance and complete this Works Order." OnClick="lbtnCloseRemaining_Click" Visible="false">&nbsp;Close Remaining</asp:LinkButton>
+                        <cci:ConfirmButtonExtender ID="cbeCloseRemaining" runat="server" ConfirmText="Close the remaining balance and complete this Works Order? This cannot be undone." Enabled="True" TargetControlID="lbtnCloseRemaining"></cci:ConfirmButtonExtender>
                         <br />
                         <h3 id="woheader" runat="server" style="padding-top: 1em; line-height: 1em"></h3>
                         <asp:Label ID="lblwoid" runat="server" Text="" style="display:none"></asp:Label>
@@ -118,6 +120,7 @@
                                             <asp:ListItem>New</asp:ListItem>
                                             <asp:ListItem>Planned</asp:ListItem>
                                             <asp:ListItem>In Progress</asp:ListItem>
+                                            <asp:ListItem>Partially Manufactured</asp:ListItem>
                                             <asp:ListItem>Complete</asp:ListItem>
                                         </asp:DropDownList></td>
                                 </tr>
@@ -156,6 +159,8 @@
                     <div class="10u 12u$(medium)">   
                         <div id="pnlbtn" runat="server" style="width:100%; text-align:center; margin-top:2em"> 
                             <asp:Label ID="lblReccount" runat="server" Text=""></asp:Label>
+                            <asp:LinkButton ID="lbtnResetLines" runat="server" CssClass="buttonRed icon fa-undo" Style="color:red; border:none" ToolTip="Undo splits: consolidate all incomplete lines back into one per item." OnClick="lbtnResetLines_Click" Visible="false">&nbsp;Reset Lines</asp:LinkButton>
+                            <cci:ConfirmButtonExtender ID="cbeResetLines" runat="server" ConfirmText="Reset and consolidate all incomplete (un-manufactured) lines back into one per item? Completed batches are kept." Enabled="True" TargetControlID="lbtnResetLines"></cci:ConfirmButtonExtender>
                             <asp:LinkButton ID="lbtnWOPrint" runat="server" class="buttonRed icon fa-print" OnClick="lbtnWOPrint_Click" >&nbsp;Print Preview</asp:LinkButton>
                              <asp:LinkButton ID="LbtnSaveWO" runat="server" CssClass="icon fa-save buttonSage" OnClick="LbtnSaveWO_Click">&nbsp;Save Work Order</asp:LinkButton>
                             <asp:LinkButton ID="LbtnUpdateWO" runat="server" CssClass="icon fa-upload buttonIndex" 
@@ -281,6 +286,40 @@
                             </div>
                         </div>
                     </asp:Panel>
+
+                <asp:LinkButton ID="LinkButtonPM" runat="server" Style="display: none">LinkButton</asp:LinkButton>
+                <cci:ModalPopupExtender ID="ModalPopupPartManf" runat="server" BackgroundCssClass="ModalPopupBG" CancelControlID="btnPMCancel" Drag="true" OkControlID="btnPMOk" PopupControlID="PnlPartManf" PopupDragHandleControlID="PopupHeader" TargetControlID="LinkButtonPM"></cci:ModalPopupExtender>
+                <asp:Panel ID="PnlPartManf" runat="server" Style="display: none">
+                    <asp:LinkButton ID="btnPMClose" runat="server" CssClass="fa fa-times" Style="float: right" ToolTip="Cancel"> </asp:LinkButton>
+                    <div class="HellowWorldPopup">
+                        <div id="DivPM" class="PopupHeader">
+                            <h2>Part Manufacture</h2>
+                        </div>
+                        <div class="PopupBody" style="margin: 2em">
+                            <h4><asp:Label ID="lblPMItem" runat="server" Text=""></asp:Label></h4>
+                            <asp:Label ID="lblPMOpenLineId" runat="server" Text="" Style="display: none"></asp:Label>
+                            <table style="text-align: left">
+                                <tr>
+                                    <td>Remaining to produce:&nbsp;</td>
+                                    <td><asp:Label ID="lblPMRemaining" runat="server" Text="" Font-Bold="true"></asp:Label></td>
+                                </tr>
+                                <tr>
+                                    <td>Quantity to make now:&nbsp;</td>
+                                    <td>
+                                        <asp:TextBox ID="txtPartQty" runat="server" Style="text-align: center; width: 120px"></asp:TextBox>
+                                        <cci:FilteredTextBoxExtender ID="ftbePM" runat="server" TargetControlID="txtPartQty" FilterType="Numbers,Custom" ValidChars="." />
+                                    </td>
+                                </tr>
+                            </table>
+                            <p style="font-size: 0.8em; color: #888">Entering the full remaining amount (or more) keeps it as one line. <br /> Splitting resets any quantities already allocated on this line.</p>
+                        </div>
+                        <div class="Controls">
+                            <input id="btnPMCancel" type="button" class="fa fa-times-circle" value="" runat="server" style="display: none" />
+                            <input id="btnPMOk" type="button" value="OK" runat="server" style="display: none" />
+                            <asp:LinkButton ID="btnPartManfSave" runat="server" CssClass="buttonSage icon fa-cut" OnClick="btnPartManfSave_Click"> Log Part Quantity</asp:LinkButton>
+                        </div>
+                    </div>
+                </asp:Panel>
         </ContentTemplate>
     </asp:UpdatePanel>
                 </div>

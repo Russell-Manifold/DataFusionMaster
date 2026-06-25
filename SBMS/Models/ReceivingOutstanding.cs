@@ -35,5 +35,9 @@ namespace SBMS.Models
         public string ReOrderPONum { get; set; }
         public Nullable<System.DateTime> ReOrdPODate { get; set; }
         public Nullable<long> SBCALineID { get; set; }
+        public string StoreCode { get; set; }
+        public bool IsReject { get; set; }
+        public bool Posted { get; set; }
+        public string RejectReason { get; set; }
     }
 }

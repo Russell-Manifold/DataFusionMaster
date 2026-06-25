@@ -22,5 +22,7 @@ namespace SBMS.Models
         public bool StorePerm { get; set; }
         public bool AllowPicking { get; set; }
         public bool AllowReceiving { get; set; }
+        public bool IsRejectStore { get; set; }
+        public bool IsWip { get; set; }
     }
 }

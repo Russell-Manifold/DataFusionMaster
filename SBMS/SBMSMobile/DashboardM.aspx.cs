@@ -42,12 +42,45 @@ namespace SBMS
 
         private void showhidebuttons()
         {
+            if (userDets == null) return;
+
+            // Each company-config switch shows / hides its receiving tile.
+            imgbCount.Visible   = userDets.AllowScannerCount;
+            imgbReceive.Visible = userDets.AllowScannerReceive;
+            imgbRec.Visible     = userDets.AllowScannerPutAway;
+
+            // Manual lot numbers → scanner receiving (Count / Receive) is not allowed; the GRN must
+            // be done on the web so the operator can enter the real lot. Put-away is unaffected.
+            if (userDets.CompanyUseLotNumbers && !userDets.CompanyAllowSystemLotNumbers)
+            {
+                imgbCount.Visible   = false;
+                imgbReceive.Visible = false;
+            }
         }
+        // Mode 1 — Count: pick a PO, scan accept/reject counts; the web posts the GRN.
+        protected void imgbCount_Click(object sender, EventArgs e)
+        {
+            if (userDets != null)
+                Response.Redirect("~/SBMSMobile/OSPurchaseOrdersM.aspx?mode=count&user=" + userDets.UserGuiD, false);
+            else
+                Response.Redirect("~/Dashboard.aspx", true);
+        }
+
+        // Mode 2 — Direct receive: pick a PO, scan items straight into locations (posts the GRN to Sage).
+        protected void imgbReceive_Click(object sender, EventArgs e)
+        {
+            if (userDets != null)
+                Response.Redirect("~/SBMSMobile/OSPurchaseOrdersM.aspx?mode=direct&user=" + userDets.UserGuiD, false);
+            else
+                Response.Redirect("~/Dashboard.aspx", true);
+        }
+
+        // Put-away: relocate already-received stock from the holding store to bins/locations.
         protected void imgbRec_Click(object sender, EventArgs e)
         {
             if (userDets != null)
             {
-                Response.Redirect("~/SBMSMobile/OSPurchaseOrdersM.aspx?user=" + userDets.UserGuiD, false);
+                Response.Redirect("~/SBMSMobile/ReceivingM.aspx?user=" + userDets.UserGuiD, false);
             }
             else
             {

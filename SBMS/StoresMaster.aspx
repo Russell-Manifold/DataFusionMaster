@@ -3,7 +3,7 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
-    <title>Stores Master</title>
+    <title>Location Master</title>
     <link id="Link3" runat="server" rel="shortcut icon" href="images/datafusionicon.ico" type="image/x-icon" />
     <link id="Link4" runat="server" rel="icon" href="images/datafusionicon.ico" type="image/ico" />
     <link rel="stylesheet" href="assets/css/main.css" />
@@ -19,7 +19,10 @@
                         <asp:LinkButton ID="lbtnHome" runat="server" class="buttonC icon fa-home" onclick="lbtnHome_Click" >&nbsp;&nbsp;</asp:LinkButton>
                          <asp:LinkButton ID="LbtnConfig" runat="server" class="buttonC icon fa-gears" PostBackUrl="~/ConfigMaster.aspx" > &nbsp;Settings</asp:LinkButton>
                         <asp:LinkButton ID="lbtnLogOut" runat="server" class="buttonTransparent icon fa-eject" style="float:right" OnClick="lbtnLogOut_Click">&nbsp;</asp:LinkButton><br />
-                        <h3 style="padding-top:0; line-height:1em">Stores Master</h3>                    
+                        <h3 style="padding-top:0; line-height:1em">Location Master</h3>
+                        <div style="font-size:small;color:#666; width:600px; text-align:center; margin:auto">A location can be anything from a whole warehouse down to a single bin &ndash; 
+                            e.g. a warehouse, an area, an aisle, a rack, a shelf or a bin. Define each level you want to track as its own location. 
+                            Please see your Company Config for requirements on setting these up.</div>
                     </div>
                     <div class="2u 12u$(medium)"><asp:Image ID="imgCoImg" runat="server"  style="float:right" class="logoImg" /></div>
                     </div>
@@ -27,7 +30,7 @@
                 <div class="row 150%">
                     <div class="4u 12u$(medium)">&nbsp;</div>    
                     <div class="4u 12u$(medium)">
-                        <asp:LinkButton ID="lbtnAddStore" runat="server" CssClass="fa fa-plus-circle buttonRed"> Add New Store</asp:LinkButton>
+                        <asp:LinkButton ID="lbtnAddStore" runat="server" CssClass="fa fa-plus-circle buttonRed"> Add New Location</asp:LinkButton>
                         <asp:GridView ID="GridStores" runat="server" AutoGenerateColumns="false" CssClass="gridview" OnRowDataBound="GridStores_RowDataBound">
                         <HeaderStyle CssClass="gridViewHeader" />
                                     <FooterStyle CssClass="gridViewHeader" />
@@ -46,6 +49,16 @@
                                          <asp:TemplateField HeaderText="Allow Picking" ItemStyle-HorizontalAlign="Center" HeaderStyle-HorizontalAlign="Center">
                                          <ItemTemplate>
                                              <asp:CheckBox ID="chkAllowPick" runat="server" Text=" " Checked='<%# Eval("AllowPicking") %>' AutoPostBack="true" OnCheckedChanged="chkAllowPick_CheckedChanged" />
+                                         </ItemTemplate>
+                                     </asp:TemplateField>
+                                         <asp:TemplateField HeaderText="WIP" ItemStyle-HorizontalAlign="Center" HeaderStyle-HorizontalAlign="Center">
+                                         <ItemTemplate>
+                                             <asp:CheckBox ID="chkIsWip" runat="server" Text=" " Checked='<%# Eval("IsWip") %>' AutoPostBack="true" OnCheckedChanged="chkIsWip_CheckedChanged" />
+                                         </ItemTemplate>
+                                     </asp:TemplateField>
+                                         <asp:TemplateField HeaderText="Reject" ItemStyle-HorizontalAlign="Center" HeaderStyle-HorizontalAlign="Center">
+                                         <ItemTemplate>
+                                             <asp:CheckBox ID="chkIsReject" runat="server" Text=" " Checked='<%# Eval("IsRejectStore") %>' AutoPostBack="true" OnCheckedChanged="chkIsReject_CheckedChanged" />
                                          </ItemTemplate>
                                      </asp:TemplateField>
                                      <asp:TemplateField HeaderText="Active">
@@ -67,17 +80,22 @@
                         <asp:LinkButton ID="lbtnCancel" runat="server" CssClass="fa fa-times" style="float:right" ToolTip="Cancel" > </asp:LinkButton>
                         <div class="HellowWorldPopup">
                             <div id="Div4" class="PopupHeader">
-                                <h4>Add/Edit Store<asp:Label ID="lblTpe" runat="server" Text=""></asp:Label></h4>
+                                <h4>Add/Edit Store<asp:Label ID="lblTpe" runat="server" Text="" style="width:10em"></asp:Label></h4>
                             </div>
                             <div class="PopupBody" style="text-align:center">
+                                <asp:Label ID="lblBinFormat" runat="server" style="display:block; font-size:small; color:#666; margin-bottom:8px"></asp:Label>
                                 <table style="width:400px; margin:auto; text-align:left">
                                     <tr>
-                                        <td>Store Code</td>
-                                        <td style="text-align:left"><asp:TextBox ID="txtstorecode" runat="server" MaxLength="6" Width="40px" ></asp:TextBox></td>
+                                        <td>Code</td>
+                                        <td style="text-align:left"><asp:TextBox ID="txtstorecode" runat="server" MaxLength="15" Width="80px" ></asp:TextBox>
+                                            <br /><span style="font-size:small">(Max Length = 15 chars)</span>
+                                        </td>
                                     </tr>
                                     <tr>
-                                        <td>Store Name</td>
-                                        <td style="text-align:left"><asp:TextBox ID="txtStoreDesctript" runat="server" MaxLength="50" Width="250px" ></asp:TextBox></td>
+                                        <td>Name</td>
+                                        <td style="text-align:left"><asp:TextBox ID="txtStoreDesctript" runat="server" MaxLength="50" Width="250px" ></asp:TextBox>
+                                              <br /><span  style="font-size:small">(Max Length = 50 chars)</span>
+                                        </td>
                                     </tr>
                                      <tr>
                                         <td>Allow Picking</td>

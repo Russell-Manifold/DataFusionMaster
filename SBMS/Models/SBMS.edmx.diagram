@@ -29,7 +29,6 @@
         <EntityTypeShape EntityType="SBMSModel.PickSlipTransaction" Width="1.5" PointX="16.75" PointY="8.75" IsExpanded="true" />
         <EntityTypeShape EntityType="SBMSModel.ProdPlanLine" Width="1.5" PointX="16.75" PointY="12.75" IsExpanded="true" />
         <EntityTypeShape EntityType="SBMSModel.ProdTransaction" Width="1.5" PointX="8.75" PointY="17.75" IsExpanded="true" />
-        <EntityTypeShape EntityType="SBMSModel.Store" Width="1.5" PointX="12.625" PointY="19" IsExpanded="true" />
         <EntityTypeShape EntityType="SBMSModel.TempDocLine" Width="1.5" PointX="18.75" PointY="0.75" IsExpanded="true" />
         <EntityTypeShape EntityType="SBMSModel.UsersMaster" Width="1.5" PointX="4.75" PointY="18.75" IsExpanded="true" />
         <EntityTypeShape EntityType="SBMSModel.WorkStation" Width="1.5" PointX="14.75" PointY="18.75" IsExpanded="true" />
@@ -48,8 +47,6 @@
         <EntityTypeShape EntityType="SBMSModel.ReceivingAddCost" Width="1.5" PointX="3.375" PointY="23.75" />
         <EntityTypeShape EntityType="SBMSModel.AccountsMaster" Width="1.5" PointX="21.375" PointY="16.75" />
         <EntityTypeShape EntityType="SBMSModel.TaxTypesMaster" Width="1.5" PointX="3.375" PointY="5.75" />
-        <EntityTypeShape EntityType="SBMSModel.CompanyMaster" Width="1.5" PointX="23.375" PointY="5.75" />
-        <EntityTypeShape EntityType="SBMSModel.ReceivingOutstanding" Width="1.5" PointX="23.375" PointY="13.75" />
         <AssociationConnector Association="SBMSModel.FK_ReceivingOutstanding_ReceivingOutstanding" />
         <EntityTypeShape EntityType="SBMSModel.DynamicReport" Width="1.5" PointX="3.375" PointY="15.75" />
         <AssociationConnector Association="SBMSModel.FK_DocHeaderAttachments_DocHeaderAttachments" />
@@ -59,6 +56,9 @@
         <AssociationConnector Association="SBMSModel.FK_ItemTransferLines_ItemTransferLines" />
         <EntityTypeShape EntityType="SBMSModel.ItemTransferHeader" Width="1.5" PointX="24.375" PointY="0.75" />
         <EntityTypeShape EntityType="SBMSModel.StockCountLine" Width="1.5" PointX="23.375" PointY="25.75" />
+        <EntityTypeShape EntityType="SBMSModel.Store" Width="1.5" PointX="21.375" PointY="0.75" />
+        <EntityTypeShape EntityType="SBMSModel.ReceivingOutstanding" Width="1.5" PointX="25.375" PointY="25.75" />
+        <EntityTypeShape EntityType="SBMSModel.CompanyMaster" Width="1.5" PointX="0.75" PointY="26.75" />
       </Diagram>
     </edmx:Diagrams>
   </edmx:Designer>

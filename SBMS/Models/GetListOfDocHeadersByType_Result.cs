@@ -34,5 +34,6 @@ namespace SBMS.Models
         public string LinkedJCStatus { get; set; }
         public string LinkedPSStatus { get; set; }
         public string LinkedStatus { get; set; }
+        public Nullable<int> RecStatus { get; set; }
     }
 }

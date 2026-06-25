@@ -48,5 +48,6 @@ namespace SBMS.Models
         public Nullable<decimal> DocCost { get; set; }
         public Nullable<decimal> DocGP { get; set; }
         public string PostAddress5 { get; set; }
+        public Nullable<int> RecStatus { get; set; }
     }
 }

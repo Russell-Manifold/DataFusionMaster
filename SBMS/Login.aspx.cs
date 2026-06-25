@@ -309,6 +309,12 @@ namespace SBMS
                             x.SendMessages,
                             x.UseLotTracking,
                             x.UseLotAddDetails,
+                            x.AllowSystemLotNumbers,
+                            x.AllowScannerCount,
+                            x.AllowScannerReceive,
+                            x.AllowScannerPutAway,
+                            x.BinSegments,
+                            x.BinDelimiter,
                             x.ItemQtyDecPlaces,
                             x.UseAutoManf,
                             x.UsePickSlipTracking,
@@ -347,6 +353,12 @@ namespace SBMS
                     }
 
                     userDetails.CompanyUseLotAddDetails = GenLogIn.UseLotAddDetails;
+                    userDetails.CompanyAllowSystemLotNumbers = GenLogIn.AllowSystemLotNumbers == true;
+                    userDetails.AllowScannerCount = GenLogIn.AllowScannerCount == true;
+                    userDetails.AllowScannerReceive = GenLogIn.AllowScannerReceive == true;
+                    userDetails.AllowScannerPutAway = GenLogIn.AllowScannerPutAway == true;
+                    userDetails.BinSegments = GenLogIn.BinSegments ?? "";
+                    userDetails.BinDelimiter = string.IsNullOrEmpty(GenLogIn.BinDelimiter) ? "-" : GenLogIn.BinDelimiter;
                     //if (userDetails.UseGenericLogin)
                     //{
                     //    userDetails.LoginName = GenLogIn.CoGenericLoginEmail;

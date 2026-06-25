@@ -1,10 +1,10 @@
-<%@ Page Language="C#" Async="true" AutoEventWireup="true" CodeBehind="ReceivingM.aspx.cs"
-         Inherits="SBMS.ReceivingM" %>
+<%@ Page Language="C#" Async="true" AutoEventWireup="true" CodeBehind="ReceiveScanM.aspx.cs"
+         Inherits="SBMS.ReceiveScanM" %>
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Put-away</title>
+    <title>Receive</title>
     <link rel="shortcut icon" href="../images/datafusionicon.ico" type="image/x-icon" />
     <link rel="stylesheet" href="../SBMSMobile/css/main.css" />
     <link rel="stylesheet" href="../SBMSMobile/css/mobile-ui.css" />
@@ -16,36 +16,13 @@
     <link rel="apple-touch-icon" href="../SBMSMobile/icons/icon-192.png" />
     <meta name="format-detection" content="telephone=no" />
     <style>
-        .mob-doc-selection-strip { color: #2d6a2d; }
-        .mob-doc-selection-strip strong { color: #1e4d1e; }
         .mob-linecard.matched { outline: 2px solid #4282C1; }
-
-        /* Put away this session – running confirmation list */
-        .mob-done-list { margin: 1em .6em 2em; border-top: 1px solid #e2e2e2; padding-top: .7em; }
-        .mob-done-head { font-weight: 700; color: #2d6a2d; font-size: .95em; margin-bottom: .4em; }
-        .mob-done-row  { display: flex; align-items: baseline; gap: .5em; padding: .35em 0;
-                         border-bottom: 1px solid #f0f0f0; font-size: .9em; }
-        .mob-done-qty   { font-weight: 700; min-width: 2.6em; text-align: right; color: #1a1a2e; }
-        .mob-done-item  { font-weight: 600; color: #1a1a2e; }
-        .mob-done-arrow { color: #999; }
-        .mob-done-dest  { color: #2d6a2d; font-weight: 600; }
-        .mob-done-time  { margin-left: auto; color: #aaa; font-size: .85em; }
-
-        /* Success toast */
-        .mob-toast { position: fixed; left: 50%; bottom: 2.2em;
-                     transform: translateX(-50%) translateY(1em);
-                     background: #2d6a2d; color: #fff; padding: .8em 1.3em; border-radius: .6em;
-                     font-size: 1.05em; font-weight: 600; box-shadow: 0 4px 16px rgba(0,0,0,.3);
-                     opacity: 0; transition: opacity .25s, transform .25s; z-index: 1000;
-                     pointer-events: none; max-width: 90%; text-align: center; }
-        .mob-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
     </style>
 </head>
 <body>
 <form id="form1" runat="server">
     <asp:ScriptManager ID="ScriptManager1" runat="server" />
 
-    <%-- Loading overlay --%>
     <asp:UpdateProgress ID="UpdateProgress1" runat="server" AssociatedUpdatePanelID="upMain">
         <ProgressTemplate>
             <div style="position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:999;
@@ -55,13 +32,12 @@
         </ProgressTemplate>
     </asp:UpdateProgress>
 
-    <%-- Top bar --%>
     <div class="mob-topbar">
         <div class="mob-topbar-left">
             <asp:LinkButton ID="lbtnTopBack" runat="server" OnClick="lbtnTopBack_Click" CssClass="mob-topbar-back">&#8592; Back</asp:LinkButton>
             <asp:LinkButton ID="lbtnTopHome" runat="server" OnClick="lbtnTopHome_Click" CssClass="mob-topbar-icon" title="Home">&#127968;</asp:LinkButton>
         </div>
-        <span class="mob-topbar-title">&#128230; Put-away</span>
+        <span class="mob-topbar-title">&#128229; Receive</span>
         <div class="mob-topbar-right">
             <asp:Label ID="lblUsername" runat="server" style="display:none;" />
             <asp:LinkButton ID="lbtnLogOut" runat="server" OnClick="lbtnLogOut_Click"
@@ -72,13 +48,15 @@
     <asp:UpdatePanel ID="upMain" runat="server">
     <ContentTemplate>
 
-        <%-- Source (holding) store header --%>
+        <%-- PO summary header --%>
         <div class="mob-doc-header">
             <div class="mob-doc-header-main">
-                <span class="mob-doc-num">&#128230; From: <asp:Label ID="lblPONum" runat="server" /></span>
+                <span class="mob-doc-num"><asp:Label ID="lblPONum" runat="server" /></span>
+                <span class="mob-doc-secondary">&mdash; <asp:Label ID="lblSupplier" runat="server" /></span>
             </div>
             <div class="mob-doc-meta">
-                <span class="mob-doc-badge"><asp:Label ID="lblLineCount" runat="server" /> line(s) in holding</span>
+                <span class="mob-doc-meta-item">Due: <asp:Label ID="lblDueDate" runat="server" /></span>
+                <span class="mob-doc-badge"><asp:Label ID="lblLineCount" runat="server" /> line(s) outstanding</span>
             </div>
         </div>
 
@@ -94,99 +72,100 @@
             </div>
         </div>
 
-        <%-- Scan feedback --%>
         <asp:Label ID="lblScanFeedback" runat="server" />
 
-        <%-- Holding-stock cards --%>
-        <div class="mob-linelist">
-            <asp:Repeater ID="rptLines" runat="server">
-                <ItemTemplate>
-                    <asp:Panel ID="pnlCard" runat="server"
-                        CssClass='<%# IsMatched(Eval("ItemID"), Eval("LotNumber")) ? "mob-linecard matched" : "mob-linecard" %>'>
-                        <div class="mob-linecard-body">
+        <%-- Finalise panel --%>
+        <asp:Panel ID="pnlFinalize" runat="server" Visible="false" CssClass="mob-action-panel">
+            <h4>&#x1F4CB; Finalise &amp; Generate GRN</h4>
+            <div class="mob-panel-row">
+                <label>D/N Number **</label>
+                <asp:TextBox ID="txtDNNum" runat="server" placeholder="Delivery Note #"
+                    autocomplete="off" autocorrect="off" autocapitalize="off" />
+            </div>
+            <div class="mob-panel-row">
+                <label>Invoice Number **</label>
+                <asp:TextBox ID="txtInvNum" runat="server" placeholder="Supplier Invoice #"
+                    autocomplete="off" autocorrect="off" autocapitalize="off" />
+            </div>
+            <div class="mob-panel-row">
+                <label>Receive Date</label>
+                <asp:TextBox ID="txtRecDate" runat="server" TextMode="Date" />
+            </div>
+            <div class="mob-panel-check">
+                <asp:CheckBox ID="chkReceivingComplete" runat="server" Checked="true" Text=" " />
+                <span>Mark receiving as complete</span>
+            </div>
+            <asp:Label ID="lblFinalizeError" runat="server" CssClass="mob-panel-error" Visible="false" />
+            <div class="mob-panel-buttons">
+                <asp:LinkButton ID="lbtnCancelFinalize" runat="server" OnClick="lbtnCancelFinalize_Click"
+                    CssClass="mob-btn-cancel">Cancel</asp:LinkButton>
+                <asp:LinkButton ID="lbtnConfirmGRN" runat="server" OnClick="lbtnConfirmGRN_Click"
+                    CssClass="mob-btn-confirm" OnClientClick="return disableGRNButton();">&#10003; Confirm &amp; Generate GRN</asp:LinkButton>
+            </div>
+        </asp:Panel>
 
+        <%-- PO line cards --%>
+        <div class="mob-linelist">
+            <asp:Repeater ID="rptLines" runat="server"
+                OnItemDataBound="rptLines_ItemDataBound"
+                OnItemCommand="rptLines_ItemCommand">
+                <ItemTemplate>
+                    <asp:Panel ID="pnlCard" runat="server" CssClass="mob-linecard">
+                        <div class="mob-linecard-body">
                             <div class="mob-card-main">
-                                <div class="mob-item-code"><%# Eval("ItemCode") %></div>
+                                <div class="mob-item-code">
+                                    <%# Eval("ItemCode") %>
+                                    <asp:Label ID="lblSavedBadge" runat="server" CssClass="mob-saved-badge" Visible="false">&#10003; Captured</asp:Label>
+                                </div>
                                 <div class="mob-item-unit"><%# Eval("Unit") %></div>
                                 <div class="mob-item-descr"><%# Eval("ItemDescription") %></div>
-                                <div class="mob-lot-label">
-                                    <%# string.IsNullOrEmpty(Convert.ToString(Eval("LotNumber"))) ? "" : "Lot #: " + Eval("LotNumber") %>
-                                </div>
 
                                 <div class="mob-qty-row">
-                                    <span class="mob-qty-badge ordered">In holding&nbsp;<%# Eval("QOH", "{0:0.##}") %></span>
-                                    <asp:HiddenField ID="hfItemId" runat="server" Value='<%# Eval("ItemID") %>' />
-                                    <asp:HiddenField ID="hfLot" runat="server" Value='<%# Eval("LotNumber") %>' />
+                                    <span class="mob-qty-badge ordered">Ordered&nbsp;<%# Eval("Quantity", "{0:0.##}") %></span>
+                                    <span class="mob-qty-badge remaining">Remaining&nbsp;<asp:Label ID="lblRemaining" runat="server" /></span>
+                                    <asp:HiddenField ID="hfLineID" runat="server" Value='<%# Eval("LineID") %>' />
                                 </div>
 
                                 <div class="mob-qty-input-row">
                                     <span class="mob-qty-label">Qty</span>
-                                    <asp:TextBox ID="txtQty" runat="server" TextMode="Number"
-                                        Text='<%# Eval("QOH", "{0:0.##}") %>'
+                                    <asp:TextBox ID="txtRecQty" runat="server" TextMode="Number"
                                         style="width:4.5em;height:2.7em;border:1px solid #ccc;border-radius:.45em;
                                                text-align:center;font-size:1.05em;font-weight:600;" />
                                     <span class="mob-qty-label" style="margin-left:.6em;">Loc</span>
-                                    <asp:TextBox ID="txtLoc" runat="server"
-                                        placeholder="Scan location"
+                                    <asp:TextBox ID="txtLoc" runat="server" placeholder="Scan location"
                                         autocomplete="off" autocorrect="off" autocapitalize="off"
                                         style="flex:1;min-width:0;height:2.7em;border:1px solid #ccc;border-radius:.45em;
                                                text-align:left;padding:0 .55em;font-size:1.05em;" />
                                 </div>
+
+                                <asp:Label ID="lblLotNum" runat="server" CssClass="mob-lot-label" />
                             </div>
 
-                            <asp:LinkButton ID="lbtnPutAway" runat="server"
-                                CssClass="mob-action-btn"
-                                OnClick="lbtnPutAway_Click">&#10004;</asp:LinkButton>
-
+                            <asp:LinkButton ID="lbtnSaveLine" runat="server" CssClass="mob-action-btn"
+                                OnClick="lbtnSaveLine_Click">&#10004;</asp:LinkButton>
                         </div>
                     </asp:Panel>
                 </ItemTemplate>
             </asp:Repeater>
 
             <asp:Label ID="lblEmpty" runat="server" CssClass="mob-empty"
-                Visible="false" Text="&#10003; Holding store is clear." />
+                Visible="false" Text="&#10003; All lines received!" />
         </div>
-
-        <%-- Put away this session (running confirmation; clears when you leave the page) --%>
-        <asp:Panel ID="pnlDone" runat="server" Visible="false" CssClass="mob-done-list">
-            <div class="mob-done-head">&#10003; Put away this session (<asp:Label ID="lblDoneCount" runat="server" />)</div>
-            <asp:Repeater ID="rptDone" runat="server">
-                <ItemTemplate>
-                    <div class="mob-done-row">
-                        <span class="mob-done-qty"><%# Eval("Qty", "{0:0.##}") %></span>
-                        <span class="mob-done-item"><%# Eval("ItemCode") %></span>
-                        <span class="mob-done-arrow">&#8594;</span>
-                        <span class="mob-done-dest"><%# Eval("Dest") %></span>
-                        <span class="mob-done-time"><%# Eval("TimeText") %></span>
-                    </div>
-                </ItemTemplate>
-            </asp:Repeater>
-        </asp:Panel>
 
     </ContentTemplate>
     </asp:UpdatePanel>
+
+    <div class="mob-toolbar">
+        <asp:LinkButton ID="lbtnFinalize" runat="server" OnClick="lbtnFinalize_Click"
+            CssClass="mob-btn-primary">&#x2B06; Finalise GRN</asp:LinkButton>
+    </div>
+</form>
 
 <script>
     function focusScanBox() {
         var b = document.getElementById('<%= txtBarcode.ClientID %>');
         if (b) b.focus();
     }
-
-    function showToast(msg) {
-        var t = document.getElementById('mobToast');
-        if (!t) {
-            t = document.createElement('div');
-            t.id = 'mobToast';
-            t.className = 'mob-toast';
-            document.body.appendChild(t);
-        }
-        t.innerHTML = msg;
-        void t.offsetWidth;            // reflow so the transition replays
-        t.classList.add('show');
-        clearTimeout(t._hide);
-        t._hide = setTimeout(function () { t.classList.remove('show'); }, 2500);
-    }
-
     var prm = Sys && Sys.WebForms && Sys.WebForms.PageRequestManager.getInstance();
     if (prm) {
         prm.add_endRequest(function () {
@@ -195,7 +174,6 @@
             if (matched) matched.scrollIntoView({ behavior: 'smooth', block: 'center' });
         });
     }
-
     window.onload = function () {
         focusScanBox();
         if (!window.matchMedia('(display-mode: standalone)').matches) {
@@ -204,7 +182,11 @@
             setTimeout(function () { document.body.style.height = ''; }, 600);
         }
     };
+    function disableGRNButton() {
+        var btn = document.getElementById('<%= lbtnConfirmGRN.ClientID %>');
+        if (btn) { btn.disabled = true; btn.innerText = 'Processing…'; }
+        return true;
+    }
 </script>
-    </form>
 </body>
 </html>

@@ -151,6 +151,37 @@ namespace SBMS
         protected void LoadWOLines()
         {
             LoadAccordion(woid, CoID);
+            SetPartManufactureButtons();
+        }
+
+        // Decides whether the "Close Remaining" and "Reset Lines" header buttons are
+        // available. (The Part Manufacture button lives on each open line's accordion
+        // pane header, added in CreateAccordionPane.)
+        //  - Close Remaining: only once something has been manufactured and a balance
+        //    is still outstanding.
+        //  - Reset Lines: an item with more than one incomplete line.
+        protected void SetPartManufactureButtons()
+        {
+            using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+            {
+                var header = _db.WorksOrderHeaders.FirstOrDefault(x => x.CompanyID == CoID && x.ID == woid);
+                bool headerActive = header != null && header.Active != false && header.Status != "Complete";
+
+                var lines = _db.WorksOrderLines
+                    .Where(x => x.CompanyID == CoID && x.WOID == woid && (x.Quantity ?? 0) > 0)
+                    .ToList();
+
+                var openLines = lines.Where(x => x.Active == true && x.Complete != true).ToList();
+                int openCount = openLines.Count;
+                int completedCount = lines.Count(x => x.Complete == true);
+
+                lbtnCloseRemaining.Visible = headerActive && openCount >= 1 && completedCount >= 1;
+
+                // Reset is offered only when an item has more than one incomplete line
+                // (i.e. there are splits to consolidate).
+                lbtnResetLines.Visible = headerActive
+                    && openLines.GroupBy(x => new { x.SelectionId, x.LineType }).Any(grp => grp.Count() > 1);
+            }
         }
 
         protected void LoadAccordion(long woid, long CoID)
@@ -198,18 +229,31 @@ namespace SBMS
             pane.Attributes.Add("class", "cost-calculation-pane");
             pane.Attributes.Add("data-line-id", line.LineID.ToString());
 
+            // A line is locked if the whole WO is closed (iscomp) OR this individual
+            // line has already been completed in an earlier (part-manufacture) batch.
+            // This lets completed batches show read-only while the open balance stays editable.
+            bool lineLocked = iscomp || (line.Complete == true);
+
             // Create and configure store dropdown
-            DropDownList DDHStore = CreateStoreDropdown(line, iscomp);
+            DropDownList DDHStore = CreateStoreDropdown(line, lineLocked);
 
             // Create completion checkbox
-            CheckBox chkC = CreateCompletionCheckbox(line, iscomp);
+            CheckBox chkC = CreateCompletionCheckbox(line, lineLocked);
             // Add header controls
             pane.HeaderContainer.Controls.Add(chkC);
             DDHStore.Attributes.Add("style", "float:right; width:5em; text-align:center");
             pane.HeaderContainer.Controls.Add(DDHStore);
 
+            // Part Manufacture button on every open (incomplete) line. Added after the
+            // Store/Complete controls and floated right so the header cluster reads
+            // [Part Manufacture] [Store] [Complete] without overflowing the pane.
+            if (!lineLocked)
+            {
+                AddPartManufactureButton(pane, line);
+            }
+
             // Add lot number button if applicable
-            if (CurrentUser.CompanyUseLotNumbers && !iscomp && line.IsLotTracked == true)
+            if (CurrentUser.CompanyUseLotNumbers && !lineLocked && line.IsLotTracked == true)
             {
                 AddLotNumberButton(pane, line);
             }
@@ -221,7 +265,7 @@ namespace SBMS
             AddHiddenFields(pane, line);
 
             // Create and configure grid view
-            GridView gridRMs = CreateGridView(line, CoID, iscomp, _db);
+            GridView gridRMs = CreateGridView(line, CoID, lineLocked, _db);
             pane.ContentContainer.Controls.Add(gridRMs);
 
             Table tblCosts = CreateCostTable(line);
@@ -316,7 +360,8 @@ namespace SBMS
 
         private void AddHeaderText(AccordionPane pane, WorksOrderLine line)
         {
-            string headerText = $"{line.ItemCode} - {line.ItemDescription} Qty: {line.Quantity}";
+            string qtyDisplay = ApiUrlCall.NumberToDecimal((line.Quantity ?? 0).ToString(), CurrentUser.CompanyDecPlaces);
+            string headerText = $"{line.ItemCode} - {line.ItemDescription} Qty: {qtyDisplay}";
 
             if (CurrentUser.CompanyUseLotNumbers && line.IsLotTracked == true && !string.IsNullOrEmpty(line.LotNumber))
             {
@@ -1505,7 +1550,17 @@ namespace SBMS
                     FCHeader.LinkedDocumentNum = txtLinkedDoc.Text.ToString();
                     FCHeader.Message = txtwomsg.Text.ToString().Trim().Replace("'", "''");
                     FCHeader.DueDate = Convert.ToDateTime(txtDueDate.Text);
-                    FCHeader.Status = DDStatus.Text;
+
+                    // Keep a partially-manufactured WO flagged correctly regardless of the
+                    // status dropdown, so a plain Save can't wrongly mark it Complete while
+                    // a balance is still open.
+                    bool anyComplete = _db.WorksOrderLines.Any(x => x.CompanyID == CoID && x.WOID == woid && x.Complete == true);
+                    bool anyOpen = _db.WorksOrderLines.Any(x => x.CompanyID == CoID && x.WOID == woid && x.Active == true && x.Complete != true && (x.Quantity ?? 0) > 0);
+                    if (anyComplete && anyOpen)
+                        FCHeader.Status = "Partially Manufactured";
+                    else
+                        FCHeader.Status = DDStatus.Text;
+
                     _db.SaveChanges();
                     retStr = "Successfully Saved";
                     return retStr;
@@ -1923,6 +1978,314 @@ namespace SBMS
         {
             Response.Redirect($"~/WorksOrderPDFCreate.aspx?woid={woid}", true);
         }
+
+        #region Part Manufacture
+
+        // Adds the Part Manufacture button to an open line's accordion pane header.
+        // CommandArgument carries the LineID so the click handler knows exactly which
+        // line to split (no need to re-derive "the single open line").
+        private void AddPartManufactureButton(AccordionPane pane, WorksOrderLine line)
+        {
+            LinkButton btnPart = new LinkButton
+            {
+                ID = $"btnPartManf_{line.LineID}",
+                Text = " Part Manufacture",
+                CssClass = "icon fa-cut buttonCancel",
+                CommandName = "PartManf",
+                ToolTip = "Manufacture part of this order now and keep the balance open.",
+                CommandArgument = line.LineID.ToString()
+            };
+            // Compact + float right so it sits inside the 3em header next to Store/Complete
+            // rather than overflowing the pane.
+            btnPart.Attributes.Add("style", "float:right; margin:0 0.5em 0 0; padding:0.15em 0.6em; font-size:0.8em; line-height:1.6em");
+            btnPart.Click += lbtnPartManf_Click;
+            pane.HeaderContainer.Controls.Add(btnPart);
+        }
+
+        // Opens the Part Manufacture dialog for the line identified by the button's
+        // CommandArgument.
+        protected void lbtnPartManf_Click(object sender, EventArgs e)
+        {
+            LinkButton btn = sender as LinkButton;
+            long lineId;
+            if (btn == null || !long.TryParse(btn.CommandArgument, out lineId))
+            {
+                AlertHelper.ShowSweetAlert(this, "Unable to identify the line to part-manufacture.", "error");
+                return;
+            }
+
+            using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+            {
+                var line = _db.WorksOrderLines.FirstOrDefault(x => x.CompanyID == CoID && x.LineID == (int)lineId);
+                if (line == null || line.Active != true || line.Complete == true || (line.Quantity ?? 0) <= 0)
+                {
+                    AlertHelper.ShowSweetAlert(this, "This line is no longer open for Part Manufacture.", "warning");
+                    return;
+                }
+                lblPMOpenLineId.Text = line.LineID.ToString();
+                lblPMItem.Text = $"{line.ItemCode} - {line.ItemDescription}";
+                if (line.Quantity != null) lblPMRemaining.Text = ApiUrlCall.NumberToDecimal((line.Quantity ?? 0).ToString() ?? "", CurrentUser.CompanyDecPlaces);
+                txtPartQty.Text = "";
+            }
+            ModalPopupPartManf.Show();
+        }
+
+        // Logs the part quantity: splits the open line into a batch line (the quantity
+        // to make now) and a new balance line for the remainder. The original ordered
+        // quantity is preserved on every resulting line via OrderedQty. Entering the
+        // full remaining (or more, for over-supply) leaves it as one line.
+        protected void btnPartManfSave_Click(object sender, EventArgs e)
+        {
+            decimal batchQty;
+            if (!decimal.TryParse(txtPartQty.Text, out batchQty) || batchQty <= 0)
+            {
+                AlertHelper.ShowSweetAlert(this, "Please enter a valid quantity greater than zero.", "warning");
+                ModalPopupPartManf.Show();
+                return;
+            }
+
+            long lineId;
+            if (!long.TryParse(lblPMOpenLineId.Text, out lineId))
+            {
+                AlertHelper.ShowSweetAlert(this, "Unable to identify the line to split.", "error");
+                return;
+            }
+
+            using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+            {
+                var line = _db.WorksOrderLines.FirstOrDefault(x => x.CompanyID == CoID && x.LineID == (int)lineId);
+                if (line == null || line.Active != true || line.Complete == true)
+                {
+                    AlertHelper.ShowSweetAlert(this, "This line is no longer open for Part Manufacture.", "warning");
+                    return;
+                }
+
+                decimal origQty = line.Quantity ?? 0;
+                if (origQty <= 0)
+                {
+                    AlertHelper.ShowSweetAlert(this, "Invalid line quantity, unable to split.", "error");
+                    return;
+                }
+                decimal ordered = line.OrderedQty ?? origQty;
+
+                var rms = _db.WorksOrderRMLines
+                    .Where(x => x.CompanyID == CoID && x.LinkedWOLineID == (int)lineId)
+                    .ToList();
+
+                if (batchQty >= origQty)
+                {
+                    // Full remaining or over-supply: keep it as one line, just rescale.
+                    decimal factor = batchQty / origQty;
+                    foreach (var rm in rms)
+                    {
+                        rm.Quantity = (rm.Quantity ?? 0) * factor;
+                        rm.LinkedFGQty = batchQty;
+                        rm.UseQty = 0; rm.ScrapQty = 0; rm.RejectQty = 0;
+                        rm.PickComplete = false;
+                    }
+                    line.Quantity = batchQty;
+                    line.OrderedQty = ordered;
+                    _db.SaveChanges();
+
+                    LoadWOHeader();
+                    LoadWOLines();
+                    // origQty is the remaining balance, so anything beyond it is over-supply.
+                    string m = batchQty > origQty
+                        ? $"Quantity set to {batchQty} (over-supply of {batchQty - origQty}). Allocate and Transfer to complete."
+                        : "Full remaining quantity set. Allocate and Transfer to complete.";
+                    AlertHelper.ShowSweetAlert(this, m, "success");
+                    return;
+                }
+
+                decimal balance = origQty - batchQty;
+                decimal factorBatch = batchQty / origQty;
+                decimal factorBal = balance / origQty;
+
+                // New balance line (clone of the open finished-good line).
+                var balLine = new WorksOrderLine
+                {
+                    WOID = line.WOID,
+                    CompanyID = CoID,
+                    SelectionId = line.SelectionId,
+                    LineType = line.LineType,
+                    ItemCode = line.ItemCode,
+                    ItemDescription = line.ItemDescription,
+                    Quantity = balance,
+                    OrderedQty = ordered,
+                    DueDelDate = line.DueDelDate,
+                    IsLotTracked = line.IsLotTracked,
+                    Active = true,
+                    Complete = false,
+                    Comments = line.Comments
+                };
+                _db.WorksOrderLines.Add(balLine);
+                _db.SaveChanges(); // assigns balLine.LineID
+
+                // Split the raw-material requirements proportionally: a fresh set scaled
+                // to the balance for the new line, and the originals scaled to the batch.
+                foreach (var rm in rms)
+                {
+                    var rmBal = new WorksOrderRMLine
+                    {
+                        WOID = rm.WOID,
+                        CompanyID = CoID,
+                        SelectionId = rm.SelectionId,
+                        ItemCode = rm.ItemCode,
+                        ItemDescription = rm.ItemDescription,
+                        Unit = rm.Unit,
+                        LineType = rm.LineType,
+                        UnitCost = rm.UnitCost,
+                        Physical = rm.Physical,
+                        IsLotTracked = rm.IsLotTracked,
+                        LinkedFGSelectionID = rm.LinkedFGSelectionID,
+                        LinkedFGCode = rm.LinkedFGCode,
+                        LinkedFGQty = balance,
+                        LinkedWOLineID = balLine.LineID,
+                        Quantity = (rm.Quantity ?? 0) * factorBal,
+                        UseQty = 0,
+                        ScrapQty = 0,
+                        RejectQty = 0,
+                        PickComplete = false
+                    };
+                    _db.WorksOrderRMLines.Add(rmBal);
+
+                    rm.Quantity = (rm.Quantity ?? 0) * factorBatch;
+                    rm.LinkedFGQty = batchQty;
+                    rm.UseQty = 0; rm.ScrapQty = 0; rm.RejectQty = 0;
+                    rm.PickComplete = false;
+                }
+
+                line.Quantity = batchQty;
+                line.OrderedQty = ordered;
+                _db.SaveChanges();
+
+                LoadWOHeader();
+                LoadWOLines();
+                AlertHelper.ShowSweetAlert(this,
+                    $"Split into a {ApiUrlCall.NumberToDecimal((batchQty).ToString() ?? "", CurrentUser.CompanyDecPlaces)} batch and a {ApiUrlCall.NumberToDecimal((balance).ToString() ?? "", CurrentUser.CompanyDecPlaces)} balance. Allocate and Transfer the batch.",
+                    "success");
+
+            }
+        }
+
+        // Closes the outstanding balance and completes a partially-manufactured WO.
+        // Keeps the already-completed batch lines intact (unlike Delete, which wipes them).
+        protected void lbtnCloseRemaining_Click(object sender, EventArgs e)
+        {
+            using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+            {
+                var header = _db.WorksOrderHeaders.FirstOrDefault(x => x.CompanyID == CoID && x.ID == woid);
+                if (header == null || header.Active == false || header.Status == "Complete")
+                {
+                    AlertHelper.ShowSweetAlert(this, "This Works Order is already closed.", "warning");
+                    return;
+                }
+
+                bool anyCompleted = _db.WorksOrderLines.Any(x => x.CompanyID == CoID && x.WOID == woid && x.Complete == true);
+                if (!anyCompleted)
+                {
+                    AlertHelper.ShowSweetAlert(this, "Nothing has been manufactured yet. Use Delete on the Works Orders list to cancel an unstarted order.", "warning");
+                    return;
+                }
+
+                var openLines = _db.WorksOrderLines
+                    .Where(x => x.CompanyID == CoID && x.WOID == woid && x.Active == true && x.Complete != true && (x.Quantity ?? 0) > 0)
+                    .ToList();
+
+                foreach (var ol in openLines)
+                {
+                    var rms = _db.WorksOrderRMLines.Where(x => x.CompanyID == CoID && x.LinkedWOLineID == ol.LineID).ToList();
+                    if (rms.Any()) _db.WorksOrderRMLines.RemoveRange(rms);
+                    _db.WorksOrderLines.Remove(ol);
+                }
+
+                header.Status = "Complete";
+                header.Active = false;
+                header.WOrderCloseOffDate = DateTime.Now;
+                header.WOrderCloseBy = CurrentUser.RoleID.ToString();
+                _db.SaveChanges();
+            }
+
+            LoadWOHeader();
+            LoadWOLines();
+            AlertHelper.ShowSweetAlert(this, "Remaining balance closed. Works Order complete.", "success");
+        }
+
+        // Undo accidental splits: consolidate all incomplete (un-manufactured) lines of
+        // each item back into a single line whose quantity is their sum, re-scaling that
+        // line's raw materials. Already-completed batch lines (posted to Sage) are left
+        // untouched. Safe because no split has posted anything to stock.
+        protected void lbtnResetLines_Click(object sender, EventArgs e)
+        {
+            using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+            {
+                var header = _db.WorksOrderHeaders.FirstOrDefault(x => x.CompanyID == CoID && x.ID == woid);
+                if (header == null || header.Active == false || header.Status == "Complete")
+                {
+                    AlertHelper.ShowSweetAlert(this, "This Works Order is closed.", "warning");
+                    return;
+                }
+
+                var openLines = _db.WorksOrderLines
+                    .Where(x => x.CompanyID == CoID && x.WOID == woid && x.Active == true && x.Complete != true && (x.Quantity ?? 0) > 0)
+                    .OrderBy(x => x.LineID)
+                    .ToList();
+
+                bool mergedAny = false;
+                foreach (var grp in openLines.GroupBy(x => new { x.SelectionId, x.LineType }))
+                {
+                    var groupLines = grp.OrderBy(x => x.LineID).ToList();
+                    if (groupLines.Count <= 1) continue;
+
+                    var keep = groupLines.First();
+                    decimal oldKeepQty = keep.Quantity ?? 0;
+                    decimal newQty = groupLines.Sum(x => x.Quantity ?? 0);
+
+                    // Re-scale the kept line's raw materials to the consolidated quantity.
+                    var keepRms = _db.WorksOrderRMLines.Where(x => x.CompanyID == CoID && x.LinkedWOLineID == keep.LineID).ToList();
+                    decimal factor = oldKeepQty > 0 ? newQty / oldKeepQty : 0;
+                    foreach (var rm in keepRms)
+                    {
+                        rm.Quantity = (rm.Quantity ?? 0) * factor;
+                        rm.LinkedFGQty = newQty;
+                        rm.UseQty = 0; rm.ScrapQty = 0; rm.RejectQty = 0;
+                        rm.PickComplete = false;
+                    }
+                    keep.Quantity = newQty;
+                    // OrderedQty preserved on the kept line.
+
+                    // Remove the surplus split lines and their raw materials.
+                    foreach (var extra in groupLines.Skip(1))
+                    {
+                        var extraRms = _db.WorksOrderRMLines.Where(x => x.CompanyID == CoID && x.LinkedWOLineID == extra.LineID).ToList();
+                        if (extraRms.Any()) _db.WorksOrderRMLines.RemoveRange(extraRms);
+                        _db.WorksOrderLines.Remove(extra);
+                    }
+                    mergedAny = true;
+                }
+
+                if (!mergedAny)
+                {
+                    AlertHelper.ShowSweetAlert(this, "There are no split lines to reset.", "info");
+                    return;
+                }
+                _db.SaveChanges();
+            }
+
+            LoadWOHeader();
+            LoadWOLines();
+            AlertHelper.ShowSweetAlert(this, "Incomplete lines reset and consolidated.", "success");
+        }
+
+        // True when the operator has selected this pane to manufacture now: its Complete
+        // checkbox is both enabled (i.e. an open line, not a locked/already-done one) and ticked.
+        private bool PaneSelectedForManufacture(AccordionPane pane)
+        {
+            CheckBox chk = pane.HeaderContainer.Controls.OfType<CheckBox>().FirstOrDefault();
+            return chk != null && chk.Enabled && chk.Checked;
+        }
+
+        #endregion
 
         protected void GridRMs_RowCommand(object sender, GridViewCommandEventArgs e)
         {
@@ -2422,11 +2785,31 @@ namespace SBMS
                 string Retstr = await ExtractAccordionHeaderDetails(sender);
                 if (Retstr == "OK")
                 {
-                    LbtnUpdateWO.Enabled = false;
-                    LbtnUpdateWO.Visible = false;
-                    LbtnSaveWO.Enabled = false;
-                    LbtnSaveWO.Visible = false;
-                    AlertHelper.ShowSweetAlert(this, "Successfully Saved", "success");
+                    // Re-read the works order: it may now be fully Complete, or still
+                    // open with an outstanding balance (a part manufacture).
+                    bool fullyComplete;
+                    using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+                    {
+                        var h = _db.WorksOrderHeaders.FirstOrDefault(x => x.CompanyID == CoID && x.ID == woid);
+                        fullyComplete = h == null || h.Active == false || h.Status == "Complete";
+                    }
+
+                    // Rebuild the page from the new state (completed lines lock, balance stays editable).
+                    LoadWOHeader();
+                    LoadWOLines();
+
+                    if (fullyComplete)
+                    {
+                        LbtnUpdateWO.Enabled = false;
+                        LbtnUpdateWO.Visible = false;
+                        LbtnSaveWO.Enabled = false;
+                        LbtnSaveWO.Visible = false;
+                        AlertHelper.ShowSweetAlert(this, "Works Order fully manufactured and completed.", "success");
+                    }
+                    else
+                    {
+                        AlertHelper.ShowSweetAlert(this, "Batch manufactured. The outstanding balance is still open for the next batch.", "success");
+                    }
                     return;
                 }
                 else
@@ -3163,9 +3546,24 @@ namespace SBMS
         protected async Task<string> ExtractAccordionHeaderDetails(object sender)
         {
             bool cont = true;
+
+            // Only the lines the operator ticked Complete on this run are manufactured.
+            // Already-completed (locked) lines and untouched balance lines are skipped,
+            // which is what lets a part manufacture leave the outstanding balance open.
+            int selectedCount = 0;
+            for (int s = 0; s < AccordionWOLines.Panes.Count; s++)
+            {
+                if (PaneSelectedForManufacture(AccordionWOLines.Panes[s])) selectedCount++;
+            }
+            if (selectedCount == 0)
+            {
+                return "Please tick Complete on the line(s) you want to manufacture before transferring.";
+            }
+
             for (int i = 0; i < AccordionWOLines.Panes.Count; i++)
             {
                 AccordionPane pane = AccordionWOLines.Panes[i];
+                if (!PaneSelectedForManufacture(pane)) continue;
 
                 HiddenField hiddenFieldH = null;
                 foreach (Control control in pane.HeaderContainer.Controls)
@@ -3181,13 +3579,15 @@ namespace SBMS
                 {
                     string lineID = hiddenFieldH.Value.Split('|')[0];
                     string itemselectionid = hiddenFieldH.Value.Split('|')[1];
-                    long ItemSelection = Convert.ToInt64(itemselectionid);
+                    int thisLineId = Convert.ToInt32(lineID);
                     decimal itemqty = Convert.ToDecimal(hiddenFieldH.Value.Split('|')[3]);
                     string itemlotnum = string.Empty;
 
                     using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
                     {
-                        var WOline = _db.WorksOrderLines.Where(x => x.CompanyID == CurrentUser.CoID && x.WOID == woid && x.SelectionId == ItemSelection).FirstOrDefault();
+                        // Look up by LineID (not SelectionId): after a part-manufacture
+                        // split the same item can appear on more than one line.
+                        var WOline = _db.WorksOrderLines.Where(x => x.CompanyID == CurrentUser.CoID && x.LineID == thisLineId).FirstOrDefault();
                         if (CurrentUser.CompanyUseLotNumbers && WOline.IsLotTracked)
                         {
                             if (hiddenFieldH.Value.Split('|')[4].Length > 0)
@@ -3210,15 +3610,7 @@ namespace SBMS
                         string msg = "Please select a destination store for the item.";
                         return msg;
                     }
-
-                    CheckBox chkComplete = pane.HeaderContainer.Controls.OfType<CheckBox>().FirstOrDefault();
-                    bool isComplete = chkComplete != null ? chkComplete.Checked : false;
-                    if (isComplete == false)
-                    {
-                        cont = false;
-                        string msg = "Unable to update Sage, please mark the Works Order Header as complete.";
-                        return msg;
-                    }
+                    // Completion selection is handled by PaneSelectedForManufacture skip above.
 
                     // PROCESS GRIDVIEW ROWS FOR VALIDATION
                     foreach (Control control in pane.ContentContainer.Controls)
@@ -3325,6 +3717,7 @@ namespace SBMS
                 // FIX 1: Always assign ItemID here so it is set before UpdateSellingPriceOneItem is called
                 long ItemID = 0;
                 AccordionPane pane = AccordionWOLines.Panes[i];
+                if (!PaneSelectedForManufacture(pane)) continue;
 
                 HiddenField hiddenFieldH = null;
                 foreach (Control control in pane.HeaderContainer.Controls)
@@ -3538,9 +3931,11 @@ namespace SBMS
                 }
 
                 // FIX 6: Start from index 0 (was 1, silently skipping the first pane's DB update)
+                // Only the panes selected for this run are completed; balance lines are left open.
                 for (int i = 0; i < AccordionWOLines.Panes.Count; i++)
                 {
                     AccordionPane pane = AccordionWOLines.Panes[i];
+                    if (!PaneSelectedForManufacture(pane)) continue;
 
                     HiddenField hiddenFieldH = null;
                     foreach (Control control in pane.HeaderContainer.Controls)
@@ -3568,18 +3963,31 @@ namespace SBMS
                 }
                 _db.SaveChanges();
 
+                // Only close the works order header once NO open balance line remains.
+                // Otherwise leave it Active and flag it as partially manufactured so the
+                // operator can return for the next batch.
+                bool anyOpen = _db.WorksOrderLines.Any(x => x.CompanyID == CurrentUser.CoID
+                                                            && x.WOID == woid
+                                                            && x.Active == true
+                                                            && x.Complete != true
+                                                            && (x.Quantity ?? 0) > 0);
+
                 // headerGuard is already tracked by this context — reuse it.
-                headerGuard.Status = "Complete";
-                headerGuard.Active = false;
-                headerGuard.WOrderCloseOffDate = DateTime.Now;
-                headerGuard.WOrderCloseBy = CurrentUser.RoleID.ToString();
+                if (anyOpen)
+                {
+                    headerGuard.Status = "Partially Manufactured";
+                    // remains Active
+                }
+                else
+                {
+                    headerGuard.Status = "Complete";
+                    headerGuard.Active = false;
+                    headerGuard.WOrderCloseOffDate = DateTime.Now;
+                    headerGuard.WOrderCloseBy = CurrentUser.RoleID.ToString();
+                }
                 _db.SaveChanges();
             }
 
-            LbtnUpdateWO.Enabled = false;
-            LbtnUpdateWO.Visible = false;
-            LbtnSaveWO.Enabled = false;
-            LbtnSaveWO.Visible = false;
             return "OK";
         }
 
@@ -3772,27 +4180,47 @@ namespace SBMS
 
                         decimal CurrentQOH = itm.QuantityOnHand ?? 0;
                         decimal SageCurrentAvCost = itm.AverageCost ?? 0;
-                        decimal SageCurrentValue = 0;
-                        if (CurrentQOH > 0)
-                        {
-                            SageCurrentValue = CurrentQOH * SageCurrentAvCost;
-                        }
-                        decimal newAvCost = 0;
                         decimal thisUnitCost = unitcost;
                         decimal thisValue = (useqty + rejqty) * unitcost;
-                        if (SageCurrentValue > 0)
+
+                        decimal SageCurrentValue = 0;
+                        decimal newAvCost;
+
+                        // A negative on-hand balance has no meaningful stock value to weight
+                        // against — multiplying a negative QOH by the average cost gives a
+                        // negative current value and throws the weighted average right out.
+                        // In that case ignore the existing value and set the new average cost
+                        // to the cost of the transaction being run.
+                        if (CurrentQOH < 0)
                         {
-                            if ((CurrentQOH + useqty + rejqty) != 0)
-                            {
-                                newAvCost = (thisValue + SageCurrentValue) / (CurrentQOH + useqty + rejqty);
-                            } else
-                            {
-                                newAvCost = (thisValue) / (useqty + rejqty);
-                            }
+                            SageCurrentValue = 0;
+                            newAvCost = thisUnitCost;
                         }
                         else
                         {
-                            newAvCost = thisUnitCost;
+                            if (CurrentQOH > 0)
+                            {
+                                SageCurrentValue = CurrentQOH * SageCurrentAvCost;
+                            }
+
+                            if (SageCurrentValue > 0)
+                            {
+                                decimal newQty = CurrentQOH + useqty + rejqty;
+                                if (newQty > 0)
+                                {
+                                    newAvCost = (thisValue + SageCurrentValue) / newQty;
+                                }
+                                else
+                                {
+                                    // Resulting balance is zero or negative — there is no
+                                    // positive quantity to average over, so use the transaction cost.
+                                    newAvCost = thisUnitCost;
+                                }
+                            }
+                            else
+                            {
+                                newAvCost = thisUnitCost;
+                            }
                         }
 
                         ItemAdjustment iAdj = new ItemAdjustment();

@@ -60,5 +60,7 @@ namespace SBMS.Models
         public Nullable<decimal> localCurrLineVal { get; set; }
         public Nullable<bool> RemovedFromPO { get; set; }
         public Nullable<System.DateTime> RemovedFromPODate { get; set; }
+        public Nullable<int> DocType { get; set; }
+        public decimal RejectQty { get; set; }
     }
 }

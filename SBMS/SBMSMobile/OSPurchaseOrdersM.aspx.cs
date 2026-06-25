@@ -146,7 +146,10 @@ namespace SBMS
         {
             LinkButton btn = (LinkButton)sender;
             string docGuid = btn.CommandArgument;
-            Response.Redirect("~/SBMSMobile/ReceivingM.aspx?docid=" + docGuid, false);
+            // Mode 1 (count) → ReceiveCountM; Mode 2 (direct, default) → ReceiveScanM.
+            string mode = (Request.QueryString["mode"] ?? "").ToLower();
+            string page = mode == "count" ? "ReceiveCountM.aspx" : "ReceiveScanM.aspx";
+            Response.Redirect("~/SBMSMobile/" + page + "?docid=" + docGuid, false);
             Context.ApplicationInstance.CompleteRequest();
         }
 

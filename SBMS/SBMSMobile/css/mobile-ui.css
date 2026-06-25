@@ -240,6 +240,7 @@ input, select, textarea { font-size: 16px; }
 
 /* ── Line cards ─────────────────────────────────────────────── */
 .mob-linecard {
+    position: relative;
     background: #fff;
     border-radius: .6em;
     box-shadow: 0 1px 5px rgba(0,0,0,.09);
@@ -256,14 +257,14 @@ input, select, textarea { font-size: 16px; }
     opacity: .6;
     border-left-color: #28a745;
 }
-/* Card body is a flex row: content left, action button right */
-.mob-linecard-body { display: flex; align-items: stretch; }
-.mob-card-main { flex: 1; padding: .9em .9em .85em 1em; min-width: 0; }
+/* Card body: content full-width; the action button floats in the top-right corner */
+.mob-linecard-body { display: block; }
+.mob-card-main { padding: .9em .9em .85em 1em; min-width: 0; }
 
-/* Card text elements */
-.mob-item-code  { font-weight: 700; font-size: 1em; color: #1a1a2e; }
-.mob-item-unit  { font-size: .74em; color: #999; margin-top: .08em; }
-.mob-item-descr { font-size: .84em; color: #556; margin-top: .25em; line-height: 1.35; }
+/* Card text elements (top block stays clear of the top-right button) */
+.mob-item-code  { font-weight: 700; font-size: 1em; color: #1a1a2e; padding-right: 76px; }
+.mob-item-unit  { font-size: .74em; color: #999; margin-top: .08em; padding-right: 76px; }
+.mob-item-descr { font-size: .84em; color: #556; margin-top: .25em; line-height: 1.35; padding-right: 76px; }
 
 /* ── Pill badges ────────────────────────────────────────────── */
 .mob-qty-row {
@@ -301,6 +302,7 @@ input, select, textarea { font-size: 16px; }
 .mob-qty-input-row {
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
     gap: .55em;
     margin-top: .6em;
 }
@@ -334,19 +336,22 @@ input, select, textarea { font-size: 16px; }
 /* ── Right-side action button (checkmark strip) ─────────────── */
 /* Sits as flex sibling of mob-card-main; spans full card height */
 .mob-action-btn {
+    position: absolute;
+    top: 0;
+    right: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 3.4em;
+    width: 70px;
+    height: 70px;
     background: #4282C1;
     color: #fff !important;
     border: none;
-    border-left: 1px solid rgba(0,0,0,.07);
-    font-size: 1.6em;
+    border-radius: 0 0 0 .7em;
+    font-size: 1.5em;
     font-weight: 700;
     cursor: pointer;
     text-decoration: none;
-    flex-shrink: 0;
     transition: background .15s;
 }
 .mob-action-btn:active    { background: #2f5f9a; }

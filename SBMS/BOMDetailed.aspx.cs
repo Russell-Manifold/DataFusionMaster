@@ -449,101 +449,217 @@ namespace SBMS
 
         protected async void lbtnSBCAUpdate_Click(object sender, EventArgs e)
         {
-            
+            // The New Selling Price is calculated client-side and is deliberately
+            // blanked when Required GP% >= 100, when GP%/cost is missing, or when the
+            // result is non-finite. An empty box therefore means the inputs were
+            // invalid — not a number-format fault — so report that plainly.
+            if (string.IsNullOrWhiteSpace(txtNewSell.Text))
+            {
+                AlertHelper.ShowSweetAlert(this,
+                    "No selling price could be calculated. Check that the Required GP% is below 100% and that the BOM has a cost.",
+                    "warning");
+                return;
+            }
+
+            if (!decimal.TryParse(txtNewSell.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out decimal newSell)
+                || newSell <= 0)
+            {
+                AlertHelper.ShowSweetAlert(this, "Please enter a valid selling price greater than zero.", "warning");
+                return;
+            }
+
+            if (!long.TryParse(lblFGID.Text, out long bomfgID) || bomfgID <= 0)
+            {
+                AlertHelper.ShowSweetAlert(this, "The finished good item could not be identified.", "error");
+                return;
+            }
+
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {
+                // Authoritative BOM cost — recomputed here from current Additional Costs
+                // plus saved RM lines, so an unsaved edit can never push a stale figure.
+                decimal bomcost = ComputeBomCost(_db);
 
-                decimal newSell, bomcost;
-
-                if (!decimal.TryParse(
-                        txtNewSell.Text,
-                        NumberStyles.Any,
-                        CultureInfo.InvariantCulture,
-                        out newSell))
+                var thisItem = _db.ItemsMasters
+                    .FirstOrDefault(x => x.CompanyID == CurrentUser.CoID && x.ID == bomfgID);
+                if (thisItem == null)
                 {
-                    // Handle invalid input safely
-                    // e.g. show message or default value
-                    AlertHelper.ShowSweetAlert(this, "Invalid number format.", "error");
+                    AlertHelper.ShowSweetAlert(this, "Finished good item not found.", "error");
                     return;
                 }
 
-                if (!decimal.TryParse(
-                        lblNewBOMCost.Text,
-                        NumberStyles.Any,
-                        CultureInfo.InvariantCulture,
-                        out bomcost))
+                int dp = CurrentUser.CompanyDecPlaces;
+                decimal newPriceEx = ApiUrlCall.NumberToDecimal(newSell, dp);
+                decimal newGp = newPriceEx > 0
+                    ? ApiUrlCall.NumberToDecimal(((newPriceEx - bomcost) / newPriceEx) * 100m, dp)
+                    : 0m;
+
+                bool costApplied = false;
+                bool priceApplied = false;
+                decimal newPriceInc;
+
+                if (CurrentUser.UATMode)
                 {
-                    // Handle invalid input safely
-                    // e.g. show message or default value
-                    AlertHelper.ShowSweetAlert(this, "Invalid BOM cost.", "error");
-                    return;
+                    // UAT: never contact Sage. Update local records only, deriving the
+                    // tax rate from the local item (sales tax %, else inc/excl ratio).
+                    decimal taxRate = ResolveLocalTaxRate(thisItem);
+                    newPriceInc = ApiUrlCall.NumberToDecimal(newPriceEx * (1 + taxRate), dp);
+                    costApplied = true;
+                    priceApplied = true;
+                }
+                else
+                {
+                    ApiUrlCall api = new ApiUrlCall();
+
+                    // Pull the live Sage item so the price post preserves every other field.
+                    JObject sageItem = await api.LoadOneItemJson($"ID eq {bomfgID}", CurrentUser);
+                    JArray results = sageItem?["Results"] as JArray;
+                    if (results == null || results.Count == 0)
+                    {
+                        AlertHelper.ShowSweetAlert(this, "Could not load the item from Sage. Nothing was updated.", "error");
+                        return;
+                    }
+                    JObject itemObj = (JObject)results[0];
+
+                    // Tax rate from Sage prices, guarded against divide-by-zero / nulls,
+                    // falling back to the local item's configured sales tax.
+                    decimal priceEx = itemObj.Value<decimal?>("PriceExclusive") ?? 0m;
+                    decimal priceInc = itemObj.Value<decimal?>("PriceInclusive") ?? 0m;
+                    decimal taxRate = priceEx > 0 ? (priceInc / priceEx) - 1 : ResolveLocalTaxRate(thisItem);
+                    if (taxRate < 0) taxRate = 0m;
+                    newPriceInc = ApiUrlCall.NumberToDecimal(newPriceEx * (1 + taxRate), dp);
+
+                    // --- Sage post #1: cost adjustment (quantity 0, cost only) ---
+                    ItemAdjustment iAdj = new ItemAdjustment
+                    {
+                        Date = DateTime.Now,
+                        ItemID = bomfgID,
+                        AverageCost = bomcost,
+                        Quantity = 0m,
+                        Reason = "BOM Cost Adjustment Only",
+                        Created = DateTime.Now
+                    };
+                    JObject costResp = await SendItemAdjustment(JsonConvert.SerializeObject(iAdj, Formatting.Indented));
+                    if (IsSageError(costResp, out string costErr))
+                    {
+                        // Nothing committed locally — SBMS and Sage stay aligned on cost.
+                        AlertHelper.ShowSweetAlert(this, $"Average cost was NOT updated. {costErr}", "error");
+                        return;
+                    }
+                    costApplied = true;
+
+                    // --- Sage post #2: price update (clone item, override the two price fields) ---
+                    JObject pricePayload = new JObject(itemObj)
+                    {
+                        ["PriceExclusive"] = newPriceEx,
+                        ["PriceInclusive"] = newPriceInc
+                    };
+                    JObject priceResp = await api.APIPostDocumentAsync("Item", pricePayload.ToString(), CurrentUser);
+                    if (IsSageError(priceResp, out string priceErr))
+                    {
+                        // The cost adjustment already posted to Sage; persist that one field
+                        // locally so the two systems stay in step, then report the price failure.
+                        thisItem.AverageCost = bomcost;
+                        _db.SaveChanges();
+                        AlertHelper.ShowSweetAlert(this,
+                            $"Average cost was updated, but the selling price was NOT. {priceErr}", "error");
+                        return;
+                    }
+                    priceApplied = true;
                 }
 
-                long bomfgID = Convert.ToInt64(lblFGID.Text);
-                var ThisItem = _db.ItemsMasters.Where(x => x.CompanyID == CurrentUser.CoID && x.ID == bomfgID).FirstOrDefault();
-                ThisItem.AverageCost = bomcost;
+                // Commit local records to mirror exactly what was accepted.
+                if (costApplied) thisItem.AverageCost = bomcost;
+                if (priceApplied)
+                {
+                    thisItem.PriceExclusive = newPriceEx;
+                    thisItem.PriceInclusive = newPriceInc;
+                    thisItem.GPPercentage = newGp;
+                }
                 _db.SaveChanges();
 
-                ItemAdjustment iAdj = new ItemAdjustment();
-                iAdj.Date = DateTime.Now;
-                iAdj.ItemID = Convert.ToInt64(lblFGID.Text);
-                iAdj.AverageCost = bomcost;
-                iAdj.Quantity = (decimal)0;
-                iAdj.Reason = "BOM Cost Adjustment Only";
-                iAdj.Created = DateTime.Now;
-                string jsonBody = JsonConvert.SerializeObject(iAdj, Formatting.Indented);
-                if (CurrentUser.UATMode == false)
-                {
-                    await SendItemAdjustment(jsonBody);
-                }
-                string filt = $"ID eq {bomfgID}";
-               
-                JObject thisitem = new JObject();
-                ApiUrlCall api = new ApiUrlCall();
-                thisitem = await api.LoadOneItemJson(filt, CurrentUser);
-                JArray arr = (JArray)thisitem["Results"];
-                JObject itemObj = (JObject)arr[0];
-                decimal priceEx = (decimal)itemObj["PriceExclusive"];
-                decimal priceInc = (decimal)itemObj["PriceInclusive"];
-
-                decimal taxRate = (priceInc / priceEx) - 1;   // e.g. 0.15 = 15%
-                decimal newPriceEx = newSell;
-                decimal newPriceInc = newPriceEx * (1 + taxRate);
-                
-                JObject returnPayload = new JObject(itemObj);   // full clone
-
-                returnPayload["PriceExclusive"] = newPriceEx;
-                returnPayload["PriceInclusive"] = newPriceInc;
-
-                JObject parsedJSON = await api.APIPostDocumentAsync("Item", returnPayload.ToString(), CurrentUser);
-
-                // 1 — Check for API/Exception error
-                if (parsedJSON["Success"] != null && parsedJSON["Success"].ToString() == "false")
-                {
-                    string status = parsedJSON["StatusCode"]?.ToString() ?? "Unknown";
-                    string msg = parsedJSON["Message"]?.ToString() ?? "No message returned.";
-
-                    AlertHelper.ShowSweetAlert(this,"API Error ({status}): {msg}", "error'");
-                    return;
-                }
-
-                // 2 — Check if nothing returned at all (edge-case)
-                if (parsedJSON == null || !parsedJSON.HasValues)
-                {
-                    AlertHelper.ShowSweetAlert(this,"No response returned from API. - Item NOT Updated", "warning'");
-                    return;
-                }
-
-                // 3 — SUCCESS
-                AlertHelper.ShowSweetAlert(this,"Item updated successfully.", "success");
+                AlertHelper.ShowSweetAlert(this,
+                    CurrentUser.UATMode
+                        ? "UAT mode: Sage was not contacted. Local cost and selling price updated."
+                        : "Item cost and selling price updated successfully.",
+                    "success");
             }
         }
-        public async Task SendItemAdjustment(string Item)
+
+        public async Task<JObject> SendItemAdjustment(string Item)
         {
-            string doctype = "";
-            doctype = "ItemAdjustment";
             ApiUrlCall Api = new ApiUrlCall();
-            JObject parsedJSON = await Api.APIPostDocumentAsync(doctype, Item, CurrentUser);
+            return await Api.APIPostDocumentAsync("ItemAdjustment", Item, CurrentUser);
+        }
+
+        // Recomputes the BOM cost from the on-screen Additional Costs and the saved RM
+        // lines, rounded to company decimal places. Used as the single source of truth
+        // for what is sent to Sage so a stale label can never be posted.
+        private decimal ComputeBomCost(SBMSEntities _db)
+        {
+            decimal adc1 = ParseMoney(txtAdd1.Text);
+            decimal adc2 = ParseMoney(txtAdd2.Text);
+            decimal adc3 = ParseMoney(txtAdd3.Text);
+
+            decimal totalRMCost = 0m;
+            foreach (var bl in GetSortedBomLines(_db, (int)bomid))
+            {
+                if (bl.AvCost > 0 && bl.RMQty > 0)
+                    totalRMCost += ApiUrlCall.NumberToDecimal(bl.AvCost * bl.RMQty, CurrentUser.CompanyDecPlaces);
+            }
+
+            return ApiUrlCall.NumberToDecimal(adc1 + adc2 + adc3 + totalRMCost, CurrentUser.CompanyDecPlaces);
+        }
+
+        private static decimal ParseMoney(string text)
+        {
+            if (string.IsNullOrWhiteSpace(text)) return 0m;
+            return decimal.TryParse(text, NumberStyles.Any, CultureInfo.InvariantCulture, out decimal v) ? v : 0m;
+        }
+
+        // Tax rate as a fraction (0.15 = 15%) derived from the local item: prefer the
+        // configured sales tax %, fall back to the existing inclusive/exclusive ratio.
+        private static decimal ResolveLocalTaxRate(ItemsMaster item)
+        {
+            if (item.TaxTypeSalesPerc.HasValue && item.TaxTypeSalesPerc.Value > 0)
+                return item.TaxTypeSalesPerc.Value / 100m;
+
+            if (item.PriceExclusive.HasValue && item.PriceExclusive.Value > 0 && item.PriceInclusive.HasValue)
+            {
+                decimal r = (item.PriceInclusive.Value / item.PriceExclusive.Value) - 1;
+                return r > 0 ? r : 0m;
+            }
+
+            return 0m;
+        }
+
+        // True when the Sage response represents a failure (explicit Success:false, a
+        // null response, or an empty body). Provides a clean message for the alert.
+        private static bool IsSageError(JObject resp, out string message)
+        {
+            if (resp == null)
+            {
+                message = "No response was returned from Sage.";
+                return true;
+            }
+
+            JToken successTok = resp["Success"];
+            if (successTok != null && successTok.Type == JTokenType.Boolean && !successTok.Value<bool>())
+            {
+                string status = resp["StatusCode"]?.ToString() ?? "Unknown";
+                string msg = resp["Message"]?.ToString() ?? "No message returned.";
+                message = $"Sage error ({status}): {msg}";
+                return true;
+            }
+
+            if (!resp.HasValues)
+            {
+                message = "Sage returned an empty response.";
+                return true;
+            }
+
+            message = null;
+            return false;
         }
 
         protected void lbtnDownload_Click(object sender, EventArgs e)

@@ -48,5 +48,6 @@ namespace SBMS.Models
         public int LinkedWONumber { get; set; }
         public Nullable<long> FromStoreID { get; set; }
         public string PostAddress5 { get; set; }
+        public Nullable<int> RecStatus { get; set; }
     }
 }

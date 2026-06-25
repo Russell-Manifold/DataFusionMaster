@@ -355,7 +355,8 @@ namespace SBMS
                         StoreCode = line.StoreCode,
                         LotNumber = line.LotNumber,
                         LineTaxTypeID = line.LineTaxTypeID, 
-                        ExchRate = (decimal) line.ExchRate
+                        ExchRate = (decimal) line.ExchRate ,
+                        RejectQty = line.RejectQty
                     }).ToList();
 
                     // Insert the new list of entities into the TempDocLines table

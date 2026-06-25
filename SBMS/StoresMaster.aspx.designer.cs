@@ -141,6 +141,15 @@ namespace SBMS
         protected global::System.Web.UI.WebControls.Label lblTpe;
 
         /// <summary>
+        /// lblBinFormat control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblBinFormat;
+
+        /// <summary>
         /// txtstorecode control.
         /// </summary>
         /// <remarks>

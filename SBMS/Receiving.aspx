@@ -124,7 +124,8 @@
                                                 <asp:BoundField HeaderText="Qty_Left" DataField="QtyLeft" ReadOnly="True" ItemStyle-HorizontalAlign="Center"  HeaderStyle-HorizontalAlign="Center" ItemStyle-Width="7em"/>
                                                 <asp:BoundField HeaderText="Excl_Price" DataField="UnitPriceExclusive" ReadOnly="True" DataFormatString="{0:N2}" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right"  />
                                                 <asp:BoundField HeaderText="PO Total" DataField="Total" ReadOnly="True" DataFormatString="{0:N2}" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right"  />    
-                                                <asp:BoundField HeaderText="Receive_Qty" DataField="ReceiveQty" ReadOnly="True" ItemStyle-HorizontalAlign="Center" ItemStyle-Width="7em" FooterStyle-HorizontalAlign="Center" />    
+                                                <asp:BoundField HeaderText="Receive_Qty" DataField="ReceiveQty" ReadOnly="True" ItemStyle-HorizontalAlign="Center" ItemStyle-Width="7em" FooterStyle-HorizontalAlign="Center" />
+                                                <asp:BoundField HeaderText="Rejects" DataField="RejectQty" ReadOnly="True" ItemStyle-HorizontalAlign="Center" ItemStyle-Width="7em" ItemStyle-ForeColor="#B00000" HeaderStyle-ForeColor="#B00000" />
                                                 <asp:TemplateField HeaderText="To_Receive" ItemStyle-Width="7em" ItemStyle-HorizontalAlign="Center">
                                                     <ItemTemplate>
                                                         <asp:CheckBox ID="chkUnloadComplete" runat="server" Checked='<%# Eval("ToReceive") %>' Enabled="false" Text=" " />

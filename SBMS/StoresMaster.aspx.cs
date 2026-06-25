@@ -37,7 +37,24 @@ namespace SBMS
                 }
 
                 LoadStores();
+                SetBinFormatHint();
             }
+        }
+
+        // Show the company's configured location-code format (from Company Config) so the
+        // user knows what to capture, e.g. Warehouse-Aisle-Row-Bin -> WH1-A03-R2-B05.
+        private void SetBinFormatHint()
+        {
+            var labels = BinMask.Segments(CurrentUser);
+            if (labels.Count == 0)
+            {
+                lblBinFormat.Text = "Free-text location codes &ndash; no fixed format is set in Company Config.";
+                return;
+            }
+            string sep = BinMask.Separator(CurrentUser);
+            lblBinFormat.Text = "Required format: <b>" + string.Join(sep, labels) + "</b></br>"
+                + labels.Count + " parts separated by '" + sep + "', letters / numbers only </br>(e.g. "
+                + string.Join(sep, labels.Select(l => l.Substring(0, System.Math.Min(2, l.Length)).ToUpper() + "1")) + ").";
         }
 
         protected void LoadStores()
@@ -154,8 +171,50 @@ namespace SBMS
             string stCode = row.Cells[0].Text.ToString();
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {
+                if (chk.Checked)
+                {
+                    // Single receiving store per company - clear it off every other store.
+                    foreach (var st in _db.Stores.Where(x => x.CompanyID == CurrentUser.CoID && x.AllowReceiving && x.StoreCode != stCode))
+                        st.AllowReceiving = false;
+                }
                 Store NewSt = _db.Stores.Where(x => x.CompanyID == CurrentUser.CoID && x.StoreCode == stCode).FirstOrDefault();
                 NewSt.AllowReceiving = chk.Checked;
+                _db.SaveChanges();
+                LoadStores();
+                PopMessage("Store Updated");
+            }
+        }
+
+        protected void chkIsWip_CheckedChanged(object sender, EventArgs e)
+        {
+            CheckBox chk = (CheckBox)sender;
+            GridViewRow row = (GridViewRow)chk.NamingContainer;
+            string stCode = row.Cells[0].Text.ToString();
+            using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+            {
+                Store NewSt = _db.Stores.Where(x => x.CompanyID == CurrentUser.CoID && x.StoreCode == stCode).FirstOrDefault();
+                NewSt.IsWip = chk.Checked;
+                _db.SaveChanges();
+                LoadStores();
+                PopMessage("Store Updated");
+            }
+        }
+
+        protected void chkIsReject_CheckedChanged(object sender, EventArgs e)
+        {
+            CheckBox chk = (CheckBox)sender;
+            GridViewRow row = (GridViewRow)chk.NamingContainer;
+            string stCode = row.Cells[0].Text.ToString();
+            using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+            {
+                if (chk.Checked)
+                {
+                    // Single reject store per company - clear it off every other store.
+                    foreach (var st in _db.Stores.Where(x => x.CompanyID == CurrentUser.CoID && x.IsRejectStore && x.StoreCode != stCode))
+                        st.IsRejectStore = false;
+                }
+                Store NewSt = _db.Stores.Where(x => x.CompanyID == CurrentUser.CoID && x.StoreCode == stCode).FirstOrDefault();
+                NewSt.IsRejectStore = chk.Checked;
                 _db.SaveChanges();
                 LoadStores();
                 PopMessage("Store Updated");
