@@ -71,7 +71,7 @@
                                         <asp:LinkButton ID="LinkButton2" runat="server" PostBackUrl="~/SalesOrdersIncomplete.aspx" CssClass="button buttonLarge" ToolTip="View and logs of items and lot number transactions." >Incomplete Sales Orders</asp:LinkButton><br /><br />
                                     <hr />
                                          <h4 style="text-align:center">Movement</h4>
-                                        <asp:LinkButton ID="imgbTrf" runat="server" OnClick="imgbTrf_Click" CssClass="button buttonLarge" ToolTip="Carry out an inter-store transfer" >Quick Inter-Store Transfer</asp:LinkButton><br /><br />
+                                        <asp:LinkButton ID="imgbTrf" runat="server" OnClick="imgbTrf_Click" CssClass="button buttonLarge" ToolTip="Carry out an inter-store transfer of a single item" >Quick Item Transfer</asp:LinkButton><br /><br />
                                         <asp:LinkButton ID="imgbTrfB" runat="server" OnClick="imgbTrfB_Click" CssClass="button buttonLarge" ToolTip="Carry out an inter-store transfer" >Bulk Item Transfer</asp:LinkButton><br /><br />
                                         <asp:LinkButton ID="imgItemAdjust" runat="server" OnClick="imgItemAdjust_Click" CssClass="button buttonLarge" ToolTip="Carry out an item adjustment with the option of updating Sage Accounting" >Item Adjustment</asp:LinkButton><br /><br />
                                         <asp:LinkButton ID="imgItemConvert" runat="server" OnClick="imgItemConvert_Click" CssClass="button buttonLarge" ToolTip="Convert an items to a different unit of measure" >Convert Item to Different Item Code</asp:LinkButton><br /><br />

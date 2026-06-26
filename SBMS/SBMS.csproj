@@ -236,6 +236,7 @@
     <Content Include="assets\js\buttonDisable.js" />
     <Content Include="SBMSMobile\css\mobile-ui.css" />
     <Content Include="SBMSMobile\NotificationsM.aspx" />
+    <Content Include="SBMSMobile\QuickMoveM.aspx" />
     <Content Include="SBMSMobile\ReceivingM.aspx" />
     <Content Include="SBMSMobile\ReceiveScanM.aspx" />
     <Content Include="SBMSMobile\ReceiveCountM.aspx" />
@@ -945,6 +946,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Classes\ConfigEncryptionHelper.cs" />
+    <Compile Include="Classes\Ver.cs" />
     <Compile Include="Classes\EncryptApiKeyUtility.cs" />
     <Compile Include="Models\CompanyMaster.cs">
       <DependentUpon>SBMS.tt</DependentUpon>
@@ -993,6 +995,13 @@
     </Compile>
     <Compile Include="SBMSMobile\NotificationsM.aspx.designer.cs">
       <DependentUpon>NotificationsM.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="SBMSMobile\QuickMoveM.aspx.cs">
+      <DependentUpon>QuickMoveM.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="SBMSMobile\QuickMoveM.aspx.designer.cs">
+      <DependentUpon>QuickMoveM.aspx</DependentUpon>
     </Compile>
     <Compile Include="SBMSMobile\ReceivingM.aspx.cs">
       <DependentUpon>ReceivingM.aspx</DependentUpon>

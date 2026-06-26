@@ -6,8 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>Count</title>
     <link rel="shortcut icon" href="../images/datafusionicon.ico" type="image/x-icon" />
-    <link rel="stylesheet" href="../SBMSMobile/css/main.css" />
-    <link rel="stylesheet" href="../SBMSMobile/css/mobile-ui.css" />
+    <link rel="stylesheet" href="../SBMSMobile/css/main.css<%= SBMS.Classes.Ver.Css("~/SBMSMobile/css/main.css") %>" />
+    <link rel="stylesheet" href="../SBMSMobile/css/mobile-ui.css<%= SBMS.Classes.Ver.Css("~/SBMSMobile/css/mobile-ui.css") %>" />
     <link rel="manifest" href="../SBMSMobile/manifest.json" />
     <meta name="theme-color" content="#4282C1" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -15,9 +15,7 @@
     <meta name="apple-mobile-web-app-title" content="Data Fusion" />
     <link rel="apple-touch-icon" href="../SBMSMobile/icons/icon-192.png" />
     <meta name="format-detection" content="telephone=no" />
-    <style>
-        .mob-linecard.matched { outline: 2px solid #4282C1; }
-    </style>
+    <%-- matched-line treatment now lives in mobile-ui.css --%>
 </head>
 <body>
 <form id="form1" runat="server">

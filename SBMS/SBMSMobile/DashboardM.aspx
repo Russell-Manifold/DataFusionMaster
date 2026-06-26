@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>Data Fusion</title>
     <link rel="shortcut icon" href="../images/datafusionicon.ico" type="image/x-icon" />
-    <link rel="stylesheet" href="css/main.css" />
-    <link rel="stylesheet" href="css/mobile-ui.css" />
+    <link rel="stylesheet" href="css/main.css<%= SBMS.Classes.Ver.Css("~/SBMSMobile/css/main.css") %>" />
+    <link rel="stylesheet" href="css/mobile-ui.css<%= SBMS.Classes.Ver.Css("~/SBMSMobile/css/mobile-ui.css") %>" />
     <link rel="manifest" href="manifest.json" />
     <meta name="theme-color" content="#4282C1" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -16,16 +16,16 @@
     <meta name="format-detection" content="telephone=no" />
     <style>
         .dash-brand {
-            background: #fff;
+            background: var(--mob-surface);
             text-align: center;
             padding: 1.5rem 1rem 1rem;
-            border-bottom: 1px solid #e8eaed;
+            border-bottom: 0.5px solid var(--mob-border);
         }
         .dash-logo { max-width: 180px; height: auto; }
         .dash-welcome {
             margin-top: .5rem;
             font-size: .85rem;
-            color: #666;
+            color: var(--mob-text-muted);
         }
         .dash-grid {
             display: grid;
@@ -38,19 +38,24 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            background: #fff;
-            border-radius: 14px;
+            background: var(--mob-surface);
+            border-radius: var(--mob-radius-lg);
             padding: 1.1rem .75rem .9rem;
-            box-shadow: 0 2px 8px rgba(0,0,0,.07);
-            border: 1.5px solid #e8eaed;
+            box-shadow: var(--mob-shadow-card);
+            border: 0.5px solid var(--mob-border);
             cursor: pointer;
             text-decoration: none;
             -webkit-tap-highlight-color: transparent;
-            transition: box-shadow .15s, transform .1s;
+            transition: box-shadow .15s, transform .1s, border-color .15s;
         }
         .dash-tile:active {
-            box-shadow: 0 1px 3px rgba(0,0,0,.1);
+            box-shadow: var(--mob-shadow-card-active);
+            border-color: var(--mob-brand);
             transform: scale(.97);
+        }
+        .dash-tile:focus-visible {
+            outline: none;
+            box-shadow: var(--mob-focus);
         }
         .dash-tile img {
             width: 100%;
@@ -62,7 +67,7 @@
             margin-top: .6rem;
             font-size: .82rem;
             font-weight: 600;
-            color: #4282C1;
+            color: var(--mob-brand);
             text-align: center;
             line-height: 1.25;
         }
@@ -122,10 +127,10 @@
             <span class="dash-tile-label">Picking Slips</span>
         </asp:LinkButton>
 
-        <asp:LinkButton ID="lbtnBinTransfer" runat="server" OnClick="ibtnPickSlips_Click"
-            CssClass="dash-tile" ToolTip="Bin Transfer">
-            <img src="../images/BinTrfM.png" alt="Bin Transfer" />
-            <span class="dash-tile-label">Bin Transfer</span>
+        <asp:LinkButton ID="lbtnBinTransfer" runat="server" OnClick="imgbQuickMove_Click"
+            CssClass="dash-tile" ToolTip="Quick Move — scan one item between two bins/locations">
+            <img src="../images/BinTrfM.png" alt="Quick Move" />
+            <span class="dash-tile-label">Quick Move</span>
         </asp:LinkButton>
 
         <asp:LinkButton ID="ibtnStockMove" runat="server" OnClick="ibtnPickSlips_Click"
@@ -146,15 +151,15 @@
 
 <%-- PWA install banner --%>
 <div id="pwaPrompt" style="display:none;position:fixed;bottom:1rem;left:1rem;right:1rem;
-     background:#4282C1;color:#fff;padding:.9rem 1rem;border-radius:12px;
-     z-index:1000;box-shadow:0 4px 16px rgba(0,0,0,.25);">
+     background:var(--mob-brand);color:#fff;padding:.9rem 1rem;border-radius:var(--mob-radius-lg);
+     z-index:1000;box-shadow:var(--mob-shadow-modal);">
     <p style="margin:0 0 .6rem;font-size:.9rem;font-weight:600;">
         Install Data Fusion on your home screen for the best experience.
     </p>
     <div style="display:flex;gap:.6rem;">
         <button onclick="installPWA()"
-            style="flex:1;background:#fff;color:#4282C1;border:none;padding:.5rem;
-                   border-radius:8px;font-weight:700;font-size:.85rem;cursor:pointer;">
+            style="flex:1;background:#fff;color:var(--mob-brand);border:none;padding:.5rem;
+                   border-radius:var(--mob-radius-md);font-weight:700;font-size:.85rem;cursor:pointer;">
             Install
         </button>
         <button onclick="document.getElementById('pwaPrompt').style.display='none'"

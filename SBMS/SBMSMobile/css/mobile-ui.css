@@ -1,25 +1,106 @@
 /* =============================================================
    SBMS Mobile UI — Shared Component Library
-   Reference this from any mobile page after main.css.
+   Reference this from any mobile page AFTER main.css.
    All classes use the mob- prefix to avoid conflicts.
+
+   2026 refresh: design-token layer (--mob-*) drives the whole
+   palette, depth, radii and type. Brand blue (#4282C1) retained.
+   Retune the app by editing :root below — nothing else.
    ============================================================= */
 
+/* ── Design tokens ─────────────────────────────────────────── */
+:root {
+    /* Brand */
+    --mob-brand:        #4282C1;
+    --mob-brand-dark:   #2f5f9a;
+    --mob-brand-tint:   #e8f0fb;
+
+    /* Text */
+    --mob-ink:          #16314f;   /* primary headings / doc numbers */
+    --mob-ink-strong:   #1a1a2e;   /* item codes */
+    --mob-text:         #4a5568;   /* body */
+    --mob-text-muted:   #6a7585;   /* descriptions */
+    --mob-text-faint:   #8a94a3;   /* meta / hints */
+
+    /* Surfaces */
+    --mob-bg:           #f0f2f5;   /* page background */
+    --mob-surface:      #ffffff;   /* cards, bars, toolbar */
+    --mob-border:       rgba(16,40,70,.08);
+    --mob-divider:      rgba(0,0,0,.06);
+
+    /* Semantic — success */
+    --mob-success:      #28a745;
+    --mob-success-dark: #1e7e34;
+    --mob-success-tint: #d4edda;
+    --mob-success-ink:  #155724;
+    /* Semantic — warning */
+    --mob-warn-tint:    #fff3cd;
+    --mob-warn-ink:     #7a5c00;
+    /* Semantic — danger */
+    --mob-danger-tint:  #f8d7da;
+    --mob-danger-ink:   #721c24;
+    /* Semantic — info */
+    --mob-info-tint:    #cce5ff;
+    --mob-info-ink:     #004085;
+    /* Neutral pill */
+    --mob-neutral-tint: #ebebeb;
+    --mob-neutral-ink:  #555555;
+    /* Destination green — put-away / "moved to" emphasis (deeper than success) */
+    --mob-dest:         #2d6a2d;
+    --mob-dest-dark:    #1e4d1e;
+
+    /* Radii */
+    --mob-radius-sm:    .45em;
+    --mob-radius-md:    .7em;
+    --mob-radius-lg:    14px;
+    --mob-radius-pill:  1em;
+
+    /* Depth — softer, layered */
+    --mob-shadow-card:        0 1px 2px rgba(16,40,70,.06), 0 6px 16px rgba(16,40,70,.08);
+    --mob-shadow-card-active: 0 2px 14px rgba(66,130,193,.28);
+    --mob-shadow-panel:       0 -4px 18px rgba(16,40,70,.12);
+    --mob-shadow-topbar:      0 2px 10px rgba(16,40,70,.18);
+    --mob-shadow-modal:       0 12px 40px rgba(16,40,70,.30);
+
+    /* Type */
+    --mob-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                "Helvetica Neue", Arial, sans-serif;
+
+    /* Focus ring — accessible, brand-tinted */
+    --mob-focus: 0 0 0 3px rgba(66,130,193,.35);
+
+    /* Minimum comfortable tap target */
+    --mob-tap: 48px;
+}
+
 /* ── Base ──────────────────────────────────────────────────── */
-html, body { margin: 0; padding: 0; background: #f0f2f5; -webkit-overflow-scrolling: touch; }
-input, select, textarea { font-size: 16px; }
+html, body {
+    margin: 0; padding: 0;
+    background: var(--mob-bg);
+    font-family: var(--mob-font);
+    color: var(--mob-text);
+    -webkit-overflow-scrolling: touch;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+}
+input, select, textarea { font-size: 16px; font-family: inherit; }
 
 /* ── Topbar ────────────────────────────────────────────────── */
-/* Forces the correct blue regardless of main.css cascade */
-.mob-topbar { background: #4282C1; }
+/* Layout lives in main.css; these refine colour + depth (loaded after) */
+.mob-topbar {
+    background: var(--mob-brand);
+    box-shadow: var(--mob-shadow-topbar);
+}
 /* Prevent long titles truncating on narrow screens */
-.mob-topbar .mob-topbar-title { font-size: .82em; }
+.mob-topbar .mob-topbar-title { font-size: .82em; letter-spacing: .01em; }
 
 /* ── Document summary header ───────────────────────────────── */
 /* Shows doc number, counterparty, due date, status badge.
    Sits immediately below the fixed topbar. */
 .mob-doc-header {
-    background: #e8f0fb;
-    border-left: 4px solid #4282C1;
+    background: var(--mob-brand-tint);
+    border-left: 4px solid var(--mob-brand);
     padding: .65em 1em .55em;
     margin-top: 3.2em;          /* clears fixed topbar */
 }
@@ -32,12 +113,12 @@ input, select, textarea { font-size: 16px; }
 .mob-doc-num {
     font-weight: 700;
     font-size: .95em;
-    color: #1a3d6e;
+    color: var(--mob-ink);
     letter-spacing: .01em;
 }
 .mob-doc-secondary {
     font-size: .85em;
-    color: #445;
+    color: var(--mob-text);
 }
 .mob-doc-meta {
     display: flex;
@@ -48,26 +129,26 @@ input, select, textarea { font-size: 16px; }
 }
 .mob-doc-meta-item {
     font-size: .78em;
-    color: #557;
+    color: var(--mob-text-muted);
 }
 /* Status / count pill (amber by default) */
 .mob-doc-badge {
     font-size: .71em;
     font-weight: 700;
-    background: #fff3cd;
-    color: #7a5c00;
-    border-radius: 1em;
+    background: var(--mob-warn-tint);
+    color: var(--mob-warn-ink);
+    border-radius: var(--mob-radius-pill);
     padding: .22em .7em;
 }
 /* Green variant — e.g. "All received", "Complete" */
 .mob-doc-badge.success {
-    background: #d4edda;
-    color: #155724;
+    background: var(--mob-success-tint);
+    color: var(--mob-success-ink);
 }
 /* Blue variant — informational */
 .mob-doc-badge.info {
-    background: #cce5ff;
-    color: #004085;
+    background: var(--mob-info-tint);
+    color: var(--mob-info-ink);
 }
 
 /* Global selection indicator (e.g. "Receiving into: FG Store") */
@@ -78,11 +159,11 @@ input, select, textarea { font-size: 16px; }
     margin-top: .35em;
     font-size: .78em;
     flex-wrap: wrap;
-    color: #2d6a2d;
+    color: var(--mob-dest);
 }
-.mob-doc-selection-strip strong { font-weight: 700; color: #1e4d1e; }
+.mob-doc-selection-strip strong { font-weight: 700; color: var(--mob-dest-dark); }
 .mob-selection-change-link {
-    color: #4282C1 !important;
+    color: var(--mob-brand) !important;
     text-decoration: underline;
     background: none;
     border: none;
@@ -105,12 +186,12 @@ input, select, textarea { font-size: 16px; }
     padding: 1.2em;
 }
 .mob-modal-box {
-    background: #fff;
-    border-radius: .8em;
+    background: var(--mob-surface);
+    border-radius: var(--mob-radius-lg);
     padding: 1.6em 1.3em 1.3em;
     width: 100%;
     max-width: 22em;
-    box-shadow: 0 10px 35px rgba(0,0,0,.28);
+    box-shadow: var(--mob-shadow-modal);
 }
 .mob-modal-icon {
     font-size: 2em;
@@ -122,11 +203,11 @@ input, select, textarea { font-size: 16px; }
     margin: 0 0 .3em 0;
     font-size: 1.05em;
     font-weight: 700;
-    color: #1a3d6e;
+    color: var(--mob-ink);
 }
 .mob-modal-box p {
     font-size: .84em;
-    color: #666;
+    color: var(--mob-text-muted);
     margin: 0 0 1em 0;
     line-height: 1.45;
 }
@@ -134,18 +215,19 @@ input, select, textarea { font-size: 16px; }
     width: 100%;
     height: 2.9em;
     border: 1px solid #ccc;
-    border-radius: .45em;
+    border-radius: var(--mob-radius-sm);
     padding: 0 .65em;
     font-size: 1em;
     margin-bottom: .7em;
-    background: #fff;
+    background: var(--mob-surface);
     display: block;
     box-sizing: border-box;
 }
+.mob-modal-select:focus { outline: none; border-color: var(--mob-brand); box-shadow: var(--mob-focus); }
 .mob-modal-error {
     display: block;
-    color: #721c24;
-    background: #f8d7da;
+    color: var(--mob-danger-ink);
+    background: var(--mob-danger-tint);
     border-radius: .35em;
     padding: .35em .7em;
     font-size: .82em;
@@ -155,10 +237,10 @@ input, select, textarea { font-size: 16px; }
     display: block;
     width: 100%;
     height: 3.1em;
-    background: #4282C1;
+    background: var(--mob-brand);
     color: #fff !important;
     border: none;
-    border-radius: .5em;
+    border-radius: var(--mob-radius-md);
     font-size: .98em;
     font-weight: 700;
     cursor: pointer;
@@ -167,7 +249,8 @@ input, select, textarea { font-size: 16px; }
     text-decoration: none;
     letter-spacing: .01em;
 }
-.mob-modal-confirm:active { background: #2f5f9a; }
+.mob-modal-confirm:active { background: var(--mob-brand-dark); }
+.mob-modal-confirm:focus-visible { outline: none; box-shadow: var(--mob-focus); }
 .mob-modal-cancel {
     display: block;
     width: 100%;
@@ -186,18 +269,19 @@ input, select, textarea { font-size: 16px; }
 /* ── Barcode scan bar ──────────────────────────────────────── */
 /* Flex wrapper gives an integrated ✕ button inside the border */
 .mob-scan-bar {
-    background: #fff;
-    border-bottom: 1px solid #e2e3e5;
+    background: var(--mob-surface);
+    border-bottom: 1px solid var(--mob-divider);
     padding: .65em .8em;
 }
 .mob-scan-wrap {
     display: flex;
     align-items: stretch;
-    border: 2px solid #4282C1;
-    border-radius: .5em;
+    border: 2px solid var(--mob-brand);
+    border-radius: var(--mob-radius-md);
     overflow: hidden;
+    transition: box-shadow .15s, border-color .15s;
 }
-.mob-scan-wrap:focus-within { border-color: #2f5f9a; }
+.mob-scan-wrap:focus-within { border-color: var(--mob-brand-dark); box-shadow: var(--mob-focus); }
 .mob-scan-wrap input[type="text"] {
     flex: 1;
     border: none;
@@ -231,8 +315,8 @@ input, select, textarea { font-size: 16px; }
     font-size: .84em;
     font-weight: 600;
 }
-.mob-feedback.found    { display: block; background: #d4edda; color: #155724; }
-.mob-feedback.notfound { display: block; background: #f8d7da; color: #721c24; }
+.mob-feedback.found    { display: block; background: var(--mob-success-tint); color: var(--mob-success-ink); }
+.mob-feedback.notfound { display: block; background: var(--mob-danger-tint);  color: var(--mob-danger-ink); }
 
 /* ── Line list ─────────────────────────────────────────────── */
 /* Bottom padding clears the fixed toolbar */
@@ -241,30 +325,33 @@ input, select, textarea { font-size: 16px; }
 /* ── Line cards ─────────────────────────────────────────────── */
 .mob-linecard {
     position: relative;
-    background: #fff;
-    border-radius: .6em;
-    box-shadow: 0 1px 5px rgba(0,0,0,.09);
+    background: var(--mob-surface);
+    border-radius: var(--mob-radius-lg);
+    box-shadow: var(--mob-shadow-card);
     margin-bottom: .7em;
     overflow: hidden;
+    border: 0.5px solid var(--mob-border);
     border-left: 4px solid transparent;
-    transition: border-color .2s, opacity .25s;
+    transition: border-color .2s, box-shadow .2s, opacity .25s;
 }
 .mob-linecard.matched {
-    border-left-color: #4282C1;
-    box-shadow: 0 2px 12px rgba(66,130,193,.28);
+    border-left-color: var(--mob-brand);
+    box-shadow: var(--mob-shadow-card-active);
+    outline: 2px solid var(--mob-brand);
+    outline-offset: -2px;
 }
 .mob-linecard.received {
     opacity: .6;
-    border-left-color: #28a745;
+    border-left-color: var(--mob-success);
 }
 /* Card body: content full-width; the action button floats in the top-right corner */
 .mob-linecard-body { display: block; }
 .mob-card-main { padding: .9em .9em .85em 1em; min-width: 0; }
 
 /* Card text elements (top block stays clear of the top-right button) */
-.mob-item-code  { font-weight: 700; font-size: 1em; color: #1a1a2e; padding-right: 76px; }
+.mob-item-code  { font-weight: 700; font-size: 1em; color: var(--mob-ink-strong); padding-right: 76px; }
 .mob-item-unit  { font-size: .74em; color: #999; margin-top: .08em; padding-right: 76px; }
-.mob-item-descr { font-size: .84em; color: #556; margin-top: .25em; line-height: 1.35; padding-right: 76px; }
+.mob-item-descr { font-size: .84em; color: var(--mob-text-muted); margin-top: .25em; line-height: 1.35; padding-right: 76px; }
 
 /* ── Pill badges ────────────────────────────────────────────── */
 .mob-qty-row {
@@ -277,22 +364,25 @@ input, select, textarea { font-size: 16px; }
 .mob-qty-badge {
     font-size: .71em;
     font-weight: 700;
-    border-radius: 1em;
+    border-radius: var(--mob-radius-pill);
     padding: .24em .72em;
 }
-.mob-qty-badge.ordered   { background: #ebebeb; color: #555; }
-.mob-qty-badge.remaining { background: #fff3cd; color: #7a5c00; }
-.mob-qty-badge.picked    { background: #d4edda; color: #155724; }
-.mob-qty-badge.short     { background: #f8d7da; color: #721c24; }
+.mob-qty-badge.ordered   { background: var(--mob-neutral-tint); color: var(--mob-neutral-ink); }
+.mob-qty-badge.remaining { background: var(--mob-warn-tint);    color: var(--mob-warn-ink); }
+.mob-qty-badge.picked    { background: var(--mob-success-tint); color: var(--mob-success-ink); }
+.mob-qty-badge.short     { background: var(--mob-danger-tint);  color: var(--mob-danger-ink); }
+/* Stock-count: first vs second count, kept visually distinct */
+.mob-qty-badge.count1    { background: var(--mob-brand-tint);   color: var(--mob-brand); }
+.mob-qty-badge.count2    { background: #f3e7fb;                 color: #7b3fa0; }
 
 /* ✓ Received / Saved inline badge on the item code line */
 .mob-saved-badge {
     display: inline-block;
     font-size: .68em;
     font-weight: 700;
-    background: #d4edda;
-    color: #155724;
-    border-radius: 1em;
+    background: var(--mob-success-tint);
+    color: var(--mob-success-ink);
+    border-radius: var(--mob-radius-pill);
     padding: .2em .65em;
     margin-left: .4em;
     vertical-align: middle;
@@ -308,7 +398,7 @@ input, select, textarea { font-size: 16px; }
 }
 .mob-qty-label {
     font-size: .78em;
-    color: #778;
+    color: var(--mob-text-muted);
     font-weight: 600;
     white-space: nowrap;
 }
@@ -317,18 +407,19 @@ input, select, textarea { font-size: 16px; }
     width: 6em;
     height: 2.7em;
     border: 1px solid #ccc;
-    border-radius: .45em;
+    border-radius: var(--mob-radius-sm);
     text-align: center;
     font-size: 1.05em;
     font-weight: 600;
     color: #222;
+    transition: border-color .15s, box-shadow .15s;
 }
-.mob-qty-input-row input:focus { outline: none; border-color: #4282C1; }
+.mob-qty-input-row input:focus { outline: none; border-color: var(--mob-brand); box-shadow: var(--mob-focus); }
 
 /* Lot number label (hidden by default; shown via inline style from code-behind) */
 .mob-lot-label {
     font-size: .75em;
-    color: #666;
+    color: var(--mob-text-muted);
     margin-top: .3em;
     display: none;
 }
@@ -344,17 +435,18 @@ input, select, textarea { font-size: 16px; }
     justify-content: center;
     width: 70px;
     height: 70px;
-    background: #4282C1;
+    background: var(--mob-brand);
     color: #fff !important;
     border: none;
-    border-radius: 0 0 0 .7em;
+    border-radius: 0 0 0 var(--mob-radius-lg);
     font-size: 1.5em;
     font-weight: 700;
     cursor: pointer;
     text-decoration: none;
     transition: background .15s;
 }
-.mob-action-btn:active    { background: #2f5f9a; }
+.mob-action-btn:active    { background: var(--mob-brand-dark); }
+.mob-action-btn:focus-visible { outline: none; box-shadow: inset var(--mob-focus); }
 .mob-action-btn[disabled] { background: #c8d5e2; color: rgba(255,255,255,.55) !important; cursor: default; }
 
 /* ── Empty state ────────────────────────────────────────────── */
@@ -365,28 +457,30 @@ input, select, textarea { font-size: 16px; }
 .mob-action-panel {
     position: fixed;
     bottom: 4.33em; left: 0; right: 0;
-    background: #fff;
-    border-top: 2px solid #4282C1;
+    background: var(--mob-surface);
+    border-top: 2px solid var(--mob-brand);
     padding: .85em 2em 1em;
     z-index: 101;
-    box-shadow: 0 -4px 16px rgba(0,0,0,.15);
+    box-shadow: var(--mob-shadow-panel);
 }
 .mob-action-panel h4 {
     margin: 0 0 .65em 0;
     font-size: .95em;
     font-weight: 700;
-    color: #1a3d6e;
+    color: var(--mob-ink);
 }
 .mob-panel-row { display: flex; flex-direction: column; margin-bottom: .55em; }
-.mob-panel-row label { font-size: .78em; color: #556; margin-bottom: .2em; }
+.mob-panel-row label { font-size: .78em; color: var(--mob-text); margin-bottom: .2em; }
 .mob-panel-row input[type="text"],
 .mob-panel-row input[type="date"] {
     height: 2.5em;
     border: 1px solid #ccc;
-    border-radius: .4em;
+    border-radius: var(--mob-radius-sm);
     padding: 0 .7em;
     font-size: 1em;
+    transition: border-color .15s, box-shadow .15s;
 }
+.mob-panel-row input:focus { outline: none; border-color: var(--mob-brand); box-shadow: var(--mob-focus); }
 .mob-panel-check {
     display: flex;
     align-items: center;
@@ -396,8 +490,8 @@ input, select, textarea { font-size: 16px; }
 }
 .mob-panel-error {
     display: block;
-    color: #721c24;
-    background: #f8d7da;
+    color: var(--mob-danger-ink);
+    background: var(--mob-danger-tint);
     border-radius: .35em;
     padding: .35em .7em;
     font-size: .82em;
@@ -406,51 +500,52 @@ input, select, textarea { font-size: 16px; }
 .mob-panel-buttons { display: flex; gap: .5em; }
 .mob-btn-cancel {
     flex: 0 0 5em;
-    height: 2.7em;
+    height: var(--mob-tap);
     background: #e2e3e5;
     color: #333;
     border: none;
-    border-radius: .45em;
+    border-radius: var(--mob-radius-sm);
     font-size: .9em;
     cursor: pointer;
     text-align: center;
-    line-height: 2.7em;
+    line-height: var(--mob-tap);
     text-decoration: none;
 }
 .mob-btn-confirm {
     flex: 1;
-    height: 2.7em;
-    background: #28a745;
+    height: var(--mob-tap);
+    background: var(--mob-success);
     color: #fff;
     border: none;
-    border-radius: .45em;
+    border-radius: var(--mob-radius-sm);
     font-size: .88em;
     cursor: pointer;
     text-align: center;
-    line-height: 2.7em;
+    line-height: var(--mob-tap);
     text-decoration: none;
     font-weight: 700;
 }
-.mob-btn-confirm:active   { background: #1e7e34; }
+.mob-btn-confirm:active   { background: var(--mob-success-dark); }
 .mob-btn-confirm:disabled { background: #aaa; cursor: default; }
 
 /* ── Bottom toolbar ─────────────────────────────────────────── */
 .mob-toolbar {
     position: fixed;
     bottom: 0; left: 0; right: 0;
-    background: #fff;
-    border-top: 1px solid #e2e3e5;
+    background: var(--mob-surface);
+    border-top: 1px solid var(--mob-divider);
     display: flex;
     gap: .5em;
     padding: .5em .8em;
     z-index: 100;
+    box-shadow: var(--mob-shadow-panel);
 }
 .mob-toolbar button,
 .mob-toolbar a {
     flex: 1;
     height: 3.1em;
     border: none;
-    border-radius: .5em;
+    border-radius: var(--mob-radius-md);
     font-size: .95em;
     font-weight: 700;
     cursor: pointer;
@@ -458,10 +553,13 @@ input, select, textarea { font-size: 16px; }
     line-height: 3.1em;
     text-decoration: none;
     letter-spacing: .01em;
+    transition: background .15s, box-shadow .15s;
 }
+.mob-toolbar button:focus-visible,
+.mob-toolbar a:focus-visible { outline: none; box-shadow: var(--mob-focus); }
 /* Green — primary terminal action (Finalise, Close Off, Submit) */
-.mob-btn-primary  { background: #28a745; color: #fff !important; margin:.5em}
-.mob-btn-primary:active  { background: #1e7e34; }
+.mob-btn-primary  { background: var(--mob-success); color: #fff !important; margin:.5em}
+.mob-btn-primary:active  { background: var(--mob-success-dark); }
 /* Blue — secondary action (Receive All, Pick All, etc.) */
-.mob-btn-secondary { background: #4282C1; color: #fff !important; }
-.mob-btn-secondary:active { background: #2f5f9a; }
+.mob-btn-secondary { background: var(--mob-brand); color: #fff !important; }
+.mob-btn-secondary:active { background: var(--mob-brand-dark); }

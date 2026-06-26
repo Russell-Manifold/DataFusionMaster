@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>Purchase Orders</title>
     <link rel="shortcut icon" href="../images/datafusionicon.ico" type="image/x-icon" />
-    <link rel="stylesheet" href="css/main.css" />
-    <link rel="stylesheet" href="css/mobile-ui.css" />
+    <link rel="stylesheet" href="css/main.css<%= SBMS.Classes.Ver.Css("~/SBMSMobile/css/main.css") %>" />
+    <link rel="stylesheet" href="css/mobile-ui.css<%= SBMS.Classes.Ver.Css("~/SBMSMobile/css/mobile-ui.css") %>" />
     <!-- PWA -->
     <link rel="manifest" href="manifest.json" />
     <meta name="theme-color" content="#4282C1" />

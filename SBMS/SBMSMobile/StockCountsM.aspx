@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>Stock Counts</title>
     <link rel="shortcut icon" href="../images/datafusionicon.ico" type="image/x-icon" />
-    <link rel="stylesheet" href="css/main.css" />
-    <link rel="stylesheet" href="css/mobile-ui.css" />
+    <link rel="stylesheet" href="css/main.css<%= SBMS.Classes.Ver.Css("~/SBMSMobile/css/main.css") %>" />
+    <link rel="stylesheet" href="css/mobile-ui.css<%= SBMS.Classes.Ver.Css("~/SBMSMobile/css/mobile-ui.css") %>" />
     <link rel="manifest" href="../SBMSMobile/manifest.json" />
     <meta name="theme-color" content="#4282C1" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -16,49 +16,50 @@
     <meta name="format-detection" content="telephone=no" />
     <style>
         .mob-store-picker {
-            background: #fff;
-            border-radius: 10px;
+            background: var(--mob-surface);
+            border-radius: var(--mob-radius-lg);
+            border: 0.5px solid var(--mob-border);
             padding: 1rem;
             margin: .5rem 1rem;
-            box-shadow: 0 1px 6px rgba(0,0,0,.06);
+            box-shadow: var(--mob-shadow-card);
         }
         .mob-store-picker label {
             display: block;
             font-size: .82em;
             font-weight: 600;
-            color: #555;
+            color: var(--mob-text);
             margin-bottom: .35em;
         }
         .mob-store-picker select {
             width: 100%;
             height: 2.8em;
             border: 1.5px solid #ccc;
-            border-radius: .5em;
+            border-radius: var(--mob-radius-sm);
             padding: 0 .5em;
             font-size: 1em;
-            background: #fff;
+            background: var(--mob-surface);
+            transition: border-color .15s, box-shadow .15s;
         }
+        .mob-store-picker select:focus { outline: none; border-color: var(--mob-brand); box-shadow: var(--mob-focus); }
         .mob-start-btn {
             display: block;
             margin: 1rem;
-            padding: .85rem;
-            background: #4caf50;
+            padding: .9rem;
+            background: var(--mob-success);
             color: #fff;
             font-size: 1.1em;
             font-weight: 700;
             text-align: center;
-            border-radius: 10px;
+            border-radius: var(--mob-radius-md);
             text-decoration: none;
-            box-shadow: 0 2px 8px rgba(76,175,80,.3);
             transition: background .15s;
         }
         .mob-start-btn:active {
-            background: #388e3c;
+            background: var(--mob-success-dark);
         }
         .mob-start-btn.disabled {
             background: #bbb;
             cursor: not-allowed;
-            box-shadow: none;
         }
     </style>
 </head>

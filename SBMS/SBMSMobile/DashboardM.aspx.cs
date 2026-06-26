@@ -88,6 +88,15 @@ namespace SBMS
             }
         }
 
+        // Quick Move — scanner-driven single-item move between two stores/bins (ledger-only).
+        protected void imgbQuickMove_Click(object sender, EventArgs e)
+        {
+            if (userDets != null)
+                Response.Redirect("~/SBMSMobile/QuickMoveM.aspx?user=" + userDets.UserGuiD, false);
+            else
+                Response.Redirect("~/Dashboard.aspx", true);
+        }
+
         protected void ibtnPickSlips_Click(object sender, EventArgs e)
         {
             if (userDets != null)

@@ -6,31 +6,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>Notifications</title>
     <link rel="shortcut icon" href="../images/datafusionicon.ico" type="image/x-icon" />
-    <link rel="stylesheet" href="../SBMSMobile/css/main.css" />
+    <link rel="stylesheet" href="../SBMSMobile/css/main.css<%= SBMS.Classes.Ver.Css("~/SBMSMobile/css/main.css") %>" />
+    <link rel="stylesheet" href="../SBMSMobile/css/mobile-ui.css<%= SBMS.Classes.Ver.Css("~/SBMSMobile/css/mobile-ui.css") %>" />
     <!-- PWA -->
     <link rel="manifest" href="../SBMSMobile/manifest.json" />
-    <meta name="theme-color" content="#222629" />
+    <meta name="theme-color" content="#4282C1" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Data Fusion" />
     <link rel="apple-touch-icon" href="../SBMSMobile/icons/icon-192.png" />
     <meta name="format-detection" content="telephone=no" />
     <style>
-        html, body { margin: 0; padding: 0; background: #f0f2f5; -webkit-overflow-scrolling: touch; }
-        input, select, textarea { font-size: 16px; }
+        /* base + tokens inherited from mobile-ui.css */
 
-        /* ?? Notification cards ?? */
-        .notif-list  { padding: .5em .6em 5em .6em; margin-top: 3.2em; }
+        /* Notification cards */
+        .notif-list  { padding: .5em .6em 5.4em .6em; margin-top: 3.2em; }
 
         .notif-card  {
-            background: #fff;
-            border-radius: .55em;
-            box-shadow: 0 1px 4px rgba(0,0,0,.12);
-            margin-bottom: .55em;
+            background: var(--mob-surface);
+            border-radius: var(--mob-radius-lg);
+            box-shadow: var(--mob-shadow-card);
+            border: 0.5px solid var(--mob-border);
+            margin-bottom: .7em;
             display: flex;
             align-items: flex-start;
             gap: .75em;
-            padding: .85em 1em;
+            padding: .9em 1em;
             transition: opacity .3s;
         }
         .notif-card.read { opacity: .45; }
@@ -39,7 +40,7 @@
             flex: 0 0 2.2em;
             width: 2.2em; height: 2.2em;
             border-radius: 50%;
-            background: #4282C1;
+            background: var(--mob-brand);
             color: #fff;
             display: flex; align-items: center; justify-content: center;
             font-size: 1.1em;
@@ -47,21 +48,23 @@
         .notif-icon.read { background: #aaa; }
 
         .notif-body  { flex: 1 1 auto; }
-        .notif-msg   { font-size: .95em; color: #222; line-height: 1.4; }
-        .notif-time  { font-size: .75em; color: #aaa; margin-top: .25em; }
+        .notif-msg   { font-size: .95em; color: var(--mob-ink-strong); line-height: 1.4; }
+        .notif-time  { font-size: .75em; color: var(--mob-text-faint); margin-top: .25em; }
 
         .notif-mark  {
             flex: 0 0 auto;
             background: none;
-            border: 1px solid #4282C1;
-            color: #4282C1;
-            border-radius: .4em;
-            padding: .3em .6em;
+            border: 1px solid var(--mob-brand);
+            color: var(--mob-brand);
+            border-radius: var(--mob-radius-sm);
+            padding: .45em .75em;
             font-size: .8em;
             cursor: pointer;
             white-space: nowrap;
+            transition: background .15s, color .15s, box-shadow .15s;
         }
-        .notif-mark:active { background: #4282C1; color: #fff; }
+        .notif-mark:active { background: var(--mob-brand); color: #fff; }
+        .notif-mark:focus-visible { outline: none; box-shadow: var(--mob-focus); }
 
         .notif-empty {
             text-align: center;
@@ -70,12 +73,13 @@
             font-size: .95em;
         }
 
-        /* ?? Refresh / Mark-all bar ?? */
+        /* Refresh / Mark-all bar */
         .notif-toolbar {
             position: fixed;
             bottom: 0; left: 0; right: 0;
-            background: #fff;
-            border-top: 1px solid #eee;
+            background: var(--mob-surface);
+            border-top: 1px solid var(--mob-divider);
+            box-shadow: var(--mob-shadow-panel);
             display: flex;
             gap: .5em;
             padding: .6em .8em;
@@ -83,18 +87,22 @@
         }
         .notif-toolbar button {
             flex: 1;
-            height: 2.6em;
+            height: 3.1em;
             border: none;
-            border-radius: .4em;
+            border-radius: var(--mob-radius-md);
             font-size: .95em;
+            font-weight: 700;
+            letter-spacing: .01em;
             cursor: pointer;
+            transition: background .15s, box-shadow .15s;
         }
-        .btn-refresh  { background: #4282C1; color: #fff; }
+        .notif-toolbar button:focus-visible { outline: none; box-shadow: var(--mob-focus); }
+        .btn-refresh  { background: var(--mob-brand); color: #fff; }
         .btn-markall  { background: #e2e3e5; color: #333; }
-        .btn-refresh:active { background: #2f5f9a; }
+        .btn-refresh:active { background: var(--mob-brand-dark); }
         .btn-markall:active { background: #ccc; }
 
-        /* ?? Spinner ?? */
+        /* Spinner */
         .notif-spinner {
             display: none;
             text-align: center;

@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>Picking Slip</title>
     <link rel="shortcut icon" href="../images/datafusionicon.ico" type="image/x-icon" />
-    <link rel="stylesheet" href="../SBMSMobile/css/main.css" />
-    <link rel="stylesheet" href="../SBMSMobile/css/mobile-ui.css" />
+    <link rel="stylesheet" href="../SBMSMobile/css/main.css<%= SBMS.Classes.Ver.Css("~/SBMSMobile/css/main.css") %>" />
+    <link rel="stylesheet" href="../SBMSMobile/css/mobile-ui.css<%= SBMS.Classes.Ver.Css("~/SBMSMobile/css/mobile-ui.css") %>" />
     <link rel="manifest" href="../SBMSMobile/manifest.json" />
     <meta name="theme-color" content="#4282C1" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -15,9 +15,9 @@
     <link rel="apple-touch-icon" href="../SBMSMobile/icons/icon-192.png" />
     <meta name="format-detection" content="telephone=no" />
     <style>
-        /* Pick message banner — page-specific colour */
+        /* Pick message banner */
         .mob-pick-msg {
-            background: #2e6da4;
+            background: var(--mob-brand-dark);
             color: #fff;
             font-size: .8em;
             padding: .38em 1em;
@@ -28,12 +28,14 @@
             width: 100%;
             height: 2.4em;
             border: 1px solid #ccc;
-            border-radius: .4em;
+            border-radius: var(--mob-radius-sm);
             padding: 0 .4em;
             font-size: .9em;
-            background: #fff;
+            background: var(--mob-surface);
             margin-top: .45em;
+            transition: border-color .15s, box-shadow .15s;
         }
+        .mob-lot-select:focus { outline: none; border-color: var(--mob-brand); box-shadow: var(--mob-focus); }
     </style>
 </head>
 <body>

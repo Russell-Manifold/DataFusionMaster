@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>Count Stock</title>
     <link rel="shortcut icon" href="../images/datafusionicon.ico" type="image/x-icon" />
-    <link rel="stylesheet" href="css/main.css" />
-    <link rel="stylesheet" href="css/mobile-ui.css" />
+    <link rel="stylesheet" href="css/main.css<%= SBMS.Classes.Ver.Css("~/SBMSMobile/css/main.css") %>" />
+    <link rel="stylesheet" href="css/mobile-ui.css<%= SBMS.Classes.Ver.Css("~/SBMSMobile/css/mobile-ui.css") %>" />
     <link rel="manifest" href="../SBMSMobile/manifest.json" />
     <meta name="theme-color" content="#4282C1" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -17,12 +17,13 @@
     <style>
         /* ── Calculator overlay ────────────────────────────────────────── */
         .calc-overlay {
-            position: fixed; inset: 0; background: #f5f6f8; z-index: 500;
+            position: fixed; inset: 0; background: var(--mob-bg); z-index: 500;
             display: flex; flex-direction: column;
         }
         .calc-header {
-            background: #4282C1; color: #fff; padding: .7rem 1rem;
+            background: var(--mob-brand); color: #fff; padding: .7rem 1rem;
             display: flex; align-items: center; gap: .5rem;
+            box-shadow: var(--mob-shadow-topbar);
         }
         .calc-item-code {
             font-size: 1.1em; font-weight: 700; flex: 1;
@@ -32,23 +33,24 @@
         }
         .calc-qty-hint {
             background: rgba(255,255,255,.2); color: #fff;
-            padding: .15em .6em; border-radius: .4em; font-size: .78em;
+            padding: .15em .6em; border-radius: var(--mob-radius-sm); font-size: .78em;
         }
         .calc-body {
             flex: 1; display: flex; flex-direction: column; padding: .8rem;
             overflow-y: auto;
         }
         .calc-expr-display {
-            background: #fff; border: 2px solid #4282C1; border-radius: .6em;
+            background: var(--mob-surface); border: 2px solid var(--mob-brand);
+            border-radius: var(--mob-radius-md);
             padding: .8rem; margin-bottom: .6rem; min-height: 5em;
             display: flex; flex-direction: column; justify-content: center;
         }
         .calc-expr-text {
-            font-size: 1.4em; font-weight: 600; color: #333;
+            font-size: 1.4em; font-weight: 600; color: var(--mob-ink-strong);
             word-break: break-all; line-height: 1.3;
         }
         .calc-total-text {
-            font-size: 2em; font-weight: 700; color: #4282C1;
+            font-size: 2em; font-weight: 700; color: var(--mob-brand);
             text-align: right; margin-top: .2em;
         }
         .calc-pad {
@@ -56,26 +58,27 @@
             gap: .5rem;
         }
         .calc-btn {
-            height: 3.6em; border: none; border-radius: .5em;
+            height: 3.6em; border: none; border-radius: var(--mob-radius-md);
             font-size: 1.15em; font-weight: 600; cursor: pointer;
-            background: #fff; color: #333;
-            box-shadow: 0 1px 3px rgba(0,0,0,.1);
+            background: var(--mob-surface); color: var(--mob-ink-strong);
+            box-shadow: var(--mob-shadow-card);
             -webkit-tap-highlight-color: transparent;
-            transition: background .1s;
+            transition: background .1s, box-shadow .15s;
         }
         .calc-btn:active { background: #e0e0e0; }
+        .calc-btn:focus-visible { outline: none; box-shadow: var(--mob-focus); }
         .calc-btn--op {
-            background: #e8f0fe; color: #4282C1;
+            background: var(--mob-brand-tint); color: var(--mob-brand);
         }
         .calc-btn--op:active { background: #d0e0f8; }
         .calc-btn--clear {
-            background: #fce4e4; color: #c00;
+            background: var(--mob-danger-tint); color: var(--mob-danger-ink);
         }
         .calc-btn--del {
-            background: #fff3e0; color: #e65100;
+            background: var(--mob-warn-tint); color: var(--mob-warn-ink);
         }
         .calc-btn--save {
-            background: #4caf50; color: #fff; grid-column: span 2;
+            background: var(--mob-success); color: #fff; grid-column: span 2;
         }
         .calc-btn--cancel {
             background: #eee; color: #666; grid-column: span 2;
@@ -84,25 +87,25 @@
         /* ── Store badge in top bar ──────────────────────────────────── */
         .mob-store-badge {
             background: rgba(255,255,255,.2); color: #fff;
-            padding: .15em .55em; border-radius: .4em;
+            padding: .15em .55em; border-radius: var(--mob-radius-sm);
             font-size: .7em; font-weight: 600;
         }
 
         /* ── Count expression in line card ───────────────────────────── */
         .mob-count-expr {
-            font-size: .75em; color: #888; margin-top: .15em;
+            font-size: .75em; color: var(--mob-text-faint); margin-top: .15em;
             font-style: italic;
         }
         .mob-barcode-chips {
             display: flex; flex-wrap: wrap; gap: .25em; margin-top: .3em;
         }
         .mob-barcode-chip {
-            background: #f0f4f8; color: #555; font-size: .68em;
-            padding: .1em .45em; border-radius: .35em; border: 1px solid #ddd;
+            background: var(--mob-neutral-tint); color: var(--mob-neutral-ink); font-size: .68em;
+            padding: .1em .45em; border-radius: var(--mob-radius-sm); border: 1px solid #ddd;
             white-space: nowrap;
         }
         .mob-barcode-chip-qty {
-            color: #4282C1; font-weight: 600;
+            color: var(--mob-brand); font-weight: 600;
         }
 
         /* ── Compact line cards (override mobile-ui.css) ─────────────── */
@@ -309,7 +312,7 @@
                                 <%-- Count 1 info (visible when first count done) --%>
                                 <asp:Panel ID="pnlCount1Info" runat="server" Visible="false" style="margin-top:.3em;">
                                     <div class="mob-qty-row">
-                                        <span class="mob-qty-badge" style="background:#e8f0fe;color:#1565c0;">
+                                        <span class="mob-qty-badge count1">
                                             Count 1:&nbsp;<asp:Label ID="lblCount1Qty" runat="server" />
                                         </span>
                                     </div>
@@ -318,7 +321,7 @@
                                 <%-- Count 2 info (visible when second count done) --%>
                                 <asp:Panel ID="pnlCount2Info" runat="server" Visible="false" style="margin-top:.2em;">
                                     <div class="mob-qty-row">
-                                        <span class="mob-qty-badge" style="background:#f3e5f5;color:#7b1fa2;">
+                                        <span class="mob-qty-badge count2">
                                             Count 2:&nbsp;<asp:Label ID="lblCount2Qty" runat="server" />
                                         </span>
                                     </div>

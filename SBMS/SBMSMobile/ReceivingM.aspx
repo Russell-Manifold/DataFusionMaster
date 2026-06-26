@@ -6,8 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>Put-away</title>
     <link rel="shortcut icon" href="../images/datafusionicon.ico" type="image/x-icon" />
-    <link rel="stylesheet" href="../SBMSMobile/css/main.css" />
-    <link rel="stylesheet" href="../SBMSMobile/css/mobile-ui.css" />
+    <link rel="stylesheet" href="../SBMSMobile/css/main.css<%= SBMS.Classes.Ver.Css("~/SBMSMobile/css/main.css") %>" />
+    <link rel="stylesheet" href="../SBMSMobile/css/mobile-ui.css<%= SBMS.Classes.Ver.Css("~/SBMSMobile/css/mobile-ui.css") %>" />
     <link rel="manifest" href="../SBMSMobile/manifest.json" />
     <meta name="theme-color" content="#4282C1" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -16,26 +16,25 @@
     <link rel="apple-touch-icon" href="../SBMSMobile/icons/icon-192.png" />
     <meta name="format-detection" content="telephone=no" />
     <style>
-        .mob-doc-selection-strip { color: #2d6a2d; }
-        .mob-doc-selection-strip strong { color: #1e4d1e; }
-        .mob-linecard.matched { outline: 2px solid #4282C1; }
+        /* selection-strip + matched-line treatment now live in mobile-ui.css */
 
         /* Put away this session – running confirmation list */
-        .mob-done-list { margin: 1em .6em 2em; border-top: 1px solid #e2e2e2; padding-top: .7em; }
-        .mob-done-head { font-weight: 700; color: #2d6a2d; font-size: .95em; margin-bottom: .4em; }
+        .mob-done-list { margin: 1em .6em 2em; border-top: 1px solid var(--mob-divider); padding-top: .7em; }
+        .mob-done-head { font-weight: 700; color: var(--mob-dest); font-size: .95em; margin-bottom: .4em; }
         .mob-done-row  { display: flex; align-items: baseline; gap: .5em; padding: .35em 0;
                          border-bottom: 1px solid #f0f0f0; font-size: .9em; }
-        .mob-done-qty   { font-weight: 700; min-width: 2.6em; text-align: right; color: #1a1a2e; }
-        .mob-done-item  { font-weight: 600; color: #1a1a2e; }
+        .mob-done-qty   { font-weight: 700; min-width: 2.6em; text-align: right; color: var(--mob-ink-strong); }
+        .mob-done-item  { font-weight: 600; color: var(--mob-ink-strong); }
         .mob-done-arrow { color: #999; }
-        .mob-done-dest  { color: #2d6a2d; font-weight: 600; }
-        .mob-done-time  { margin-left: auto; color: #aaa; font-size: .85em; }
+        .mob-done-dest  { color: var(--mob-dest); font-weight: 600; }
+        .mob-done-time  { margin-left: auto; color: var(--mob-text-faint); font-size: .85em; }
 
         /* Success toast */
         .mob-toast { position: fixed; left: 50%; bottom: 2.2em;
                      transform: translateX(-50%) translateY(1em);
-                     background: #2d6a2d; color: #fff; padding: .8em 1.3em; border-radius: .6em;
-                     font-size: 1.05em; font-weight: 600; box-shadow: 0 4px 16px rgba(0,0,0,.3);
+                     background: var(--mob-dest); color: #fff; padding: .8em 1.3em;
+                     border-radius: var(--mob-radius-md);
+                     font-size: 1.05em; font-weight: 600; box-shadow: var(--mob-shadow-modal);
                      opacity: 0; transition: opacity .25s, transform .25s; z-index: 1000;
                      pointer-events: none; max-width: 90%; text-align: center; }
         .mob-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
