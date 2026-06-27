@@ -1,0 +1,6 @@
+13:51:07 - CoID:11961 PurchaseOrder/Save failed: 500 InternalServerError - 
+13:51:07 - CoID:11961 Receiving PO 6648200 status->Invoiced was NOT applied by Sage.
+13:55:23 - CoID:11961 PurchaseOrder/Save failed: 500 InternalServerError - 
+13:55:23 - CoID:11961 Receiving PO 6648200 status->Invoiced was NOT applied by Sage.
+15:38:00 - APIUpdatePurchaseOrderAsync PurchaseOrder/Save failed: InternalServerError - 
+16:07:41 - APIUpdatePurchaseOrderAsync PurchaseOrder/Save failed: InternalServerError - 

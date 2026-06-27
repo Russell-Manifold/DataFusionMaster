@@ -87,9 +87,18 @@ namespace SBMS.Classes
                     if (response.IsSuccessStatusCode)
                     {
                         string content = await response.Content.ReadAsStringAsync();
-                        if (!string.IsNullOrWhiteSpace(content))
+                        if (!string.IsNullOrWhiteSpace(content) && content.Trim() != "null")
                         {
                             parsedJSON = JObject.Parse(content);
+
+                            // Trap empty result set: {"TotalResults":0,"ReturnedResults":0,"Results":[]}
+                            if (parsedJSON["TotalResults"] != null &&
+                                parsedJSON["TotalResults"].Value<int>() == 0 &&
+                                parsedJSON["ReturnedResults"] != null &&
+                                parsedJSON["ReturnedResults"].Value<int>() == 0)
+                            {
+                                parsedJSON["isEmpty"] = true;
+                            }
                         }
                     }
                     else
@@ -296,6 +305,7 @@ namespace SBMS.Classes
             string requestUrl = sageurl+DocType+"/Save?useSystemDocumentNumber=true&apikey={"+APIKey+"}&CompanyID="+Userdetails.CoID;
             using (HttpClient client = new HttpClient())
             {
+                client.Timeout = TimeSpan.FromSeconds(30);
                 string combined = $"{Userdetails.LoginName}:{Userdetails.LoginPwd}";
                 string base64Encoded = Convert.ToBase64String(Encoding.UTF8.GetBytes(combined));
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", base64Encoded);
@@ -314,12 +324,12 @@ namespace SBMS.Classes
                     }
                     else
                     {
-                        Console.WriteLine($"Request failed: {response.StatusCode} - {await response.Content.ReadAsStringAsync()}");
+                        LogErrorToFile($"APIUpdateSalesOrderAsync {DocType}/Save failed: {response.StatusCode} - {await response.Content.ReadAsStringAsync()}");
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Error: {ex.Message}");
+                    LogErrorToFile($"APIUpdateSalesOrderAsync {DocType}/Save error: {ex.Message}");
                 }
             }
 
@@ -329,7 +339,7 @@ namespace SBMS.Classes
         public async Task<JObject> APIUpdatePurchaseOrderAsync(string DocType, string JsonStr, UserDetails Userdetails)
         {
             JObject parsedJSON = new JObject();
-            string requestUrl = sageurl + DocType + "/Save?useSystemDocumentNumber=false&apikey={" + APIKey + "}&CompanyID=" + Userdetails.CoID;
+            string requestUrl = sageurl + DocType + "/Save?useSystemDocumentNumber=true&apikey={" + APIKey + "}&CompanyID=" + Userdetails.CoID;
             using (HttpClient client = new HttpClient())
             {
                 string combined = $"{Userdetails.LoginName}:{Userdetails.LoginPwd}";
@@ -350,12 +360,12 @@ namespace SBMS.Classes
                     }
                     else
                     {
-                        Console.WriteLine($"Request failed: {response.StatusCode} - {await response.Content.ReadAsStringAsync()}");
+                        LogErrorToFile($"APIUpdatePurchaseOrderAsync {DocType}/Save failed: {response.StatusCode} - {await response.Content.ReadAsStringAsync()}");
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Error: {ex.Message}");
+                    LogErrorToFile($"APIUpdatePurchaseOrderAsync {DocType}/Save error: {ex.Message}");
                 }
             }
 
@@ -1067,6 +1077,10 @@ namespace SBMS.Classes
                         }
                         UpdateDate = true;
                         }
+                        // Guard against a stuck page: if Sage returns no rows while
+                        // TotalResults still reports more, skipQty would never advance
+                        // and the loop (and _POisSyncRunning flag) would hang forever.
+                        if (RetQty <= 0) break;
                         skipQty = skipQty + RetQty;
                     } while (skipQty < TotQty);
 
@@ -1881,16 +1895,16 @@ namespace SBMS.Classes
                     }
                     else
                     {
-                        Console.WriteLine($"Request failed: {response.StatusCode} - {response.Content.ReadAsStringAsync().Result}");
+                        LogErrorToFile($"ApiCallNA request failed: {response.StatusCode} - {response.Content.ReadAsStringAsync().Result} - URL: {requestUrl}");
                     }
                 }
                 catch (TimeoutException ex)
                 {
-                    Console.WriteLine($"Timeout error: {ex.Message}");
+                    LogErrorToFile($"ApiCallNA timeout: {ex.Message} - URL: {requestUrl}");
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Error: {ex.Message}");
+                    LogErrorToFile($"ApiCallNA error: {ex.Message} - URL: {requestUrl}");
                 }
 
                 return parsedJSON;

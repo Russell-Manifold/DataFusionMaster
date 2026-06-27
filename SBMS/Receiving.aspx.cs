@@ -1115,28 +1115,21 @@ namespace SBMS
                             //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                             if (RBpoStatus.SelectedValue == "0")
                             {
-                                // Header-only PO status update. The previous version
-                                // reused jsonBody (the supplier-invoice payload) and
-                                // sent it back to PurchaseOrder/Save - that included
-                                // a Lines array containing ONLY the lines being
-                                // received in this batch, so Sage would truncate the
-                                // PO to just those lines. We strip Lines out and
-                                // send only what we want to change.
-                                var jObj = JObject.Parse(jsonBody);
-                                jObj["ID"] = docid;
-                                jObj["StatusId"] = "4";
-                                jObj["DueDate"]?.Parent.Remove();
-                                jObj["DeliveryDate"] = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss");
-                                jObj["Lines"]?.Parent.Remove();   // <-- do NOT touch PO lines on this update
-
-                                // Re-serialize back to string
-                                string updatedJsonBody = jObj.ToString(Formatting.Indented);
-                                // change status of PO to Invoiced.,
-                                string doctype = "";
-                                doctype = "PurchaseOrder";
+                                // PO is fully received -> flip it to Invoiced (StatusId 4) WITHOUT altering its lines. We cannot reuse jsonBody (the supplier-invoice payload): it only carries THIS
+                                // batch's lines, so posting it to PurchaseOrder/Save would truncate the PO; and stripping Lines out makes Sage reject the save (500). Instead we fetch the live PO from
+                                // Sage and post it back with only the status changed - so the payload always holds the PO's own complete lines.
                                 ApiUrlCall Api = new ApiUrlCall();
-                                JObject parsedJSON = await Api.APIUpdatePurchaseOrderAsync(doctype, updatedJsonBody, CurrentUser);
+                                string poGetUrl = ApiUrlCall.sageurl + "PurchaseOrder/GET/" + docid +
+                                    "?includeDetail={True}&includeSupplierDetails={True}&apikey={" +
+                                    ApiUrlCall.APIKey + "}&CompanyID=" + CurrentUser.CoID;
+                                JObject livePO = await Api.ApiCallAsync(poGetUrl, CurrentUser);
 
+                                if (livePO != null && livePO["error"] == null && livePO["Lines"] != null)
+                                {
+                                    livePO["StatusId"] = 4;
+                                    string updatedJsonBody = livePO.ToString(Formatting.Indented);
+                                    JObject parsedJSON = await Api.APIUpdatePurchaseOrderAsync("PurchaseOrder", updatedJsonBody, CurrentUser);
+                                }
                             }
                             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                         }

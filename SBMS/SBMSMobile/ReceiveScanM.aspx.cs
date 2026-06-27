@@ -512,13 +512,21 @@ namespace SBMS
                 {
                     try
                     {
-                        var poUpdateObj = new
+                        // Flip the PO to Invoiced WITHOUT altering its lines. Posting a
+                        // Lines-less payload to PurchaseOrder/Save makes Sage reject it (500),
+                        // so we fetch the live PO and post it back with only the status changed -
+                        // the payload then always holds the PO's own complete lines.
+                        string poGetUrl = ApiUrlCall.sageurl + "PurchaseOrder/GET/" + DocID +
+                            "?includeDetail={True}&includeSupplierDetails={True}&apikey={" +
+                            ApiUrlCall.APIKey + "}&CompanyID=" + CurrentUser.CoID;
+                        JObject livePO = await api.ApiCallAsync(poGetUrl, CurrentUser);
+
+                        if (livePO != null && livePO["error"] == null && livePO["Lines"] != null)
                         {
-                            ID = DocID, StatusId = 4,
-                            DeliveryDate = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss")
-                        };
-                        await api.APIUpdatePurchaseOrderAsync("PurchaseOrder",
-                            JsonConvert.SerializeObject(poUpdateObj, Formatting.Indented), CurrentUser);
+                            livePO["StatusId"] = 4;
+                            await api.APIUpdatePurchaseOrderAsync("PurchaseOrder",
+                                livePO.ToString(Formatting.Indented), CurrentUser);
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -583,8 +591,16 @@ namespace SBMS
                                 });
                         }
 
-                        // Short register: this receipt + what's still owed.
-                        decimal remaining = (dl.Quantity ?? 0m) - recvQty;
+                        // Short register: this receipt + what's still owed. Outstanding is the
+                        // ordered qty minus everything received so far (prior batches from the
+                        // ledger + this receipt), so multi-batch part-receives stay correct.
+                        decimal preRecQty = db.ReceivingOutstandings
+                            .Where(x => x.PODocID == DocID
+                                     && x.Archive == false
+                                     && (x.SBCALineID == dl.SBCALineID
+                                         || (x.SBCALineID == null && x.ItemCode == dl.ItemCode)))
+                            .Sum(x => (decimal?)x.RecQty) ?? 0;
+                        decimal remaining = (dl.Quantity ?? 0m) - (preRecQty + recvQty);
                         if (remaining < 0) remaining = 0;
                         db.ReceivingOutstandings.Add(new ReceivingOutstanding
                         {
