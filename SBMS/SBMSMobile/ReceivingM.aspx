@@ -43,6 +43,13 @@
 <body>
 <form id="form1" runat="server">
     <asp:ScriptManager ID="ScriptManager1" runat="server" />
+    <%-- Icon library (outline, 2px, rounded) — referenced via <use href="#i-…"> --%>
+    <svg class="mob-ico-defs" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+        <symbol id="i-house" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></symbol>
+        <symbol id="i-package" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M3.3 7 12 12l8.7-5"/><path d="M12 22V12"/></symbol>
+        <symbol id="i-scan" viewBox="0 0 24 24"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M7 12h10"/></symbol>
+    </svg>
+
 
     <%-- Loading overlay --%>
     <asp:UpdateProgress ID="UpdateProgress1" runat="server" AssociatedUpdatePanelID="upMain">
@@ -58,9 +65,9 @@
     <div class="mob-topbar">
         <div class="mob-topbar-left">
             <asp:LinkButton ID="lbtnTopBack" runat="server" OnClick="lbtnTopBack_Click" CssClass="mob-topbar-back">&#8592; Back</asp:LinkButton>
-            <asp:LinkButton ID="lbtnTopHome" runat="server" OnClick="lbtnTopHome_Click" CssClass="mob-topbar-icon" title="Home">&#127968;</asp:LinkButton>
+            <asp:LinkButton ID="lbtnTopHome" runat="server" OnClick="lbtnTopHome_Click" CssClass="mob-topbar-icon" title="Home" aria-label="Home"><svg class="mob-ico" aria-hidden="true"><use href="#i-house"/></svg></asp:LinkButton>
         </div>
-        <span class="mob-topbar-title">&#128230; Put-away</span>
+        <span class="mob-topbar-title"><svg class="mob-ico" aria-hidden="true"><use href="#i-package"/></svg>Put-away</span>
         <div class="mob-topbar-right">
             <asp:Label ID="lblUsername" runat="server" style="display:none;" />
             <asp:LinkButton ID="lbtnLogOut" runat="server" OnClick="lbtnLogOut_Click"
@@ -74,7 +81,7 @@
         <%-- Source (holding) store header --%>
         <div class="mob-doc-header">
             <div class="mob-doc-header-main">
-                <span class="mob-doc-num">&#128230; From: <asp:Label ID="lblPONum" runat="server" /></span>
+                <span class="mob-doc-num"><svg class="mob-ico" aria-hidden="true"><use href="#i-package"/></svg> From: <asp:Label ID="lblPONum" runat="server" /></span>
             </div>
             <div class="mob-doc-meta">
                 <span class="mob-doc-badge"><asp:Label ID="lblLineCount" runat="server" /> line(s) in holding</span>
@@ -84,7 +91,8 @@
         <%-- Barcode scan bar --%>
         <div class="mob-scan-bar">
             <div class="mob-scan-wrap">
-                <asp:TextBox ID="txtBarcode" runat="server" placeholder="&#128247; Scan or type barcode&hellip;"
+                <span class="mob-scan-ico"><svg class="mob-ico" aria-hidden="true"><use href="#i-scan"/></svg></span>
+                <asp:TextBox ID="txtBarcode" runat="server" placeholder="Scan or type barcode&hellip;"
                     AutoPostBack="true" OnTextChanged="txtBarcode_TextChanged"
                     autocomplete="off" autocorrect="off" autocapitalize="off"
                     style="font-size:16px;" />

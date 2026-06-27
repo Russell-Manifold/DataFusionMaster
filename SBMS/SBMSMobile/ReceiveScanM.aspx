@@ -20,6 +20,15 @@
 <body>
 <form id="form1" runat="server">
     <asp:ScriptManager ID="ScriptManager1" runat="server" />
+    <%-- Icon library (outline, 2px, rounded) — referenced via <use href="#i-…"> --%>
+    <svg class="mob-ico-defs" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+        <symbol id="i-house" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></symbol>
+        <symbol id="i-inbox" viewBox="0 0 24 24"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></symbol>
+        <symbol id="i-scan" viewBox="0 0 24 24"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M7 12h10"/></symbol>
+        <symbol id="i-clipboard" viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M9 12l2 2 4-4"/></symbol>
+        <symbol id="i-arrow-up" viewBox="0 0 24 24"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></symbol>
+    </svg>
+
 
     <asp:UpdateProgress ID="UpdateProgress1" runat="server" AssociatedUpdatePanelID="upMain">
         <ProgressTemplate>
@@ -33,9 +42,9 @@
     <div class="mob-topbar">
         <div class="mob-topbar-left">
             <asp:LinkButton ID="lbtnTopBack" runat="server" OnClick="lbtnTopBack_Click" CssClass="mob-topbar-back">&#8592; Back</asp:LinkButton>
-            <asp:LinkButton ID="lbtnTopHome" runat="server" OnClick="lbtnTopHome_Click" CssClass="mob-topbar-icon" title="Home">&#127968;</asp:LinkButton>
+            <asp:LinkButton ID="lbtnTopHome" runat="server" OnClick="lbtnTopHome_Click" CssClass="mob-topbar-icon" title="Home" aria-label="Home"><svg class="mob-ico" aria-hidden="true"><use href="#i-house"/></svg></asp:LinkButton>
         </div>
-        <span class="mob-topbar-title">&#128229; Receive</span>
+        <span class="mob-topbar-title"><svg class="mob-ico" aria-hidden="true"><use href="#i-inbox"/></svg>Receive</span>
         <div class="mob-topbar-right">
             <asp:Label ID="lblUsername" runat="server" style="display:none;" />
             <asp:LinkButton ID="lbtnLogOut" runat="server" OnClick="lbtnLogOut_Click"
@@ -61,7 +70,8 @@
         <%-- Barcode scan bar --%>
         <div class="mob-scan-bar">
             <div class="mob-scan-wrap">
-                <asp:TextBox ID="txtBarcode" runat="server" placeholder="&#128247; Scan or type barcode&hellip;"
+                <span class="mob-scan-ico"><svg class="mob-ico" aria-hidden="true"><use href="#i-scan"/></svg></span>
+                <asp:TextBox ID="txtBarcode" runat="server" placeholder="Scan or type barcode&hellip;"
                     AutoPostBack="true" OnTextChanged="txtBarcode_TextChanged"
                     autocomplete="off" autocorrect="off" autocapitalize="off"
                     style="font-size:16px;" />
@@ -74,7 +84,7 @@
 
         <%-- Finalise panel --%>
         <asp:Panel ID="pnlFinalize" runat="server" Visible="false" CssClass="mob-action-panel">
-            <h4>&#x1F4CB; Finalise &amp; Generate GRN</h4>
+            <h4><svg class="mob-ico" aria-hidden="true"><use href="#i-clipboard"/></svg> Finalise &amp; Generate GRN</h4>
             <div class="mob-panel-row">
                 <label>D/N Number **</label>
                 <asp:TextBox ID="txtDNNum" runat="server" placeholder="Delivery Note #"
@@ -155,7 +165,7 @@
 
     <div class="mob-toolbar">
         <asp:LinkButton ID="lbtnFinalize" runat="server" OnClick="lbtnFinalize_Click"
-            CssClass="mob-btn-primary">&#x2B06; Finalise GRN</asp:LinkButton>
+            CssClass="mob-btn-primary"><svg class="mob-ico" aria-hidden="true"><use href="#i-arrow-up"/></svg> Finalise GRN</asp:LinkButton>
     </div>
 </form>
 

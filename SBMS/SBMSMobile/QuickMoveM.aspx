@@ -80,6 +80,12 @@
 <body>
 <form id="form1" runat="server">
     <asp:ScriptManager ID="ScriptManager1" runat="server" />
+    <%-- Icon library (outline, 2px, rounded) — referenced via <use href="#i-…"> --%>
+    <svg class="mob-ico-defs" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+        <symbol id="i-house" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></symbol>
+        <symbol id="i-transfer" viewBox="0 0 24 24"><path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></symbol>
+    </svg>
+
 
     <%-- Loading overlay --%>
     <asp:UpdateProgress ID="UpdateProgress1" runat="server" AssociatedUpdatePanelID="upMain">
@@ -95,9 +101,9 @@
     <div class="mob-topbar">
         <div class="mob-topbar-left">
             <asp:LinkButton ID="lbtnTopBack" runat="server" OnClick="lbtnTopBack_Click" CssClass="mob-topbar-back">&#8592; Back</asp:LinkButton>
-            <asp:LinkButton ID="lbtnTopHome" runat="server" OnClick="lbtnTopHome_Click" CssClass="mob-topbar-icon" title="Home">&#127968;</asp:LinkButton>
+            <asp:LinkButton ID="lbtnTopHome" runat="server" OnClick="lbtnTopHome_Click" CssClass="mob-topbar-icon" title="Home" aria-label="Home"><svg class="mob-ico" aria-hidden="true"><use href="#i-house"/></svg></asp:LinkButton>
         </div>
-        <span class="mob-topbar-title">&#128257; Quick Move</span>
+        <span class="mob-topbar-title"><svg class="mob-ico" aria-hidden="true"><use href="#i-transfer"/></svg>Quick Move</span>
         <div class="mob-topbar-right">
             <asp:Label ID="lblUsername" runat="server" style="display:none;" />
             <asp:LinkButton ID="lbtnLogOut" runat="server" OnClick="lbtnLogOut_Click"

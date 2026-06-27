@@ -116,17 +116,23 @@
 <body>
 <form id="form1" runat="server">
     <asp:ScriptManager ID="ScriptManager1" runat="server" EnablePageMethods="true" />
+    <%-- Icon library (outline, 2px, rounded) — referenced via <use href="#i-…"> --%>
+    <svg class="mob-ico-defs" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+        <symbol id="i-house" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></symbol>
+        <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></symbol>
+    </svg>
+
 
     <%-- Top bar --%>
     <div class="mob-topbar">
-        <span class="mob-topbar-title">&#128276; Notifications
+        <span class="mob-topbar-title"><svg class="mob-ico" aria-hidden="true"><use href="#i-bell"/></svg>Notifications
             <span id="spnBadge" style="display:none;background:#e44c65;color:#fff;border-radius:1em;
                   font-size:.7em;padding:.1em .55em;margin-left:.4em;vertical-align:middle;"></span>
         </span>
         <div style="display:flex;align-items:center;gap:.8em;">
             <asp:Label ID="lblUsername" runat="server" style="color:#ccc;font-size:.8em;" />
             <asp:LinkButton ID="lbtnHome" runat="server" OnClick="lbtnHome_Click"
-                CssClass="mob-topbar-logout">&#127968;</asp:LinkButton>
+                CssClass="mob-topbar-icon" title="Home" aria-label="Home"><svg class="mob-ico" aria-hidden="true"><use href="#i-house"/></svg></asp:LinkButton>
         </div>
     </div>
 
@@ -192,7 +198,7 @@
         card.id = 'notif-' + n.Id;
 
         card.innerHTML =
-            '<div class="notif-icon">&#128276;</div>' +
+            '<div class="notif-icon"><svg class="mob-ico" aria-hidden="true"><use href="#i-bell"/></svg></div>' +
             '<div class="notif-body">' +
                 '<div class="notif-msg">' + escHtml(n.Message) + '</div>' +
             '</div>' +

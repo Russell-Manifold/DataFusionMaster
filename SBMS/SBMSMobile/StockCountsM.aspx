@@ -66,6 +66,14 @@
 <body>
 <form id="form1" runat="server">
     <asp:ScriptManager ID="ScriptManager1" runat="server" />
+    <%-- Icon library (outline, 2px, rounded) — referenced via <use href="#i-…"> --%>
+    <svg class="mob-ico-defs" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+        <symbol id="i-house" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></symbol>
+        <symbol id="i-chart" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></symbol>
+        <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></symbol>
+        <symbol id="i-package" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M3.3 7 12 12l8.7-5"/><path d="M12 22V12"/></symbol>
+    </svg>
+
 
     <%-- Loading overlay --%>
     <asp:UpdateProgress ID="UpdateProgress1" runat="server" AssociatedUpdatePanelID="upMain">
@@ -81,9 +89,9 @@
     <div class="mob-topbar">
         <div class="mob-topbar-left">
             <asp:LinkButton ID="lbtnBack" runat="server" OnClick="lbtnBack_Click" CssClass="mob-topbar-back">&#8592; Back</asp:LinkButton>
-            <asp:LinkButton ID="lbtnHome" runat="server" OnClick="lbtnHome_Click" CssClass="mob-topbar-icon" title="Home">&#127968;</asp:LinkButton>
+            <asp:LinkButton ID="lbtnHome" runat="server" OnClick="lbtnHome_Click" CssClass="mob-topbar-icon" title="Home" aria-label="Home"><svg class="mob-ico" aria-hidden="true"><use href="#i-house"/></svg></asp:LinkButton>
         </div>
-        <span class="mob-topbar-title">&#128202; Stock Counts</span>
+        <span class="mob-topbar-title"><svg class="mob-ico" aria-hidden="true"><use href="#i-chart"/></svg>Stock Counts</span>
         <div class="mob-topbar-right">
             <asp:Label ID="lblUsername" runat="server" style="display:none;" />
             <asp:LinkButton ID="lbtnLogOut" runat="server" OnClick="lbtnLogOut_Click" CssClass="mob-topbar-logout">Log Out</asp:LinkButton>
@@ -99,7 +107,7 @@
             <asp:DropDownList ID="ddCounts" runat="server"
                 style="flex:1;min-width:0;max-width:none;height:2.7em;border:1px solid #ccc;border-radius:.4em;padding:0 .4em;font-size:.9em;" />
             <asp:LinkButton ID="lbtnLoadCount" runat="server" OnClick="lbtnLoadCount_Click"
-                CssClass="mob-find-btn" style="margin-left:auto;">&#128269;</asp:LinkButton>
+                CssClass="mob-find-btn" style="margin-left:auto;" title="Load" aria-label="Load"><svg class="mob-ico" aria-hidden="true"><use href="#i-search"/></svg></asp:LinkButton>
             <asp:CheckBox ID="chkShowClosed" runat="server" AutoPostBack="true"
                 OnCheckedChanged="chkShowClosed_CheckedChanged" Text="Closed"
                 style="font-size:.75em;color:#888;white-space:nowrap;margin-left:.5em;" />
@@ -123,13 +131,13 @@
 
             <%-- Store picker --%>
             <div class="mob-store-picker">
-                <label>&#128230; Pick the store you are counting:</label>
+                <label><svg class="mob-ico" aria-hidden="true"><use href="#i-package"/></svg> Pick the store you are counting:</label>
                 <asp:DropDownList ID="ddStore" runat="server" style="width:100%;height:2.8em;border:1.5px solid #ccc;border-radius:.5em;padding:0 .5em;font-size:1em;background:#fff;" />
             </div>
 
             <%-- Start Counting button --%>
             <asp:LinkButton ID="lbtnStartCounting" runat="server" OnClick="lbtnStartCounting_Click"
-                CssClass="mob-start-btn">&#128202; Start Counting</asp:LinkButton>
+                CssClass="mob-start-btn"><svg class="mob-ico" aria-hidden="true"><use href="#i-chart"/></svg> Start Counting</asp:LinkButton>
         </asp:Panel>
 
     </ContentTemplate>

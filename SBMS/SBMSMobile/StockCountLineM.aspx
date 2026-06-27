@@ -126,6 +126,16 @@
 <body>
 <form id="form1" runat="server">
     <asp:ScriptManager ID="ScriptManager1" runat="server" />
+    <%-- Icon library (outline, 2px, rounded) — referenced via <use href="#i-…"> --%>
+    <svg class="mob-ico-defs" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+        <symbol id="i-house" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></symbol>
+        <symbol id="i-chart" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></symbol>
+        <symbol id="i-scan" viewBox="0 0 24 24"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M7 12h10"/></symbol>
+        <symbol id="i-clipboard" viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M9 12l2 2 4-4"/></symbol>
+        <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></symbol>
+        <symbol id="i-arrow-up" viewBox="0 0 24 24"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></symbol>
+    </svg>
+
 
     <%-- Loading overlay --%>
     <asp:UpdateProgress ID="UpdateProgress1" runat="server" AssociatedUpdatePanelID="upMain">
@@ -141,10 +151,10 @@
     <div class="mob-topbar">
         <div class="mob-topbar-left">
             <asp:LinkButton ID="lbtnBack" runat="server" OnClick="lbtnBack_Click" CssClass="mob-topbar-back">&#8592; Back</asp:LinkButton>
-            <asp:LinkButton ID="lbtnHome" runat="server" OnClick="lbtnHome_Click" CssClass="mob-topbar-icon" title="Home">&#127968;</asp:LinkButton>
+            <asp:LinkButton ID="lbtnHome" runat="server" OnClick="lbtnHome_Click" CssClass="mob-topbar-icon" title="Home" aria-label="Home"><svg class="mob-ico" aria-hidden="true"><use href="#i-house"/></svg></asp:LinkButton>
         </div>
         <span class="mob-topbar-title">
-            &#128202; <asp:Label ID="lblCountRefTop" runat="server" />
+            <svg class="mob-ico" aria-hidden="true"><use href="#i-chart"/></svg> <asp:Label ID="lblCountRefTop" runat="server" />
             <span class="mob-store-badge"><asp:Label ID="lblStoreBadge" runat="server" /></span>
         </span>
         <div class="mob-topbar-right">
@@ -174,7 +184,8 @@
         <%-- Scan bar (shown when calculator is hidden) --%>
         <asp:Panel ID="pnlScanBar" runat="server" CssClass="mob-scan-bar">
             <div class="mob-scan-wrap">
-                <asp:TextBox ID="txtBarcode" runat="server" placeholder="&#128247; Scan barcode to count&hellip;"
+                <span class="mob-scan-ico"><svg class="mob-ico" aria-hidden="true"><use href="#i-scan"/></svg></span>
+                <asp:TextBox ID="txtBarcode" runat="server" placeholder="Scan barcode to count&hellip;"
                     AutoPostBack="true" OnTextChanged="txtBarcode_TextChanged"
                     autocomplete="off" autocorrect="off" autocapitalize="off"
                     style="font-size:16px;" />
@@ -252,7 +263,7 @@
 
         <%-- Close-off panel --%>
         <asp:Panel ID="pnlCloseOff" runat="server" Visible="false" CssClass="mob-action-panel">
-            <h4>&#x1F4CB; Close Off Stock Count</h4>
+            <h4><svg class="mob-ico" aria-hidden="true"><use href="#i-clipboard"/></svg> Close Off Stock Count</h4>
             <p style="font-size:.82em;color:#555;margin:0 0 .7em 0;line-height:1.4;">
                 All lines for this store have been counted. Confirm to close off the entire stock count.
             </p>
@@ -276,7 +287,7 @@
             <asp:TextBox ID="txtSearch" runat="server" placeholder="Search&hellip;"
                 style="flex:1;min-width:0;height:2.5em;border:1px solid #ccc;border-radius:.4em;padding:0 .4em;font-size:.85em;" />
             <asp:LinkButton ID="lbtnSearch" runat="server" OnClick="lbtnSearch_Click"
-                CssClass="mob-find-btn">&#128269;</asp:LinkButton>
+                CssClass="mob-find-btn" title="Search" aria-label="Search"><svg class="mob-ico" aria-hidden="true"><use href="#i-search"/></svg></asp:LinkButton>
         </div>
 
         <%-- Line cards --%>
@@ -354,7 +365,7 @@
     <%-- Bottom toolbar --%>
     <div class="mob-toolbar">
         <asp:LinkButton ID="lbtnCloseOff" runat="server" OnClick="lbtnCloseOff_Click"
-            CssClass="mob-btn-primary">&#x2B06; Close Off</asp:LinkButton>
+            CssClass="mob-btn-primary"><svg class="mob-ico" aria-hidden="true"><use href="#i-arrow-up"/></svg> Close Off</asp:LinkButton>
     </div>
 </form>
 

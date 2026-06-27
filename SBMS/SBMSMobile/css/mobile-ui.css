@@ -282,10 +282,20 @@ input, select, textarea { font-size: 16px; font-family: inherit; }
     transition: box-shadow .15s, border-color .15s;
 }
 .mob-scan-wrap:focus-within { border-color: var(--mob-brand-dark); box-shadow: var(--mob-focus); }
+/* Leading scan glyph inside the scan field (replaces old camera emoji) */
+.mob-scan-ico {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-left: .7em;
+    color: var(--mob-text-faint);
+    flex-shrink: 0;
+}
+.mob-scan-ico .mob-ico { width: 1.25em; height: 1.25em; }
 .mob-scan-wrap input[type="text"] {
     flex: 1;
     border: none;
-    padding: 0 .75em;
+    padding: 0 .65em;
     height: 2.9em;
     font-size: 1em;
     background: transparent;
@@ -563,3 +573,40 @@ input, select, textarea { font-size: 16px; font-family: inherit; }
 /* Blue — secondary action (Receive All, Pick All, etc.) */
 .mob-btn-secondary { background: var(--mob-brand); color: #fff !important; }
 .mob-btn-secondary:active { background: var(--mob-brand-dark); }
+
+/* ── Icon system ───────────────────────────── */
+/* Single consistent vector set (outline, 2px stroke, rounded).
+   Icons inherit colour via currentColor and are sized in em. Use:
+       <svg class="mob-ico"><use href="#i-house"/></svg>
+   The symbol library (<svg class="mob-ico-defs">…) is included once per page. */
+.mob-ico {
+    width: 1.15em;
+    height: 1.15em;
+    flex-shrink: 0;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    vertical-align: -0.16em;
+    pointer-events: none;
+}
+.mob-ico.sm { width: 1em;   height: 1em; }
+.mob-ico.lg { width: 1.5em; height: 1.5em; }
+.mob-ico-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
+.mob-topbar-title .mob-ico { stroke-width: 2; vertical-align: -0.18em; margin-right: .15em; }
+
+/* Dashboard tile icon (flat, brand-tinted container) */
+.dash-tile-ico {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 56px;
+    height: 56px;
+    border-radius: var(--mob-radius-md);
+    background: var(--mob-brand-tint);
+    color: var(--mob-brand);
+    margin-bottom: .1em;
+}
+.dash-tile-ico .mob-ico { width: 30px; height: 30px; stroke-width: 1.9; vertical-align: 0; }
+.dash-tile:active .dash-tile-ico { background: var(--mob-brand); color: #fff; }
