@@ -153,7 +153,7 @@
           <Property Name="AllowScannerReceive" Type="bit" Nullable="false" />
           <Property Name="AllowScannerPutAway" Type="bit" Nullable="false" />
           <Property Name="BinSegments" Type="varchar" MaxLength="200" />
-          <Property Name="BinDelimiter" Type="varchar" MaxLength="3" Nullable="false" />
+          <Property Name="BinDelimiter" Type="varchar" MaxLength="3" />
         </EntityType>
         <EntityType Name="DelivMethods">
           <Key>
@@ -3497,7 +3497,7 @@
           <Property Name="AllowScannerReceive" Type="Boolean" Nullable="false" />
           <Property Name="AllowScannerPutAway" Type="Boolean" Nullable="false" />
           <Property Name="BinSegments" Type="String" MaxLength="200" FixedLength="false" Unicode="false" />
-          <Property Name="BinDelimiter" Type="String" Nullable="false" MaxLength="3" FixedLength="false" Unicode="false" />
+          <Property Name="BinDelimiter" Type="String" MaxLength="3" FixedLength="false" Unicode="false" />
         </EntityType>
         </Schema>
     </edmx:ConceptualModels>

@@ -33,7 +33,7 @@ namespace SBMS.Classes
         //public SBMSEntities(string connectionString) : base(connectionString) { }
 
         //  for demo version data
-        public static string dbName = $"MyDataFusionDemo2";
+      public static string dbName = $"MyDataFusionDemo2";
        // LIVE data
       /// <summary>
       //public static string dbName = $"MyDataFusion";
@@ -46,8 +46,8 @@ namespace SBMS.Classes
         static DateTime CustDT = Convert.ToDateTime("01 Jan 2015"), SuppDT = Convert.ToDateTime("01 Jan 2015"), ItemDT = Convert.ToDateTime("01 Jan 2015"), PODT = Convert.ToDateTime("01 Jan 2015"), InvoiceDT = Convert.ToDateTime("01 Jan 2015"), CNoteDT = Convert.ToDateTime("01 Jan 2015");
         static DateTime SuppInvDT = Convert.ToDateTime("01 Jan 2015"), SuppRetDT = Convert.ToDateTime("01 Jan 2015"), JrnlDT = Convert.ToDateTime("01 Jan 2015"), QuoteDT = Convert.ToDateTime("01 Jan 2015"), SOrdDT = Convert.ToDateTime("01 Jan 2015"), GLegDT = Convert.ToDateTime("01 Jan 2015");
 
-        //public static string sageurl = "https://accounting.sageone.co.za/api/2.0.0/";
-       // public static string APIKey = "5850E392-0FE8-43B4-9EEB-18D2B28B115C";
+       //public static string sageurl = "https://accounting.sageone.co.za/api/2.0.0/";
+        //public static string APIKey = "5850E392-0FE8-43B4-9EEB-18D2B28B115C";
         
       public static string sageurl = "https://resellers.accounting.sageone.co.za/api/2.0.0/";
       public static string APIKey = "2B7B61BA-41B8-4212-B2A2-77B8734BA688";
@@ -936,6 +936,19 @@ namespace SBMS.Classes
                         parsedJSON = new JObject
                         {
                             ["error"] = "Err 776 - " + ex.Message
+                        };
+                    }
+
+                    // Sage returned a non-success response (e.g. 500). ApiCallAsync surfaces it
+                    // as parsedJSON["error"] rather than throwing, so stop here and hand the
+                    // message back to the caller to display instead of falling through and
+                    // crashing on the absent Results array.
+                    if (parsedJSON != null && parsedJSON["error"] != null)
+                    {
+                        _POisSyncRunning = false;
+                        return new JObject
+                        {
+                            ["error"] = "Sage Error: " + parsedJSON["error"].ToString()
                         };
                     }
 
