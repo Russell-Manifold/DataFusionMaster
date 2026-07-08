@@ -21,6 +21,8 @@ namespace SBMS
         string docguid;
         private List<GetLinkedStoredFromItem_Result> _itemST;
         private List<GetActiveLotNumbersLinkedToStores_Result> _ActiveLotNums;
+        // SBCALineID -> outstanding SO-line balance (QtyLeft ?? Quantity), for the read-only Qty_Left grid column.
+        private Dictionary<long, decimal> _qtyLeftMap;
         private UserDetails CurrentUser
         {
             get
@@ -172,6 +174,16 @@ namespace SBMS
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {
                 var TempLines = _db.PickSlipLines.Where(x => x.PSID == PsID).OrderBy(x=>x.LineID).ToList();
+
+                // Outstanding balance per SO line for the Qty_Left column (null QtyLeft = nothing fulfilled yet).
+                _qtyLeftMap = new Dictionary<long, decimal>();
+                if (long.TryParse(lblDocID.Text, out long DocID))
+                {
+                    _qtyLeftMap = _db.DocLines.Where(x => x.DocID == DocID && x.SBCALineID != 0)
+                        .Select(x => new { x.SBCALineID, x.QtyLeft, x.Quantity }).ToList()
+                        .GroupBy(x => x.SBCALineID)
+                        .ToDictionary(g => g.Key, g => g.First().QtyLeft ?? g.First().Quantity ?? 0);
+                }
                 foreach (var itm in TempLines)
                 {
                     if (itm.Quantity != null)
@@ -194,7 +206,7 @@ namespace SBMS
                 if (!CurrentUser.UseBarcodes)
                 {
                     GridPSLines.Columns[3].Visible = false;
-                    GridPSLines.Columns[6].Visible = false;
+                    GridPSLines.Columns[7].Visible = false;   // Pick_Qty (shifted by the Qty_Left column)
                 }
             }
         }
@@ -249,7 +261,11 @@ namespace SBMS
                                 priceInclAdd = (decimal)lastTrn.TotalUnitPriceExclInclAdd;
                             }
                         }
-                        if (qoh < NewPSLine.Quantity)
+                        // Back-order: only require enough stock for the quantity actually being picked,
+                        // not the full ordered quantity (a short pick is allowed and back-ordered).
+                        decimal reqPickQty = (decimal)NewPSLine.Quantity;
+                        try { decimal _p = Convert.ToDecimal(txtPickQty.Text.TrimEnd()); if (_p > 0) reqPickQty = _p; } catch { }
+                        if (qoh < reqPickQty)
                         {
                             var ItmServ = _db.ItemsMasters.FirstOrDefault(x => x.CompanyID == CurrentUser.CoID && x.ID == NewPSLine.SelectionId);
                             if (ItmServ.Physical == true)
@@ -412,7 +428,8 @@ namespace SBMS
                         ItemTrans.Unit = NewPSLine.Unit;
                         ItemTrans.FromID = 0;
                         ItemTrans.ToID = FrmStorid;
-                        ItemTrans.Qty = Convert.ToDecimal(NewPSLine.Quantity) * -1;
+                        // Back-order: move only the picked quantity out of stock (not the ordered qty).
+                        ItemTrans.Qty = Convert.ToDecimal(NewPSLine.PickQty ?? NewPSLine.Quantity) * -1;
                         ItemTrans.DocumentType = 10;
                         if (PriceExcl == 0)
                         {
@@ -611,6 +628,14 @@ namespace SBMS
 
                 long itemID = Convert.ToInt64(e.Row.Cells[0].Text.ToString());
                 var item = (PickSlipLine)e.Row.DataItem;
+
+                // Read-only outstanding balance on the linked SO line (blank for lot-split lines).
+                Label lblQtyLeft = (Label)e.Row.FindControl("lblQtyLeft");
+                if (lblQtyLeft != null && _qtyLeftMap != null && (item.SBCALineID ?? 0) != 0
+                    && _qtyLeftMap.TryGetValue((long)item.SBCALineID, out decimal qtyLeft))
+                {
+                    lblQtyLeft.Text = ApiUrlCall.NumberToDecimal(qtyLeft.ToString(), CurrentUser.CompanyDecPlaces);
+                }
                 DropDownList DDStore = new DropDownList();
                 DDStore = (DropDownList)e.Row.FindControl("DDStore");
                 DDStore.Items.Clear();
@@ -728,8 +753,8 @@ namespace SBMS
             e.Row.Cells[0].Visible = false;
             if (CurrentUser.CompanyUseLotNumbers == false)
             {
-                e.Row.Cells[8].Visible = false;
-                e.Row.Cells[9].Visible = false;
+                e.Row.Cells[9].Visible = false;    // Lot Number (shifted by the Qty_Left column)
+                e.Row.Cells[10].Visible = false;   // lot-add button
             }
         }
 
@@ -737,43 +762,96 @@ namespace SBMS
         {
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {
-                foreach (GridViewRow Grv in GridPSLines.Rows)
+                int slipid = Convert.ToInt32(lblPSid.Text);
+                long Docid = Convert.ToInt64(lblDocID.Text);
+
+                // ---- Back-order close-off flow --------------------------------------------------
+                // Work out whether everything ordered on this slip has actually been picked.
+                var LinesForCheck = _db.PickSlipLines.Where(x => x.PSID == slipid).ToList();
+                decimal orderedQty = LinesForCheck.Sum(l => (decimal)(l.Quantity ?? 0));
+                decimal pickedQty = LinesForCheck.Sum(l => (l.PickComplete == true ? (decimal)(l.PickQty ?? l.Quantity ?? 0) : 0m));
+                bool hasShortfall = (orderedQty - pickedQty) > 0.0001m;
+                bool anyPicked = pickedQty > 0.0001m;
+
+                string closeChoice = hfCloseChoice.Value;
+                hfCloseChoice.Value = "";
+
+                if (string.IsNullOrEmpty(closeChoice))
                 {
-                    CheckBox chkComplete = (CheckBox)Grv.FindControl("chkComplete");
-                    if (chkComplete.Checked == false)
+                    // First pass: ask the picker how to close off, then re-post with the answer.
+                    string pb = Page.ClientScript.GetPostBackEventReference(LbtnPickSave, "");
+                    string hf = hfCloseChoice.ClientID;
+                    string js;
+                    if (!hasShortfall)
                     {
-                        AlertHelper.ShowSweetAlert(this, Grv.Cells[2].Text + ": has not been maked as picked. Unable to continue", "error");
+                        js = "Swal.fire({title:'Close Picking Slip',text:'Mark this picking slip as fully picked and close it off?',icon:'question',showCancelButton:true,confirmButtonText:'Yes, close off'})"
+                           + ".then(function(r){if(r.isConfirmed){document.getElementById('" + hf + "').value='full';" + pb + ";}});";
+                    }
+                    else if (!anyPicked)
+                    {
+                        // Nothing picked = nothing to invoice, so there is nothing to close off yet.
+                        AlertHelper.ShowSweetAlert(this, "No items have been picked yet. Pick at least one item before closing off, or delete this picking slip.", "warning");
                         return;
                     }
+                    else
+                    {
+                        js = "Swal.fire({title:'Picking Complete?',text:'Some items are short-picked. Is picking complete?',icon:'question',showDenyButton:true,showCancelButton:true,confirmButtonText:'Yes, fully picked',denyButtonText:'No, save as short-picked'})"
+                           + ".then(function(r){"
+                           + "if(r.isConfirmed){document.getElementById('" + hf + "').value='full';" + pb + ";}"
+                           + "else if(r.isDenied){Swal.fire({title:'Keep Unpicked on Back Order?',text:'Invoice the picked items now and create a new Sales Order for the unpicked balance? Choosing No cancels the unpicked balance.',icon:'question',showDenyButton:true,showCancelButton:true,confirmButtonText:'Yes, put balance on back order',denyButtonText:'No, cancel balance'})"
+                           + ".then(function(r2){"
+                           + "if(r2.isConfirmed){document.getElementById('" + hf + "').value='backorder';" + pb + ";}"
+                           + "else if(r2.isDenied){document.getElementById('" + hf + "').value='shortship';" + pb + ";}"
+                           + "});}"
+                           + "});";
+                    }
+                    ScriptManager.RegisterStartupScript(this, this.GetType(), "PSCloseFlow", js, true);
+                    return;
                 }
-                
-                long Docid = Convert.ToInt64(lblDocID.Text);
-                int slipid = Convert.ToInt32(lblPSid.Text);
+
+                // Safety: 'full' is only valid when nothing is short.
+                if (closeChoice == "full" && hasShortfall)
+                {
+                    AlertHelper.ShowSweetAlert(this, "Some lines are not fully picked. Choose Back Order or Cancel Balance.", "error");
+                    return;
+                }
+                // keepBackOrder = record the unpicked balance in QtyLeft; a new Sales Order is created
+                // for it when this SO is posted to Sage. full / shortship both close the SO line off
+                // with nothing owing (short-ship simply abandons the balance).
+                bool keepBackOrder = (closeChoice == "backorder");
+                // --------------------------------------------------------------------------------
+
                 long FirstLineID = 0;
                 // update SO lines from Picking Slip
                 var PSLines = _db.PickSlipLines.Where(x => x.PSID == slipid).OrderBy(x=>x.LineID).ToList();
                 
                 foreach (var PsL in PSLines)
                 {
+                    // Only lines the picker actually marked complete count as picked this cycle;
+                    // everything else is left on back order (pickQty = 0, no stock was moved for it).
                     decimal pickQty = 0;
-                    if (PsL.PickQty == null)
+                    if (PsL.PickComplete == true)
                     {
-                        pickQty = (decimal)PsL.Quantity;
-                    }
-                    else
-                    {
-                        pickQty = (decimal)PsL.PickQty;
+                        pickQty = (decimal)(PsL.PickQty ?? PsL.Quantity);
                     }
                     if (PsL.SBCALineID != 0)
                     {
                         var SOLine = _db.DocLines.Where(x => x.SBCALineID == PsL.SBCALineID).FirstOrDefault();
                         if (SOLine != null)
                         {
-                            FirstLineID = (long)PsL.SBCALineID;   
-                            SOLine.QtyLeft = SOLine.Quantity - pickQty;
-                            //SOLine.Quantity = pickQty;
-                            SOLine.ReceiveQty = pickQty;
-                            SOLine.ReceiveComplete = true;
+                            FirstLineID = (long)PsL.SBCALineID;
+                            // QtyLeft is the running outstanding balance (mirrors the receiving flow):
+                            // null on the first cycle = full ordered qty, then it counts down by what's picked.
+                            decimal prevLeft = SOLine.QtyLeft ?? (decimal)SOLine.Quantity;
+                            // Clamp to the outstanding balance so re-closing the same slip after a back
+                            // order can't re-invoice qty that was already banked in an earlier cycle.
+                            if (pickQty > prevLeft) pickQty = prevLeft;
+                            decimal outstanding = prevLeft - pickQty;
+                            if (outstanding < 0) outstanding = 0;
+                            // QtyLeft = outstanding back-order qty (0 once fully picked, or when the balance is cancelled).
+                            SOLine.QtyLeft = keepBackOrder ? outstanding : 0;
+                            SOLine.ReceiveQty = pickQty;   // qty to invoice THIS cycle
+                            SOLine.ReceiveComplete = (SOLine.QtyLeft == 0);
                             SOLine.StoreCode = PsL.StoreCodeFrom;
                             SOLine.LotNumber = PsL.LotNumber;
                             SOLine.Exclusive = SOLine.UnitPriceExclusive * pickQty;
@@ -806,6 +884,11 @@ namespace SBMS
  
                         // Get values from first line of the same item
                         var FirstSOLine = _db.DocLines.Where(x => x.SBCALineID == FirstLineID).FirstOrDefault();
+                        // Clamp to the parent line's outstanding balance so re-closing the same slip
+                        // after a back order can't re-invoice qty already banked in an earlier cycle.
+                        decimal prevLeftSplit = FirstSOLine != null ? (FirstSOLine.QtyLeft ?? (decimal)FirstSOLine.Quantity) : pickQty;
+                        if (pickQty > prevLeftSplit) pickQty = prevLeftSplit;
+                        DLn.ReceiveQty = pickQty;
                         DLn.UnitPriceExclusive = FirstSOLine.UnitPriceExclusive;
                         DLn.UnitPriceInclusive = FirstSOLine.UnitPriceInclusive;
                         DLn.TaxPercentage = FirstSOLine.TaxPercentage;
@@ -825,16 +908,35 @@ namespace SBMS
                         DLn.ExchRate = 1;
                         DLn.localCurrLineVal = DLn.Exclusive - DLn.Discount;
                         _db.DocLines.Add(DLn);
-                    }  
+
+                        // Lot-split line: draw the picked qty off the parent SO line's outstanding balance.
+                        if (FirstSOLine != null)
+                        {
+                            decimal outstandingSplit = prevLeftSplit - pickQty;
+                            if (outstandingSplit < 0) outstandingSplit = 0;
+                            FirstSOLine.QtyLeft = keepBackOrder ? outstandingSplit : 0;
+                            FirstSOLine.ReceiveComplete = (FirstSOLine.QtyLeft == 0);
+                        }
+                    }
                 }
                 _db.SaveChanges();
                     
+                // Back order: this SO closes normally for the picked quantities. Any outstanding
+                // balance is recorded in QtyLeft; when the SO is posted to Sage, a NEW Sales Order
+                // is created for that balance (linked via Reference) and follows the normal workflow.
+                bool hasBackOrder = keepBackOrder && _db.DocLines.Any(x => x.DocID == Docid && (x.QtyLeft ?? 0) > 0.0001m);
+
                 var DocH = _db.DocHeaders.Where(x => x.CompanyID == CurrentUser.CoID && x.DocID == Docid).FirstOrDefault();
                 DocH.Complete = true;
                 DocH.Active = true;
                 DocH.CompBy = CurrentUser.RoleID;
                 DocH.CompleteDate = DateTime.Today;
-               
+                if (hasBackOrder)
+                {
+                    // Cleared back to "Invoiced" once the balance SO has been created at post time.
+                    DocH.Status = "Partially Invoiced";
+                }
+
                 // get total cost from transactions
                 DocH.DocCost = Convert.ToDecimal((_db.ItemTransactions.Where(x => x.CompanyID == CurrentUser.CoID && x.DocumentID == slipid).Sum(x => (decimal?)x.TotalLineValExcl) ?? 0m).ToString("N2"));
                 if (DocH.DocCost != 0) DocH.DocCost = DocH.DocCost * -1;
@@ -891,10 +993,13 @@ namespace SBMS
                 }
                 _db.SaveChanges();
                 // Show popup and redirect after confirmation
+                string closeMsg = hasBackOrder
+                    ? "Picked items closed off. When this Sales Order is updated to Sage, a new Sales Order will be created for the outstanding balance."
+                    : "Picking Slip closed off successfully.";
                 string script = @"
                         Swal.fire({
                             title: 'Success!',
-                            text: 'Picking Slip closed off successfully.',
+                            text: '" + closeMsg + @"',
                             icon: 'success'
                         }).then(function() {
                             window.location.href = '" + ResolveUrl("~/SalesOrder.aspx?docid=" + docguid.ToString() + "&autosave=" + CurrentUser.AutoUpdateSageSOs) + @"';
@@ -1093,6 +1198,7 @@ namespace SBMS
                 if (PS != null)
                 {
                     iTextSharp.text.Document doc = new iTextSharp.text.Document(iTextSharp.text.PageSize.A4, 40, 40, 40, 40);
+                    PdfWriter writer = null;
 
                     try
                     {
@@ -1109,7 +1215,7 @@ namespace SBMS
                         {
                             File.Delete(filepath);
                         }
-                        PdfWriter writer = PdfWriter.GetInstance(doc, new FileStream(filepath, FileMode.Create));
+                        writer = PdfWriter.GetInstance(doc, new FileStream(filepath, FileMode.Create));
                         writer.SetPdfVersion(PdfWriter.PDF_VERSION_1_7);
                         writer.SetFullCompression();
                         writer.PageEvent = new PDFFooter();
@@ -1149,7 +1255,18 @@ namespace SBMS
                     cell.Rowspan = 5;
                     table.AddCell(cell);
 
-                    cell = new PdfPCell(new Phrase("Picking Slip #", headfont));
+                    Phrase psHead = new Phrase();
+                    if (CurrentUser.UseBarcodes)
+                    {
+                        Barcode128 bc = new Barcode128();
+                        bc.Code = PS.PSIntNumber;
+                        bc.Font = null;
+                        iTextSharp.text.Image bcImg = bc.CreateImageWithBarcode(writer.DirectContent, BaseColor.BLACK, BaseColor.BLACK);
+                        psHead.Add(new Chunk(bcImg, 0, -8, true));
+                        psHead.Add(new Chunk("   ", headfont));
+                    }
+                    psHead.Add(new Chunk("Picking Slip #", headfont));
+                    cell = new PdfPCell(psHead);
                     cell.Border = 0;
                     cell.HorizontalAlignment = 2;
                     table.AddCell(cell);
@@ -2373,7 +2490,12 @@ namespace SBMS
                 {
                     PickingSlipMaster PSN = new PickingSlipMaster();
                     PSN.CustomerID = CurrentUser.CoID;
-                    PSN.PSIntNumber = lblDocNum.Text.ToString().Replace("SO", "PS");
+                    // Back order: a Sales Order can have more than one picking slip. Suffix repeats (-2, -3 ...)
+                    // so the internal number (also used as the barcode) stays unique.
+                    string psIntNumber = lblDocNum.Text.ToString().Replace("SO", "PS");
+                    int priorSlips = _db.PickingSlipMasters.Count(x => x.CustomerID == CurrentUser.CoID && x.LinkedSOrdID == docid);
+                    if (priorSlips > 0) psIntNumber = psIntNumber + "-" + (priorSlips + 1);
+                    PSN.PSIntNumber = psIntNumber;
                     PSN.PSGUID = Guid.NewGuid();
                     PSN.PSCreatedDate = DateTime.Now;
                     PSN.PSCreatedByRoleID = 0;

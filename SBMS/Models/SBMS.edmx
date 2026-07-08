@@ -928,6 +928,7 @@
           <Property Name="IsReject" Type="bit" Nullable="false" />
           <Property Name="Posted" Type="bit" Nullable="false" />
           <Property Name="RejectReason" Type="nvarchar" MaxLength="255" />
+          <Property Name="BatchID" Type="uniqueidentifier" />
         </EntityType>
         <EntityType Name="RolesMaster">
           <Key>
@@ -3450,6 +3451,7 @@
           <Property Name="IsReject" Type="Boolean" Nullable="false" />
           <Property Name="Posted" Type="Boolean" Nullable="false" />
           <Property Name="RejectReason" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="BatchID" Type="Guid" />
         </EntityType>
         <EntityType Name="CompanyMaster">
           <Key>
@@ -5436,6 +5438,7 @@
           <EntitySetMapping Name="ReceivingOutstandings">
             <EntityTypeMapping TypeName="SBMSModel.ReceivingOutstanding">
               <MappingFragment StoreEntitySet="ReceivingOutstanding">
+                <ScalarProperty Name="BatchID" ColumnName="BatchID" />
                 <ScalarProperty Name="RejectReason" ColumnName="RejectReason" />
                 <ScalarProperty Name="Posted" ColumnName="Posted" />
                 <ScalarProperty Name="IsReject" ColumnName="IsReject" />

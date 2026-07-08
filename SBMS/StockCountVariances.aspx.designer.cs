@@ -105,6 +105,15 @@ namespace SBMS
         protected global::System.Web.UI.WebControls.LinkButton lbtnDownload;
 
         /// <summary>
+        /// lbtnSageCsv control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton lbtnSageCsv;
+
+        /// <summary>
         /// imgCoImg control.
         /// </summary>
         /// <remarks>

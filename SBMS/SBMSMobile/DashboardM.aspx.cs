@@ -66,6 +66,15 @@ namespace SBMS
                 Response.Redirect("~/Dashboard.aspx", true);
         }
 
+        // Simple manufacture process (page to follow).
+        protected void imgbManufacture_Click(object sender, EventArgs e)
+        {
+            if (userDets != null)
+                Response.Redirect("~/SBMSMobile/ManufactureM.aspx?user=" + userDets.UserGuiD, false);
+            else
+                Response.Redirect("~/Dashboard.aspx", true);
+        }
+
         // Mode 2 — Direct receive: pick a PO, scan items straight into locations (posts the GRN to Sage).
         protected void imgbReceive_Click(object sender, EventArgs e)
         {
@@ -93,6 +102,15 @@ namespace SBMS
         {
             if (userDets != null)
                 Response.Redirect("~/SBMSMobile/QuickMoveM.aspx?user=" + userDets.UserGuiD, false);
+            else
+                Response.Redirect("~/Dashboard.aspx", true);
+        }
+
+        // Stock Move — bulk, multi-item transfer via a GIT store; Out then Receive against a desktop transfer.
+        protected void ibtnStockMove_Click(object sender, EventArgs e)
+        {
+            if (userDets != null)
+                Response.Redirect("~/SBMSMobile/StockMoveM.aspx?user=" + userDets.UserGuiD, false);
             else
                 Response.Redirect("~/Dashboard.aspx", true);
         }

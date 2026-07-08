@@ -111,6 +111,19 @@ namespace SBMS
                             if (thispo.Complete == true)
                             {
                                 chkReceiveComplete.Checked = (Boolean)thispo.Complete;
+                                // Allow re-opening a completed PO for further receiving via the status
+                                // radio ONLY when something is still outstanding. Otherwise lock it.
+                                // NB: "if(!confirm())return false" - NOT "return confirm()" - so that a
+                                // confirmed prompt still falls through to the auto-postback.
+                                if (HasOutstandingReceiving(_db, docid))
+                                {
+                                    RBpoStatus.Items[1].Attributes["onclick"] =
+                                        "if(!confirm('Re-open this PO for receiving? The Receiving Complete status will be cleared so you can continue receiving the outstanding balance.'))return false;";
+                                }
+                                else
+                                {
+                                    RBpoStatus.Enabled = false;   // nothing outstanding - genuinely complete
+                                }
                                 //lbtnReset.Style.Add("display", "none");
                                 lbtnReceiveFinish.Style.Add("display", "none");
                                 lbtnRecAll.Style.Add("display", "none");
@@ -1621,6 +1634,15 @@ namespace SBMS
                     }
                     if (RBpoStatus.SelectedValue.ToString() == "1") { Head.Complete = false; Head.RecStatus = 0; }   // partial -> still in progress (Started)
 
+                    // Stamp this GRN's receivings with a single BatchID so the receiving-note PDF
+                    // can print just this delivery ("This Receiving Only") vs the running total.
+                    // Every row received since the last finish (BatchID still null) belongs to it.
+                    Guid batchId = Guid.NewGuid();
+                    var batchRows = _db.ReceivingOutstandings
+                        .Where(x => x.PODocID == docid && x.Archive == false && x.BatchID == null)
+                        .ToList();
+                    foreach (var br in batchRows) br.BatchID = batchId;
+
                     //%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
                     // get lines from TempDocLines
@@ -1728,6 +1750,49 @@ namespace SBMS
               }
             return storeid;
         }
+        // Re-open a completed PO for further receiving. Only acts when the PO is ALREADY
+        // complete AND still has an outstanding balance: clears the two header status fields
+        // (Complete / RecStatus) so the user can carry on receiving, then reloads. Nothing else
+        // is touched - the already received history (ReceivingOutstandings) stays intact. When
+        // the PO is not complete, the radio just changes selection as normal.
+        // RBpoStatus is a full PostBackTrigger, so Response.Redirect works here.
+        protected void RBpoStatus_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            long docid = Convert.ToInt64(lblDocID.Text);
+            using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+            {
+                var Head = _db.DocHeaders.Where(x => x.DocID == docid).FirstOrDefault();
+                if (Head == null || Head.Complete != true) return;   // not complete -> normal selection change
+                if (!HasOutstandingReceiving(_db, docid)) return;     // nothing outstanding -> nothing to re-open
+
+                Head.Complete = false;
+                Head.RecStatus = 0;
+                _db.SaveChanges();
+            }
+            Response.Redirect("~/Receiving.aspx?docid=" + Request.QueryString["docid"], false);
+            Context.ApplicationInstance.CompleteRequest();
+        }
+
+        // True when any PO line still has qty left to receive: ordered (DocLine.Quantity) minus
+        // the received-to-date (sum of non-archived ReceivingOutstandings.RecQty for the line,
+        // matched by SBCALineID, ItemCode fallback for legacy rows). Same match the receive
+        // outstanding calc uses, so it agrees with what the screen shows as remaining.
+        private bool HasOutstandingReceiving(SBMSEntities _db, long docid)
+        {
+            var docLines = _db.DocLines.Where(x => x.DocID == docid).ToList();
+            foreach (var dl in docLines)
+            {
+                decimal ordered = dl.Quantity ?? 0;
+                decimal received = _db.ReceivingOutstandings
+                    .Where(x => x.PODocID == docid && x.Archive == false
+                             && (x.SBCALineID == dl.SBCALineID
+                                 || (x.SBCALineID == null && x.ItemCode == dl.ItemCode)))
+                    .Sum(x => (decimal?)x.RecQty) ?? 0;
+                if (ordered - received > 0.0001m) return true;
+            }
+            return false;
+        }
+
          protected async void lbtnReset_Click(object sender, EventArgs e)
         {
             ApiUrlCall api = new ApiUrlCall();
@@ -1966,7 +2031,32 @@ namespace SBMS
 
        protected void lbtnPrintRN_Click(object sender, EventArgs e)
         {
-            CreatePDF();
+            long docid = Convert.ToInt64(lblDocID.Text);
+
+            // If the PO is not fully received, ask whether the note should show the running
+            // total received to date ("All Goods Received") or only this delivery's quantities
+            // ("This Receiving Only"). A fully-complete PO prints the total with no prompt.
+            bool notComplete;
+            using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+            {
+                notComplete = _db.DocHeaders.Where(x => x.DocID == docid).Select(x => x.Complete).FirstOrDefault() != true;
+            }
+
+            string scope = hfPrintScope.Value;
+            hfPrintScope.Value = "";
+            if (notComplete && string.IsNullOrEmpty(scope))
+            {
+                string pb = Page.ClientScript.GetPostBackEventReference(lbtnPrintRN, "");
+                string hf = hfPrintScope.ClientID;
+                string js = "Swal.fire({title:'Receiving Note',text:'Which quantities should this receiving note show?',icon:'question',showDenyButton:true,showCancelButton:true,confirmButtonText:'All Goods Received',denyButtonText:'This Receiving Only'})"
+                    + ".then(function(r){var hf=document.getElementById('" + hf + "');"
+                    + "if(r.isConfirmed){hf.value='all';" + pb + ";}"
+                    + "else if(r.isDenied){hf.value='batch';" + pb + ";}});";
+                ScriptManager.RegisterStartupScript(this, GetType(), "PrintScopeAsk", js, true);
+                return;
+            }
+
+            CreatePDF(scope == "batch");
             Response.Redirect($"~/ViewPDF.aspx?doc=" + CurrentUser.UserGuiD.ToString() + "\\GRN_" + txtDocNum.Text, false);
         }
 
@@ -2043,7 +2133,9 @@ namespace SBMS
                 }
             }
         }
-        private void CreatePDF()
+        // thisBatchOnly = show only the most recent receiving batch's quantities on the note
+        // instead of the running total received to date.
+        private void CreatePDF(bool thisBatchOnly = false)
         {
             string filepath = string.Empty, fname = string.Empty;
             var regfont = FontFactory.GetFont(Server.MapPath("~/fonts/Roboto-Regular.ttf"), 10, BaseColor.BLACK);
@@ -2058,6 +2150,7 @@ namespace SBMS
                 if (DH != null)
                 {
                     iTextSharp.text.Document doc = new iTextSharp.text.Document(iTextSharp.text.PageSize.A4, 40, 40, 40, 40);
+                    PdfWriter writer = null;
 
                     try
                     {
@@ -2071,7 +2164,7 @@ namespace SBMS
                         {
                             File.Delete(filepath);
                         }
-                        PdfWriter writer = PdfWriter.GetInstance(doc, new FileStream(filepath, FileMode.Create));
+                        writer = PdfWriter.GetInstance(doc, new FileStream(filepath, FileMode.Create));
                         writer.SetPdfVersion(PdfWriter.PDF_VERSION_1_7);
                         writer.SetFullCompression();
                         writer.PageEvent = new PDFFooter();
@@ -2111,7 +2204,18 @@ namespace SBMS
                     cell.Rowspan = 3;
                     table.AddCell(cell);
 
-                    cell = new PdfPCell(new Phrase("Receiving Slip #", headfont));
+                    Phrase rsHead = new Phrase();
+                    if (CurrentUser.UseBarcodes)
+                    {
+                        Barcode128 bc = new Barcode128();
+                        bc.Code = DH.DocumentNumber;
+                        bc.Font = null;
+                        iTextSharp.text.Image bcImg = bc.CreateImageWithBarcode(writer.DirectContent, BaseColor.BLACK, BaseColor.BLACK);
+                        rsHead.Add(new Chunk(bcImg, 0, -8, true));
+                        rsHead.Add(new Chunk("   ", headfont));
+                    }
+                    rsHead.Add(new Chunk("Receiving Slip #", headfont));
+                    cell = new PdfPCell(rsHead);
                     cell.Border = 0;
                     cell.HorizontalAlignment = 2;
                     table.AddCell(cell);
@@ -2225,6 +2329,16 @@ namespace SBMS
                     #endregion
 
                     var DocLines = _db.DocLines.Where(x => x.DocID == DH.DocID).OrderBy(x => x.LineID).ToList();
+                    // Received-to-date per line comes from the receiving history: DocLine.ReceiveQty
+                    // is reset to 0 when a receipt is submitted, so it cannot be used on the slip.
+                    var RecHist = _db.ReceivingOutstandings.Where(x => x.PODocID == DH.DocID && x.Archive == false).ToList();
+                    // "This Receiving Only": restrict to the most recent batch (newest row's BatchID).
+                    // Falls back to null-batch (an in-progress, not-yet-finalised receipt).
+                    Guid? printBatch = null;
+                    if (thisBatchOnly)
+                    {
+                        printBatch = RecHist.OrderByDescending(x => x.CreatedDate).Select(x => x.BatchID).FirstOrDefault();
+                    }
                     foreach (var DL in DocLines)
                     {
                         cell4 = new PdfPCell(new Phrase(DL.ItemCode ?? "", regfont));
@@ -2260,22 +2374,21 @@ namespace SBMS
                         cell4.BorderColor = new BaseColor(211, 211, 211);  
                         table4.AddCell(cell4);
 
-                        if (DL.ReceiveQty != null)
+                        // Sum receivings against this line by SBCALineID; fall back to ItemCode
+                        // for legacy rows that pre-date the SBCALineID column. When printing a single
+                        // delivery, restrict to that batch only.
+                        decimal recqty = RecHist
+                            .Where(x => (x.SBCALineID == DL.SBCALineID || (x.SBCALineID == null && x.ItemCode == DL.ItemCode))
+                                     && (!thisBatchOnly || x.BatchID == printBatch))
+                            .Sum(x => (decimal?)x.RecQty) ?? 0;
+                        if (recqty > 0)
                         {
-                            if (!DL.ReceiveQty.ToString().StartsWith("0.00"))
-                            {
-                                cell4 = new PdfPCell(new Phrase(Convert.ToDecimal(ApiUrlCall.NumberToDecimal(DL.Quantity.ToString(), CurrentUser.CompanyDecPlaces)).ToString(), regfont));
-                                //cell4 = new PdfPCell(new Phrase((DL.ReceiveQty ?? 0).ToString("N2"), regfont));
-                            }
-                            else
-                            {
-                                cell4 = new PdfPCell(new Phrase("", regfont));
-                            }         
+                            cell4 = new PdfPCell(new Phrase(Convert.ToDecimal(ApiUrlCall.NumberToDecimal(recqty.ToString(), CurrentUser.CompanyDecPlaces)).ToString(), regfont));
                         }
                         else
                         {
                             cell4 = new PdfPCell(new Phrase("", regfont));
-                        }  
+                        }
                         cell4.HorizontalAlignment = 1;
                         cell4.VerticalAlignment = Element.ALIGN_MIDDLE;
                         cell4.BorderColor = new BaseColor(211, 211, 211);  // RGB values for light gray

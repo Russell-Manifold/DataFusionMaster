@@ -68,7 +68,7 @@
              <ContentTemplate>
                 <div class="row 150%">
                              <div class="col-12 col-12-m" style="text-align: center">
-                                <table style="width:600px; margin:auto">
+                                <table style="width:900px; margin:auto">
                                     <tr>
                                         <td>Select Store</td>
                                         <td><asp:DropDownList ID="DDStore" runat="server" AutoPostBack="true" OnSelectedIndexChanged="DDStore_SelectedIndexChanged" style="width:20em">
@@ -85,7 +85,7 @@
                                     </tr>
                                     <tr>
                                         <td>Item</td>
-                                        <td><asp:DropDownList ID="ddConvertFrom" runat="server" style="width:20em" AutoPostBack="true" OnSelectedIndexChanged="ddConvertFrom_SelectedIndexChanged"></asp:DropDownList></td>
+                                        <td><asp:DropDownList ID="ddConvertFrom" runat="server" style="width:35em" AutoPostBack="true" OnSelectedIndexChanged="ddConvertFrom_SelectedIndexChanged"></asp:DropDownList></td>
                                     </tr>
                                     <tr >
                                         <td><br />Unit Of Measure</td>
@@ -112,7 +112,7 @@
                                     </tr>
                                     <tr>
                                         <td>Item</td>
-                                        <td><asp:DropDownList ID="DDConvertTo" runat="server" style="width:20em"></asp:DropDownList></td>
+                                        <td><asp:DropDownList ID="DDConvertTo" runat="server" style="width:35em"></asp:DropDownList></td>
                                     </tr>
                                     <tr>
                                         <td>Unit Of Measure</td>

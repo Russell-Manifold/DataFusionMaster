@@ -175,7 +175,7 @@ namespace SBMS
                     lblCustID.Text = thispo.CustSuppID.ToString();
                     lblDocNum.Text = (thispo.DocumentNumber ?? "").ToString();
                     lblSOStatus.Text = "(" + (thispo.Status ?? "").ToString() + ")";
-                    lbtnTaxInv.Style.Add("display", "none");
+                    lbtnTaxInv.Style.Add("display", "none"); 
                     if (CurrentUser.AutoGenTaxInvoice == true)
                     {
                         lbtnTaxInv.Style.Add("display", "inline-block");
@@ -186,6 +186,13 @@ namespace SBMS
                         lbtnPost.Style.Add("display", "none");
                         lbtnUndo.Style.Add("display", "none");
                         lbtnTaxInv.Style.Add("display", "none");
+                    }
+                    else
+                    if (thispo.Status == "Partially Invoiced")
+                    {
+                        // Back order: still open for further picking/invoicing of the outstanding balance.
+                        lblSOStatus.ForeColor = System.Drawing.Color.DarkOrange;
+                        lblSOStatus.Font.Bold = true;
                     }
                     else
                     if (thispo.Status == "Cancelled")
@@ -774,7 +781,12 @@ namespace SBMS
                 {
                     PickingSlipMaster PSN = new PickingSlipMaster();
                     PSN.CustomerID = CurrentUser.CoID;
-                    PSN.PSIntNumber = lblDocNum.Text.ToString().Replace("SO", "PS");
+                    // Back order: a Sales Order can have more than one picking slip. Suffix repeats (-2, -3 ...)
+                    // so the internal number (also used as the barcode) stays unique.
+                    string psIntNumber = lblDocNum.Text.ToString().Replace("SO", "PS");
+                    int priorSlips = _db.PickingSlipMasters.Count(x => x.CustomerID == CurrentUser.CoID && x.LinkedSOrdID == docid);
+                    if (priorSlips > 0) psIntNumber = psIntNumber + "-" + (priorSlips + 1);
+                    PSN.PSIntNumber = psIntNumber;
                     PSN.PSGUID = Guid.NewGuid();
                     PSN.PSCreatedDate = DateTime.Now;
                     PSN.PSCreatedByRoleID = 0;
@@ -1073,6 +1085,9 @@ namespace SBMS
             string RetStr = await PostOrder();
             if (RetStr == "OK")
             {
+                // Posted (and any back-order SO created) - hide the button so the
+                // same process cannot be triggered twice.
+                lbtnPost.Style.Add("display", "none");
                 if (CurrentUser.UATMode == false)
                 {
                         if (CurrentUser.AutoGenTaxInvoice)
@@ -1142,17 +1157,18 @@ namespace SBMS
                 SOH.Reference = txtRef.Text.ToString().Trim() ?? "";
                 if (RepID > 0) SOH.SalesRepresentativeId = RepID;
 
-                // check for unpicked lines
-                foreach (var dl in SOLines)
+                // Back order: a stock line with nothing picked this cycle is left off the invoice and
+                // kept on back order, rather than blocking the whole post. Only stop if nothing is picked.
+                bool anyPicked = SOLines.Any(dl => (dl.ReceiveQty ?? 0) >= 0.1m || (dl.LineType ?? 0) != 0);
+                if (!anyPicked)
                 {
-                    if (dl.ReceiveQty == null || dl.ReceiveQty < 0.1m)
-                    {
-                        retStr = "Cannot post Sales Order with unpicked lines. Please ensure all lines are fully picked before posting.";
-                        return retStr;
-                    }
+                    retStr = "Cannot post Sales Order with no picked lines. Please pick at least one line before posting.";
+                    return retStr;
                 }
                 foreach (var dl in SOLines)
                 {
+                    // Back order: skip stock lines that were not picked this cycle (they stay outstanding).
+                    if ((dl.LineType ?? 0) == 0 && (dl.ReceiveQty ?? 0) < 0.1m) continue;
                     decimal origqty = dl.ReceiveQty ?? 0;
                     DocumentLine DL = new DocumentLine();
                     if (dl.isKit != null && (bool)dl.isKit)
@@ -1354,6 +1370,16 @@ namespace SBMS
                     }
                     jsonBody = JsonConvert.SerializeObject(jsonObject, Formatting.Indented);
 
+                    // Back order: fetch the FULL original SO from Sage BEFORE the update below,
+                    // because the update only sends the picked lines. The original line set is
+                    // needed to build the new balance SO (same pattern as GenerateTaxInvoiceAsync).
+                    bool balanceOwing = SOLines.Any(x => (x.QtyLeft ?? 0) > 0.0001m);
+                    JObject origSoJson = null;
+                    if (balanceOwing)
+                    {
+                        origSoJson = await api.GetOneSOFull(CurrentUser, docid);
+                    }
+
                     string SupInv = await SendSalesOrder(jsonBody);
                     string SuppInvNum = "";
                     long SuppDocID = 0;
@@ -1374,6 +1400,28 @@ namespace SBMS
                         };
                         string jsonBodyN = JsonConvert.SerializeObject(Dnt, Formatting.Indented);
                         string DocN = await SendDocHeaderNote(jsonBodyN);
+
+                        // Back order: create a NEW Sales Order in Sage for the outstanding balance
+                        // (QtyLeft > 0). It syncs back into SBMS on the next Sales Order load and then
+                        // follows the normal pick -> invoice workflow. Reference links it to this SO.
+                        if (balanceOwing && origSoJson != null && origSoJson.Count > 0)
+                        {
+                            JObject boJson = ConvertSOtoBackOrderSO(origSoJson);
+                            string BOResult = await SendBackOrderSO(boJson.ToString());
+                            if (long.TryParse(BOResult.Split('|')[0], out long boDocId))
+                            {
+                                // Balance transferred to the new SO - clear it off this order's lines so
+                                // the invoice step can finalise this SO as "Invoiced".
+                                foreach (var bl in SOLines.Where(x => (x.QtyLeft ?? 0) > 0)) bl.QtyLeft = 0;
+                                lblErr.Text = "Back order Sales Order " + BOResult.Split('|')[1] + " created for the outstanding balance.";
+                            }
+                            else
+                            {
+                                // QtyLeft stays owing, so this SO keeps "Partially Invoiced" as a visible
+                                // flag that the balance SO was NOT created (update to Sage again to retry).
+                                lblErr.Text = "Warning: the back order Sales Order could not be created in Sage.";
+                            }
+                        }
                     }
                     else
                     {
@@ -1962,6 +2010,108 @@ namespace SBMS
                 return parsedJSON.ToString();
             }
         }
+
+        // Back order: same mechanics as SendTaxInvoice, but the payload is posted as a
+        // SalesOrder (SalesOrder/Save) to create the new SO for the outstanding balance.
+        public async Task<string> SendBackOrderSO(string Doc)
+        {
+            string doctype = "";
+            doctype = "SalesOrder";
+            ApiUrlCall Api = new ApiUrlCall();
+            JObject parsedJSON = await Api.APIPostDocumentAsync(doctype, Doc, CurrentUser);
+            if (parsedJSON.ContainsKey("ID"))
+            {
+                return parsedJSON["ID"].ToString() + "|" + parsedJSON["DocumentNumber"].ToString();
+            }
+            else
+            {
+                return parsedJSON.ToString();
+            }
+        }
+
+        // Back order: build the new balance SO from the FULL original SO JSON (fetched via
+        // GetOneSOFull before the original was updated). Mirrors ConvertSOtoTaxInvoice, except
+        // the result stays a Sales Order: quantities become the outstanding balance (QtyLeft)
+        // and fully-picked lines are dropped.
+        private JObject ConvertSOtoBackOrderSO(JObject soJson)
+        {
+            if (soJson == null || soJson.Count == 0) return new JObject();
+
+            // Clone original SO JSON so we don't mutate it
+            JObject boJson = (JObject)soJson.DeepClone();
+            // Remove identifiers so SalesOrder/Save creates a NEW document
+            boJson.Remove("ID");
+            boJson.Remove("DocumentNumber");
+            boJson.Remove("StatusId");
+
+            // Update header fields for the balance SO
+            boJson["Date"] = DateTime.Now.ToString("yyyy-MM-dd");
+            boJson["Reference"] = ("B/O " + (soJson["DocumentNumber"]?.ToString() ?? "")).Trim();
+
+            // The original delivery/due date may be in the past; Sage rejects a due date
+            // earlier than the new SO's posting date, so bump it to today when needed.
+            if (!DateTime.TryParse(boJson["DeliveryDate"]?.ToString(), out DateTime delDate) || delDate.Date < DateTime.Now.Date)
+            {
+                boJson["DeliveryDate"] = DateTime.Now.ToString("yyyy-MM-dd");
+            }
+            if (boJson["DueDate"] != null)
+            {
+                if (!DateTime.TryParse(boJson["DueDate"]?.ToString(), out DateTime dueDate) || dueDate.Date < DateTime.Now.Date)
+                {
+                    boJson["DueDate"] = DateTime.Now.ToString("yyyy-MM-dd");
+                }
+            }
+
+            boJson.Remove("Modified");
+            boJson.Remove("Created");
+            boJson.Remove("Printed");
+            boJson.Remove("Editable");
+            boJson.Remove("HasAttachments");
+            boJson.Remove("HasNotes");
+            boJson.Remove("HasSpecialCountryTax");
+            boJson.Remove("Status");
+
+            // Update Lines: only lines with an outstanding balance, at the balance quantity
+            if (soJson["Lines"] is JArray soLines)
+            {
+                JArray boLines = new JArray();
+                using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+                {
+                    foreach (JObject line in soLines)
+                    {
+                        var id = line["ID"]?.Value<long>() ?? 0;
+                        decimal qtyLeft = _db.DocLines.Where(x => x.SBCALineID == id).Select(x => x.QtyLeft ?? 0).FirstOrDefault();
+                        if (qtyLeft <= 0) continue;
+
+                        JObject newLine = new JObject
+                        {
+                            ["SelectionId"] = line["SelectionId"],
+                            ["TaxTypeId"] = line["TaxTypeId"],
+                            ["Description"] = line["Description"],
+                            ["LineType"] = line["LineType"],
+                            ["Quantity"] = qtyLeft,
+                            ["UnitPriceExclusive"] = line["UnitPriceExclusive"],
+                            ["UnitPriceInclusive"] = line["UnitPriceInclusive"],
+                            ["TaxPercentage"] = line["TaxPercentage"],
+                            ["DiscountPercentage"] = line["DiscountPercentage"],
+                            ["Exclusive"] = line["Exclusive"],
+                            ["Discount"] = line["Discount"],
+                            ["Tax"] = line["Tax"],
+                            ["Total"] = line["Total"],
+                            ["Unit"] = line["Unit"],
+                            ["Comments"] = line["Comments"] ?? "",
+                            ["CurrencyId"] = line["CurrencyId"],
+                            ["UnitCost"] = line["UnitCost"],
+                            ["ExchangeRate"] = line["ExchangeRate"] ?? soJson["Customer_ExchangeRate"] // use header as fallback
+                        };
+                        boLines.Add(newLine);
+                    }
+                }
+                boJson["Lines"] = boLines;
+            }
+
+            return boJson;
+        }
         private async Task GenerateTaxInvoiceAsync()
         {
             try
@@ -1993,7 +2143,11 @@ namespace SBMS
                     using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
                     {
                         var thispo = _db.DocHeaders.Where(x => x.CompanyID == CurrentUser.CoID && x.DocID == docidS).FirstOrDefault();
-                        thispo.Status = "Invoiced";
+                        // Back order: QtyLeft > 0 means the balance SO has not been created in Sage yet
+                        // (creation happens in PostOrder) - keep "Partially Invoiced" as a visible flag;
+                        // otherwise finalise as "Invoiced".
+                        bool stillOwing = _db.DocLines.Any(x => x.DocID == docidS && (x.QtyLeft ?? 0) > 0.0001m);
+                        thispo.Status = stillOwing ? "Partially Invoiced" : "Invoiced";
                         _db.SaveChanges();
                      }
 
@@ -2046,13 +2200,33 @@ namespace SBMS
                 foreach (JObject line in soLines)
                 {
                     decimal pickQty = 0;
+                    bool skipLine = false;
                     // get picked quantity from local db and send this quantity to the Invoice in Sage.
                     using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
                     {
                         var id = line["ID"]?.Value<long>() ?? 0;
-                        pickQty = _db.DocLines.Where(x => x.SBCALineID == id).Select(x => (decimal)x.ReceiveQty).FirstOrDefault();
-                        if (pickQty <= 0) pickQty = line["Quantity"]?.Value<decimal>() ?? 0;    
+                        var dl = _db.DocLines.Where(x => x.SBCALineID == id).Select(x => new { x.ReceiveQty, x.LineType }).FirstOrDefault();
+                        if (dl != null)
+                        {
+                            pickQty = dl.ReceiveQty ?? 0;
+                            // Stock lines (LineType 0): invoice only the qty picked this cycle. If nothing was
+                            // picked the line is fully back-ordered, so drop it from this invoice entirely.
+                            if (dl.LineType == 0)
+                            {
+                                if (pickQty <= 0) skipLine = true;
+                            }
+                            else if (pickQty <= 0)
+                            {
+                                // Non-stock line (charge/comment/service): always invoice the full qty.
+                                pickQty = line["Quantity"]?.Value<decimal>() ?? 0;
+                            }
+                        }
+                        else if (pickQty <= 0)
+                        {
+                            pickQty = line["Quantity"]?.Value<decimal>() ?? 0;
+                        }
                     }
+                    if (skipLine) continue;
 
                     JObject newLine = new JObject
                     {

@@ -41,7 +41,7 @@
                             <ul>
                                 <li><asp:LinkButton ID="lbtnItems" runat="server" CssClass="buttonRed" style="width:100%" ToolTip="Add/Edit Item additional details" PostBackUrl="~/ItemsHeaders.aspx" >Items</asp:LinkButton></li>
                                 <li><asp:LinkButton ID="lbtnStores" runat="server" CssClass="buttonRed" style="width:100%" PostBackUrl="~/StoresMaster.aspx" ToolTip="Add/Edit Locations" >Multi Locations</asp:LinkButton></li>
-                                <%--<li><asp:LinkButton ID="lbtnItemStore" runat="server" CssClass="buttonRed" style="width:100%" PostBackUrl="~/ItemStoresLink.aspx" ToolTip="Bulk link items to stores">Items<-->Stores Link</asp:LinkButton></li>--%>
+                                <li><asp:LinkButton ID="lbtnItemStore" runat="server" CssClass="buttonRed" style="width:100%" PostBackUrl="~/ItemStoresLink.aspx" ToolTip="Bulk link items to stores">Items<-->Stores Link</asp:LinkButton></li>
                                 <li><asp:LinkButton ID="lbtnPickProc" runat="server" CssClass="buttonRed" style="width:100%" ToolTip="Add/Edit Picking, Job Card and Production Processes" PostBackUrl="~/ConfigProcesses.aspx" >Internal Processes</asp:LinkButton></li>
                                 <li><asp:LinkButton ID="lbtnRoles" runat="server" CssClass="buttonRed" style="width:100%" PostBackUrl="~/ConfigRoles.aspx" ToolTip="Add/Edit Roles master file">Roles (Job Descriptions)</asp:LinkButton></li>
                                 <li><asp:LinkButton ID="lbtnUsers" runat="server" CssClass="buttonRed" style="width:100%" PostBackUrl="~/ConfigUsers.aspx" ToolTip="Add/Edit Users, linked roles etc">Users</asp:LinkButton></li>

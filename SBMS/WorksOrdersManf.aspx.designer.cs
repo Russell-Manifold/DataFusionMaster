@@ -231,6 +231,24 @@ namespace SBMS
         protected global::System.Web.UI.WebControls.CheckBox chkCompl;
 
         /// <summary>
+        /// pnlDrawFrom control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlDrawFrom;
+
+        /// <summary>
+        /// ddlDrawFrom control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.DropDownList ddlDrawFrom;
+
+        /// <summary>
         /// AccordionWOLines control.
         /// </summary>
         /// <remarks>

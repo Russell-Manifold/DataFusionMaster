@@ -252,9 +252,6 @@ namespace SBMS
                     var _items = _db.GetOpeningBalancesByStore(Storeid, CurrentUser.CoID).ToList();
                     if (_items.Any())
                     {
-                        // Store directly in ViewState
-                        ViewState["OpeningBalances"] = _items;
-
                         ddConvertFrom.DataSource = _items;
                         ddConvertFrom.DataTextField = "ItemDescription";
                         ddConvertFrom.DataValueField = "ItemID";
@@ -269,12 +266,22 @@ namespace SBMS
             }
         }
 
+        // Opening balances for the currently-selected store, queried on demand. Avoids caching a
+        // large list (up to ~5000 items) in ViewState, which bloats the page on every postback.
+        private List<GetOpeningBalancesByStore_Result> GetOpeningBalances()
+        {
+            using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+            {
+                return _db.GetOpeningBalancesByStore(DDStore.SelectedValue, CurrentUser.CoID).ToList();
+            }
+        }
+
         protected void ddConvertFrom_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (CurrentUser != null)
             {
-                // Retrieve from ViewState
-                var _items = ViewState["OpeningBalances"] as List<GetOpeningBalancesByStore_Result>;
+                // Re-query (avoids caching a large list in ViewState).
+                var _items = GetOpeningBalances();
 
                 if (_items != null && ddConvertFrom.SelectedIndex > 0)
                 {
@@ -332,9 +339,9 @@ namespace SBMS
                 return;
             }
 
-            // Retrieve the items list from ViewState
-            var _items = ViewState["OpeningBalances"] as List<GetOpeningBalancesByStore_Result>;
-            if (_items == null)
+            // Re-query (avoids caching a large list in ViewState).
+            var _items = GetOpeningBalances();
+            if (_items == null || _items.Count == 0)
             {
                 string message = "Unable to retrieve item data. Please refresh the page and try again.";
                 AlertHelper.ShowSweetAlert(this, message, "warning");
@@ -413,7 +420,9 @@ namespace SBMS
                 ItemTransOUT.PriceExclusive = fromAverageCost;
                 ItemTransOUT.TotalUnitPriceExclInclAdd = fromAverageCost;
                 ItemTransOUT.TotalLineValExcl = fromAverageCost * (convertFromQty * -1);
-                ItemTransOUT.TransactionReference = $"{fromItem.Code} Item Conversion {convertFromQty} to {toItem.Code} ({conversionRatio:F2}:1 ratio)";
+                string refD = $"{fromItem.Code} Item Conversion {convertFromQty} to {toItem.Code} ({conversionRatio:F2}:1 ratio)";
+                if (refD.Length > 100) refD = refD.Substring(0, 100);
+                ItemTransOUT.TransactionReference = refD;
                 ItemTransOUT.ExchRate = 1;
 
                 _db.ItemTransactions.Add(ItemTransOUT);
@@ -438,7 +447,9 @@ namespace SBMS
                 ItemTransIN.PriceExclusive = toCost;  // New calculated cost
                 ItemTransIN.TotalUnitPriceExclInclAdd = toCost;
                 ItemTransIN.TotalLineValExcl = toCost * convertToQty;
-                ItemTransIN.TransactionReference = $"{toItem.Code} Item Conversion {convertToQty} from {fromItem.Code} (from {convertFromQty} {fromItem.Unit})";
+                refD = $"{toItem.Code} Item Conversion {convertToQty} from {fromItem.Code} (from {convertFromQty} {fromItem.Unit})";
+                if (refD.Length > 100) refD = refD.Substring(0, 100);
+                ItemTransIN.TransactionReference = refD;
                 ItemTransIN.ExchRate = 1;
 
                 _db.ItemTransactions.Add(ItemTransIN);

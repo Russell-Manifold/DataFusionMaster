@@ -123,8 +123,8 @@ namespace SBMS
             sb.Append("\"Description\"");
             sb.Append("],");
             sb.Append("cols: [");
-            sb.Append("\"Year_Mth_Week\"");
-            sb.Append(",");
+            //sb.Append("\"Year_Mth_Week\"");
+            //sb.Append(",");
             sb.Append("\"Trn\"");
             sb.Append("],");
             sb.Append("vals: [");
@@ -179,7 +179,7 @@ namespace SBMS
             // Add values to pivot table
             var NameField = pivotTable.RowLabels.Add("ItemCode");
             var NameField2 = pivotTable.RowLabels.Add("Description");
-            var MthYrField = pivotTable.ColumnLabels.Add("Year_Mth_Week");
+            //var MthYrField = pivotTable.ColumnLabels.Add("Year_Mth_Week");
             var MthYrField2 = pivotTable.ColumnLabels.Add("Trn");
             var amountField = pivotTable.Values.Add("Qty");
 

@@ -39,5 +39,6 @@ namespace SBMS.Models
         public bool IsReject { get; set; }
         public bool Posted { get; set; }
         public string RejectReason { get; set; }
+        public Nullable<System.Guid> BatchID { get; set; }
     }
 }

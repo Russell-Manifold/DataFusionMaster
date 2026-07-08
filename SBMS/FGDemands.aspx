@@ -99,6 +99,60 @@
                        </div>
                     </div>
 </div>
+    <script type="text/javascript">
+        (function () {
+            function cellValue(td) {
+                var raw = td.getAttribute("data-value");
+                var s = (raw !== null && raw !== "") ? raw : td.textContent;
+                if (s == null) return null;
+                s = String(s).replace(/,/g, "").replace(/[^0-9.\-]/g, "");
+                if (s === "" || s === "-" || s === ".") return null;
+                var n = parseFloat(s);
+                return isFinite(n) ? n : null;
+            }
+            function shadeTotals() {
+                var root = document.getElementById("pivotoutput");
+                if (!root) return;
+                var cells = root.querySelectorAll("td.rowTotal");
+                if (!cells.length) return;
+                var minv = 0, i, v;
+                for (i = 0; i < cells.length; i++) {
+                    v = cellValue(cells[i]);
+                    cells[i]._val = v;
+                    if (v !== null && v < minv) minv = v;
+                }
+                for (i = 0; i < cells.length; i++) {
+                    v = cells[i]._val;
+                    if (v !== null && v < 0 && minv < 0) {
+                        var t = v / minv;
+                        var c = Math.round(255 * (1 - t));
+                        cells[i].style.backgroundColor = "rgb(255," + c + "," + c + ")";
+                        cells[i].style.color = t > 0.6 ? "#fff" : "";
+                    } else {
+                        cells[i].style.backgroundColor = "";
+                        cells[i].style.color = "";
+                    }
+                }
+            }
+            var scheduled = false;
+            function schedule() {
+                if (scheduled) return;
+                scheduled = true;
+                setTimeout(function () { scheduled = false; shadeTotals(); }, 50);
+            }
+            function init() {
+                var root = document.getElementById("pivotoutput");
+                if (!root) { setTimeout(init, 200); return; }
+                new MutationObserver(schedule).observe(root, { childList: true, subtree: true });
+                schedule();
+            }
+            if (document.readyState === "loading") {
+                document.addEventListener("DOMContentLoaded", init);
+            } else {
+                init();
+            }
+        })();
+    </script>
     </form>
 </body>
 </html>

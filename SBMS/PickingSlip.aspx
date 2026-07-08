@@ -106,6 +106,11 @@
                                                          </asp:TemplateField>
                                                          <asp:BoundField HeaderText="Unit" DataField="Unit" ReadOnly="True" ItemStyle-Width="4em" />                                              
                                                         <asp:BoundField HeaderText="Order_Qty" DataField="Quantity" ReadOnly="True" ItemStyle-Width="4em" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center"  />
+                                                        <asp:TemplateField HeaderText="Qty_Left" ItemStyle-Width="4em" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center">
+                                                            <ItemTemplate>
+                                                                <asp:Label ID="lblQtyLeft" runat="server" Text=""></asp:Label>
+                                                            </ItemTemplate>
+                                                        </asp:TemplateField>
                                                        <asp:TemplateField HeaderText="Pick_Qty" HeaderStyle-HorizontalAlign="Center" HeaderStyle-Width="4em" >
                                                             <ItemTemplate>
                                                                 <asp:TextBox ID="txtPickQty" runat="server" Text='<%# Eval("PickQty") %>' style="width:4em; text-align:center" ></asp:TextBox>
@@ -184,8 +189,9 @@
                                 <cci:ConfirmButtonExtender ID="ConfirmButtonExtender2" runat="server" ConfirmText="WARNING - Delete this Picking Slip? Are you sure?" Enabled="True" TargetControlID="lbtnDelPS"></cci:ConfirmButtonExtender>
                                 <asp:LinkButton ID="lbtnJCPrint" runat="server" class="buttonRed icon fa-print" OnClick="lbtnPrintPS_Click" style="margin-right:2em">&nbsp;Print Preview</asp:LinkButton>
                                 <asp:LinkButton ID="LbtnSaveEdits" runat="server" OnClick="LbtnSaveEdits_Click" CssClass=" icon fa-edit buttonSage" style="margin-right:2em" ToolTip="Save Edits"> Save Edits</asp:LinkButton>
-                                <asp:LinkButton ID="LbtnPickSave" runat="server" OnClick="LbtnPickSave_Click" CssClass=" icon fa-save buttonRed"> Close off Picking Slip As Picked</asp:LinkButton>
-                                <cci:ConfirmButtonExtender ID="ConfirmButtonExtender1" runat="server" ConfirmText="Confirm: Mark as picking complete?" Enabled="True" TargetControlID="LbtnPickSave"></cci:ConfirmButtonExtender>   
+                                <asp:LinkButton ID="LbtnPickSave" runat="server" OnClick="LbtnPickSave_Click" CssClass=" icon fa-save buttonRed"> Close off Picking Slip</asp:LinkButton>
+                                <asp:HiddenField ID="hfCloseChoice" runat="server" Value="" />
+                                <%-- ConfirmButtonExtender replaced by the SweetAlert "Picking Complete? / Keep on Back Order?" flow raised server-side in LbtnPickSave_Click. --%>
                             </div>
                            </div> 
                     

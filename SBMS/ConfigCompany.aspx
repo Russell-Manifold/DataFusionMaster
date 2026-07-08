@@ -228,11 +228,18 @@
                                               If you sell products in different pack sizes, this would be useful. On picking slips, you can enter a pack code and the correct quantity will populate.
                                             </asp:Panel>
                                     </td>
-                                   <td>Use BarCodes</td>
-                                    <td><asp:CheckBox ID="chkBarCodes" runat="server"/></td>
                                 </tr>
+                                <tr>
+                                     <td colspan="4"><hr /></td>
+                                 </tr> 
+
+                                <tr>
+                                     <td>Show Manufacturing Costs On Works Orders</td>
+                                <td><asp:CheckBox ID="chkManfCosts" runat="server"/></td>
+                                 </tr> 
+
                                <tr>
-                                   <td colspan="4"><hr /></td>
+                                   <td colspan="4"><hr /><hr /></td>
                                </tr> 
                                <tr>
                                    <td>Module 2 Active</td>
@@ -245,18 +252,31 @@
                                    </tr>
                                <tr>
                                     <td colspan="4"><hr /></td>
-                                </tr> 
+                                </tr>
+                               
                                <tr>
-                                   <td>Module 3 Active</td>
-                                   <td><asp:CheckBox ID="chkMod3" runat="server" />
-                                       <cci:BalloonPopupExtender ID="BalloonPopupExtender6" TargetControlID="chkMod3" UseShadow="true" DisplayOnMouseOver ="true" Position="BottomRight" BalloonPopupControlID="pnlBOM" BalloonStyle="Rectangle"  runat="server" />
-                                             <asp:Panel ID="pnlBOM" runat="server" style="font-size:small">
-                                               Module 3 contains the requirements for Works Orders, prodution recording, BOM and Kits management. Contact us if you want it switched on or off. 
-                                            </asp:Panel>
-                                   </td>
-                                   <td>Show Manufacturing Costs On Works Orders</td>
-                                   <td><asp:CheckBox ID="chkManfCosts" runat="server"/></td>
-                               </tr>           
+                                    <td>Module 3 Active</td>
+                                    <td><asp:CheckBox ID="chkMod3" runat="server" />
+                                        <cci:BalloonPopupExtender ID="BalloonPopupExtender6" TargetControlID="chkMod3" UseShadow="true" DisplayOnMouseOver ="true" Position="BottomRight" BalloonPopupControlID="pnlBOM" BalloonStyle="Rectangle"  runat="server" />
+                                              <asp:Panel ID="pnlBOM" runat="server" style="font-size:small">
+                                                Module 3 contains the requirements for Works Orders, prodution recording, BOM and Kits management. Contact us if you want it switched on or off. 
+                                             </asp:Panel>
+                                    </td>
+                                    
+                                </tr>          
+
+                                 <tr>
+                                    <td colspan="4"><hr /></td>
+                                </tr> 
+
+                                <tr>
+                                      <td>Barcode Module Active</td>
+                                <td><asp:CheckBox ID="chkBarCodes" runat="server"/>
+                                </td>
+                                  </tr> 
+
+                                
+                                
                                 
                                 <tr>
                                       <td colspan="4"><hr /></td>

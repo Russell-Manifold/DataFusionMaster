@@ -521,11 +521,20 @@ namespace SBMS
                     }
                     JObject itemObj = (JObject)results[0];
 
-                    // Tax rate from Sage prices, guarded against divide-by-zero / nulls,
-                    // falling back to the local item's configured sales tax.
-                    decimal priceEx = itemObj.Value<decimal?>("PriceExclusive") ?? 0m;
-                    decimal priceInc = itemObj.Value<decimal?>("PriceInclusive") ?? 0m;
-                    decimal taxRate = priceEx > 0 ? (priceInc / priceEx) - 1 : ResolveLocalTaxRate(thisItem);
+                    // VAT rate from the item's CONFIGURED sales tax type (authoritative), looked up
+                    // via TaxTypesMasters from the live item's TaxTypeIdSales. The old inc/excl price
+                    // ratio is NOT used as the primary source: it is wrong whenever the stored prices
+                    // don't embed VAT (Inc == Ex) and it drifts with rounding. A configured 0% (zero-
+                    // rated) is respected; only an unknown tax type falls back to the local heuristic.
+                    decimal? taxPerc = null;
+                    int taxTypeId = itemObj.Value<int?>("TaxTypeIdSales") ?? 0;
+                    if (taxTypeId > 0)
+                    {
+                        taxPerc = _db.TaxTypesMasters
+                            .Where(x => x.CompanyID == CurrentUser.CoID && x.TaxTypeID == taxTypeId)
+                            .Select(x => (decimal?)x.TaxPerc).FirstOrDefault();
+                    }
+                    decimal taxRate = taxPerc.HasValue ? taxPerc.Value / 100m : ResolveLocalTaxRate(thisItem);
                     if (taxRate < 0) taxRate = 0m;
                     newPriceInc = ApiUrlCall.NumberToDecimal(newPriceEx * (1 + taxRate), dp);
 

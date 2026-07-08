@@ -122,9 +122,9 @@ namespace SBMS
             sb.Append(",");
             sb.Append("\"Description\"");
             sb.Append("],");
-            sb.Append("cols: [");
-            sb.Append("\"Year_Mth_Week\"");
-            sb.Append("],");
+            //sb.Append("cols: [");
+            //sb.Append("\"Year_Mth_Week\"");
+            //sb.Append("],");
             sb.Append("vals: [");
             sb.Append("\"Qty\"");
             sb.Append("],");
@@ -202,11 +202,14 @@ namespace SBMS
                     if (p.Name == "Year_Mth_Week")
                     {
                         DateTime dateValue = StDate;
-                        try
+                        if (value is DateTime dv)
                         {
-                            dateValue = Convert.ToDateTime(value, System.Globalization.CultureInfo.InvariantCulture);
+                            dateValue = dv;
                         }
-                        catch { }
+                        else if (value != null && DateTime.TryParse(value.ToString(), System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out DateTime parsed))
+                        {
+                            dateValue = parsed;
+                        }
 
                         if (dateValue == StDate)
                         {

@@ -921,6 +921,7 @@ namespace SBMS
                 if (TrL != null)
                 {
                     iTextSharp.text.Document doc = new iTextSharp.text.Document(iTextSharp.text.PageSize.A4, 40, 40, 40, 40);
+                    PdfWriter writer = null;
 
                     try
                     {
@@ -937,7 +938,7 @@ namespace SBMS
                         {
                             File.Delete(filepath);
                         }
-                        PdfWriter writer = PdfWriter.GetInstance(doc, new FileStream(filepath, FileMode.Create));
+                        writer = PdfWriter.GetInstance(doc, new FileStream(filepath, FileMode.Create));
                         writer.SetPdfVersion(PdfWriter.PDF_VERSION_1_7);
                         writer.SetFullCompression();
                         writer.PageEvent = new PDFFooter();
@@ -977,12 +978,23 @@ namespace SBMS
                     cell.Rowspan = 5;
                     table.AddCell(cell);
 
-                    cell = new PdfPCell(new Phrase("Transfer Slip ", headfont));
+                    Phrase tsHead = new Phrase();
+                    if (CurrentUser.UseBarcodes)
+                    {
+                        Barcode128 bc = new Barcode128();
+                        bc.Code = (DH.TransferID ?? 0).ToString();
+                        bc.Font = null;
+                        iTextSharp.text.Image bcImg = bc.CreateImageWithBarcode(writer.DirectContent, BaseColor.BLACK, BaseColor.BLACK);
+                        tsHead.Add(new Chunk(bcImg, 0, -8, true));
+                        tsHead.Add(new Chunk("   ", headfont));
+                    }
+                    tsHead.Add(new Chunk("Transfer Slip ", headfont));
+                    cell = new PdfPCell(tsHead);
                     cell.Border = 0;
                     cell.HorizontalAlignment = 2;
                     table.AddCell(cell);
 
-                    cell = new PdfPCell(new Phrase(DH.TrfReference.ToString(), headfont));
+                    cell = new PdfPCell(new Phrase((DH.TrfReference ?? "").ToString(), headfont));
                     cell.Border = 0;
                     cell.HorizontalAlignment = 2;
                     table.AddCell(cell);

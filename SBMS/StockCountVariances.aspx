@@ -29,7 +29,8 @@
                                 <asp:LinkButton ID="lbtnHome" runat="server" class="buttonC icon fa-home" style="float:left" onclick="lbtnHome_Click">&nbsp;&nbsp;</asp:LinkButton>
                                 <asp:LinkButton ID="lbtnBack" runat="server" class="buttonC icon fa-arrow-left" style="float:left" onclick="lbtnBack_Click">&nbsp;Stock Counts</asp:LinkButton>
                                 <asp:LinkButton ID="lbtnLogOut" runat="server" class="buttonTransparent icon fa-eject" Style="float: right;" ToolTip="Log Out" OnClick="lbtnLogOut_Click">&nbsp;</asp:LinkButton>
-                                <asp:LinkButton ID="lbtnDownload" runat="server" class="buttonC icon fa-arrow-down" style="float:right" onclick="lbtnDownload_Click">&nbsp;Download</asp:LinkButton>
+                                <asp:LinkButton ID="lbtnDownload" runat="server" class="buttonC icon fa-arrow-down" style="float:right" onclick="lbtnDownload_Click" ToolTip="Download the variance report (Excel)">&nbsp;Download</asp:LinkButton>
+                                <asp:LinkButton ID="lbtnSageCsv" runat="server" class="buttonC icon fa-file-o" style="float:right" onclick="lbtnSageCsv_Click" ToolTip="Download the Sage Item Adjustments import file (CSV)">&nbsp;Sage Import (CSV)</asp:LinkButton>
                                 <br />
                                 <h3 style="padding-top: 0; line-height: 1em">Stock Count Variances</h3>
                             </div>
@@ -100,6 +101,7 @@
                     </ContentTemplate>
                     <Triggers>
                         <asp:PostBackTrigger ControlID="lbtnDownload" />
+                        <asp:PostBackTrigger ControlID="lbtnSageCsv" />
                     </Triggers>
 
                 </asp:UpdatePanel>

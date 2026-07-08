@@ -2,9 +2,11 @@
 using SBMS.Classes;
 using SBMS.Models;
 using System;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Linq.Dynamic.Core;
+using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -86,8 +88,11 @@ namespace SBMS
         {
             string filterText = txtFilter.Text;
 
+            // Sage import CSV is only available once the count is accepted (closed off).
+            lbtnSageCsv.Visible = false;
+
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
-            { 
+            {
                 var allLines = _db.Database.SqlQuery<GetStckCountVariances_Result>(
                         "EXEC GetStckCountVariances @CoID, @CountID",
                         new System.Data.SqlClient.SqlParameter("@CoID", CurrentUser.CoID),
@@ -111,6 +116,8 @@ namespace SBMS
                                     ? _db.RolesMasters.Where(u => u.RoleID == cnt.CreatedBy.Value)
                                                .Select(u => u.RoleName).FirstOrDefault()
                                     : "";
+                    // Accepted = Closed Off — only then expose the Sage import CSV.
+                    lbtnSageCsv.Visible = cnt.ClosedOff == true;
                 }
 
                 // ── Apply filters in memory ───────────────────────────────
@@ -246,6 +253,80 @@ namespace SBMS
         {
             //lbtnSave_Click(sender, EventArgs.Empty);
             DownloadStockCountSheet(countid);
+        }
+
+        // Sage "Item Adjustments" import file (CSV) — download only, and only once the count
+        // is accepted (closed off). Columns exactly match the SBCA import: Item Code, Average
+        // Cost, Quantity On Hand.
+        //  • Average Cost  = the item's CURRENT average cost, unchanged (a quantity count must
+        //                    never revalue stock). Service items still carry their cost.
+        //  • Quantity On Hand = item's current total on-hand + the net counted variance
+        //                    (sum of FinalQty - QtyOnHand over counted lines). Uncounted stores
+        //                    contribute zero, so a single-store count leaves the rest untouched.
+        //                    Service (non-physical) items are 0 per the Sage spec.
+        protected void lbtnSageCsv_Click(object sender, EventArgs e)
+        {
+            using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+            {
+                var cnt = _db.StockCountMasters
+                    .FirstOrDefault(x => x.CompanyID == CurrentUser.CoID && x.StCntID == countid);
+                if (cnt == null || cnt.ClosedOff != true)
+                {
+                    // Not accepted yet — nothing to export.
+                    return;
+                }
+
+                var lines = _db.GetStckCountDetails(CurrentUser.CoID, countid).ToList();
+
+                // Net counted variance per item (only lines that were actually counted).
+                var variances = lines
+                    .Where(l => l.FinalQty.HasValue && !string.IsNullOrEmpty(l.ItemCode))
+                    .GroupBy(l => l.ItemCode)
+                    .ToDictionary(g => g.Key, g => g.Sum(x => (x.FinalQty ?? 0m) - (x.QtyOnHand ?? 0m)));
+
+                if (variances.Count == 0) return;
+
+                var itemCodes = variances.Keys.ToList();
+                var items = _db.ItemsMasters
+                    .Where(x => x.CompanyID == CurrentUser.CoID && itemCodes.Contains(x.Code))
+                    .Select(x => new { x.Code, x.QuantityOnHand, x.AverageCost, x.Physical })
+                    .ToList()
+                    .GroupBy(x => x.Code)
+                    .ToDictionary(g => g.Key, g => g.First());
+
+                var sb = new StringBuilder();
+                sb.Append("Item Code,Average Cost,Quantity On Hand\r\n");
+
+                foreach (var code in itemCodes.OrderBy(c => c))
+                {
+                    if (!items.TryGetValue(code, out var itm)) continue;
+
+                    decimal avgCost = itm.AverageCost ?? 0m;
+                    decimal newQoh = (itm.Physical == false)
+                        ? 0m
+                        : (itm.QuantityOnHand ?? 0m) + variances[code];
+
+                    sb.Append(CsvField(code)).Append(',')
+                      .Append(avgCost.ToString("0.00", CultureInfo.InvariantCulture)).Append(',')
+                      .Append(newQoh.ToString("0.####", CultureInfo.InvariantCulture)).Append("\r\n");
+                }
+
+                string fileName = $"SageImport_Count_{countid}_{DateTime.Now:yyyyMMdd}.csv";
+                Response.Clear();
+                Response.ContentType = "text/csv";
+                Response.AddHeader("content-disposition", $"attachment;filename={fileName}");
+                Response.Write(sb.ToString());
+                Response.Flush();
+                Response.End();
+            }
+        }
+
+        private static string CsvField(string s)
+        {
+            if (string.IsNullOrEmpty(s)) return "";
+            if (s.IndexOfAny(new[] { ',', '"', '\n', '\r' }) >= 0)
+                return "\"" + s.Replace("\"", "\"\"") + "\"";
+            return s;
         }
 
         private void DownloadStockCountSheet(int countID)

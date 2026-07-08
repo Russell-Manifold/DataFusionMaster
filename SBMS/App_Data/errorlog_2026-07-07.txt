@@ -1,0 +1,2 @@
+12:06:30 - APIUpdateSalesOrderAsync SalesOrder/Save failed: BadRequest - Delivery Date cannot precede the current Sales Order date.
+12:06:32 - APIUpdateSalesOrderAsync SalesOrder/Save failed: BadRequest - Delivery Date cannot precede the current Sales Order date.

@@ -14,6 +14,7 @@
     <form id="form1" runat="server">
          <asp:ScriptManager ID="ScriptManager1" runat="server"></asp:ScriptManager>
          <asp:HiddenField ID="hfPartialOverride" runat="server" Value="" />
+         <asp:HiddenField ID="hfPrintScope" runat="server" Value="" />
         <div class="content">
             <asp:UpdatePanel ID="UpdatePanel2" runat="server">
                 <ContentTemplate>
@@ -224,7 +225,7 @@
                           
                         <div style="float:right">
                         <strong>Receiving complete?</strong>
-                         <asp:RadioButtonList ID="RBpoStatus" runat="server" RepeatDirection="Horizontal">
+                         <asp:RadioButtonList ID="RBpoStatus" runat="server" RepeatDirection="Horizontal" AutoPostBack="true" OnSelectedIndexChanged="RBpoStatus_SelectedIndexChanged">
                              <asp:ListItem Value="0" Selected="True">Yes</asp:ListItem>
                              <asp:ListItem Value="1">No</asp:ListItem>
                         </asp:RadioButtonList>
@@ -419,6 +420,14 @@
                         }
                     </script>
                      </ContentTemplate>
+                <Triggers>
+                    <%-- Re-opening a completed PO redirects, so RBpoStatus must do a FULL
+                         postback - a Response.Redirect is swallowed by a partial postback. --%>
+                    <asp:PostBackTrigger ControlID="RBpoStatus" />
+                    <%-- Print does CreatePDF then Response.Redirect to the viewer; a full postback
+                         keeps the redirect from being swallowed by the partial postback. --%>
+                    <asp:PostBackTrigger ControlID="lbtnPrintRN" />
+                </Triggers>
             </asp:UpdatePanel>
 
             <asp:LinkButton ID="LinkButton1" runat="server" Style="display: none">LinkButton</asp:LinkButton>

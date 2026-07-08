@@ -54,6 +54,7 @@ namespace SBMS
                 if (WO != null)
                 {
                     iTextSharp.text.Document doc = new iTextSharp.text.Document(iTextSharp.text.PageSize.A4, 40, 40, 40, 40);
+                    PdfWriter writer = null;
 
                     try
                     {
@@ -70,7 +71,7 @@ namespace SBMS
                         {
                             File.Delete(filepath);
                         }
-                        PdfWriter writer = PdfWriter.GetInstance(doc, new FileStream(filepath, FileMode.Create));
+                        writer = PdfWriter.GetInstance(doc, new FileStream(filepath, FileMode.Create));
                         writer.SetPdfVersion(PdfWriter.PDF_VERSION_1_7);
                         writer.SetFullCompression();
                         writer.PageEvent = new PDFFooter();
@@ -110,7 +111,18 @@ namespace SBMS
                     cell.Rowspan = 5;
                     table.AddCell(cell);
 
-                    cell = new PdfPCell(new Phrase("Works Order #", headfont));
+                    Phrase wonHead = new Phrase();
+                    if (CurrentUser.UseBarcodes)
+                    {
+                        Barcode128 bc = new Barcode128();
+                        bc.Code = WO.WONum.ToString();
+                        bc.Font = null;
+                        iTextSharp.text.Image bcImg = bc.CreateImageWithBarcode(writer.DirectContent, BaseColor.BLACK, BaseColor.BLACK);
+                        wonHead.Add(new Chunk(bcImg, 0, -8, true));
+                        wonHead.Add(new Chunk("   ", headfont));
+                    }
+                    wonHead.Add(new Chunk("Works Order #", headfont));
+                    cell = new PdfPCell(wonHead);
                     cell.Border = 0;
                     cell.HorizontalAlignment = 2;
                     table.AddCell(cell);
@@ -135,7 +147,7 @@ namespace SBMS
                     cell.HorizontalAlignment = 2;
                     table.AddCell(cell);
 
-                    cell = new PdfPCell(new Phrase(WO.Reference.ToString(), medfont));
+                    cell = new PdfPCell(new Phrase((WO.Reference ?? "").ToString(), medfont));
                     cell.Border = 0;
                     cell.HorizontalAlignment = 2;
                     table.AddCell(cell);

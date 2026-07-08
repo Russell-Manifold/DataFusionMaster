@@ -236,6 +236,8 @@
     <Content Include="assets\js\buttonDisable.js" />
     <Content Include="SBMSMobile\css\mobile-ui.css" />
     <Content Include="SBMSMobile\NotificationsM.aspx" />
+    <Content Include="SBMSMobile\ManufactureM.aspx" />
+    <Content Include="SBMSMobile\StockMoveM.aspx" />
     <Content Include="SBMSMobile\QuickMoveM.aspx" />
     <Content Include="SBMSMobile\ReceivingM.aspx" />
     <Content Include="SBMSMobile\ReceiveScanM.aspx" />
@@ -996,6 +998,20 @@
     <Compile Include="SBMSMobile\NotificationsM.aspx.designer.cs">
       <DependentUpon>NotificationsM.aspx</DependentUpon>
     </Compile>
+    <Compile Include="SBMSMobile\ManufactureM.aspx.cs">
+      <DependentUpon>ManufactureM.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="SBMSMobile\ManufactureM.aspx.designer.cs">
+      <DependentUpon>ManufactureM.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="SBMSMobile\StockMoveM.aspx.cs">
+      <DependentUpon>StockMoveM.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="SBMSMobile\StockMoveM.aspx.designer.cs">
+      <DependentUpon>StockMoveM.aspx</DependentUpon>
+    </Compile>
     <Compile Include="SBMSMobile\QuickMoveM.aspx.cs">
       <DependentUpon>QuickMoveM.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -1294,6 +1310,7 @@
     <Compile Include="Models\GetOpeningBalancesByStore_Result.cs">
       <DependentUpon>SBMS.tt</DependentUpon>
     </Compile>
+    <Compile Include="Models\GetOpeningBalancesByStore_Result.Partial.cs" />
     <Compile Include="Models\GetPickSlipMovementTransactions_Result.cs">
       <DependentUpon>SBMS.tt</DependentUpon>
     </Compile>

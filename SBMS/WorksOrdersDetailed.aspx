@@ -169,7 +169,7 @@
                                                     <div class="PopupBody" style="margin:2em">
                                                         <h4><asp:Label ID="lblItem" runat="server" Text="Label"></asp:Label>
                                                       &nbsp; &nbsp;<asp:Label ID="lblQty" runat="server" Text="Label"></asp:Label> </h4>
-                                                        <asp:GridView ID="GridUseBom" runat="server" AutoGenerateColumns="false" CssClass="gridview" >
+                                                        <asp:GridView ID="GridUseBom" runat="server" AutoGenerateColumns="false" CssClass="gridview" OnRowDataBound="GridUseBom_RowDataBound" >
                                                             <HeaderStyle CssClass="gridViewHeader" />
                                                             <RowStyle CssClass="gridViewRow" />
                                                             <AlternatingRowStyle CssClass="gridViewAltRow" />
@@ -183,6 +183,8 @@
                                                                         <cci:FilteredTextBoxExtender ID="ftbe" runat="server" TargetControlID="txtMQty" FilterType="Custom, Numbers" ValidChars="." />
                                                                     </ItemTemplate>
                                                                     </asp:TemplateField>
+                                                                    <asp:TemplateField HeaderText="On Hand" ItemStyle-HorizontalAlign="Center"><ItemTemplate><asp:Label ID="lblOnHand" runat="server"></asp:Label></ItemTemplate></asp:TemplateField>
+                                                                    <asp:TemplateField HeaderText="Short" ItemStyle-HorizontalAlign="Center"><ItemTemplate><asp:Label ID="lblShort" runat="server"></asp:Label></ItemTemplate></asp:TemplateField>
                                                                     <asp:TemplateField ItemStyle-HorizontalAlign="Right" ItemStyle-Width="3em" >
                                                                         <ItemTemplate>
                                                                              <asp:LinkButton ID="lbtnLineMSave" CommandArgument='<%# Eval("LineID") %>' CommandName="lbtnLineSave" runat="server" CssClass="fa fa-save buttonRed" ToolTip="Save Line" OnClick="lbtnMLineSave_Click"> </asp:LinkButton>

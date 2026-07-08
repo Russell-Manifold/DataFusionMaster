@@ -28,10 +28,21 @@
             color: var(--mob-text-muted);
         }
         .dash-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
             gap: .85rem;
-            padding: 1rem;
+            padding: .4rem 1rem .6rem;
+        }
+        .dash-grid .dash-tile { flex: 0 1 calc(50% - 0.5rem); }
+        .dash-section-head {
+            font-weight: 700;
+            color: var(--mob-brand);
+            font-size: .78rem;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+            padding: .9rem 1.4rem .1rem;
+            text-align: center;
         }
         .dash-tile {
             display: flex;
@@ -90,6 +101,7 @@
         <symbol id="i-clipboard" viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M9 12l2 2 4-4"/></symbol>
         <symbol id="i-transfer" viewBox="0 0 24 24"><path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></symbol>
         <symbol id="i-chart" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></symbol>
+        <symbol id="i-convert" viewBox="0 0 24 24"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></symbol>
     </svg>
 
 
@@ -111,7 +123,8 @@
         <div class="dash-welcome">Welcome, <asp:Label ID="lblUsername" runat="server" /></div>
     </div>
 
-    <%-- Navigation grid --%>
+    <%-- ══ Receiving & Put-away ══ --%>
+    <div class="dash-section-head">Receiving &amp; Put-away</div>
     <div class="dash-grid">
 
         <asp:LinkButton ID="imgbCount" runat="server" OnClick="imgbCount_Click"
@@ -132,11 +145,23 @@
             <span class="dash-tile-label">Put-away</span>
         </asp:LinkButton>
 
-        <asp:LinkButton ID="ibtnPickSlips" runat="server" OnClick="ibtnPickSlips_Click"
-            CssClass="dash-tile" ToolTip="Open Picking Slips">
-            <span class="dash-tile-ico"><svg class="mob-ico" aria-hidden="true"><use href="#i-clipboard"/></svg></span>
-            <span class="dash-tile-label">Picking Slips</span>
+    </div>
+
+    <%-- ══ Manufacturing ══ --%>
+    <div class="dash-section-head">Manufacturing</div>
+    <div class="dash-grid">
+
+        <asp:LinkButton ID="imgbManufacture" runat="server" OnClick="imgbManufacture_Click"
+            CssClass="dash-tile" ToolTip="Simple manufacture process">
+            <span class="dash-tile-ico"><svg class="mob-ico" aria-hidden="true"><use href="#i-convert"/></svg></span>
+            <span class="dash-tile-label">Manufacture</span>
         </asp:LinkButton>
+
+    </div>
+
+    <%-- ══ Transfers ══ --%>
+    <div class="dash-section-head">Transfers</div>
+    <div class="dash-grid">
 
         <asp:LinkButton ID="lbtnBinTransfer" runat="server" OnClick="imgbQuickMove_Click"
             CssClass="dash-tile" ToolTip="Quick Move — scan one item between two bins/locations">
@@ -144,14 +169,32 @@
             <span class="dash-tile-label">Quick Move</span>
         </asp:LinkButton>
 
-        <asp:LinkButton ID="ibtnStockMove" runat="server" OnClick="ibtnPickSlips_Click"
+        <asp:LinkButton ID="ibtnStockMove" runat="server" OnClick="ibtnStockMove_Click"
             CssClass="dash-tile" ToolTip="Warehouse Transfer">
             <span class="dash-tile-ico"><svg class="mob-ico" aria-hidden="true"><use href="#i-warehouse"/></svg></span>
             <span class="dash-tile-label">Stock Move</span>
         </asp:LinkButton>
 
+    </div>
+
+    <%-- ══ Picking / Packing ══ --%>
+    <div class="dash-section-head">Picking / Packing</div>
+    <div class="dash-grid">
+
+        <asp:LinkButton ID="ibtnPickSlips" runat="server" OnClick="ibtnPickSlips_Click"
+            CssClass="dash-tile" ToolTip="Open Picking Slips">
+            <span class="dash-tile-ico"><svg class="mob-ico" aria-hidden="true"><use href="#i-clipboard"/></svg></span>
+            <span class="dash-tile-label">Picking Slips</span>
+        </asp:LinkButton>
+
+    </div>
+
+    <%-- ══ Stock Reconciliations ══ --%>
+    <div class="dash-section-head">Stock Reconciliations</div>
+    <div class="dash-grid">
+
         <asp:LinkButton ID="ibtnStockCount" runat="server" OnClick="ibtnStockCount_Click"
-            CssClass="dash-tile dash-tile-wide" ToolTip="Stock Count">
+            CssClass="dash-tile" ToolTip="Stock Count">
             <span class="dash-tile-ico"><svg class="mob-ico" aria-hidden="true"><use href="#i-chart"/></svg></span>
             <span class="dash-tile-label">Stock Count</span>
         </asp:LinkButton>

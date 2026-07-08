@@ -402,13 +402,13 @@ namespace SBMS
         protected global::System.Web.UI.WebControls.Panel pnlPack;
 
         /// <summary>
-        /// chkBarCodes control.
+        /// chkManfCosts control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.CheckBox chkBarCodes;
+        protected global::System.Web.UI.WebControls.CheckBox chkManfCosts;
 
         /// <summary>
         /// chkMod2 control.
@@ -465,13 +465,13 @@ namespace SBMS
         protected global::System.Web.UI.WebControls.Panel pnlBOM;
 
         /// <summary>
-        /// chkManfCosts control.
+        /// chkBarCodes control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.CheckBox chkManfCosts;
+        protected global::System.Web.UI.WebControls.CheckBox chkBarCodes;
 
         /// <summary>
         /// chkNotifs control.

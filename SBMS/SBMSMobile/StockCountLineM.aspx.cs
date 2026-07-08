@@ -230,8 +230,9 @@ namespace SBMS
                 dbLine = db.StockCountLines.FirstOrDefault(x => x.CtLineID == ctLineId);
 
             bool isFinished    = dbLine != null && dbLine.LineFinished;
-            bool hasCount1     = dbLine != null && dbLine.Count1Qty.HasValue && dbLine.Count1Qty.Value > 0;
-            bool hasCount2     = dbLine != null && dbLine.Count2Qty.HasValue && dbLine.Count2Qty.Value > 0;
+            // A count EXISTS once a value is recorded - including a deliberate 0 (empty shelf).
+            bool hasCount1     = dbLine != null && dbLine.Count1Qty.HasValue;
+            bool hasCount2     = dbLine != null && dbLine.Count2Qty.HasValue;
             bool needsRecount  = hasCount1 && !isFinished;
 
             // Green "Counted" badge when finished
@@ -273,10 +274,11 @@ namespace SBMS
             if (lblExpr != null && dbLine != null && !string.IsNullOrEmpty(dbLine.CountExpression))
                 lblExpr.Text = "Count: " + dbLine.CountExpression;
 
-            // Recount button — always visible once any count has been entered
+            // Count/recount button — always available so an uncounted line (e.g. an empty
+            // shelf) can be opened and recorded as 0. Finished lines are blocked in the handler.
             var recountBtn = (LinkButton)e.Item.FindControl("lbtnRecount");
             if (recountBtn != null)
-                recountBtn.Visible = hasCount1;
+                recountBtn.Visible = true;
 
             // Barcode chips
             var lblBarcodes = (Label)e.Item.FindControl("lblBarcodes");
@@ -359,7 +361,7 @@ namespace SBMS
                 }
 
                 // Block lines started by another user
-                bool hasExistingCount = matchedLine.Count1Qty.HasValue && matchedLine.Count1Qty.Value > 0;
+                bool hasExistingCount = matchedLine.Count1Qty.HasValue;
                 if (hasExistingCount && !string.IsNullOrEmpty(matchedLine.CountBy) &&
                     matchedLine.CountBy != CurrentUser.UserName)
                 {
@@ -373,8 +375,8 @@ namespace SBMS
                 }
 
                 // Determine count round from current DB state
-                bool hasCount1 = matchedLine.Count1Qty.HasValue && matchedLine.Count1Qty.Value > 0;
-                bool hasCount2 = matchedLine.Count2Qty.HasValue && matchedLine.Count2Qty.Value > 0;
+                bool hasCount1 = matchedLine.Count1Qty.HasValue;
+                bool hasCount2 = matchedLine.Count2Qty.HasValue;
                 string roundLabel = !hasCount1 ? "(Count 1)" : hasCount2 ? "(Count 3)" : "(Count 2)";
                 int initQty = barcodeItem.QtyPerBarcode > 0 ? barcodeItem.QtyPerBarcode : 0;
 
@@ -441,7 +443,7 @@ namespace SBMS
                 }
 
                 // Block lines started by another user
-                bool hasExistingCount = line.Count1Qty.HasValue && line.Count1Qty.Value > 0;
+                bool hasExistingCount = line.Count1Qty.HasValue;
                 if (hasExistingCount && !string.IsNullOrEmpty(line.CountBy) &&
                     line.CountBy != CurrentUser.UserName)
                 {
@@ -459,8 +461,8 @@ namespace SBMS
                 lblCalcItemDesc.Text       = line.ItemDescription ?? "";
                 lblCalcQtyHint.Visible     = false;
 
-                bool hasCount1 = line.Count1Qty.HasValue && line.Count1Qty.Value > 0;
-                bool hasCount2 = line.Count2Qty.HasValue && line.Count2Qty.Value > 0;
+                bool hasCount1 = line.Count1Qty.HasValue;
+                bool hasCount2 = line.Count2Qty.HasValue;
                 string roundLabel = !hasCount1 ? "(Count 1)" : hasCount2 ? "(Count 3)" : "(Count 2)";
                 hfCalcRoundText.Value      = roundLabel;
                 lblCalcRound.Text          = roundLabel;
@@ -501,7 +503,8 @@ namespace SBMS
             string expression = hfCalcExpression.Value ?? "";
             string totalStr   = hfCalcTotal.Value ?? "0";
 
-            if (!decimal.TryParse(totalStr, out decimal total) || total <= 0)
+            // Allow 0 (empty shelf) - only a negative/invalid entry is rejected.
+            if (!decimal.TryParse(totalStr, out decimal total) || total < 0)
             {
                 SetFeedback(false, "&#9888; Please enter a valid count quantity.");
                 return;
@@ -523,8 +526,10 @@ namespace SBMS
                 }
 
                 decimal qoh = line.QtyOnHand ?? 0;
-                bool isFirstCount  = line.Count1Qty == null || line.Count1Qty == 0;
-                bool isSecondCount = !isFirstCount && (line.Count2Qty == null || line.Count2Qty == 0);
+                // Round is decided by whether a value has been RECORDED (0 counts as recorded),
+                // so a first count of 0 correctly advances to Count 2 rather than being overwritten.
+                bool isFirstCount  = line.Count1Qty == null;
+                bool isSecondCount = !isFirstCount && line.Count2Qty == null;
 
                 if (isFirstCount)
                 {
@@ -646,16 +651,20 @@ namespace SBMS
                     return;
                 }
 
+                // Single-store close-off: only the selected store's lines must be finished.
+                // Other stores on the count (if any) are left uncounted and post zero variance,
+                // so they stay unchanged in the Sage import.
                 var unfinished = db.StockCountLines
                     .Where(x => x.CompanyID == CurrentUser.CoID && x.CountID == CountID
+                             && x.StoreCode == SelectedStore
                              && x.LineFinished == false)
                     .Count();
 
                 if (unfinished > 0)
                 {
                     SetFeedback(false,
-                        "&#9888; " + unfinished + " line(s) across all stores have not been counted. " +
-                        "Count all lines before closing off.");
+                        "&#9888; " + unfinished + " line(s) for store " + SelectedStore +
+                        " have not been counted. Count all lines for this store before closing off.");
                     return;
                 }
             }

@@ -142,7 +142,11 @@
                     <div class="1u 12u$(medium)">&nbsp;</div>
                     <div class="10u 12u$(medium)">
                         <hr />
-                        <h3>Works Order Details <asp:CheckBox ID="chkCompl" runat="server" Text="Complete" Enabled="false" Font-Size="Small" /> </h3>
+                        <h3>Works Order Details <asp:CheckBox ID="chkCompl" runat="server" Text="Complete" Enabled="false" Font-Size="Small" />
+                            <asp:Panel ID="pnlDrawFrom" runat="server" Visible="false" style="display:inline-block; margin:auto; font-size:.55em; font-weight:normal; line-height:2.0em">
+                                Auto-Manufacture draw components from:&nbsp;<asp:DropDownList ID="ddlDrawFrom" runat="server" AutoPostBack="true" OnSelectedIndexChanged="ddlDrawFrom_SelectedIndexChanged" Font-Bold="true" Width="60px" ></asp:DropDownList>
+                            </asp:Panel>
+                        </h3>
                         <cci:Accordion ID="AccordionWOLines" runat="server" CssClass="accordion" 
                                 HeaderCssClass="accordionHeader" 
                                 ContentCssClass="accordionContent"    
@@ -207,7 +211,7 @@
                                 <asp:Label ID="lblItem" runat="server" Text="Label"></asp:Label>
                                 &nbsp; &nbsp;<asp:Label ID="lblQty" runat="server" Text="Label"></asp:Label>
                             </h4>
-                            <asp:GridView ID="GridUseBom" runat="server" AutoGenerateColumns="false" CssClass="gridview">
+                            <asp:GridView ID="GridUseBom" runat="server" AutoGenerateColumns="false" CssClass="gridview" OnRowDataBound="GridUseBom_RowDataBound">
                                 <HeaderStyle CssClass="gridViewHeader" />
                                 <RowStyle CssClass="gridViewRow" />
                                 <AlternatingRowStyle CssClass="gridViewAltRow" />
@@ -216,8 +220,10 @@
                                     <asp:BoundField HeaderText="Description" DataField="ItemDescription" />
                                     <asp:BoundField HeaderText="Quantity" DataField="Quantity" />
                                     <asp:BoundField HeaderText="Use Qty" DataField="UseQty" />
-                                    <asp:BoundField HeaderText="Scrap" DataField="ScrapQty" />   
-                                    <asp:BoundField HeaderText="Lot_Number" DataField="LotNumber" />    
+                                    <asp:BoundField HeaderText="Scrap" DataField="ScrapQty" />
+                                    <asp:BoundField HeaderText="Lot_Number" DataField="LotNumber" />
+                                    <asp:TemplateField HeaderText="On Hand" ItemStyle-HorizontalAlign="Center"><ItemTemplate><asp:Label ID="lblOnHand" runat="server"></asp:Label></ItemTemplate></asp:TemplateField>
+                                    <asp:TemplateField HeaderText="Short" ItemStyle-HorizontalAlign="Center"><ItemTemplate><asp:Label ID="lblShort" runat="server"></asp:Label></ItemTemplate></asp:TemplateField>
                                 </Columns>
                             </asp:GridView>
                         </div>

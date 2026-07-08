@@ -50,6 +50,9 @@ namespace SBMS
         /// </remarks>
         protected global::System.Web.UI.WebControls.LinkButton imgbCount;
 
+        /// <summary>imgbManufacture control.</summary>
+        protected global::System.Web.UI.WebControls.LinkButton imgbManufacture;
+
         /// <summary>
         /// imgbReceive control.
         /// </summary>

@@ -176,6 +176,56 @@ namespace SBMS
             }
         }
 
+        // Read-only availability on the components grid: total on-hand (all stores) and the
+        // shortfall (Required - On-hand). Sub-assemblies (IsFromBOM) that are short are tagged
+        // "(make)" since the fix is to manufacture them, not buy more. Display only.
+        protected void GridUseBom_RowDataBound(object sender, GridViewRowEventArgs e)
+        {
+            if (e.Row.RowType != DataControlRowType.DataRow) return;
+            var rml = e.Row.DataItem as WorksOrderRMLine;
+            if (rml == null) return;
+
+            Label lblOnHand = e.Row.FindControl("lblOnHand") as Label;
+            Label lblShort = e.Row.FindControl("lblShort") as Label;
+            if (lblOnHand == null && lblShort == null) return;
+
+            long itemId = rml.SelectionId;
+            decimal required = rml.Quantity ?? 0;
+
+            decimal onHand;
+            bool isFromBom;
+            using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+            {
+                onHand = _db.ItemTransactions
+                    .Where(x => x.CompanyID == CoID && x.ItemID == itemId)
+                    .Select(x => (decimal?)x.Qty).DefaultIfEmpty(0).Sum() ?? 0;
+                isFromBom = _db.ItemsMasters
+                    .Where(x => x.CompanyID == CoID && x.ID == itemId)
+                    .Select(x => x.IsFromBOM).FirstOrDefault() ?? false;
+            }
+            onHand = ApiUrlCall.NumberToDecimal(onHand, CurrentUser.CompanyDecPlaces);
+            decimal shortQty = required - onHand;
+
+            if (lblOnHand != null) lblOnHand.Text = onHand.ToString("N2");
+
+            if (shortQty > 0)
+            {
+                // Highlight the On Hand cell (consistent with the manufacture grid).
+                TableCell ohCell = lblOnHand != null ? lblOnHand.Parent as TableCell : null;
+                if (ohCell != null)
+                {
+                    ohCell.BackColor = System.Drawing.Color.MistyRose;
+                    ohCell.ForeColor = System.Drawing.Color.Firebrick;
+                    ohCell.Font.Bold = true;
+                }
+                if (lblShort != null) lblShort.Text = shortQty.ToString("N2") + (isFromBom ? " (make)" : "");
+            }
+            else if (lblShort != null)
+            {
+                lblShort.Text = "-";
+            }
+        }
+
         protected void GridWOLines_RowDataBound(object sender, GridViewRowEventArgs e)
         {
             e.Row.Cells[0].Visible = false;

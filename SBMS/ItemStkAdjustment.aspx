@@ -129,7 +129,7 @@
                                         <tr>
                                             <td style="vertical-align:top">Reason <span style="color:red; font-size:large">*</span></td>
                                             <td>
-                                            <asp:TextBox ID="txtAdjReason" runat="server" TextMode="MultiLine" Columns="40" Rows="5" MaxLength="100"></asp:TextBox></td>
+                                            <asp:TextBox ID="txtAdjReason" runat="server" TextMode="MultiLine" Columns="70" Rows="1" MaxLength="100"></asp:TextBox></td>
                                         </tr>
                                 <tr>
                                     <td>&nbsp;</td>

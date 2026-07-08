@@ -85,6 +85,7 @@ namespace SBMS
                 LoadItemStores();
                 LoadWOHeader();
                 LoadWOLines();
+                LoadDrawFromStores();
                 if (AccordionWOLines.Panes.Count == 2)
                 {
                     AccordionWOLines.SelectedIndex = 1;
@@ -152,6 +153,69 @@ namespace SBMS
         {
             LoadAccordion(woid, CoID);
             SetPartManufactureButtons();
+        }
+
+        // Populates the single "Draw from" store selector used by no-lot Auto-fill.
+        // Only shown when Auto Manufacture is enabled AND the company is not lot-tracked;
+        // defaults to the company's WIP store when one exists.
+        private void LoadDrawFromStores()
+        {
+            pnlDrawFrom.Visible = CurrentUser.UseAutoManf && !CurrentUser.CompanyUseLotNumbers;
+            if (!pnlDrawFrom.Visible) return;
+
+            using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+            {
+                var stores = _db.Stores
+                    .Where(x => x.CompanyID == CoID && x.StoreActive == true && x.IsWip == true && x.StoreCode != "CoR" && x.StoreCode != "CoD")
+                    .OrderBy(x => x.StoreCode).ToList();
+
+                ddlDrawFrom.DataSource = stores;
+                ddlDrawFrom.DataTextField = "StoreCode";
+                ddlDrawFrom.DataValueField = "StoreID";
+                ddlDrawFrom.DataBind();
+                ddlDrawFrom.Items.Insert(0, new ListItem("-?-", "0"));
+
+                var wip = stores.FirstOrDefault(x => x.IsWip);
+                if (wip != null) ddlDrawFrom.SelectedValue = wip.StoreID.ToString();
+            }
+        }
+
+        // When the "Draw from" store is changed, point every component row on every line
+        // at the newly selected store and persist it. (Quantities/coverage are still applied
+        // by the per-line Auto-fill button.)
+        protected void ddlDrawFrom_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            long drawStoreId = 0;
+            long.TryParse(ddlDrawFrom.SelectedValue, out drawStoreId);
+            if (drawStoreId == 0) return;
+            string drawStoreCode = ddlDrawFrom.SelectedItem.Text;
+
+            using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+            {
+                foreach (AccordionPane pane in AccordionWOLines.Panes)
+                {
+                    foreach (Control ctl in pane.ContentContainer.Controls)
+                    {
+                        if (!(ctl is GridView grid)) continue;
+                        foreach (GridViewRow gvr in grid.Rows)
+                        {
+                            if (gvr.RowType != DataControlRowType.DataRow) continue;
+                            DropDownList ddStore = gvr.FindControl("DDStore") as DropDownList;
+                            if (ddStore != null)
+                            {
+                                if (ddStore.Items.FindByValue(drawStoreId.ToString()) == null)
+                                    ddStore.Items.Add(new ListItem(drawStoreCode, drawStoreId.ToString()));
+                                ddStore.SelectedValue = drawStoreId.ToString();
+                            }
+
+                            long lineId = Convert.ToInt64(gvr.Cells[0].Text);
+                            var WOLine = _db.WorksOrderRMLines.FirstOrDefault(x => x.LineID == lineId);
+                            if (WOLine != null) WOLine.StoreCodeFrom = drawStoreCode;
+                        }
+                    }
+                }
+                _db.SaveChanges();
+            }
         }
 
         // Decides whether the "Close Remaining" and "Reset Lines" header buttons are
@@ -250,6 +314,7 @@ namespace SBMS
             if (!lineLocked)
             {
                 AddPartManufactureButton(pane, line);
+                AddAutoManufactureButton(pane, line);
             }
 
             // Add lot number button if applicable
@@ -477,6 +542,14 @@ namespace SBMS
                 DataField = "Quantity",
                 HeaderText = "Quantity",
                 ItemStyle = { Width = Unit.Parse("5em") }
+            });
+
+            // On Hand (read-only) - total stock across all stores, set in BindDataRow.
+            gridRMs.Columns.Add(new BoundField
+            {
+                HeaderText = "On Hand",
+                HeaderStyle = { HorizontalAlign = HorizontalAlign.Center },
+                ItemStyle = { Width = Unit.Parse("5em"), HorizontalAlign = HorizontalAlign.Center }
             });
 
             // Use Quantity template field
@@ -752,6 +825,26 @@ namespace SBMS
                 return;
             }
 
+            // On Hand column (index 6, right after Quantity): total stock across all stores.
+            using (SBMSEntities _dbOH = new SBMSEntities(Config.GetConnectionString()))
+            {
+                decimal onHandT = _dbOH.ItemTransactions
+                    .Where(x => x.CompanyID == CoID && x.ItemID == itemID)
+                    .Select(x => (decimal?)x.Qty).DefaultIfEmpty(0).Sum() ?? 0;
+                onHandT = ApiUrlCall.NumberToDecimal(onHandT, CurrentUser.CompanyDecPlaces);
+                if (e.Row.Cells.Count > 6)
+                {
+                    e.Row.Cells[6].Text = onHandT.ToString("N2");
+                    // Highlight when on-hand can't cover this line's required quantity.
+                    if (onHandT < (item.Quantity ?? 0))
+                    {
+                        e.Row.Cells[6].BackColor = System.Drawing.Color.MistyRose;
+                        e.Row.Cells[6].ForeColor = System.Drawing.Color.Firebrick;
+                        e.Row.Cells[6].Font.Bold = true;
+                    }
+                }
+            }
+
             // Find controls
             DropDownList ddlStore = e.Row.FindControl("DDStore") as DropDownList;
             TextBox txtUseQty = e.Row.FindControl("txtUseQty") as TextBox;
@@ -849,7 +942,12 @@ namespace SBMS
                 }
                 else
                 {
-                    ddlStore.SelectedIndex = 0;
+                    // Persisted store isn't in the item's linked-store list (e.g. a WIP
+                    // "Draw from" store). Add it so the selection renders and the
+                    // manufacture post (which reads the store code) draws from it.
+                    ListItem added = new ListItem(item.StoreCodeFrom, item.StoreCodeFrom);
+                    ddlStore.Items.Add(added);
+                    ddlStore.SelectedValue = added.Value;
                 }
             }
             else
@@ -947,21 +1045,6 @@ namespace SBMS
                 ToolTip = "Add line to works order details"
             };
             e.Row.Cells[3].Controls.Add(btnSave);
-
-            // Add Auto-fill button if enabled
-            if (CurrentUser.UseAutoManf)
-            {
-                LinkButton btnAutoManf = new LinkButton
-                {
-                    ID = $"btnAutoManf_{e.Row.RowIndex}",
-                    Text = " Auto-fill Use Quantities",
-                    CssClass = "icon fa-fill buttonRed",
-                    CommandName = "SaveAutoManf",
-                    ToolTip = "Auto full all Use-Qty fields with required quantities."
-                };
-                e.Row.Cells[6].ColumnSpan = 3;
-                e.Row.Cells[6].Controls.Add(btnAutoManf);
-            }
         }
 
         protected void btnLotNum_Click(object sender, EventArgs e)
@@ -1763,6 +1846,9 @@ namespace SBMS
                 }
 
                 _db.SaveChanges();
+                // Persist the header (Reference/Notes/Due Date/Status) on every line save,
+                // not only when "Save Works Order" is clicked.
+                SaveWO();
                 LoadWOLines();
                 AlertHelper.ShowSweetAlert(this, "Successfully Saved.", "success");
             }
@@ -1976,10 +2062,53 @@ namespace SBMS
 
         protected void lbtnWOPrint_Click(object sender, EventArgs e)
         {
+            // A Works Order must carry a Reference before it can be printed.
+            using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+            {
+                var wo = _db.WorksOrderHeaders.FirstOrDefault(x => x.CompanyID == CoID && x.ID == woid);
+                if (wo == null || string.IsNullOrWhiteSpace(wo.Reference))
+                {
+                    AlertHelper.ShowSweetAlert(this, "Please capture a Reference before printing this Works Order.", "warning");
+                    return;
+                }
+            }
             Response.Redirect($"~/WorksOrderPDFCreate.aspx?woid={woid}", true);
         }
 
         #region Part Manufacture
+
+        // Adds the Auto-Manufacture button to an open line's pane header, next to Part
+        // Manufacture. Auto-fills that line's component Use-Qty (and store, for no-lot
+        // companies, from the Draw-from store). Enabled by the UseAutoManf company flag.
+        private void AddAutoManufactureButton(AccordionPane pane, WorksOrderLine line)
+        {
+            if (!CurrentUser.UseAutoManf) return;
+
+            LinkButton btnAuto = new LinkButton
+            {
+                ID = $"btnAutoManfH_{line.LineID}",
+                Text = " Auto-Manufacture",
+                CssClass = "icon fa-fill buttonSage",
+                CommandArgument = line.LineID.ToString(),
+                ToolTip = "Auto-fill all component Use-Qty fields for this line."
+            };
+            btnAuto.Attributes.Add("style", "float:right; margin:0 0.5em 0 0; padding:0.15em 0.6em; font-size:0.8em; line-height:1.6em");
+            btnAuto.Click += lbtnAutoManfHeader_Click;
+            pane.HeaderContainer.Controls.Add(btnAuto);
+        }
+
+        // Header Auto-Manufacture click: locate this line's component grid and auto-fill it.
+        protected void lbtnAutoManfHeader_Click(object sender, EventArgs e)
+        {
+            LinkButton btn = sender as LinkButton;
+            if (btn == null) return;
+            AccordionPane pane = FindParentAccordionPane(btn);
+            if (pane == null) return;
+            foreach (Control ctl in pane.ContentContainer.Controls)
+            {
+                if (ctl is GridView grid) { RunAutoFill(grid); break; }
+            }
+        }
 
         // Adds the Part Manufacture button to an open line's accordion pane header.
         // CommandArgument carries the LineID so the click handler knows exactly which
@@ -2325,36 +2454,197 @@ namespace SBMS
             }
             else if (e.CommandName == "SaveAutoManf")
             {
-                GridView grid = (GridView)sender;
-                LoadActiveLotNums();
+                RunAutoFill((GridView)sender);
+            }
+        }
+
+        // Auto-fill a finished-good line's components. No-lot companies fill from the single
+        // "Draw from" store with an all-or-nothing on-hand check; lot-tracked companies keep
+        // the original per-line behaviour.
+        private void RunAutoFill(GridView grid)
+        {
+            if (grid == null) return;
+
+            if (!CurrentUser.CompanyUseLotNumbers)
+            {
+                AutoFillFromDrawStore(grid);
+                return;
+            }
+
+            LoadActiveLotNums();
+            foreach (GridViewRow gvr in grid.Rows)
+            {
+                TextBox txtUseQty = gvr.FindControl("txtUseQty") as TextBox;
+                txtUseQty.Text = ApiUrlCall.NumberToDecimal(Convert.ToDecimal(gvr.Cells[5].Text, CultureInfo.InvariantCulture), CurrentUser.CompanyDecPlaces).ToString();
+
+                DropDownList ddStore = gvr.FindControl("DDStore") as DropDownList;
+                if (ddStore.Items.Count > 2)
+                {
+                    ddStore.SelectedIndex = 1; // Select the second item if only two items are present
+                    long ItemID = Convert.ToInt64(gvr.Cells[1].Text);
+                    string StoreCode = ddStore.SelectedItem.Text;
+                    var LotNums = _ActiveLotNums.Where(x => x.ItemId == ItemID && x.StoreCode == StoreCode).ToList();
+
+                    long LineID = Convert.ToInt64(gvr.Cells[0].Text);
+                    using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+                    {
+                        var WOLine = _db.WorksOrderRMLines.Where(x => x.LineID == LineID).FirstOrDefault();
+                        WOLine.StoreCodeFrom = ddStore.SelectedItem.Text;
+                        WOLine.UseQty = Convert.ToDecimal(txtUseQty.Text, CultureInfo.InvariantCulture);
+
+                        Label txtUnitCost = gvr.FindControl("txtUnitCost") as Label;
+                        txtUnitCost.Text = Convert.ToDouble(LotNums[0].TotalUnitPriceExclInclAdd).ToString("N2");
+                        WOLine.UnitCost = Convert.ToDecimal(txtUnitCost.Text, CultureInfo.InvariantCulture);
+
+                        TextBox txtScrapQty = gvr.FindControl("txtScrapQty") as TextBox;
+                        WOLine.ScrapQty = Convert.ToDecimal(txtScrapQty.Text, CultureInfo.InvariantCulture);
+                        _db.SaveChanges();
+                    }
+                }
+            }
+        }
+
+        // Read-only availability on the components grid: total on-hand (all stores) and the
+        // shortfall (Required - On-hand). Sub-assemblies (IsFromBOM) that are short are tagged
+        // "(make)" since the fix is to manufacture them, not buy more. Display only.
+        protected void GridUseBom_RowDataBound(object sender, GridViewRowEventArgs e)
+        {
+            if (e.Row.RowType != DataControlRowType.DataRow) return;
+            var rml = e.Row.DataItem as WorksOrderRMLine;
+            if (rml == null) return;
+
+            Label lblOnHand = e.Row.FindControl("lblOnHand") as Label;
+            Label lblShort = e.Row.FindControl("lblShort") as Label;
+            if (lblOnHand == null && lblShort == null) return;
+
+            long itemId = rml.SelectionId;
+            decimal required = rml.Quantity ?? 0;
+
+            decimal onHand;
+            bool isFromBom;
+            using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+            {
+                onHand = _db.ItemTransactions
+                    .Where(x => x.CompanyID == CoID && x.ItemID == itemId)
+                    .Select(x => (decimal?)x.Qty).DefaultIfEmpty(0).Sum() ?? 0;
+                isFromBom = _db.ItemsMasters
+                    .Where(x => x.CompanyID == CoID && x.ID == itemId)
+                    .Select(x => x.IsFromBOM).FirstOrDefault() ?? false;
+            }
+            onHand = ApiUrlCall.NumberToDecimal(onHand, CurrentUser.CompanyDecPlaces);
+            decimal shortQty = required - onHand;
+
+            if (lblOnHand != null) lblOnHand.Text = onHand.ToString("N2");
+
+            if (shortQty > 0)
+            {
+                // Highlight the On Hand cell (consistent with the manufacture grid).
+                TableCell ohCell = lblOnHand != null ? lblOnHand.Parent as TableCell : null;
+                if (ohCell != null)
+                {
+                    ohCell.BackColor = System.Drawing.Color.MistyRose;
+                    ohCell.ForeColor = System.Drawing.Color.Firebrick;
+                    ohCell.Font.Bold = true;
+                }
+                if (lblShort != null) lblShort.Text = shortQty.ToString("N2") + (isFromBom ? " (make)" : "");
+            }
+            else if (lblShort != null)
+            {
+                lblShort.Text = "-";
+            }
+        }
+
+        // No-lot Auto-fill: sets every component line to draw from the chosen "Draw from"
+        // store at its required quantity, but only after confirming on-hand covers ALL
+        // components at that store. If any are short, nothing is changed and the operator
+        // is told exactly what is short (so they can manufacture the sub-assembly first).
+        private void AutoFillFromDrawStore(GridView grid)
+        {
+            long drawStoreId = 0;
+            long.TryParse(ddlDrawFrom.SelectedValue, out drawStoreId);
+            if (drawStoreId == 0)
+            {
+                AlertHelper.ShowSweetAlert(this, "Select a 'Draw from' store before auto-filling.", "warning");
+                return;
+            }
+            string drawStoreCode = ddlDrawFrom.SelectedItem.Text;
+
+            using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+            {
+                // Pass 1 - coverage check across every component row (all-or-nothing).
+                var shortfalls = new List<string>();
                 foreach (GridViewRow gvr in grid.Rows)
                 {
-                    TextBox txtUseQty = gvr.FindControl("txtUseQty") as TextBox;
-                    txtUseQty.Text = ApiUrlCall.NumberToDecimal(Convert.ToDecimal(gvr.Cells[5].Text, CultureInfo.InvariantCulture), CurrentUser.CompanyDecPlaces).ToString();
+                    if (gvr.RowType != DataControlRowType.DataRow) continue;
+                    long itemId = Convert.ToInt64(gvr.Cells[1].Text);
+                    decimal required = Convert.ToDecimal(gvr.Cells[5].Text, CultureInfo.InvariantCulture);
+                    if (required <= 0) continue;
 
-                    DropDownList ddStore = gvr.FindControl("DDStore") as DropDownList;
-                    if (ddStore.Items.Count > 2)
+                    decimal onHand = _db.ItemTransactions
+                        .Where(x => x.CompanyID == CoID && x.ItemID == itemId && x.ToID == drawStoreId)
+                        .Select(x => (decimal?)x.Qty).DefaultIfEmpty(0).Sum() ?? 0;
+
+                    if (onHand < required)
                     {
-                        ddStore.SelectedIndex = 1; // Select the second item if only two items are present
-                        long ItemID = Convert.ToInt64(gvr.Cells[1].Text);
-                        string StoreCode = ddStore.SelectedItem.Text;
-                        var LotNums = _ActiveLotNums.Where(x => x.ItemId == ItemID && x.StoreCode == StoreCode).ToList();
+                        shortfalls.Add($"{gvr.Cells[2].Text}: need {required:N2}, only {onHand:N2} in {drawStoreCode}");
+                    }
+                }
+                if (shortfalls.Count > 0)
+                {
+                    AlertHelper.ShowSweetAlert(this,
+                        "Insufficient stock in " + drawStoreCode + " - nothing was filled:<br/>" + string.Join("<br/>", shortfalls),
+                        "error");
+                    return;
+                }
 
-                        long LineID = Convert.ToInt64(gvr.Cells[0].Text);
-                        using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
-                        {
-                            var WOLine = _db.WorksOrderRMLines.Where(x => x.LineID == LineID).FirstOrDefault();
-                            WOLine.StoreCodeFrom = ddStore.SelectedItem.Text;
-                            WOLine.UseQty = Convert.ToDecimal(txtUseQty.Text, CultureInfo.InvariantCulture);
+                // Pass 2 - all covered: fill the grid controls and persist each line.
+                foreach (GridViewRow gvr in grid.Rows)
+                {
+                    if (gvr.RowType != DataControlRowType.DataRow) continue;
+                    long itemId = Convert.ToInt64(gvr.Cells[1].Text);
+                    long lineId = Convert.ToInt64(gvr.Cells[0].Text);
+                    decimal required = Convert.ToDecimal(gvr.Cells[5].Text, CultureInfo.InvariantCulture);
 
-                            Label txtUnitCost = gvr.FindControl("txtUnitCost") as Label;
-                            txtUnitCost.Text = Convert.ToDouble(LotNums[0].TotalUnitPriceExclInclAdd).ToString("N2");
-                            WOLine.UnitCost = Convert.ToDecimal(txtUnitCost.Text, CultureInfo.InvariantCulture);
+                    TextBox txtUseQty = gvr.FindControl("txtUseQty") as TextBox;
+                    if (txtUseQty != null)
+                        txtUseQty.Text = ApiUrlCall.NumberToDecimal(required, CurrentUser.CompanyDecPlaces).ToString();
 
-                            TextBox txtScrapQty = gvr.FindControl("txtScrapQty") as TextBox;
-                            WOLine.ScrapQty = Convert.ToDecimal(txtScrapQty.Text, CultureInfo.InvariantCulture);
-                            _db.SaveChanges();
-                        }
+                    // Force the row's store dropdown to the draw-from store (add it if the
+                    // item wasn't otherwise linked to that store) so the Manufacture post
+                    // draws from it.
+                    DropDownList ddStore = gvr.FindControl("DDStore") as DropDownList;
+                    if (ddStore != null)
+                    {
+                        if (ddStore.Items.FindByValue(drawStoreId.ToString()) == null)
+                            ddStore.Items.Add(new ListItem(drawStoreCode, drawStoreId.ToString()));
+                        ddStore.SelectedValue = drawStoreId.ToString();
+                    }
+
+                    // Unit cost: latest ledger cost at the draw store, else item average.
+                    decimal unitCost = _db.ItemTransactions
+                        .Where(x => x.CompanyID == CoID && x.ItemID == itemId && x.ToID == drawStoreId)
+                        .OrderByDescending(x => x.TrnID)
+                        .Select(x => x.TotalUnitPriceExclInclAdd ?? 0)
+                        .FirstOrDefault();
+                    if (unitCost == 0)
+                        unitCost = _db.ItemsMasters.Where(x => x.CompanyID == CoID && x.ID == itemId)
+                                       .Select(x => x.AverageCost ?? 0).FirstOrDefault();
+
+                    Label txtUnitCost = gvr.FindControl("txtUnitCost") as Label;
+                    if (txtUnitCost != null) txtUnitCost.Text = ((double)unitCost).ToString("N2");
+
+                    decimal scrapQty = 0;
+                    TextBox txtScrapQty = gvr.FindControl("txtScrapQty") as TextBox;
+                    if (txtScrapQty != null) decimal.TryParse(txtScrapQty.Text, out scrapQty);
+
+                    var WOLine = _db.WorksOrderRMLines.FirstOrDefault(x => x.LineID == lineId);
+                    if (WOLine != null)
+                    {
+                        WOLine.StoreCodeFrom = drawStoreCode;
+                        WOLine.UseQty = required;
+                        WOLine.UnitCost = unitCost;
+                        WOLine.ScrapQty = scrapQty;
+                        _db.SaveChanges();
                     }
                 }
             }
@@ -3740,6 +4030,19 @@ namespace SBMS
                         itemlotnum = hiddenFieldH.Value.Split('|')[4];
                     }
 
+                    // Guard: never re-post a line that has already been manufactured. SentKeys
+                    // only dedupes within one page life, so a WO re-opened later could otherwise
+                    // draw the same components to Sage again. A completed line is skipped entirely
+                    // (its FG produce + RM draws); open balance lines are unaffected.
+                    int lineGuardId = Convert.ToInt32(lineID);
+                    using (SBMSEntities _dbLineGuard = new SBMSEntities(Config.GetConnectionString()))
+                    {
+                        var lineGuard = _dbLineGuard.WorksOrderLines
+                            .FirstOrDefault(x => x.CompanyID == CurrentUser.CoID && x.LineID == lineGuardId);
+                        if (lineGuard == null || lineGuard.Complete == true || lineGuard.Active == false)
+                            continue;
+                    }
+
                     // FIX 2: Always assign ItemID outside the SentKeys check
                     ItemID = Convert.ToInt64(itemselectionid);
 
@@ -3905,6 +4208,21 @@ namespace SBMS
                                     }
                                 }
                             }
+                        }
+
+                        // Bulletproof: mark THIS line complete in the SAME context as its draws,
+                        // so a failure on a later pane can't leave an already-drawn line open and
+                        // re-drawable. With the per-line skip guard above, a finished line can never
+                        // be re-posted to Sage.
+                        var doneLine = _db.WorksOrderLines.FirstOrDefault(x => x.CompanyID == CurrentUser.CoID && x.LineID == lineGuardId);
+                        if (doneLine != null && doneLine.Complete != true)
+                        {
+                            doneLine.UseQty = itemqty;
+                            doneLine.Active = false;
+                            doneLine.Complete = true;
+                            doneLine.CompleteDate = DateTime.Now;
+                            doneLine.CompleteBy = CurrentUser.RoleID;
+                            _db.SaveChanges();
                         }
                     }
                 }
