@@ -49,12 +49,12 @@
             <PropertyRef Name="BomHID" />
           </Key>
           <Property Name="BomHID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
-          <Property Name="BOMCode" Type="varchar" MaxLength="50" Nullable="false" />
+          <Property Name="BOMCode" Type="varchar" MaxLength="50" />
           <Property Name="BomDescript" Type="varchar" MaxLength="100" />
           <Property Name="FGID" Type="bigint" />
           <Property Name="FGCode" Type="varchar" MaxLength="50" />
           <Property Name="FGDescript" Type="varchar" MaxLength="100" />
-          <Property Name="StoreCode" Type="varchar" MaxLength="15" />
+          <Property Name="StoreCode" Type="varchar" MaxLength="6" />
           <Property Name="AddCost01" Type="decimal" Precision="18" Scale="4" />
           <Property Name="AddCost02" Type="decimal" Precision="18" Scale="4" />
           <Property Name="AddCost03" Type="decimal" Precision="18" Scale="4" />
@@ -149,10 +149,10 @@
           <Property Name="ShowManfCosts" Type="bit" Nullable="false" />
           <Property Name="SageWeightField" Type="varchar" MaxLength="50" />
           <Property Name="AllowSystemLotNumbers" Type="bit" Nullable="false" />
+          <Property Name="BinSegments" Type="varchar" MaxLength="200" />
           <Property Name="AllowScannerCount" Type="bit" Nullable="false" />
           <Property Name="AllowScannerReceive" Type="bit" Nullable="false" />
           <Property Name="AllowScannerPutAway" Type="bit" Nullable="false" />
-          <Property Name="BinSegments" Type="varchar" MaxLength="200" />
           <Property Name="BinDelimiter" Type="varchar" MaxLength="3" />
         </EntityType>
         <EntityType Name="DelivMethods">
@@ -163,63 +163,6 @@
           <Property Name="CompanyID" Type="bigint" />
           <Property Name="DelivMethod" Type="varchar" MaxLength="50" />
           <Property Name="DelActive" Type="bit" Nullable="false" />
-        </EntityType>
-        <EntityType Name="DITransactionsTbl">
-          <Key>
-            <PropertyRef Name="ID" />
-          </Key>
-          <Property Name="ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
-          <Property Name="TransID" Type="varchar" MaxLength="20" />
-          <Property Name="From_Document" Type="varchar" MaxLength="20" />
-          <Property Name="Number" Type="varchar" MaxLength="20" />
-          <Property Name="Type" Type="varchar" MaxLength="20" />
-          <Property Name="Date" Type="date" />
-          <Property Name="CustomerID" Type="varchar" MaxLength="100" />
-          <Property Name="Customer_Name" Type="varchar" MaxLength="100" />
-          <Property Name="Sales_Rep" Type="varchar" MaxLength="100" />
-          <Property Name="Reference" Type="varchar" MaxLength="100" />
-          <Property Name="Item" Type="varchar" MaxLength="50" />
-          <Property Name="Description" Type="varchar" MaxLength="100" />
-          <Property Name="Quantity" Type="real" />
-          <Property Name="Unit_Price_Excl" Type="real" />
-          <Property Name="Discount" Type="real" />
-          <Property Name="Exclusive" Type="real" />
-          <Property Name="Tax" Type="real" />
-          <Property Name="Total" Type="real" />
-          <Property Name="Doc_Discount_Perc" Type="real" />
-          <Property Name="Doc_Discount_Amount" Type="real" />
-          <Property Name="Nett_Line_Total" Type="real" />
-          <Property Name="Analysis_Category1" Type="varchar" MaxLength="100" />
-          <Property Name="Analysis_Category2" Type="varchar" MaxLength="100" />
-          <Property Name="Analysis_Category3" Type="varchar" MaxLength="100" />
-          <Property Name="Line_Cost" Type="varchar" MaxLength="100" />
-          <Property Name="Year_Month" Type="nvarchar" MaxLength="20" />
-          <Property Name="Year" Type="nvarchar" MaxLength="20" />
-          <Property Name="Year_Financial" Type="nvarchar" MaxLength="20" />
-          <Property Name="Line_GP" Type="real" />
-          <Property Name="CoID" Type="nvarchar" MaxLength="100" />
-          <Property Name="isConvertedQuote" Type="int" />
-          <Property Name="LineTypeID" Type="int" />
-          <Property Name="LineType" Type="varchar" MaxLength="50" />
-          <Property Name="CoName" Type="nvarchar" MaxLength="100" />
-          <Property Name="WeekNumber" Type="real" />
-          <Property Name="DocumentMessage" Type="varchar" MaxLength="8000" />
-          <Property Name="LineMessage" Type="varchar" MaxLength="400" />
-          <Property Name="QtyRemain" Type="real" />
-          <Property Name="ValueRemain" Type="real" />
-          <Property Name="StatusID" Type="real" />
-          <Property Name="Status" Type="varchar" MaxLength="50" />
-          <Property Name="YearWeek" Type="real" />
-          <Property Name="Physical" Type="varchar" MaxLength="1" />
-          <Property Name="DateDue" Type="date" />
-          <Property Name="DeliveryAddress01" Type="varchar" MaxLength="100" />
-          <Property Name="DeliveryAddress02" Type="varchar" MaxLength="100" />
-          <Property Name="DeliveryAddress03" Type="varchar" MaxLength="100" />
-          <Property Name="DeliveryAddress04" Type="varchar" MaxLength="100" />
-          <Property Name="DeliveryAddress05" Type="varchar" MaxLength="100" />
-          <Property Name="UserDefinedField1" Type="varchar" MaxLength="100" />
-          <Property Name="UserDefinedField2" Type="varchar" MaxLength="100" />
-          <Property Name="UserDefinedField3" Type="varchar" MaxLength="100" />
         </EntityType>
         <EntityType Name="DIUpdateLog">
           <Key>
@@ -363,7 +306,7 @@
           <Property Name="ReceiveQty" Type="decimal" Precision="18" Scale="4" />
           <Property Name="ToReceive" Type="bit" />
           <Property Name="ReceiveComplete" Type="bit" />
-          <Property Name="StoreCode" Type="varchar" MaxLength="15" />
+          <Property Name="StoreCode" Type="varchar" MaxLength="10" />
           <Property Name="LotNumber" Type="varchar" MaxLength="50" />
           <Property Name="ReceiveTotalExcl" Type="decimal" Precision="18" Scale="4" />
           <Property Name="ReceiveTotalTax" Type="decimal" Precision="18" Scale="4" />
@@ -579,6 +522,9 @@
           <Property Name="TransferID" Type="bigint" />
           <Property Name="TrfReference" Type="varchar" MaxLength="250" />
           <Property Name="TrfCompleteDate" Type="datetime" />
+          <Property Name="TrfAddCost" Type="decimal" Precision="18" Scale="4" />
+          <Property Name="TrfAddCostReason" Type="varchar" MaxLength="100" />
+          <Property Name="TrfAddCostSageUpd" Type="bit" />
         </EntityType>
         <EntityType Name="ItemTransferLines">
           <Key>
@@ -627,7 +573,7 @@
           <Property Name="AnalysisCategoryId2" Type="bigint" />
           <Property Name="AnalysisCategoryId3" Type="bigint" />
           <Property Name="UnitCost" Type="decimal" Precision="18" Scale="4" />
-          <Property Name="StoreCodeFrom" Type="varchar" MaxLength="15" />
+          <Property Name="StoreCodeFrom" Type="varchar" MaxLength="10" />
           <Property Name="LinePickDate" Type="date" />
           <Property Name="Physical" Type="bit" />
           <Property Name="isKit" Type="bit" />
@@ -698,7 +644,7 @@
           <Property Name="FGID" Type="bigint" />
           <Property Name="FGCode" Type="varchar" MaxLength="50" />
           <Property Name="FGDescript" Type="varchar" MaxLength="100" />
-          <Property Name="StoreCode" Type="varchar" MaxLength="15" />
+          <Property Name="StoreCode" Type="varchar" MaxLength="6" />
           <Property Name="AddCost01" Type="decimal" Precision="18" Scale="4" />
           <Property Name="AddCost02" Type="decimal" Precision="18" Scale="4" />
           <Property Name="AddCost03" Type="decimal" Precision="18" Scale="4" />
@@ -805,7 +751,7 @@
           <Property Name="Quantity" Type="decimal" Precision="18" Scale="4" />
           <Property Name="Unit" Type="varchar" MaxLength="20" />
           <Property Name="Comments" Type="varchar" MaxLength="400" />
-          <Property Name="StoreCodeFrom" Type="varchar" MaxLength="15" />
+          <Property Name="StoreCodeFrom" Type="varchar" MaxLength="10" />
           <Property Name="PickBy" Type="int" />
           <Property Name="PickTime" Type="datetime" />
           <Property Name="PickQty" Type="decimal" Precision="18" Scale="4" />
@@ -1012,7 +958,7 @@
           </Key>
           <Property Name="StoreID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="CompanyID" Type="bigint" />
-          <Property Name="StoreCode" Type="varchar" MaxLength="15" />
+          <Property Name="StoreCode" Type="varchar" MaxLength="6" />
           <Property Name="StoreDescript" Type="varchar" MaxLength="50" />
           <Property Name="StoreActive" Type="bit" />
           <Property Name="StorePerm" Type="bit" Nullable="false" />
@@ -1062,7 +1008,7 @@
           <Property Name="ReceiveQty" Type="decimal" Precision="18" Scale="4" />
           <Property Name="ToReceive" Type="bit" />
           <Property Name="ReceiveComplete" Type="bit" />
-          <Property Name="StoreCode" Type="varchar" MaxLength="15" />
+          <Property Name="StoreCode" Type="varchar" MaxLength="10" />
           <Property Name="LotNumber" Type="varchar" MaxLength="50" />
           <Property Name="ReceiveTotalExcl" Type="decimal" Precision="18" Scale="4" />
           <Property Name="ReceiveTotalTax" Type="decimal" Precision="18" Scale="4" />
@@ -1073,7 +1019,7 @@
           <Property Name="AddCostsAmount" Type="decimal" Precision="18" Scale="2" Nullable="false" />
           <Property Name="AddCostsReason" Type="varchar" MaxLength="100" />
           <Property Name="ExchRate" Type="decimal" Precision="18" Scale="4" Nullable="false" />
-          <Property Name="RejectQty" Type="decimal" Precision="18" Scale="4" />
+          <Property Name="RejectQty" Type="decimal" Precision="18" Scale="4" Nullable="false" />
         </EntityType>
         <EntityType Name="UsersMaster">
           <Key>
@@ -1171,7 +1117,7 @@
           <Property Name="AnalysisCategoryId2" Type="bigint" />
           <Property Name="AnalysisCategoryId3" Type="bigint" />
           <Property Name="UnitCost" Type="decimal" Precision="18" Scale="4" />
-          <Property Name="StoreCodeFrom" Type="varchar" MaxLength="15" />
+          <Property Name="StoreCodeFrom" Type="varchar" MaxLength="10" />
           <Property Name="LinePickDate" Type="date" />
           <Property Name="Physical" Type="bit" />
           <Property Name="isKit" Type="bit" />
@@ -1402,7 +1348,6 @@
           <EntitySet Name="BundlesLines" EntityType="Self.BundlesLines" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="CompanyMaster" EntityType="Self.CompanyMaster" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="DelivMethods" EntityType="Self.DelivMethods" Schema="dbo" store:Type="Tables" />
-          <EntitySet Name="DITransactionsTbl" EntityType="Self.DITransactionsTbl" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="DIUpdateLog" EntityType="Self.DIUpdateLog" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="DocHeader" EntityType="Self.DocHeader" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="DocHeaderAttachment" EntityType="Self.DocHeaderAttachment" Schema="dbo" store:Type="Tables" />
@@ -1463,12 +1408,12 @@
             <PropertyRef Name="BomHID" />
           </Key>
           <Property Name="BomHID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="BOMCode" Type="String" MaxLength="50" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="BOMCode" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="BomDescript" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
           <Property Name="FGID" Type="Int64" />
           <Property Name="FGCode" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="FGDescript" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
-          <Property Name="StoreCode" Type="String" MaxLength="15" FixedLength="false" Unicode="false" />
+          <Property Name="StoreCode" Type="String" MaxLength="6" FixedLength="false" Unicode="false" />
           <Property Name="AddCost01" Type="Decimal" Precision="18" Scale="4" />
           <Property Name="AddCost02" Type="Decimal" Precision="18" Scale="4" />
           <Property Name="AddCost03" Type="Decimal" Precision="18" Scale="4" />
@@ -1592,7 +1537,7 @@
           <Property Name="ReceiveQty" Type="Decimal" Precision="18" Scale="4" />
           <Property Name="ToReceive" Type="Boolean" />
           <Property Name="ReceiveComplete" Type="Boolean" />
-          <Property Name="StoreCode" Type="String" MaxLength="15" FixedLength="false" Unicode="false" />
+          <Property Name="StoreCode" Type="String" MaxLength="10" FixedLength="false" Unicode="false" />
           <Property Name="LotNumber" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="ReceiveTotalExcl" Type="Decimal" Precision="18" Scale="4" />
           <Property Name="ReceiveTotalTax" Type="Decimal" Precision="18" Scale="4" />
@@ -1806,7 +1751,7 @@
           <Property Name="AnalysisCategoryId2" Type="Int64" />
           <Property Name="AnalysisCategoryId3" Type="Int64" />
           <Property Name="UnitCost" Type="Decimal" Precision="18" Scale="4" />
-          <Property Name="StoreCodeFrom" Type="String" MaxLength="15" FixedLength="false" Unicode="false" />
+          <Property Name="StoreCodeFrom" Type="String" MaxLength="10" FixedLength="false" Unicode="false" />
           <Property Name="LinePickDate" Type="DateTime" Precision="0" />
           <Property Name="Physical" Type="Boolean" />
           <Property Name="isKit" Type="Boolean" />
@@ -1846,7 +1791,7 @@
           <Property Name="FGID" Type="Int64" />
           <Property Name="FGCode" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="FGDescript" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
-          <Property Name="StoreCode" Type="String" MaxLength="15" FixedLength="false" Unicode="false" />
+          <Property Name="StoreCode" Type="String" MaxLength="6" FixedLength="false" Unicode="false" />
           <Property Name="AddCost01" Type="Decimal" Precision="18" Scale="4" />
           <Property Name="AddCost02" Type="Decimal" Precision="18" Scale="4" />
           <Property Name="AddCost03" Type="Decimal" Precision="18" Scale="4" />
@@ -1911,7 +1856,7 @@
           <Property Name="Quantity" Type="Decimal" Precision="18" Scale="4" />
           <Property Name="Unit" Type="String" MaxLength="20" FixedLength="false" Unicode="false" />
           <Property Name="Comments" Type="String" MaxLength="400" FixedLength="false" Unicode="false" />
-          <Property Name="StoreCodeFrom" Type="String" MaxLength="15" FixedLength="false" Unicode="false" />
+          <Property Name="StoreCodeFrom" Type="String" MaxLength="10" FixedLength="false" Unicode="false" />
           <Property Name="PickBy" Type="Int32" />
           <Property Name="PickTime" Type="DateTime" Precision="3" />
           <Property Name="PickQty" Type="Decimal" Precision="18" Scale="4" />
@@ -2014,7 +1959,7 @@
           <Property Name="ReceiveQty" Type="Decimal" Precision="18" Scale="4" />
           <Property Name="ToReceive" Type="Boolean" />
           <Property Name="ReceiveComplete" Type="Boolean" />
-          <Property Name="StoreCode" Type="String" MaxLength="15" FixedLength="false" Unicode="false" />
+          <Property Name="StoreCode" Type="String" MaxLength="10" FixedLength="false" Unicode="false" />
           <Property Name="LotNumber" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="ReceiveTotalExcl" Type="Decimal" Precision="18" Scale="4" />
           <Property Name="ReceiveTotalTax" Type="Decimal" Precision="18" Scale="4" />
@@ -2025,7 +1970,7 @@
           <Property Name="AddCostsAmount" Type="Decimal" Precision="18" Scale="2" Nullable="false" />
           <Property Name="AddCostsReason" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
           <Property Name="ExchRate" Type="Decimal" Precision="18" Scale="4" Nullable="false" />
-          <Property Name="RejectQty" Type="Decimal" Precision="18" Scale="4" />
+          <Property Name="RejectQty" Type="Decimal" Precision="18" Scale="4" Nullable="false" />
         </EntityType>
         <EntityType Name="UsersMaster">
           <Key>
@@ -2241,14 +2186,12 @@
             <End Role="DocHeaderAttachment" EntitySet="DocHeaderAttachments" />
             <End Role="DocHeaderAttachment1" EntitySet="DocHeaderAttachments" />
           </AssociationSet>
-          <EntitySet Name="DITransactionsTbls" EntityType="SBMSModel.DITransactionsTbl" />
           <EntitySet Name="DIUpdateLogs" EntityType="SBMSModel.DIUpdateLog" />
           <EntitySet Name="ItemTransferLines" EntityType="SBMSModel.ItemTransferLine" />
           <AssociationSet Name="FK_ItemTransferLines_ItemTransferLines" Association="SBMSModel.FK_ItemTransferLines_ItemTransferLines">
             <End Role="ItemTransferLine" EntitySet="ItemTransferLines" />
             <End Role="ItemTransferLine1" EntitySet="ItemTransferLines" />
           </AssociationSet>
-          <EntitySet Name="ItemTransferHeaders" EntityType="SBMSModel.ItemTransferHeader" />
           <FunctionImport Name="GetKitLinesFromKitHeaderID1" ReturnType="Collection(SBMSModel.GetKitLinesFromKitHeaderID_Result1)">
             <Parameter Name="KitHID" Mode="In" Type="Int32" />
             <Parameter Name="coid" Mode="In" Type="Int64" />
@@ -2285,6 +2228,7 @@
           <EntitySet Name="Stores" EntityType="SBMSModel.Store" />
           <EntitySet Name="ReceivingOutstandings" EntityType="SBMSModel.ReceivingOutstanding" />
           <EntitySet Name="CompanyMasters" EntityType="SBMSModel.CompanyMaster" />
+          <EntitySet Name="ItemTransferHeaders" EntityType="SBMSModel.ItemTransferHeader" />
         </EntityContainer>
         <ComplexType Name="GetActiveLotNumbersLinkedToStores_Result">
           <Property Type="String" Name="LotNumber" Nullable="true" MaxLength="50" />
@@ -2920,7 +2864,7 @@
           <Property Name="AnalysisCategoryId2" Type="Int64" />
           <Property Name="AnalysisCategoryId3" Type="Int64" />
           <Property Name="UnitCost" Type="Decimal" Precision="18" Scale="4" />
-          <Property Name="StoreCodeFrom" Type="String" MaxLength="15" FixedLength="false" Unicode="false" />
+          <Property Name="StoreCodeFrom" Type="String" MaxLength="10" FixedLength="false" Unicode="false" />
           <Property Name="LinePickDate" Type="DateTime" Precision="0" />
           <Property Name="Physical" Type="Boolean" />
           <Property Name="isKit" Type="Boolean" />
@@ -3124,63 +3068,6 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
-        <EntityType Name="DITransactionsTbl">
-          <Key>
-            <PropertyRef Name="ID" />
-          </Key>
-          <Property Name="ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="TransID" Type="String" MaxLength="20" FixedLength="false" Unicode="false" />
-          <Property Name="From_Document" Type="String" MaxLength="20" FixedLength="false" Unicode="false" />
-          <Property Name="Number" Type="String" MaxLength="20" FixedLength="false" Unicode="false" />
-          <Property Name="Type" Type="String" MaxLength="20" FixedLength="false" Unicode="false" />
-          <Property Name="Date" Type="DateTime" Precision="0" />
-          <Property Name="CustomerID" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
-          <Property Name="Customer_Name" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
-          <Property Name="Sales_Rep" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
-          <Property Name="Reference" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
-          <Property Name="Item" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
-          <Property Name="Description" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
-          <Property Name="Quantity" Type="Single" />
-          <Property Name="Unit_Price_Excl" Type="Single" />
-          <Property Name="Discount" Type="Single" />
-          <Property Name="Exclusive" Type="Single" />
-          <Property Name="Tax" Type="Single" />
-          <Property Name="Total" Type="Single" />
-          <Property Name="Doc_Discount_Perc" Type="Single" />
-          <Property Name="Doc_Discount_Amount" Type="Single" />
-          <Property Name="Nett_Line_Total" Type="Single" />
-          <Property Name="Analysis_Category1" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
-          <Property Name="Analysis_Category2" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
-          <Property Name="Analysis_Category3" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
-          <Property Name="Line_Cost" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
-          <Property Name="Year_Month" Type="String" MaxLength="20" FixedLength="false" Unicode="true" />
-          <Property Name="Year" Type="String" MaxLength="20" FixedLength="false" Unicode="true" />
-          <Property Name="Year_Financial" Type="String" MaxLength="20" FixedLength="false" Unicode="true" />
-          <Property Name="Line_GP" Type="Single" />
-          <Property Name="CoID" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
-          <Property Name="isConvertedQuote" Type="Int32" />
-          <Property Name="LineTypeID" Type="Int32" />
-          <Property Name="LineType" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
-          <Property Name="CoName" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
-          <Property Name="WeekNumber" Type="Single" />
-          <Property Name="DocumentMessage" Type="String" MaxLength="8000" FixedLength="false" Unicode="false" />
-          <Property Name="LineMessage" Type="String" MaxLength="400" FixedLength="false" Unicode="false" />
-          <Property Name="QtyRemain" Type="Single" />
-          <Property Name="ValueRemain" Type="Single" />
-          <Property Name="StatusID" Type="Single" />
-          <Property Name="Status" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
-          <Property Name="YearWeek" Type="Single" />
-          <Property Name="Physical" Type="String" MaxLength="1" FixedLength="false" Unicode="false" />
-          <Property Name="DateDue" Type="DateTime" Precision="0" />
-          <Property Name="DeliveryAddress01" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
-          <Property Name="DeliveryAddress02" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
-          <Property Name="DeliveryAddress03" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
-          <Property Name="DeliveryAddress04" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
-          <Property Name="DeliveryAddress05" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
-          <Property Name="UserDefinedField1" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
-          <Property Name="UserDefinedField2" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
-          <Property Name="UserDefinedField3" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
-        </EntityType>
         <EntityType Name="DIUpdateLog">
           <Key>
             <PropertyRef Name="LogID" />
@@ -3254,25 +3141,6 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
-        <EntityType Name="ItemTransferHeader">
-          <Key>
-            <PropertyRef Name="TrfID" />
-          </Key>
-          <Property Name="TrfID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="CompanyID" Type="Int64" />
-          <Property Name="TrfDate" Type="DateTime" Precision="3" />
-          <Property Name="TrfFromID" Type="Int64" />
-          <Property Name="TrfToID" Type="Int64" />
-          <Property Name="TrfBy" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
-          <Property Name="TrfStatus" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
-          <Property Name="TrfNotes" Type="String" MaxLength="Max" FixedLength="false" Unicode="false" />
-          <Property Name="TrfStarted" Type="Boolean" Nullable="false" />
-          <Property Name="TrfComplete" Type="Boolean" Nullable="false" />
-          <Property Name="TrfActive" Type="Boolean" Nullable="false" />
-          <Property Name="TransferID" Type="Int64" />
-          <Property Name="TrfReference" Type="String" MaxLength="250" FixedLength="false" Unicode="false" />
-          <Property Name="TrfCompleteDate" Type="DateTime" Precision="3" />
-        </EntityType>
         <ComplexType Name="GetKitLinesFromKitHeaderID_Result1">
           <Property Type="String" Name="ItemCode" Nullable="true" MaxLength="50" />
           <Property Type="String" Name="KitCode" Nullable="true" MaxLength="50" />
@@ -3413,7 +3281,7 @@
           </Key>
           <Property Name="StoreID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
           <Property Name="CompanyID" Type="Int64" />
-          <Property Name="StoreCode" Type="String" MaxLength="15" FixedLength="false" Unicode="false" />
+          <Property Name="StoreCode" Type="String" MaxLength="6" FixedLength="false" Unicode="false" />
           <Property Name="StoreDescript" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="StoreActive" Type="Boolean" />
           <Property Name="StorePerm" Type="Boolean" Nullable="false" />
@@ -3500,6 +3368,28 @@
           <Property Name="AllowScannerPutAway" Type="Boolean" Nullable="false" />
           <Property Name="BinSegments" Type="String" MaxLength="200" FixedLength="false" Unicode="false" />
           <Property Name="BinDelimiter" Type="String" MaxLength="3" FixedLength="false" Unicode="false" />
+        </EntityType>
+        <EntityType Name="ItemTransferHeader">
+          <Key>
+            <PropertyRef Name="TrfID" />
+          </Key>
+          <Property Name="TrfID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="CompanyID" Type="Int64" />
+          <Property Name="TrfDate" Type="DateTime" Precision="3" />
+          <Property Name="TrfFromID" Type="Int64" />
+          <Property Name="TrfToID" Type="Int64" />
+          <Property Name="TrfBy" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="TrfStatus" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="TrfNotes" Type="String" MaxLength="Max" FixedLength="false" Unicode="false" />
+          <Property Name="TrfStarted" Type="Boolean" Nullable="false" />
+          <Property Name="TrfComplete" Type="Boolean" Nullable="false" />
+          <Property Name="TrfActive" Type="Boolean" Nullable="false" />
+          <Property Name="TransferID" Type="Int64" />
+          <Property Name="TrfReference" Type="String" MaxLength="250" FixedLength="false" Unicode="false" />
+          <Property Name="TrfCompleteDate" Type="DateTime" Precision="3" />
+          <Property Name="TrfAddCost" Type="Decimal" Precision="18" Scale="4" />
+          <Property Name="TrfAddCostReason" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
+          <Property Name="TrfAddCostSageUpd" Type="Boolean" />
         </EntityType>
         </Schema>
     </edmx:ConceptualModels>
@@ -5109,64 +4999,6 @@
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
-          <EntitySetMapping Name="DITransactionsTbls">
-            <EntityTypeMapping TypeName="SBMSModel.DITransactionsTbl">
-              <MappingFragment StoreEntitySet="DITransactionsTbl">
-                <ScalarProperty Name="UserDefinedField3" ColumnName="UserDefinedField3" />
-                <ScalarProperty Name="UserDefinedField2" ColumnName="UserDefinedField2" />
-                <ScalarProperty Name="UserDefinedField1" ColumnName="UserDefinedField1" />
-                <ScalarProperty Name="DeliveryAddress05" ColumnName="DeliveryAddress05" />
-                <ScalarProperty Name="DeliveryAddress04" ColumnName="DeliveryAddress04" />
-                <ScalarProperty Name="DeliveryAddress03" ColumnName="DeliveryAddress03" />
-                <ScalarProperty Name="DeliveryAddress02" ColumnName="DeliveryAddress02" />
-                <ScalarProperty Name="DeliveryAddress01" ColumnName="DeliveryAddress01" />
-                <ScalarProperty Name="DateDue" ColumnName="DateDue" />
-                <ScalarProperty Name="Physical" ColumnName="Physical" />
-                <ScalarProperty Name="YearWeek" ColumnName="YearWeek" />
-                <ScalarProperty Name="Status" ColumnName="Status" />
-                <ScalarProperty Name="StatusID" ColumnName="StatusID" />
-                <ScalarProperty Name="ValueRemain" ColumnName="ValueRemain" />
-                <ScalarProperty Name="QtyRemain" ColumnName="QtyRemain" />
-                <ScalarProperty Name="LineMessage" ColumnName="LineMessage" />
-                <ScalarProperty Name="DocumentMessage" ColumnName="DocumentMessage" />
-                <ScalarProperty Name="WeekNumber" ColumnName="WeekNumber" />
-                <ScalarProperty Name="CoName" ColumnName="CoName" />
-                <ScalarProperty Name="LineType" ColumnName="LineType" />
-                <ScalarProperty Name="LineTypeID" ColumnName="LineTypeID" />
-                <ScalarProperty Name="isConvertedQuote" ColumnName="isConvertedQuote" />
-                <ScalarProperty Name="CoID" ColumnName="CoID" />
-                <ScalarProperty Name="Line_GP" ColumnName="Line_GP" />
-                <ScalarProperty Name="Year_Financial" ColumnName="Year_Financial" />
-                <ScalarProperty Name="Year" ColumnName="Year" />
-                <ScalarProperty Name="Year_Month" ColumnName="Year_Month" />
-                <ScalarProperty Name="Line_Cost" ColumnName="Line_Cost" />
-                <ScalarProperty Name="Analysis_Category3" ColumnName="Analysis_Category3" />
-                <ScalarProperty Name="Analysis_Category2" ColumnName="Analysis_Category2" />
-                <ScalarProperty Name="Analysis_Category1" ColumnName="Analysis_Category1" />
-                <ScalarProperty Name="Nett_Line_Total" ColumnName="Nett_Line_Total" />
-                <ScalarProperty Name="Doc_Discount_Amount" ColumnName="Doc_Discount_Amount" />
-                <ScalarProperty Name="Doc_Discount_Perc" ColumnName="Doc_Discount_Perc" />
-                <ScalarProperty Name="Total" ColumnName="Total" />
-                <ScalarProperty Name="Tax" ColumnName="Tax" />
-                <ScalarProperty Name="Exclusive" ColumnName="Exclusive" />
-                <ScalarProperty Name="Discount" ColumnName="Discount" />
-                <ScalarProperty Name="Unit_Price_Excl" ColumnName="Unit_Price_Excl" />
-                <ScalarProperty Name="Quantity" ColumnName="Quantity" />
-                <ScalarProperty Name="Description" ColumnName="Description" />
-                <ScalarProperty Name="Item" ColumnName="Item" />
-                <ScalarProperty Name="Reference" ColumnName="Reference" />
-                <ScalarProperty Name="Sales_Rep" ColumnName="Sales_Rep" />
-                <ScalarProperty Name="Customer_Name" ColumnName="Customer_Name" />
-                <ScalarProperty Name="CustomerID" ColumnName="CustomerID" />
-                <ScalarProperty Name="Date" ColumnName="Date" />
-                <ScalarProperty Name="Type" ColumnName="Type" />
-                <ScalarProperty Name="Number" ColumnName="Number" />
-                <ScalarProperty Name="From_Document" ColumnName="From_Document" />
-                <ScalarProperty Name="TransID" ColumnName="TransID" />
-                <ScalarProperty Name="ID" ColumnName="ID" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
           <EntitySetMapping Name="DIUpdateLogs">
             <EntityTypeMapping TypeName="SBMSModel.DIUpdateLog">
               <MappingFragment StoreEntitySet="DIUpdateLog">
@@ -5225,26 +5057,6 @@
                 <ScalarProperty Name="CompanyID" ColumnName="CompanyID" />
                 <ScalarProperty Name="TrfID" ColumnName="TrfID" />
                 <ScalarProperty Name="TrfLID" ColumnName="TrfLID" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
-          <EntitySetMapping Name="ItemTransferHeaders">
-            <EntityTypeMapping TypeName="SBMSModel.ItemTransferHeader">
-              <MappingFragment StoreEntitySet="ItemTransferHeaders">
-                <ScalarProperty Name="TrfReference" ColumnName="TrfReference" />
-                <ScalarProperty Name="TransferID" ColumnName="TransferID" />
-                <ScalarProperty Name="TrfActive" ColumnName="TrfActive" />
-                <ScalarProperty Name="TrfComplete" ColumnName="TrfComplete" />
-                <ScalarProperty Name="TrfStarted" ColumnName="TrfStarted" />
-                <ScalarProperty Name="TrfNotes" ColumnName="TrfNotes" />
-                <ScalarProperty Name="TrfStatus" ColumnName="TrfStatus" />
-                <ScalarProperty Name="TrfBy" ColumnName="TrfBy" />
-                <ScalarProperty Name="TrfToID" ColumnName="TrfToID" />
-                <ScalarProperty Name="TrfFromID" ColumnName="TrfFromID" />
-                <ScalarProperty Name="TrfDate" ColumnName="TrfDate" />
-                <ScalarProperty Name="TrfCompleteDate" ColumnName="TrfCompleteDate" />
-                <ScalarProperty Name="CompanyID" ColumnName="CompanyID" />
-                <ScalarProperty Name="TrfID" ColumnName="TrfID" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
@@ -5513,6 +5325,29 @@
                 <ScalarProperty Name="SBCAemail" ColumnName="SBCAemail" />
                 <ScalarProperty Name="SBCACoID" ColumnName="SBCACoID" />
                 <ScalarProperty Name="CoID" ColumnName="CoID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="ItemTransferHeaders">
+            <EntityTypeMapping TypeName="SBMSModel.ItemTransferHeader">
+              <MappingFragment StoreEntitySet="ItemTransferHeaders">
+                <ScalarProperty Name="TrfAddCostSageUpd" ColumnName="TrfAddCostSageUpd" />
+                <ScalarProperty Name="TrfAddCostReason" ColumnName="TrfAddCostReason" />
+                <ScalarProperty Name="TrfAddCost" ColumnName="TrfAddCost" />
+                <ScalarProperty Name="TrfCompleteDate" ColumnName="TrfCompleteDate" />
+                <ScalarProperty Name="TrfReference" ColumnName="TrfReference" />
+                <ScalarProperty Name="TransferID" ColumnName="TransferID" />
+                <ScalarProperty Name="TrfActive" ColumnName="TrfActive" />
+                <ScalarProperty Name="TrfComplete" ColumnName="TrfComplete" />
+                <ScalarProperty Name="TrfStarted" ColumnName="TrfStarted" />
+                <ScalarProperty Name="TrfNotes" ColumnName="TrfNotes" />
+                <ScalarProperty Name="TrfStatus" ColumnName="TrfStatus" />
+                <ScalarProperty Name="TrfBy" ColumnName="TrfBy" />
+                <ScalarProperty Name="TrfToID" ColumnName="TrfToID" />
+                <ScalarProperty Name="TrfFromID" ColumnName="TrfFromID" />
+                <ScalarProperty Name="TrfDate" ColumnName="TrfDate" />
+                <ScalarProperty Name="CompanyID" ColumnName="CompanyID" />
+                <ScalarProperty Name="TrfID" ColumnName="TrfID" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>

@@ -50,15 +50,14 @@
         <AssociationConnector Association="SBMSModel.FK_ReceivingOutstanding_ReceivingOutstanding" />
         <EntityTypeShape EntityType="SBMSModel.DynamicReport" Width="1.5" PointX="3.375" PointY="15.75" />
         <AssociationConnector Association="SBMSModel.FK_DocHeaderAttachments_DocHeaderAttachments" />
-        <EntityTypeShape EntityType="SBMSModel.DITransactionsTbl" Width="1.5" PointX="25.375" PointY="5.75" />
         <EntityTypeShape EntityType="SBMSModel.DIUpdateLog" Width="1.5" PointX="26.75" PointY="17.375" />
         <EntityTypeShape EntityType="SBMSModel.ItemTransferLine" Width="1.5" PointX="23.375" PointY="19.75" />
         <AssociationConnector Association="SBMSModel.FK_ItemTransferLines_ItemTransferLines" />
-        <EntityTypeShape EntityType="SBMSModel.ItemTransferHeader" Width="1.5" PointX="24.375" PointY="0.75" />
         <EntityTypeShape EntityType="SBMSModel.StockCountLine" Width="1.5" PointX="23.375" PointY="25.75" />
         <EntityTypeShape EntityType="SBMSModel.Store" Width="1.5" PointX="21.375" PointY="0.75" />
         <EntityTypeShape EntityType="SBMSModel.ReceivingOutstanding" Width="1.5" PointX="25.375" PointY="25.75" />
         <EntityTypeShape EntityType="SBMSModel.CompanyMaster" Width="1.5" PointX="0.75" PointY="26.75" />
+        <EntityTypeShape EntityType="SBMSModel.ItemTransferHeader" Width="1.5" PointX="23.375" PointY="0.75" />
       </Diagram>
     </edmx:Diagrams>
   </edmx:Designer>

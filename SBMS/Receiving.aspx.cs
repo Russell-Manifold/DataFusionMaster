@@ -446,6 +446,9 @@ namespace SBMS
                 CalcTotals();
                 var TempLines = _db.TempDocLines.Where(x => x.DocID == docid).ToList();
                 bool containsServ = false; PnlServices.Style.Add("display", "none"); ViewState["pnlServicesDisplay"] = "none";
+                // Option A: the estimated-costs modal is for POs WITHOUT in-PO service lines only.
+                // Default it visible; hidden below if a service line is detected (those use Branch A).
+                LbtnAddCosts.Enabled = true; LbtnAddCosts.Style.Add("display", "inline-block");
                 foreach (var TL in TempLines)
                 {
                     // detect service / addcost lines (but keep iterating so EVERY row gets formatted)
@@ -456,6 +459,7 @@ namespace SBMS
                         ViewState["pnlServicesDisplay"] = "inline-block";
                         PnlServices.Style.Add("max-width", "50%");
                         containsServ = true;
+                        LbtnAddCosts.Enabled = false; LbtnAddCosts.Style.Add("display", "none");   // service line present -> hide estimates modal
                         if (TL.ItemType == 2) RBAllocateCosts.Enabled = false;
                     }
                     if (TL.Quantity != null)
@@ -471,7 +475,7 @@ namespace SBMS
                         TL.QtyLeft = Convert.ToDecimal(ApiUrlCall.NumberToDecimal(TL.QtyLeft.ToString(), CurrentUser.CompanyDecPlaces));
                     }
                     // Reject uses the same decimal places as the other qty fields; default 0.
-                    TL.RejectQty = Convert.ToDecimal(ApiUrlCall.NumberToDecimal((TL.RejectQty ?? 0).ToString(), CurrentUser.CompanyDecPlaces));
+                    TL.RejectQty = Convert.ToDecimal(ApiUrlCall.NumberToDecimal(TL.RejectQty.ToString(), CurrentUser.CompanyDecPlaces));
                 }
                 GridPOLines.DataSource = TempLines;
                 GridPOLines.DataBind();
@@ -1011,7 +1015,7 @@ namespace SBMS
                             DL.TaxTypeId = (int)dl.LineTaxTypeID;
                             DL.Description = dl.ItemDescription;
                             DL.LineType = (int)dl.LineType;  // 0 = Inventory Item
-                            DL.Quantity = (decimal)dl.ReceiveQty + (dl.RejectQty ?? 0);   // bill accept + reject; reject is split to the reject store after the GRN
+                            DL.Quantity = (decimal)dl.ReceiveQty + (dl.RejectQty);   // bill accept + reject; reject is split to the reject store after the GRN
                             DL.UnitPriceExclusive = (decimal)dl.UnitPriceExclusive;
                             DL.UnitPriceInclusive = (decimal)dl.UnitPriceInclusive;
                             DL.Unit = dl.Unit;
@@ -1179,9 +1183,9 @@ namespace SBMS
                     // get add costs
                     if (CurrentUser.UATMode == false)
                     {
-                        if (GridAddCosts.Rows.Count > 0)
+                        if (GridAddCosts.Rows.Count > 0 && RBpoStatus.SelectedValue.ToString() == "0")
                         {
-                            var AddCosts = _db.ReceivingAddCosts.Where(x => x.CompanyID == CurrentUser.CoID && x.DocID == docid).ToList();
+                            var AddCosts = _db.ReceivingAddCosts.Where(x => x.CompanyID == CurrentUser.CoID && x.DocID == docid && x.Imported != true).ToList();
                             foreach (var Adcost in AddCosts)
                             {
                                 SupplierAdjustment SuppAdj = new SupplierAdjustment();
@@ -1192,11 +1196,11 @@ namespace SBMS
                                     DocumentNumber = Adcost.FromDocument,
                                     Reference = $"{txtDocNum.Text}  estimated additional costs",
                                     Description = $"{txtDocNum.Text} {Adcost.Message.ToString()}",
-                                    TaxTypeId = DDVat.SelectedValue.ToString().Split('|')[0],
+                                    TaxTypeId = Adcost.TaxType?.ToString(),
                                     Adcost.Exclusive,
                                     Tax = Adcost.Vat,
                                     Total = Adcost.Exclusive + Adcost.Vat,
-                                    ContraAccountId = DDAcctList.SelectedValue
+                                    ContraAccountId = Adcost.SelectionID?.ToString()
                                 };
                                 jsonBody = JsonConvert.SerializeObject(jsonObject, Formatting.Indented);
                                 SupInv = await SendSupplierAdjustment(jsonBody);
@@ -1225,7 +1229,9 @@ namespace SBMS
                             if (dl.ToReceive == true)
                             {
                                 decimal dlRecQty = dl.ReceiveQty ?? 0;
-                                if (RBAllocateCosts.SelectedValue.ToString() == "1")
+                                // W1 guard: only auto-allocate the in-PO service cost on a COMPLETE receive.
+                                // On a partial receive, drop to base cost - the user handles add-costs manually.
+                                if (RBAllocateCosts.SelectedValue.ToString() == "1" && RBpoStatus.SelectedValue.ToString() == "0")
                                 {
                                     decimal totalPriceExclusive = (decimal)FLines.Where(x => x.ItemType == 0).Sum(x => x.Exclusive);
                                     decimal AddCost = (decimal)FLines.Where(x => x.ItemType > 0).Sum(x => x.UnitPriceExclusive * x.ReceiveQty);
@@ -1302,7 +1308,10 @@ namespace SBMS
                                     if (dl.LotNumber != null)
                                     {
                                         var LotNumUpdate = _db.LotTrackingMasters.Where(x => x.CompanyID == CurrentUser.CoID && x.LotNumber == dl.LotNumber).FirstOrDefault();
-                                        LotNumUpdate.LotTotUnitPrice = ThisItemUnitNett / exchRate;
+                                        // Write-once: only price a lot that has not been priced yet. A re-used
+                                        // or already-priced lot must never have its fixed cost overwritten.
+                                        if (LotNumUpdate != null && LotNumUpdate.LotTotUnitPrice == 0)
+                                            LotNumUpdate.LotTotUnitPrice = ThisItemUnitNett / exchRate;
                                     }
 
                                     // check for itemstore link
@@ -1360,7 +1369,10 @@ namespace SBMS
 
                                         decimal ThisUnitVal = ThisItemUnitNett;
                                         decimal NewQty = (decimal)(origqty + dl.ReceiveQty);
-                                        decimal NewTotVal = (decimal)(origvalue + (dl.UnitPriceExclusive * dl.ReceiveQty));
+                                        // Sage must receive the SAME uplifted value written to the lot/ledger
+                                        // (ThisItemUnitNett incl. allocated add-cost), not the base price -
+                                        // otherwise the SBCA average understates by the additional cost.
+                                        decimal NewTotVal = (decimal)(origvalue + (ThisItemUnitNett * dl.ReceiveQty));
                                         decimal NewAvCost = (NewTotVal / NewQty) / exchRate;
 
                                         iAdj = new ItemAdjustment();
@@ -1383,11 +1395,20 @@ namespace SBMS
                     }
                     else
                     {
-                        var AddC = _db.ReceivingAddCosts.Where(x => x.CompanyID == CurrentUser.CoID && x.DocID == docid).ToList();
+                        // W1: estimated additional costs only apply on a COMPLETE receive, and only
+                        // across lines fully received in this action (no outstanding balance). Partial
+                        // receives defer the estimate (rows left un-imported) so nothing under-allocates.
+                        bool receiveComplete = RBpoStatus.SelectedValue.ToString() == "0";
+                        var AddC = _db.ReceivingAddCosts.Where(x => x.CompanyID == CurrentUser.CoID && x.DocID == docid && x.Imported != true).ToList();
                         decimal totAddCosts = 0;
                         decimal DocValue = (decimal)Head.Exclusive;
+                        // denominator for the add-cost split = value of the fully-received stock lines only
+                        decimal fullLinesValue = FLines
+                            .Where(x => x.ToReceive == true && x.ItemType == 0
+                                     && ((x.QtyLeft ?? 0) - (x.ReceiveQty ?? 0) - (x.RejectQty)) <= 0)
+                            .Sum(x => x.ReceiveTotalExcl ?? 0);
                         decimal totval = DocValue;
-                        if (AddC.Count > 0)
+                        if (AddC.Count > 0 && receiveComplete)
                         {
                             totAddCosts = AddC.Sum(x => (decimal?)x.Exclusive ?? 0);
                             totval = DocValue + totAddCosts;
@@ -1402,10 +1423,12 @@ namespace SBMS
                                 // reverse calculate unit price based on line quantity.
                                 decimal linevalue = dl.ReceiveTotalExcl ?? 0;
                                 decimal qty = dl.ReceiveQty ?? 0;
+                                // a line only carries add-costs when it is fully received in this action
+                                bool lineFull = ((dl.QtyLeft ?? 0) - (dl.ReceiveQty ?? 0) - (dl.RejectQty)) <= 0;
                                 decimal linevalueperc = 0;
-                                if (linevalue != 0 && DocValue != 0)
+                                if (lineFull && linevalue != 0 && fullLinesValue != 0)
                                 {
-                                    linevalueperc = linevalue / DocValue;
+                                    linevalueperc = linevalue / fullLinesValue;
                                 }
 
                                 decimal linevalAddCosts = 0;
@@ -1415,7 +1438,7 @@ namespace SBMS
                                 {
                                     newunitcost = linevalue / qty;
                                 }
-                                if (totAddCosts > 0 && qty != 0)
+                                if (totAddCosts > 0 && qty != 0 && lineFull)
                                 {
                                     linevalAddCosts = linevalueperc * totAddCosts;
                                     unitAddCosts = linevalAddCosts / qty;
@@ -1481,7 +1504,11 @@ namespace SBMS
                                     if (dl.LotNumber != null)
                                     {
                                         var LotNumUpdate = _db.LotTrackingMasters.Where(x => x.CompanyID == CurrentUser.CoID && x.LotNumber == dl.LotNumber).FirstOrDefault();
-                                        LotNumUpdate.LotTotUnitPrice = (decimal)dl.UnitPriceExclusive / exchRate;
+                                        // Cardinal rule: lot carries the SAME uplifted unit cost as the ledger
+                                        // (TotalUnitPriceExclInclAdd) and the Sage adjust-in (newunitcost) — never base.
+                                        // Write-once: only price a lot that has not been priced yet; never overwrite a fixed cost.
+                                        if (LotNumUpdate != null && LotNumUpdate.LotTotUnitPrice == 0)
+                                            LotNumUpdate.LotTotUnitPrice = newunitcost / exchRate;
                                     }
                                     // check for itemstore link
                                     var ItS = _db.ItemStoreLinkMasters.Where(x => x.CompanyID == CurrentUser.CoID && x.StoreID == ItemTrans.ToID && x.ItemID == dl.SelectionId).FirstOrDefault();
@@ -1543,6 +1570,24 @@ namespace SBMS
                                             decimal NewTotVal = (decimal)(origvalue + dl.Exclusive - dl.Discount + linevalAddCosts);
                                             decimal NewAvCost = NewTotVal / NewQty;
 
+                                            // Audit trail: record the Sage average-cost change driven by add-costs.
+                                            _db.AvCostChangeLogs.Add(new AvCostChangeLog
+                                            {
+                                                CompanyID = (int)CurrentUser.CoID,
+                                                ItemID = dl.ItemCode,
+                                                CostChangeDate = DateTime.Now,
+                                                CostChangeBy = CurrentUser.RoleID,
+                                                SageQOHBefore = origqty,
+                                                SageAvUnitCostBefore = origavcost,
+                                                SageTotValueBefore = origvalue,
+                                                QtyImported = qty,
+                                                QtyUnitPrice = (decimal)dl.UnitPriceExclusive,
+                                                QtyUnitAddCosts = unitAddCosts,
+                                                QtyImportTotalValue = (decimal)(dl.Exclusive - dl.Discount + linevalAddCosts),
+                                                SageQOHAfter = NewQty,
+                                                SageTotValueAfter = NewTotVal,
+                                            });
+
                                             iAdj = new ItemAdjustment();
                                             iAdj.Date = DateTime.Now;
                                             iAdj.ItemID = dl.SelectionId;
@@ -1577,7 +1622,7 @@ namespace SBMS
                         long corStoreId = getstoreid("CoR");
                         foreach (var dl in FLines)
                         {
-                            decimal rejQty = dl.RejectQty ?? 0;
+                            decimal rejQty = dl.RejectQty;
                             if (rejQty <= 0 || dl.ItemType != 0) continue;
 
                             var ItmConR = _db.ItemsMasters.Where(x => x.CompanyID == CurrentUser.CoID && x.ID == dl.SelectionId).FirstOrDefault();
@@ -1669,6 +1714,14 @@ namespace SBMS
                     //{
                     //    _db.DocLines.RemoveRange(DocLD);
                     //}
+
+                    // W1: estimates have now been capitalised + posted; mark them consumed so a
+                    // later receive on this PO can never re-apply them.
+                    if (RBpoStatus.SelectedValue.ToString() == "0")
+                    {
+                        var doneAdd = _db.ReceivingAddCosts.Where(x => x.CompanyID == CurrentUser.CoID && x.DocID == docid && x.Imported != true).ToList();
+                        foreach (var a in doneAdd) { a.Imported = true; a.ImportDate = DateTime.Now.ToString(); }
+                    }
 
                     // 2)Save changes to the database
                     _db.SaveChanges();

@@ -28,5 +28,8 @@ namespace SBMS.Models
         public Nullable<long> TransferID { get; set; }
         public string TrfReference { get; set; }
         public Nullable<System.DateTime> TrfCompleteDate { get; set; }
+        public Nullable<decimal> TrfAddCost { get; set; }
+        public string TrfAddCostReason { get; set; }
+        public Nullable<bool> TrfAddCostSageUpd { get; set; }
     }
 }
