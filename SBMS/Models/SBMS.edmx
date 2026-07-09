@@ -517,8 +517,8 @@
           <Property Name="CreatedBy" Type="int" />
           <Property Name="ModifiedDate" Type="datetime" />
           <Property Name="ModifiedBy" Type="int" />
-          <Property Name="StoreCode" Type="varchar" MaxLength="20" />
-          <Property Name="ItemCode" Type="varchar" MaxLength="20" />
+          <Property Name="StoreCode" Type="varchar" MaxLength="50" />
+          <Property Name="ItemCode" Type="varchar" MaxLength="50" />
         </EntityType>
         <EntityType Name="ItemStoreLinkMaster">
           <Key>
@@ -984,7 +984,7 @@
           <Property Name="AcceptBy" Type="varchar" MaxLength="50" />
           <Property Name="CountDate" Type="datetime" />
           <Property Name="LineFinished" Type="bit" Nullable="false" />
-          <Property Name="StoreCode" Type="varchar" MaxLength="15" />
+          <Property Name="StoreCode" Type="varchar" MaxLength="50" />
           <Property Name="CountExpression" Type="varchar" MaxLength="500" />
         </EntityType>
         <EntityType Name="StockCountMaster">
@@ -1735,8 +1735,8 @@
           <Property Name="CreatedBy" Type="Int32" />
           <Property Name="ModifiedDate" Type="DateTime" Precision="3" />
           <Property Name="ModifiedBy" Type="Int32" />
-          <Property Name="StoreCode" Type="String" MaxLength="20" FixedLength="false" Unicode="false" />
-          <Property Name="ItemCode" Type="String" MaxLength="20" FixedLength="false" Unicode="false" />
+          <Property Name="StoreCode" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="ItemCode" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
         </EntityType>
         <EntityType Name="ItemStoreLinkMaster">
           <Key>
@@ -3404,7 +3404,7 @@
           <Property Name="AcceptBy" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="CountDate" Type="DateTime" Precision="3" />
           <Property Name="LineFinished" Type="Boolean" Nullable="false" />
-          <Property Name="StoreCode" Type="String" MaxLength="15" FixedLength="false" Unicode="false" />
+          <Property Name="StoreCode" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="CountExpression" Type="String" MaxLength="500" FixedLength="false" Unicode="false" />
         </EntityType>
         <EntityType Name="Store">
