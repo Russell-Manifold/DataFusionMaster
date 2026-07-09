@@ -145,7 +145,7 @@
                                             </Columns>
                            </asp:GridView>
                           <asp:Panel ID="PnlAddCosts" runat="server" style="float:left; margin-top:.25em; margin-right:1em; max-width:70%;">
-                           <asp:LinkButton ID="LbtnAddCosts" runat="server" style="font-size:.9em; float:left; display:none" CssClass="icon fa-plus-square buttonCancel" ToolTip="Add Additional costs" Enabled="false" >&nbsp;Estimated Addtional Costs</asp:LinkButton>
+                           <asp:LinkButton ID="LbtnAddCosts" runat="server" style="font-size:.9em; float:left" CssClass="icon fa-plus-square buttonCancel" ToolTip="Add Additional costs" >&nbsp;Estimated Addtional Costs</asp:LinkButton>
                               <asp:GridView ID="GridAddCosts" runat="server" AutoGenerateColumns="false" CssClass="gridview" showFooter="true" style="width:100%" OnRowDataBound="GridAddCosts_RowDataBound">
                               <HeaderStyle CssClass="gridViewHeader" />
                               <RowStyle CssClass="gridViewRow" />
@@ -164,11 +164,10 @@
                                     </asp:TemplateField>
                               </Columns>
                           </asp:GridView>
-                              <%--<br /><br /><span style="font-size:0.8em">Notes: <br />
+                              <br /><br /><span style="font-size:0.8em">Notes: <br />
                                   The total value of ESTIMATED additional costs will be automatically split and allocated to each PO line.<br />
                                   A Supplier Adjustment will be generated in Sage Accounting for each additional cost line.
-                              </span>--%>
-                              <br /><br /><span style="font-size:0.8em">Additional Costings module is currently undergoing </br> an upgrade and will return shortly. </span> <br />
+                              </span>
                            </asp:Panel>
                           
                          <asp:Panel ID="PnlTotals" runat="server" style="float:right; border:1px gray solid; margin-top:1em; margin-right:1em;">
