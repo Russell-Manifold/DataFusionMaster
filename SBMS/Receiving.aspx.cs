@@ -766,6 +766,21 @@ namespace SBMS
                 Docline.ReceiveComplete = false;
                 if (lblLotNum.Enabled == true)
                 {
+                    // Hard guard: a lot number must be unique per company. Re-check at the point of
+                    // insert (not just via the TextChanged flag) so a duplicate can never be written,
+                    // since existing dupes make a DB unique index impossible.
+                    string typedLot = (Docline.LotNumber ?? "").Trim();
+                    if (typedLot.Length == 0)
+                    {
+                        AlertHelper.ShowSweetAlert(this, "Please enter a lot number.", "error");
+                        return;
+                    }
+                    if (CheckLotNumberExists(typedLot))
+                    {
+                        AlertHelper.ShowSweetAlert(this, "Lot number '" + typedLot + "' already exists. Please enter a unique lot number.", "error");
+                        return;
+                    }
+
                     // save new Lot Number to db
                     LotTrackingMaster LtNew = new LotTrackingMaster();
                     LtNew.LotNumber = Docline.LotNumber;
