@@ -485,12 +485,11 @@ namespace SBMS
                     if (qoh < qty)
                         return $"Insufficient stock for {line.ItemCode}: only {qoh:0.##} available in {storeCode}.";
 
-                    var lastTrn = trnQuery.OrderByDescending(t => t.TrnID).FirstOrDefault();
-                    if (lastTrn != null)
-                    {
-                        priceExcl    = (decimal)(lastTrn.PriceExclusive ?? 0m);
-                        priceInclAdd = (decimal)(lastTrn.TotalUnitPriceExclInclAdd ?? 0m);
-                    }
+                    // Outbound: stock leaves at the pick store's running weighted average;
+                    // an out never changes the store average. Falls back to the item's
+                    // Sage average below if the store has no stamped cost yet.
+                    priceExcl = priceInclAdd = StoreCosting.GetStoreAvgCost(db, CurrentUser.CoID,
+                        Convert.ToInt64(line.SelectionId), storeId);
                 }
 
                 if (line.ItemTransLineID != null && line.ItemTransLineID > 0)
@@ -501,6 +500,15 @@ namespace SBMS
 
                     if (prevTrn != null)
                     {
+                        // Reversal puts the earlier pick back INTO the store at its original
+                        // cost; the inbound re-blends the store's running weighted average
+                        // (computed BEFORE the row is added to the ledger).
+                        decimal revQty = (decimal)prevTrn.Qty * -1;
+                        decimal revVal = (decimal)(prevTrn.TotalUnitPriceExclInclAdd ?? 0m) * revQty;
+                        decimal revLineVal;
+                        decimal revAvg = StoreCosting.ComputeMovement(db, CurrentUser.CoID,
+                            Convert.ToInt64(prevTrn.ItemID), storeId, revQty, revVal, out revLineVal);
+
                         db.ItemTransactions.Add(new ItemTransaction
                         {
                             CompanyID                 = CurrentUser.CoID,
@@ -512,12 +520,13 @@ namespace SBMS
                             Unit                      = prevTrn.Unit,
                             FromID                    = 0,
                             ToID                      = storeId,
-                            Qty                       = (decimal)prevTrn.Qty * -1,
+                            Qty                       = revQty,
                             DocumentType              = 10,
                             PriceExclusive            = prevTrn.PriceExclusive,
                             TotalUnitPriceExclInclAdd = prevTrn.TotalUnitPriceExclInclAdd,
                             AdditionalCosts           = 0,
                             TotalLineValExcl          = prevTrn.TotalUnitPriceExclInclAdd * prevTrn.Qty * -1,
+                            StoreAvgCost              = revAvg,
                             TransactionDate           = DateTime.Now,
                             ByRoleID                  = CurrentUser.RoleID,
                             TransactionReference      = PSIntNumber + " Reversal",
@@ -556,6 +565,7 @@ namespace SBMS
                     TotalUnitPriceExclInclAdd = priceInclAdd,
                     AdditionalCosts           = 0,
                     TotalLineValExcl          = priceInclAdd * qty * -1,
+                    StoreAvgCost              = priceInclAdd,
                     TransactionDate           = DateTime.Now,
                     ByRoleID                  = CurrentUser.RoleID,
                     TransactionReference      = PSIntNumber,

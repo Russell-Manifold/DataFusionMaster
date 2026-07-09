@@ -555,6 +555,13 @@ namespace SBMS
                             catch { }
 
                             long toStoreId = getstoreid(dl.StoreCode, db);
+
+                            // Inbound re-blends the receiving store's running weighted average.
+                            decimal grnQty = recvQty * convRate;
+                            decimal grnVal = (exclPrice * recvQty) / exchRate;
+                            decimal inVal;
+                            decimal storeAvg = StoreCosting.ComputeMovement(db, CurrentUser.CoID, (long)dl.SelectionId, toStoreId, grnQty, grnVal, out inVal);
+
                             db.ItemTransactions.Add(new ItemTransaction
                             {
                                 CompanyID                 = CurrentUser.CoID,
@@ -568,15 +575,16 @@ namespace SBMS
                                 Unit                      = dl.Unit,
                                 FromID                    = fromStoreId,
                                 ToID                      = toStoreId,
-                                Qty                       = recvQty * convRate,
+                                Qty                       = grnQty,
                                 PriceExclusive            = (exclPrice / exchRate) / convRate,
                                 AdditionalCosts           = 0m,
                                 TotalUnitPriceExclInclAdd = (exclPrice / exchRate) / convRate,
-                                TotalLineValExcl          = (exclPrice * recvQty) / exchRate,
+                                TotalLineValExcl          = grnVal,
                                 TransactionDate           = DateTime.Now,
                                 ByRoleID                  = CurrentUser.RoleID,
                                 TransactionReference      = suppInvNum,
-                                ExchRate                  = exchRate
+                                ExchRate                  = exchRate,
+                                StoreAvgCost              = storeAvg
                             });
 
                             bool linkExists = db.ItemStoreLinkMasters.Any(x => x.CompanyID == CurrentUser.CoID
@@ -630,6 +638,10 @@ namespace SBMS
                             dbLine.ToReceive       = false;
                             dbLine.ReceiveComplete = chkReceivingComplete.Checked || remaining <= 0;
                         }
+
+                        // Save per line so ComputeMovement sees earlier lines of this GRN
+                        // when the same item + store repeats (matches desktop Receiving).
+                        db.SaveChanges();
                     }
 
                     var hdr = db.DocHeaders.FirstOrDefault(h => h.DocID == DocID && h.CompanyID == CurrentUser.CoID);

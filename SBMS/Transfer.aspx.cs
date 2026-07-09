@@ -281,38 +281,31 @@ namespace SBMS
                 ItemTrans.ItemDescription = trfitem.ItemDescription;
                 ItemTrans.LotNumber = trfitem.LotNumber ?? null;
                 ItemTrans.Unit = trfitem.Unit;
-                ItemTrans.FromID = getstoreid(lblFromStore.Text);
-                ItemTrans.ToID = getstoreid(lblToStore.Text);
-                ItemTrans.Qty = trfQty;  
+                long fromId = getstoreid(lblFromStore.Text);
+                long toId = getstoreid(lblToStore.Text);
+                ItemTrans.FromID = fromId;
+                ItemTrans.ToID = toId;
+                ItemTrans.Qty = trfQty;
                 ItemTrans.PriceInclusive = trfitem.PriceInclusive;
-                ItemTrans.PriceExclusive = trfitem.TotalUnitPriceExclInclAdd;
-                decimal ToBal = trfQty;
-                var QOHIn = (from it2 in _db.ItemTransactions
-                             where it2.ItemID == trfitem.ItemID && it2.CompanyID == trfitem.CompanyID && it2.LotNumber == trfitem.LotNumber && it2.ToID == ItemTrans.ToID
-                             orderby it2.TransactionDate descending
-                             select new 
-                             {
-                                 it2.TotalUnitPriceExclInclAdd
-                             }).FirstOrDefault();     
-                if (QOHIn != null)
-                {
-                    if (QOHIn.TotalUnitPriceExclInclAdd.HasValue) ItemTrans.PriceExclusive = QOHIn.TotalUnitPriceExclInclAdd;
-                }
                 ItemTrans.TransactionDate = DateTime.Now;
                 ItemTrans.DocumentType = 4;
                 ItemTrans.ByRoleID = CurrentUser.RoleID; // roleid
-                // Additional costs ????
-                decimal AddCosts = 0, UnitPrInclAddCosts = 0;
-                
-                try { AddCosts = Convert.ToDecimal(txtTrfAddCosts.Text); } catch { }
-                ItemTrans.AdditionalCosts = 0;
-                if (AddCosts > 0){ItemTrans.AdditionalCosts = AddCosts / trfQty;}
-                  
-                ItemTrans.TotalUnitPriceExclInclAdd = ItemTrans.PriceExclusive;
-                if (AddCosts > 0){ItemTrans.TotalUnitPriceExclInclAdd = ItemTrans.TotalUnitPriceExclInclAdd + (AddCosts / trfQty);}
-                UnitPrInclAddCosts = (decimal)ItemTrans.TotalUnitPriceExclInclAdd;
 
-                 ItemTrans.TotalLineValExcl = ItemTrans.TotalUnitPriceExclInclAdd * trfQty;
+                decimal AddCosts = 0;
+                try { AddCosts = Convert.ToDecimal(txtTrfAddCosts.Text); } catch { }
+                decimal freightPerUnit = AddCosts > 0 ? AddCosts / trfQty : 0m;
+
+                // IN leg (receiving store): arrives at source store average + freight per unit,
+                // and the destination's running weighted average re-blends against stock already there.
+                decimal srcAvg = StoreCosting.GetStoreAvgCost(_db, CurrentUser.CoID, (long)trfitem.ItemID, fromId);
+                decimal unitLanded = srcAvg + freightPerUnit;
+                decimal lineVal;
+                decimal destAvg = StoreCosting.ComputeMovement(_db, CurrentUser.CoID, (long)trfitem.ItemID, toId, trfQty, unitLanded * trfQty, out lineVal);
+                ItemTrans.PriceExclusive = srcAvg;
+                ItemTrans.AdditionalCosts = freightPerUnit;
+                ItemTrans.TotalUnitPriceExclInclAdd = unitLanded;
+                ItemTrans.TotalLineValExcl = lineVal;
+                ItemTrans.StoreAvgCost = destAvg;
                 ItemTrans.TransactionReference = trfitem.ItemCode + " Quick Trf " + trfQty + " in from " + lblFromStore.Text;
                 ItemTrans.ExchRate = 1;
 
@@ -344,18 +337,19 @@ namespace SBMS
                 ItemTransOUT.ItemDescription = trfitem.ItemDescription;
                 ItemTransOUT.LotNumber = trfitem.LotNumber ?? null;
                 ItemTransOUT.Unit = trfitem.Unit;
-                ItemTransOUT.ToID = getstoreid(lblFromStore.Text);
-                ItemTransOUT.FromID = getstoreid(lblToStore.Text);
-                ItemTransOUT.Qty = trfQty * -1;   
+                ItemTransOUT.ToID = fromId;
+                ItemTransOUT.FromID = toId;
+                ItemTransOUT.Qty = trfQty * -1;
                 ItemTransOUT.DocumentType = 4;
                 ItemTransOUT.TransactionDate = DateTime.Now;
                 ItemTransOUT.ByRoleID = CurrentUser.RoleID; // roleid
 
+                // OUT leg (issuing store): leaves at the source store's running average, unchanged.
                 ItemTransOUT.AdditionalCosts = 0;
-                //if (AddCosts > 0) { ItemTrans.AdditionalCosts = AddCosts / trfQty; }
-                ItemTransOUT.PriceExclusive = ItemTrans.PriceExclusive;
-                ItemTransOUT.TotalUnitPriceExclInclAdd = ItemTrans.TotalUnitPriceExclInclAdd;
-                ItemTransOUT.TotalLineValExcl = ItemTransOUT.TotalUnitPriceExclInclAdd * (trfQty * -1);
+                ItemTransOUT.PriceExclusive = srcAvg;
+                ItemTransOUT.TotalUnitPriceExclInclAdd = srcAvg;
+                ItemTransOUT.TotalLineValExcl = srcAvg * (trfQty * -1);
+                ItemTransOUT.StoreAvgCost = srcAvg;
                 ItemTransOUT.TransactionReference = trfitem.ItemCode + " Quick Trf " + trfQty + " out to " + lblToStore.Text;
                 ItemTransOUT.ExchRate = 1;
 

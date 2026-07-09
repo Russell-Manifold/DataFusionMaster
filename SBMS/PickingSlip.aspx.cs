@@ -408,6 +408,10 @@ namespace SBMS
                                 ItemTrans.TransactionReference = lblDocNum.Text + " Reversal";
                                 ItemTrans.LotNumber = ItmR.LotNumber;
                                 ItemTrans.ExchRate = 1;
+                                // Reversal puts the pick back at its original cost and re-blends
+                                // the store's running average.
+                                decimal revVal;
+                                ItemTrans.StoreAvgCost = StoreCosting.ComputeMovement(_db, CurrentUser.CoID, (long)ItemTrans.ItemID, FrmStorid, (decimal)ItemTrans.Qty, (decimal)ItemTrans.TotalLineValExcl, out revVal);
                                 _db.ItemTransactions.Add(ItemTrans);
                                 _db.SaveChanges();
                             }
@@ -431,18 +435,20 @@ namespace SBMS
                         // Back-order: move only the picked quantity out of stock (not the ordered qty).
                         ItemTrans.Qty = Convert.ToDecimal(NewPSLine.PickQty ?? NewPSLine.Quantity) * -1;
                         ItemTrans.DocumentType = 10;
-                        if (PriceExcl == 0)
+                        // Outbound: stock leaves at the pick store's running weighted average;
+                        // an out never changes the store average.
+                        decimal storeAvg = StoreCosting.GetStoreAvgCost(_db, CurrentUser.CoID, (long)ItemTrans.ItemID, FrmStorid);
+                        if (storeAvg == 0)
                         {
-                            decimal ItmPr = (decimal)_db.ItemsMasters.FirstOrDefault(x => x.CompanyID == CurrentUser.CoID && x.ID == ItemTrans.ItemID).AverageCost;
-                            PriceExcl = ItmPr;
-                            priceInclAdd = ItmPr;
+                            storeAvg = (decimal)_db.ItemsMasters.FirstOrDefault(x => x.CompanyID == CurrentUser.CoID && x.ID == ItemTrans.ItemID).AverageCost;
                         }
-                        ItemTrans.PriceExclusive = PriceExcl;
-                        ItemTrans.TotalUnitPriceExclInclAdd = priceInclAdd;
+                        ItemTrans.PriceExclusive = storeAvg;
+                        ItemTrans.TotalUnitPriceExclInclAdd = storeAvg;
                         ItemTrans.TransactionDate = DateTime.Now;
-                        ItemTrans.ByRoleID = CurrentUser.RoleID; // roleid     
+                        ItemTrans.ByRoleID = CurrentUser.RoleID; // roleid
                         ItemTrans.AdditionalCosts = 0;
                         ItemTrans.TotalLineValExcl = ItemTrans.TotalUnitPriceExclInclAdd * ItemTrans.Qty;
+                        ItemTrans.StoreAvgCost = storeAvg;
                         ItemTrans.TransactionReference = lblDocNum.Text;
                         ItemTrans.LotNumber = string.Empty;
                         if (NewPSLine.IsLotTracked == true)
@@ -900,7 +906,10 @@ namespace SBMS
                         DLn.AnalysisCategoryId1 = FirstSOLine.AnalysisCategoryId1;
                         DLn.AnalysisCategoryId2 = FirstSOLine.AnalysisCategoryId2;
                         DLn.AnalysisCategoryId3 = FirstSOLine.AnalysisCategoryId3;
-                        DLn.UnitCost = _db.ItemTransactions.Where(x => x.CompanyID == CurrentUser.CoID && x.LotNumber == PsL.LotNumber).OrderByDescending(x => x.TrnID).Select(x => x.TotalUnitPriceExclInclAdd).FirstOrDefault();
+                        // Cost of sale = the pick store's running weighted average (feeds the Sage
+                        // invoice line UnitCost and, via the API, the line GP).
+                        long pickStoreId = _db.Stores.Where(x => x.StoreCode == PsL.StoreCodeFrom && x.CompanyID == CurrentUser.CoID).Select(x => x.StoreID).FirstOrDefault();
+                        DLn.UnitCost = StoreCosting.GetStoreAvgCost(_db, CurrentUser.CoID, (long)PsL.SelectionId, pickStoreId);
                         DLn.ItemType = FirstSOLine.ItemType;
                         DLn.LineTaxTypeID = FirstSOLine.LineTaxTypeID;
                         DLn.Unit = FirstSOLine.Unit;

@@ -314,15 +314,22 @@ namespace SBMS
                 ItemTrans.FromID = 0;
                 ItemTrans.LotNumber = LotNum;
                 ItemTrans.ToID = storeid;
-                ItemTrans.Qty = Convert.ToDecimal(txtAdjQty.Text);
-                if (DDInOut.SelectedIndex == 2) ItemTrans.Qty = (Convert.ToDecimal(txtAdjQty.Text) * -1);
+                decimal signedQty = Convert.ToDecimal(txtAdjQty.Text);
+                if (DDInOut.SelectedIndex == 2) signedQty = signedQty * -1;
+                ItemTrans.Qty = signedQty;
                 ItemTrans.DocumentType = 1;
                 ItemTrans.TransactionDate = DateTime.Now;
                 ItemTrans.ByRoleID = CurrentUser.RoleID; // roleid
-                ItemTrans.PriceExclusive = ThisAvCost;
+                // In: arrives at the captured cost and re-blends the store's running average.
+                // Out: leaves at the store's running average (captured cost ignored; outs never revalue).
+                decimal adjLineVal;
+                decimal adjAvg = StoreCosting.ComputeMovement(_db, CurrentUser.CoID, Convert.ToInt64(itm.ID), storeid, signedQty, ThisAvCost * signedQty, out adjLineVal);
+                decimal adjUnit = signedQty != 0 ? adjLineVal / signedQty : ThisAvCost;
+                ItemTrans.PriceExclusive = adjUnit;
                 ItemTrans.AdditionalCosts = 0;
-                ItemTrans.TotalUnitPriceExclInclAdd = ThisAvCost;
-                ItemTrans.TotalLineValExcl = LotMoveVal;
+                ItemTrans.TotalUnitPriceExclInclAdd = adjUnit;
+                ItemTrans.TotalLineValExcl = adjLineVal;
+                ItemTrans.StoreAvgCost = adjAvg;
                 ItemTrans.TransactionReference = txtAdjReason.Text.ToString().Trim().Replace("'", "''");
                 ItemTrans.ExchRate = 1; 
                 _db.ItemTransactions.Add(ItemTrans);

@@ -401,6 +401,9 @@ namespace SBMS
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {
                 long storeid = getstoreid(DDStore.SelectedValue.ToString());
+                // per-store weighted average drives the outbound cost; item-wide average only when the store has no history
+                decimal fromStoreCost = StoreCosting.GetStoreAvgCost(_db, CurrentUser.CoID, (long)fromItem.ItemID, storeid);
+                if (fromStoreCost == 0) fromStoreCost = fromAverageCost;
                 ItemTransaction ItemTransOUT = new ItemTransaction();
                 ItemTransOUT.CompanyID = CurrentUser.CoID;
                 ItemTransOUT.DocumentID = 0;
@@ -417,9 +420,10 @@ namespace SBMS
                 ItemTransOUT.TransactionDate = DateTime.Now;
                 ItemTransOUT.ByRoleID = CurrentUser.RoleID;
                 ItemTransOUT.AdditionalCosts = 0;
-                ItemTransOUT.PriceExclusive = fromAverageCost;
-                ItemTransOUT.TotalUnitPriceExclInclAdd = fromAverageCost;
-                ItemTransOUT.TotalLineValExcl = fromAverageCost * (convertFromQty * -1);
+                ItemTransOUT.PriceExclusive = fromStoreCost;
+                ItemTransOUT.TotalUnitPriceExclInclAdd = fromStoreCost;
+                ItemTransOUT.TotalLineValExcl = fromStoreCost * (convertFromQty * -1);
+                ItemTransOUT.StoreAvgCost = fromStoreCost;
                 string refD = $"{fromItem.Code} Item Conversion {convertFromQty} to {toItem.Code} ({conversionRatio:F2}:1 ratio)";
                 if (refD.Length > 100) refD = refD.Substring(0, 100);
                 ItemTransOUT.TransactionReference = refD;
@@ -451,6 +455,7 @@ namespace SBMS
                 if (refD.Length > 100) refD = refD.Substring(0, 100);
                 ItemTransIN.TransactionReference = refD;
                 ItemTransIN.ExchRate = 1;
+                ItemTransIN.StoreAvgCost = StoreCosting.ComputeMovement(_db, CurrentUser.CoID, (long)toItem.ItemID, storeid, convertToQty, toCost * convertToQty, out var _v);
 
                 _db.ItemTransactions.Add(ItemTransIN);
                 _db.SaveChanges();

@@ -85,82 +85,45 @@ namespace SBMS
         }
 
 
-        public List<ReceivingOutstanding> GetSortedDocHeaders(string sortExpression, string sortDirection)
+        public List<ReceivingOutstandingSummary> GetSortedDocHeaders(string sortExpression, string sortDirection)
         {
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {
-                string findstr = txtfind.Text.ToString();
-                
-                // Auto-archive any fully-received line groups.
-                //
-                // Modern rows are grouped by (PODocID, SBCALineID) - each PO line is its
-                // own group, even if two lines share an ItemCode. Legacy rows (SBCALineID
-                // NULL because they predate the column) fall back to (PODocID, ItemCode).
-                var modernGroups = _db.ReceivingOutstandings
-                       .Where(x => x.CompanyID == CurrentUser.CoID
-                                && x.Archive == false
-                                && x.SBCALineID != null)
-                       .GroupBy(x => new { x.PODocID, x.SBCALineID })
-                       .Where(g => g.Sum(x => (decimal?)x.RecQty ?? 0) >= g.Max(x => x.OrigQty ?? 0))
-                       .Select(g => new { g.Key.PODocID, g.Key.SBCALineID })
-                       .ToList();
+                string findstr = txtfind.Text.ToString().Trim();
 
-                foreach (var group in modernGroups)
+                // Source of truth is the PO itself: DocLine.Quantity = ordered,
+                // DocLine.QtyLeft = outstanding (maintained by every receipt finalize).
+                // One row per PO line by construction - no receipt-event grouping.
+                var query = from h in _db.DocHeaders
+                            join l in _db.DocLines on h.DocID equals l.DocID
+                            where h.CompanyID == CurrentUser.CoID
+                               && h.DocType == 1
+                               && h.Complete != true
+                               && h.Status != "Cancelled"
+                               && (l.QtyLeft ?? 0) > 0
+                               && (l.QtyLeft ?? 0) < (l.Quantity ?? 0)
+                            select new ReceivingOutstandingSummary
+                            {
+                                PODocID = h.DocID,
+                                PONumber = h.DocumentNumber,
+                                CreatedDate = h.DocDate,
+                                Supplier = h.CustSupName,
+                                ItemCode = l.ItemCode,
+                                ItemDescription = l.ItemDescription,
+                                OrigQty = l.Quantity ?? 0,
+                                RecQty = (l.Quantity ?? 0) - (l.QtyLeft ?? 0),
+                                QtyLeft = l.QtyLeft ?? 0
+                            };
+
+                if (findstr.Length > 1)
                 {
-                    var itemsToUpdate = _db.ReceivingOutstandings
-                        .Where(x => x.PODocID == group.PODocID
-                                 && x.SBCALineID == group.SBCALineID
-                                 && x.CompanyID == CurrentUser.CoID);
-
-                    foreach (var item in itemsToUpdate)
-                    {
-                        item.Archive = true;
-                        item.ArchiveBy = 0;
-                        item.ArchiveDate = DateTime.Now;
-                    }
+                    query = query.Where(x => x.PONumber.Contains(findstr) || x.Supplier.Contains(findstr));
                 }
 
-                var legacyGroups = _db.ReceivingOutstandings
-                       .Where(x => x.CompanyID == CurrentUser.CoID
-                                && x.Archive == false
-                                && x.SBCALineID == null)
-                       .GroupBy(x => new { x.PODocID, x.ItemCode })
-                       .Where(g => g.Sum(x => (decimal?)x.RecQty ?? 0) >= g.Max(x => x.OrigQty ?? 0))
-                       .Select(g => new { g.Key.PODocID, g.Key.ItemCode })
-                       .ToList();
-
-                foreach (var group in legacyGroups)
+                string finditem = txtfindItem.Text.Trim();
+                if (finditem.Length > 1)
                 {
-                    var itemsToUpdate = _db.ReceivingOutstandings
-                        .Where(x => x.PODocID == group.PODocID
-                                 && x.ItemCode == group.ItemCode
-                                 && x.SBCALineID == null
-                                 && x.CompanyID == CurrentUser.CoID);
-
-                    foreach (var item in itemsToUpdate)
-                    {
-                        item.Archive = true;
-                        item.ArchiveBy = 0;
-                        item.ArchiveDate = DateTime.Now;
-                    }
-                }
-
-                // Step 3: Commit updates to DB
-                _db.SaveChanges();
-
-                var query = _db.ReceivingOutstandings.Where(x => x.CompanyID == CurrentUser.CoID).AsQueryable();
-
-                if (txtfind.Text.ToString().Trim().Length > 1)
-                {
-                    query = query.Where(x=>x.PONumber.Contains(findstr) || x.Supplier.Contains(findstr));
-                }
-                if (!chkArchived.Checked)
-                {
-                    query = query.Where(x => x.Archive == false);
-                } else
-                if (chkArchived.Checked)
-                {
-                    query = query.Where(x => x.Archive == true);
+                    query = query.Where(x => x.ItemCode.Contains(finditem) || x.ItemDescription.Contains(finditem));
                 }
 
                 // Apply sorting using dynamic LINQ
@@ -177,13 +140,18 @@ namespace SBMS
             }
         }
 
+        // One row per part-received PO line, read straight off DocHeader/DocLine.
         public class ReceivingOutstandingSummary
         {
+            public long PODocID { get; set; }
             public string PONumber { get; set; }
+            public Nullable<System.DateTime> CreatedDate { get; set; }
             public string Supplier { get; set; }
             public string ItemCode { get; set; }
             public string ItemDescription { get; set; }
-            public decimal TotalReceivedQty { get; set; }
+            public Nullable<decimal> OrigQty { get; set; }
+            public Nullable<decimal> RecQty { get; set; }
+            public Nullable<decimal> QtyLeft { get; set; }
         }
 
         private void BindData()
@@ -195,14 +163,6 @@ namespace SBMS
             GridPOs.DataSource = sortedData;
             GridPOs.DataBind();
             lblpoqty.Text = " (" + GridPOs.Rows.Count + ")";
-            if (GridPOs.Rows.Count == 0)
-            {
-                lbtnArchive.Visible = false;
-            }
-            else
-            {
-               lbtnArchive.Visible = true;
-            }
         }
 
         protected void myDataGrid_Sorting(object sender, GridViewSortEventArgs e)
@@ -218,12 +178,12 @@ namespace SBMS
         protected void GridPOs_SelectedIndexChanged(object sender, EventArgs e)
         {
             long id = Convert.ToInt64(GridPOs.SelectedRow.Cells[0].Text.ToString());
-            CheckBox ckb = (CheckBox)(GridPOs.SelectedRow.FindControl("chkstarted"));
-            Response.Redirect("~/SalesOrder.aspx?docid=" + id.ToString());
+            Response.Redirect("~/Receiving.aspx?docid=" + id.ToString());
         }
 
         protected void lbtnfind_Click(object sender, EventArgs e)
         {
+            GridPOs.PageIndex = 0;
             BindData();
         }
 
@@ -425,7 +385,7 @@ namespace SBMS
             ExportToExcel(data);
         }
 
-        private void ExportToExcel(List<ReceivingOutstanding> data)
+        private void ExportToExcel(List<ReceivingOutstandingSummary> data)
         {
             using (var workbook = new XLWorkbook())
             {
@@ -434,9 +394,8 @@ namespace SBMS
                 // --- Header row ---
                 var headers = new[]
                 {
-            "PO Number", "PO Doc ID", "Item Code", "Supplier",
-            "Orig Qty", "Rec Qty", "Archive", "Archive By", "Archive Date"
-            // Adjust these to match your actual ReceivingOutstanding properties
+            "PO Number", "Date", "Supplier", "Item Code", "Description",
+            "Order Qty", "Received", "Balance"
         };
 
                 for (int i = 0; i < headers.Length; i++)
@@ -454,16 +413,15 @@ namespace SBMS
                 foreach (var item in data)
                 {
                     ws.Cell(row, 1).Value = item.PONumber;
-                    ws.Cell(row, 2).Value = item.PODocID;
-                    ws.Cell(row, 3).Value = item.ItemCode;
-                    ws.Cell(row, 4).Value = item.Supplier;
-                    ws.Cell(row, 5).Value = item.OrigQty ?? 0;
-                    ws.Cell(row, 6).Value = item.RecQty ?? 0;
-                    ws.Cell(row, 7).Value = (bool)item.Archive ? "Yes" : "No";
-                    ws.Cell(row, 8).Value = item.ArchiveBy;
-                    ws.Cell(row, 9).Value = item.ArchiveDate.HasValue
-                        ? item.ArchiveDate.Value.ToString("yyyy-MM-dd")
+                    ws.Cell(row, 2).Value = item.CreatedDate.HasValue
+                        ? item.CreatedDate.Value.ToString("yyyy-MM-dd")
                         : string.Empty;
+                    ws.Cell(row, 3).Value = item.Supplier;
+                    ws.Cell(row, 4).Value = item.ItemCode;
+                    ws.Cell(row, 5).Value = item.ItemDescription;
+                    ws.Cell(row, 6).Value = item.OrigQty ?? 0;
+                    ws.Cell(row, 7).Value = item.RecQty ?? 0;
+                    ws.Cell(row, 8).Value = item.QtyLeft ?? 0;
 
                     // Zebra striping
                     if (row % 2 == 0)
@@ -501,30 +459,27 @@ namespace SBMS
                 foreach (GridViewRow row in GridPOs.Rows)
                 {
                     CheckBox chkArchive = (CheckBox)row.FindControl("chkArchive");
-                    if (chkArchive != null && chkArchive.Checked)
+                    int id = Convert.ToInt32(row.Cells[0].Text); // representative row id for the line group
+                    var record = _db.ReceivingOutstandings.FirstOrDefault(x => x.id == id);
+                    if (record == null) continue;
+
+                    // A grid row is one PO line (grouped) - apply the archive state to
+                    // every receipt event in the group so the sums stay consistent.
+                    var groupRows = _db.ReceivingOutstandings
+                        .Where(x => x.CompanyID == CurrentUser.CoID
+                                 && x.PODocID == record.PODocID
+                                 && (record.SBCALineID != null
+                                        ? x.SBCALineID == record.SBCALineID
+                                        : x.SBCALineID == null && x.ItemCode == record.ItemCode))
+                        .ToList();
+
+                    bool archive = chkArchive != null && chkArchive.Checked;
+                    foreach (var r in groupRows)
                     {
-                        int id = Convert.ToInt32(row.Cells[0].Text); // Assuming ID is in first column
-                        var record = _db.ReceivingOutstandings.FirstOrDefault(x => x.id == id);       
-                        if (record != null)
-                        {
-                            record.Archive = true;
-                            record.ArchiveBy = CurrentUser.RoleID;
-                            record.ArchiveDate = DateTime.Now;
-                            anyArchived = true;
-                        }
-                    }
-                    else
-                    {
-                        // If the checkbox is not checked, ensure the record is not archived
-                        int id = Convert.ToInt32(row.Cells[0].Text); 
-                        var record = _db.ReceivingOutstandings.FirstOrDefault(x => x.id == id);  
-                        if (record != null)
-                        {
-                            record.Archive = false;
-                            record.ArchiveBy = null;
-                            record.ArchiveDate = null;
-                            anyArchived = true;
-                        }
+                        r.Archive = archive;
+                        r.ArchiveBy = archive ? CurrentUser.RoleID : (long?)null;
+                        r.ArchiveDate = archive ? DateTime.Now : (DateTime?)null;
+                        anyArchived = true;
                     }
                 }
 

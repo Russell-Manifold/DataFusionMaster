@@ -40,5 +40,6 @@ namespace SBMS.Models
         public Nullable<int> ByRoleID { get; set; }
         public string TransactionReference { get; set; }
         public decimal ExchRate { get; set; }
+        public Nullable<decimal> StoreAvgCost { get; set; }
     }
 }

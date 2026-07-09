@@ -4491,6 +4491,15 @@ namespace SBMS
                         api.LoadOneItemNA(itmid, CurrentUser);
                         var itm = _db.ItemsMasters.FirstOrDefault(x => x.CompanyID == CurrentUser.CoID && x.ID == itmid);
 
+                        // Draws leave at the draw store's running weighted average (outs never
+                        // revalue a store). The same number then drives the Sage adjustment and
+                        // the local row below — one cost, every side.
+                        if (useqty < 0)
+                        {
+                            decimal drawAvg = StoreCosting.GetStoreAvgCost(_db, CurrentUser.CoID, itmid, store1);
+                            if (drawAvg > 0) unitcost = drawAvg;
+                        }
+
                         // TESTING ONLY
                         //decimal CurrentQOH = 3;
                         //decimal SageCurrentAvCost = 166.80m;
@@ -4588,6 +4597,17 @@ namespace SBMS
                         ItemTrans.AdditionalCosts = 0;
                         ItemTrans.TotalUnitPriceExclInclAdd = unitcost;
                         ItemTrans.TotalLineValExcl = ItemTrans.PriceExclusive * ItemTrans.Qty;
+                        // Stamp the store's running average after this movement: a DRAW leaves it
+                        // unchanged (unitcost already IS the store average); MANF re-blends it.
+                        if (useqty < 0)
+                        {
+                            ItemTrans.StoreAvgCost = unitcost;
+                        }
+                        else
+                        {
+                            decimal manfVal;
+                            ItemTrans.StoreAvgCost = StoreCosting.ComputeMovement(_db, CurrentUser.CoID, itmid, store1, useqty, unitcost * useqty, out manfVal);
+                        }
                         ItemTrans.TransactionReference = ItemTrans.TransactionType + ": WO" + Convert.ToInt64(lblwoid.Text) + " - " + DateTime.Now.ToString() + " Lot:" + LotNum;
                         ItemTrans.ExchRate = 1;
                         _db.ItemTransactions.Add(ItemTrans);
@@ -4650,6 +4670,9 @@ namespace SBMS
                             ItemTrans.AdditionalCosts = 0;
                             ItemTrans.TotalUnitPriceExclInclAdd = unitcost;
                             ItemTrans.TotalLineValExcl = ItemTrans.PriceExclusive * ItemTrans.Qty;
+                            // Inbound to the scrap store re-blends its running average.
+                            decimal scrapVal;
+                            ItemTrans.StoreAvgCost = StoreCosting.ComputeMovement(_db, CurrentUser.CoID, itmid, store1, rejqty, unitcost * rejqty, out scrapVal);
                             ItemTrans.TransactionReference = "Scrap WO" + Convert.ToInt64(lblwoid.Text) + " - " + DateTime.Now.ToString() + " Lot:" + LotNum;
                             ItemTrans.ExchRate = 1;
                             _db.ItemTransactions.Add(ItemTrans);

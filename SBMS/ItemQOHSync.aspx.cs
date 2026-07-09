@@ -346,6 +346,8 @@ namespace SBMS
                                 LtNew.LotQuantity = ItemTrans.Qty ?? 0m;
                                 _db.LotTrackingMasters.Add(LtNew);
                             }
+                            // ledger for this item was wiped above, so this opening row alone defines the store average
+                            ItemTrans.StoreAvgCost = itm.AverageCost;
                             _db.ItemTransactions.Add(ItemTrans);
                             //try
                             //{
@@ -490,6 +492,8 @@ namespace SBMS
                             LtNew.LotQuantity = ItemTrans.Qty ?? 0m;
                             _db.LotTrackingMasters.Add(LtNew);
                         }
+                        // ledger for this item was wiped above, so this opening row alone defines the store average
+                        ItemTrans.StoreAvgCost = itm.AverageCost;
                         _db.ItemTransactions.Add(ItemTrans);
                         try
                         {

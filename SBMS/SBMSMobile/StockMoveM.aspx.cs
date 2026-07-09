@@ -228,8 +228,14 @@ namespace SBMS
         private void MoveStock(SBMSEntities db, ItemTransferLine line, long fromStoreId, long toStoreId, decimal qty, string reference)
         {
             if (qty <= 0) return;
-            decimal unitCost = line.TotalUnitPriceExclInclAdd ?? line.PriceExclusive ?? 0;
             long itemId = line.ItemSelectionId ?? 0;
+
+            // OUT leg leaves at the source store's running weighted average (outs never revalue
+            // a store); the IN leg arrives at that same cost and re-blends the destination's
+            // running average. No freight on mobile moves.
+            decimal srcAvg = StoreCosting.GetStoreAvgCost(db, CurrentUser.CoID, itemId, fromStoreId);
+            decimal inLineVal;
+            decimal destAvg = StoreCosting.ComputeMovement(db, CurrentUser.CoID, itemId, toStoreId, qty, srcAvg * qty, out inLineVal);
 
             db.ItemTransactions.Add(new ItemTransaction
             {
@@ -247,10 +253,11 @@ namespace SBMS
                 DocumentType = 4,
                 TransactionDate = DateTime.Now,
                 ByRoleID = CurrentUser.RoleID,
-                PriceExclusive = unitCost,
+                PriceExclusive = srcAvg,
                 AdditionalCosts = 0,
-                TotalUnitPriceExclInclAdd = unitCost,
-                TotalLineValExcl = unitCost * (qty * -1m),
+                TotalUnitPriceExclInclAdd = srcAvg,
+                TotalLineValExcl = srcAvg * (qty * -1m),
+                StoreAvgCost = srcAvg,
                 ExchRate = 1,
                 TransactionReference = line.ItemCode + " " + reference + " out"
             });
@@ -271,10 +278,11 @@ namespace SBMS
                 DocumentType = 4,
                 TransactionDate = DateTime.Now,
                 ByRoleID = CurrentUser.RoleID,
-                PriceExclusive = unitCost,
+                PriceExclusive = srcAvg,
                 AdditionalCosts = 0,
-                TotalUnitPriceExclInclAdd = unitCost,
-                TotalLineValExcl = unitCost * qty,
+                TotalUnitPriceExclInclAdd = srcAvg,
+                TotalLineValExcl = inLineVal,
+                StoreAvgCost = destAvg,
                 ExchRate = 1,
                 TransactionReference = line.ItemCode + " " + reference + " in"
             });
@@ -291,6 +299,10 @@ namespace SBMS
                     Active = true
                 });
             }
+
+            // Save per move so the next line's ComputeMovement sees this row in the ledger
+            // (Send Out posts several lines in one loop — same item twice must re-blend correctly).
+            db.SaveChanges();
         }
 
         // Reserved GIT (goods-in-transit) store; created on first use like CoR/CoD/Scr.

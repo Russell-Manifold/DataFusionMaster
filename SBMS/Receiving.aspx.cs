@@ -689,6 +689,7 @@ namespace SBMS
                 
                 if (chkAddLotNum.Checked == true)
                 {
+                    
                     // add new row to the document safely by creating a fresh record instead of an object reference
                     TempDocLine Tdl = new TempDocLine
                     {
@@ -765,39 +766,43 @@ namespace SBMS
                 if(DDStore.Enabled == true) Docline.StoreCode = DDStoreEdit.SelectedValue.ToString();
                 Docline.ReceiveQty = QtyRec;
                 Docline.QtyLeft = QtyLeft < 0 ? 0 : QtyLeft;
-                if (lblLotNum.Enabled == true) Docline.LotNumber = lblLotNum.Text;
                 Docline.ToReceive = true;
                 Docline.ReceiveComplete = false;
-                if (lblLotNum.Enabled == true)
+                if (CurrentUser.CompanyUseLotNumbers == true && chkAddLotNum.Checked == true)
                 {
-                    // save new Lot Number to db
-                    LotTrackingMaster LtNew = new LotTrackingMaster();
-                    LtNew.LotNumber = Docline.LotNumber;
-                    LtNew.CreatedDate = DateTime.Now;
-                    LtNew.CompanyID = CurrentUser.CoID;
-                    LtNew.ItemCode = Docline.ItemCode;
-                    LtNew.ItemId = Docline.SelectionId;
-                    LtNew.LotActive = true;
-                    
-                    decimal LotQty = 1;
-                    try
-                    {
-                        LotQty = Convert.ToDecimal(txtNumPieces.Text);
-                    }
-                    catch { }
-                    LtNew.LotQuantity = LotQty;
-                    if (txtLotNote.Text.ToString().Trim().Length > 0)
-                    {
-                        LtNew.LotUserDefined = txtLotNote.Text.ToString().Trim();
-                    }
-                    try
-                    {
-                        DateTime ubDate = Convert.ToDateTime(txtRecDate.Text);
-                        LtNew.UseByDate = ubDate;
-                    }
-                    catch { }
+                    if (lblLotNum.Enabled == true) Docline.LotNumber = lblLotNum.Text;
 
-                    _db.LotTrackingMasters.Add(LtNew);
+                    if (lblLotNum.Enabled == true)
+                    {
+                        // save new Lot Number to db
+                        LotTrackingMaster LtNew = new LotTrackingMaster();
+                        LtNew.LotNumber = Docline.LotNumber;
+                        LtNew.CreatedDate = DateTime.Now;
+                        LtNew.CompanyID = CurrentUser.CoID;
+                        LtNew.ItemCode = Docline.ItemCode;
+                        LtNew.ItemId = Docline.SelectionId;
+                        LtNew.LotActive = true;
+
+                        decimal LotQty = 1;
+                        try
+                        {
+                            LotQty = Convert.ToDecimal(txtNumPieces.Text);
+                        }
+                        catch { }
+                        LtNew.LotQuantity = LotQty;
+                        if (txtLotNote.Text.ToString().Trim().Length > 0)
+                        {
+                            LtNew.LotUserDefined = txtLotNote.Text.ToString().Trim();
+                        }
+                        try
+                        {
+                            DateTime ubDate = Convert.ToDateTime(txtRecDate.Text);
+                            LtNew.UseByDate = ubDate;
+                        }
+                        catch { }
+
+                        _db.LotTrackingMasters.Add(LtNew);
+                    }
                 }
                 _db.SaveChanges();
                 lblLineID.Text = "";
@@ -943,6 +948,34 @@ namespace SBMS
                         string message = "Please receive line items before continuing.";
                         AlertHelper.ShowSweetAlert(this, message, "warning");
                         return;
+                    }
+
+                    // Rejected qty was delivered and billed, so it counts against the PO line.
+                    // Record it in the receiving history (IsReject=true) - without this row the
+                    // LoadLines recompute (ordered - sum RecQty) re-adds rejects as outstanding.
+                    long.TryParse(lblSupplierID.Text, out long rejSuppId);
+                    foreach (var dl in FLines.Where(x => x.RejectQty > 0 && x.ItemType == 0))
+                    {
+                        _db.ReceivingOutstandings.Add(new ReceivingOutstanding
+                        {
+                            CompanyID = CurrentUser.CoID,
+                            PONumber = txtDocNum.Text,
+                            PODocID = docid,
+                            Supplier = txtSuppName.Text,
+                            SupplierID = rejSuppId,
+                            ItemCode = dl.ItemCode,
+                            SelectionId = dl.SelectionId,
+                            ItemDescription = dl.ItemDescription,
+                            OrigQty = dl.Quantity ?? 0,
+                            RecQty = dl.RejectQty,
+                            QtyLeft = dl.QtyLeft ?? 0,
+                            LineID = dl.LineID,
+                            SBCALineID = dl.SBCALineID,
+                            IsReject = true,
+                            CreatedBy = CurrentUser.RoleID,
+                            CreatedDate = DateTime.Now,
+                            Archive = false
+                        });
                     }
 
                     #region create new documents preparing for Sage
@@ -1288,6 +1321,9 @@ namespace SBMS
                                     ItemTrans.TransactionDate = DateTime.Now;
                                     ItemTrans.ByRoleID = CurrentUser.RoleID; // roleid
                                     ItemTrans.ExchRate = dl.ExchRate;
+                                    // Inbound re-blends the receiving store's running weighted average.
+                                    decimal recVal;
+                                    ItemTrans.StoreAvgCost = StoreCosting.ComputeMovement(_db, CurrentUser.CoID, (long)dl.SelectionId, (long)ItemTrans.ToID, (decimal)ItemTrans.Qty, (decimal)ItemTrans.TotalLineValExcl, out recVal);
                                     _db.ItemTransactions.Add(ItemTrans);
 
                                     if (dl.LotNumber != null)
@@ -1483,7 +1519,10 @@ namespace SBMS
                                     // Additional costs ????
                                     ItemTrans.TransactionDate = DateTime.Now;
                                     ItemTrans.ByRoleID = CurrentUser.RoleID; // roleid
-                                    ItemTrans.ExchRate = (decimal)exchRate;       
+                                    ItemTrans.ExchRate = (decimal)exchRate;
+                                    // Inbound (landed cost incl add-costs) re-blends the receiving store's running average.
+                                    decimal recVal2;
+                                    ItemTrans.StoreAvgCost = StoreCosting.ComputeMovement(_db, CurrentUser.CoID, (long)dl.SelectionId, (long)ItemTrans.ToID, (decimal)ItemTrans.Qty, (decimal)ItemTrans.TotalLineValExcl, out recVal2);
                                     _db.ItemTransactions.Add(ItemTrans);
 
                                     if (dl.LotNumber != null)
@@ -1636,6 +1675,9 @@ namespace SBMS
                             rTrans.TransactionDate = DateTime.Now;
                             rTrans.ByRoleID = CurrentUser.RoleID;
                             rTrans.ExchRate = (decimal)exchRate;
+                            // Inbound to the reject store re-blends its running average.
+                            decimal rejVal;
+                            rTrans.StoreAvgCost = StoreCosting.ComputeMovement(_db, CurrentUser.CoID, (long)dl.SelectionId, rejStoreId, (decimal)rTrans.Qty, (decimal)rTrans.TotalLineValExcl, out rejVal);
                             _db.ItemTransactions.Add(rTrans);
 
                             var ItSR = _db.ItemStoreLinkMasters.Where(x => x.CompanyID == CurrentUser.CoID && x.StoreID == (int?)rejStoreId && x.ItemID == dl.SelectionId).FirstOrDefault();
@@ -1649,8 +1691,9 @@ namespace SBMS
                                     Active = true,
                                 });
                             }
+                            // Save per line so the next line's running-average read sees this row.
+                            _db.SaveChanges();
                         }
-                        _db.SaveChanges();
                     }
 
                     //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1687,6 +1730,9 @@ namespace SBMS
                         .Where(x => x.PODocID == docid && x.Archive == false && x.BatchID == null)
                         .ToList();
                     foreach (var br in batchRows) br.BatchID = batchId;
+                    // Also stamp rows added this request but not yet saved (e.g. the reject rows).
+                    foreach (var br in _db.ReceivingOutstandings.Local.Where(x => x.PODocID == docid && x.Archive == false && x.BatchID == null))
+                        br.BatchID = batchId;
 
                     //%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

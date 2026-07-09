@@ -17,7 +17,6 @@
         <EntityTypeShape EntityType="SBMSModel.ItemsMaster" Width="1.5" PointX="10.75" PointY="4.75" IsExpanded="true" />
         <EntityTypeShape EntityType="SBMSModel.ItemsReorderLevel" Width="1.5" PointX="4.75" PointY="10.75" IsExpanded="true" />
         <EntityTypeShape EntityType="SBMSModel.ItemStoreLinkMaster" Width="1.5" PointX="12.75" PointY="0.75" IsExpanded="true" />
-        <EntityTypeShape EntityType="SBMSModel.ItemTransaction" Width="1.5" PointX="12.75" PointY="3.75" IsExpanded="true" />
         <EntityTypeShape EntityType="SBMSModel.JobCardLine" Width="1.5" PointX="12.75" PointY="10.75" IsExpanded="true" />
         <EntityTypeShape EntityType="SBMSModel.JobTransaction" Width="1.5" PointX="14.75" PointY="0.75" IsExpanded="true" />
         <EntityTypeShape EntityType="SBMSModel.KitHeader" Width="1.5" PointX="14.75" PointY="4.75" IsExpanded="true" />
@@ -58,6 +57,7 @@
         <EntityTypeShape EntityType="SBMSModel.ReceivingOutstanding" Width="1.5" PointX="25.375" PointY="25.75" />
         <EntityTypeShape EntityType="SBMSModel.CompanyMaster" Width="1.5" PointX="0.75" PointY="26.75" />
         <EntityTypeShape EntityType="SBMSModel.ItemTransferHeader" Width="1.5" PointX="23.375" PointY="0.75" />
+        <EntityTypeShape EntityType="SBMSModel.ItemTransaction" Width="1.5" PointX="23.375" PointY="6.75" />
       </Diagram>
     </edmx:Diagrams>
   </edmx:Designer>

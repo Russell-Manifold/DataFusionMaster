@@ -164,45 +164,6 @@
           <Property Name="DelivMethod" Type="varchar" MaxLength="50" />
           <Property Name="DelActive" Type="bit" Nullable="false" />
         </EntityType>
-        <EntityType Name="DIUpdateLog">
-          <Key>
-            <PropertyRef Name="LogID" />
-          </Key>
-          <Property Name="LogID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
-          <Property Name="UpdateStart" Type="datetime" />
-          <Property Name="UpdateEnd" Type="datetime" />
-          <Property Name="CompanyID" Type="varchar" MaxLength="50" />
-          <Property Name="CompanyName" Type="varchar" MaxLength="150" />
-          <Property Name="ProfileID" Type="varchar" MaxLength="50" />
-          <Property Name="CustomerCount" Type="int" />
-          <Property Name="SupplierCount" Type="int" />
-          <Property Name="ItemCount" Type="int" />
-          <Property Name="TaxInvoiceCount" Type="int" />
-          <Property Name="CNCount" Type="int" />
-          <Property Name="SuppInvCount" Type="int" />
-          <Property Name="SuppCNCount" Type="int" />
-          <Property Name="JournalCount" Type="int" />
-          <Property Name="QuotationCount" Type="int" />
-          <Property Name="GLTransCount" Type="int" />
-          <Property Name="AnalysisCodeCount" Type="int" />
-          <Property Name="CustomerUpdate" Type="datetime" />
-          <Property Name="SupplierUpdate" Type="datetime" />
-          <Property Name="ItemUpdate" Type="datetime" />
-          <Property Name="TaxInvoiceUpdate" Type="datetime" />
-          <Property Name="CNUpdate" Type="datetime" />
-          <Property Name="SuppInvUpdate" Type="datetime" />
-          <Property Name="SuppCNUpdate" Type="datetime" />
-          <Property Name="JournalUpdate" Type="datetime" />
-          <Property Name="QuoteUpdate" Type="datetime" />
-          <Property Name="GLTransUpdate" Type="datetime" />
-          <Property Name="AnalysisCodeUpdate" Type="datetime" />
-          <Property Name="SalesOrderUpdate" Type="datetime" />
-          <Property Name="CustAdjUpdate" Type="datetime" />
-          <Property Name="SuppAdjUpdate" Type="datetime" />
-          <Property Name="BankUpdate" Type="datetime" />
-          <Property Name="POUpdate" Type="datetime" />
-          <Property Name="SOUpdate" Type="datetime" />
-        </EntityType>
         <EntityType Name="DocHeader">
           <Key>
             <PropertyRef Name="ID" />
@@ -503,6 +464,7 @@
           <Property Name="ByRoleID" Type="int" />
           <Property Name="TransactionReference" Type="varchar" MaxLength="100" />
           <Property Name="ExchRate" Type="decimal" Precision="18" Scale="4" Nullable="false" />
+          <Property Name="StoreAvgCost" Type="decimal" Precision="18" Scale="4" />
         </EntityType>
         <EntityType Name="ItemTransferHeaders">
           <Key>
@@ -1348,7 +1310,6 @@
           <EntitySet Name="BundlesLines" EntityType="Self.BundlesLines" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="CompanyMaster" EntityType="Self.CompanyMaster" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="DelivMethods" EntityType="Self.DelivMethods" Schema="dbo" store:Type="Tables" />
-          <EntitySet Name="DIUpdateLog" EntityType="Self.DIUpdateLog" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="DocHeader" EntityType="Self.DocHeader" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="DocHeaderAttachment" EntityType="Self.DocHeaderAttachment" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="DocLines" EntityType="Self.DocLines" Schema="dbo" store:Type="Tables" />
@@ -1693,37 +1654,6 @@
           <Property Name="StoreID" Type="Int32" />
           <Property Name="Active" Type="Boolean" />
         </EntityType>
-        <EntityType Name="ItemTransaction">
-          <Key>
-            <PropertyRef Name="TrnID" />
-          </Key>
-          <Property Name="TrnID" Type="Int64" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="CompanyID" Type="Int64" Nullable="false" />
-          <Property Name="DocumentID" Type="Int64" />
-          <Property Name="DocumentType" Type="Int32" />
-          <Property Name="TransactionType" Type="String" MaxLength="5" FixedLength="false" Unicode="false" />
-          <Property Name="ItemID" Type="Int64" />
-          <Property Name="ItemCode" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
-          <Property Name="ItemDescription" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
-          <Property Name="Barcode" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
-          <Property Name="LotNumberID" Type="Int64" />
-          <Property Name="LotNumber" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
-          <Property Name="Unit" Type="String" MaxLength="20" FixedLength="false" Unicode="false" />
-          <Property Name="FromID" Type="Int64" />
-          <Property Name="ToID" Type="Int64" />
-          <Property Name="Qty" Type="Decimal" Precision="18" Scale="4" />
-          <Property Name="PriceExclusive" Type="Decimal" Precision="18" Scale="4" />
-          <Property Name="PriceInclusive" Type="Decimal" Precision="18" Scale="4" />
-          <Property Name="AdditionalCosts" Type="Decimal" Precision="18" Scale="4" />
-          <Property Name="TotalUnitPriceExclInclAdd" Type="Decimal" Precision="18" Scale="4" />
-          <Property Name="TotalUnitPriceInclInclAdd" Type="Decimal" Precision="18" Scale="4" />
-          <Property Name="TotalLineValExcl" Type="Decimal" Precision="18" Scale="4" />
-          <Property Name="TotalLineValIncl" Type="Decimal" Precision="18" Scale="4" />
-          <Property Name="TransactionDate" Type="DateTime" Precision="3" />
-          <Property Name="ByRoleID" Type="Int32" />
-          <Property Name="TransactionReference" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
-          <Property Name="ExchRate" Type="Decimal" Precision="18" Scale="4" Nullable="false" />
-        </EntityType>
         <EntityType Name="JobCardLine">
           <Key>
             <PropertyRef Name="LineID" />
@@ -2014,7 +1944,6 @@
           <EntitySet Name="ItemsMasters" EntityType="Self.ItemsMaster" />
           <EntitySet Name="ItemsReorderLevels" EntityType="Self.ItemsReorderLevel" />
           <EntitySet Name="ItemStoreLinkMasters" EntityType="Self.ItemStoreLinkMaster" />
-          <EntitySet Name="ItemTransactions" EntityType="Self.ItemTransaction" />
           <EntitySet Name="JobCardLines" EntityType="Self.JobCardLine" />
           <EntitySet Name="JobTransactions" EntityType="Self.JobTransaction" />
           <EntitySet Name="KitHeaders" EntityType="Self.KitHeader" />
@@ -2186,7 +2115,6 @@
             <End Role="DocHeaderAttachment" EntitySet="DocHeaderAttachments" />
             <End Role="DocHeaderAttachment1" EntitySet="DocHeaderAttachments" />
           </AssociationSet>
-          <EntitySet Name="DIUpdateLogs" EntityType="SBMSModel.DIUpdateLog" />
           <EntitySet Name="ItemTransferLines" EntityType="SBMSModel.ItemTransferLine" />
           <AssociationSet Name="FK_ItemTransferLines_ItemTransferLines" Association="SBMSModel.FK_ItemTransferLines_ItemTransferLines">
             <End Role="ItemTransferLine" EntitySet="ItemTransferLines" />
@@ -2229,6 +2157,7 @@
           <EntitySet Name="ReceivingOutstandings" EntityType="SBMSModel.ReceivingOutstanding" />
           <EntitySet Name="CompanyMasters" EntityType="SBMSModel.CompanyMaster" />
           <EntitySet Name="ItemTransferHeaders" EntityType="SBMSModel.ItemTransferHeader" />
+          <EntitySet Name="ItemTransactions" EntityType="SBMSModel.ItemTransaction" />
         </EntityContainer>
         <ComplexType Name="GetActiveLotNumbersLinkedToStores_Result">
           <Property Type="String" Name="LotNumber" Nullable="true" MaxLength="50" />
@@ -3068,45 +2997,6 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
-        <EntityType Name="DIUpdateLog">
-          <Key>
-            <PropertyRef Name="LogID" />
-          </Key>
-          <Property Name="LogID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="UpdateStart" Type="DateTime" Precision="3" />
-          <Property Name="UpdateEnd" Type="DateTime" Precision="3" />
-          <Property Name="CompanyID" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
-          <Property Name="CompanyName" Type="String" MaxLength="150" FixedLength="false" Unicode="false" />
-          <Property Name="ProfileID" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
-          <Property Name="CustomerCount" Type="Int32" />
-          <Property Name="SupplierCount" Type="Int32" />
-          <Property Name="ItemCount" Type="Int32" />
-          <Property Name="TaxInvoiceCount" Type="Int32" />
-          <Property Name="CNCount" Type="Int32" />
-          <Property Name="SuppInvCount" Type="Int32" />
-          <Property Name="SuppCNCount" Type="Int32" />
-          <Property Name="JournalCount" Type="Int32" />
-          <Property Name="QuotationCount" Type="Int32" />
-          <Property Name="GLTransCount" Type="Int32" />
-          <Property Name="AnalysisCodeCount" Type="Int32" />
-          <Property Name="CustomerUpdate" Type="DateTime" Precision="3" />
-          <Property Name="SupplierUpdate" Type="DateTime" Precision="3" />
-          <Property Name="ItemUpdate" Type="DateTime" Precision="3" />
-          <Property Name="TaxInvoiceUpdate" Type="DateTime" Precision="3" />
-          <Property Name="CNUpdate" Type="DateTime" Precision="3" />
-          <Property Name="SuppInvUpdate" Type="DateTime" Precision="3" />
-          <Property Name="SuppCNUpdate" Type="DateTime" Precision="3" />
-          <Property Name="JournalUpdate" Type="DateTime" Precision="3" />
-          <Property Name="QuoteUpdate" Type="DateTime" Precision="3" />
-          <Property Name="GLTransUpdate" Type="DateTime" Precision="3" />
-          <Property Name="AnalysisCodeUpdate" Type="DateTime" Precision="3" />
-          <Property Name="SalesOrderUpdate" Type="DateTime" Precision="3" />
-          <Property Name="CustAdjUpdate" Type="DateTime" Precision="3" />
-          <Property Name="SuppAdjUpdate" Type="DateTime" Precision="3" />
-          <Property Name="BankUpdate" Type="DateTime" Precision="3" />
-          <Property Name="POUpdate" Type="DateTime" Precision="3" />
-          <Property Name="SOUpdate" Type="DateTime" Precision="3" />
-        </EntityType>
         <EntityType Name="ItemTransferLine">
           <Key>
             <PropertyRef Name="TrfLID" />
@@ -3390,6 +3280,38 @@
           <Property Name="TrfAddCost" Type="Decimal" Precision="18" Scale="4" />
           <Property Name="TrfAddCostReason" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
           <Property Name="TrfAddCostSageUpd" Type="Boolean" />
+        </EntityType>
+        <EntityType Name="ItemTransaction">
+          <Key>
+            <PropertyRef Name="TrnID" />
+          </Key>
+          <Property Name="TrnID" Type="Int64" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="CompanyID" Type="Int64" Nullable="false" />
+          <Property Name="DocumentID" Type="Int64" />
+          <Property Name="DocumentType" Type="Int32" />
+          <Property Name="TransactionType" Type="String" MaxLength="5" FixedLength="false" Unicode="false" />
+          <Property Name="ItemID" Type="Int64" />
+          <Property Name="ItemCode" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="ItemDescription" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
+          <Property Name="Barcode" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="LotNumberID" Type="Int64" />
+          <Property Name="LotNumber" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Unit" Type="String" MaxLength="20" FixedLength="false" Unicode="false" />
+          <Property Name="FromID" Type="Int64" />
+          <Property Name="ToID" Type="Int64" />
+          <Property Name="Qty" Type="Decimal" Precision="18" Scale="4" />
+          <Property Name="PriceExclusive" Type="Decimal" Precision="18" Scale="4" />
+          <Property Name="PriceInclusive" Type="Decimal" Precision="18" Scale="4" />
+          <Property Name="AdditionalCosts" Type="Decimal" Precision="18" Scale="4" />
+          <Property Name="TotalUnitPriceExclInclAdd" Type="Decimal" Precision="18" Scale="4" />
+          <Property Name="TotalUnitPriceInclInclAdd" Type="Decimal" Precision="18" Scale="4" />
+          <Property Name="TotalLineValExcl" Type="Decimal" Precision="18" Scale="4" />
+          <Property Name="TotalLineValIncl" Type="Decimal" Precision="18" Scale="4" />
+          <Property Name="TransactionDate" Type="DateTime" Precision="3" />
+          <Property Name="ByRoleID" Type="Int32" />
+          <Property Name="TransactionReference" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
+          <Property Name="ExchRate" Type="Decimal" Nullable="false" Precision="18" Scale="4" />
+          <Property Name="StoreAvgCost" Type="Decimal" Precision="18" Scale="4" />
         </EntityType>
         </Schema>
     </edmx:ConceptualModels>
@@ -3696,38 +3618,6 @@
                 <ScalarProperty Name="ItemID" ColumnName="ItemID" />
                 <ScalarProperty Name="StoreID" ColumnName="StoreID" />
                 <ScalarProperty Name="Active" ColumnName="Active" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
-          <EntitySetMapping Name="ItemTransactions">
-            <EntityTypeMapping TypeName="SBMSModel.ItemTransaction">
-              <MappingFragment StoreEntitySet="ItemTransaction">
-                <ScalarProperty Name="TrnID" ColumnName="TrnID" />
-                <ScalarProperty Name="CompanyID" ColumnName="CompanyID" />
-                <ScalarProperty Name="DocumentID" ColumnName="DocumentID" />
-                <ScalarProperty Name="DocumentType" ColumnName="DocumentType" />
-                <ScalarProperty Name="TransactionType" ColumnName="TransactionType" />
-                <ScalarProperty Name="ItemID" ColumnName="ItemID" />
-                <ScalarProperty Name="ItemCode" ColumnName="ItemCode" />
-                <ScalarProperty Name="ItemDescription" ColumnName="ItemDescription" />
-                <ScalarProperty Name="Barcode" ColumnName="Barcode" />
-                <ScalarProperty Name="LotNumberID" ColumnName="LotNumberID" />
-                <ScalarProperty Name="LotNumber" ColumnName="LotNumber" />
-                <ScalarProperty Name="Unit" ColumnName="Unit" />
-                <ScalarProperty Name="FromID" ColumnName="FromID" />
-                <ScalarProperty Name="ToID" ColumnName="ToID" />
-                <ScalarProperty Name="Qty" ColumnName="Qty" />
-                <ScalarProperty Name="PriceExclusive" ColumnName="PriceExclusive" />
-                <ScalarProperty Name="PriceInclusive" ColumnName="PriceInclusive" />
-                <ScalarProperty Name="AdditionalCosts" ColumnName="AdditionalCosts" />
-                <ScalarProperty Name="TotalUnitPriceExclInclAdd" ColumnName="TotalUnitPriceExclInclAdd" />
-                <ScalarProperty Name="TotalUnitPriceInclInclAdd" ColumnName="TotalUnitPriceInclInclAdd" />
-                <ScalarProperty Name="TotalLineValExcl" ColumnName="TotalLineValExcl" />
-                <ScalarProperty Name="TotalLineValIncl" ColumnName="TotalLineValIncl" />
-                <ScalarProperty Name="TransactionDate" ColumnName="TransactionDate" />
-                <ScalarProperty Name="ByRoleID" ColumnName="ByRoleID" />
-                <ScalarProperty Name="TransactionReference" ColumnName="TransactionReference" />
-                <ScalarProperty Name="ExchRate" ColumnName="ExchRate" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
@@ -4999,46 +4889,6 @@
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
-          <EntitySetMapping Name="DIUpdateLogs">
-            <EntityTypeMapping TypeName="SBMSModel.DIUpdateLog">
-              <MappingFragment StoreEntitySet="DIUpdateLog">
-                <ScalarProperty Name="SOUpdate" ColumnName="SOUpdate" />
-                <ScalarProperty Name="POUpdate" ColumnName="POUpdate" />
-                <ScalarProperty Name="BankUpdate" ColumnName="BankUpdate" />
-                <ScalarProperty Name="SuppAdjUpdate" ColumnName="SuppAdjUpdate" />
-                <ScalarProperty Name="CustAdjUpdate" ColumnName="CustAdjUpdate" />
-                <ScalarProperty Name="SalesOrderUpdate" ColumnName="SalesOrderUpdate" />
-                <ScalarProperty Name="AnalysisCodeUpdate" ColumnName="AnalysisCodeUpdate" />
-                <ScalarProperty Name="GLTransUpdate" ColumnName="GLTransUpdate" />
-                <ScalarProperty Name="QuoteUpdate" ColumnName="QuoteUpdate" />
-                <ScalarProperty Name="JournalUpdate" ColumnName="JournalUpdate" />
-                <ScalarProperty Name="SuppCNUpdate" ColumnName="SuppCNUpdate" />
-                <ScalarProperty Name="SuppInvUpdate" ColumnName="SuppInvUpdate" />
-                <ScalarProperty Name="CNUpdate" ColumnName="CNUpdate" />
-                <ScalarProperty Name="TaxInvoiceUpdate" ColumnName="TaxInvoiceUpdate" />
-                <ScalarProperty Name="ItemUpdate" ColumnName="ItemUpdate" />
-                <ScalarProperty Name="SupplierUpdate" ColumnName="SupplierUpdate" />
-                <ScalarProperty Name="CustomerUpdate" ColumnName="CustomerUpdate" />
-                <ScalarProperty Name="AnalysisCodeCount" ColumnName="AnalysisCodeCount" />
-                <ScalarProperty Name="GLTransCount" ColumnName="GLTransCount" />
-                <ScalarProperty Name="QuotationCount" ColumnName="QuotationCount" />
-                <ScalarProperty Name="JournalCount" ColumnName="JournalCount" />
-                <ScalarProperty Name="SuppCNCount" ColumnName="SuppCNCount" />
-                <ScalarProperty Name="SuppInvCount" ColumnName="SuppInvCount" />
-                <ScalarProperty Name="CNCount" ColumnName="CNCount" />
-                <ScalarProperty Name="TaxInvoiceCount" ColumnName="TaxInvoiceCount" />
-                <ScalarProperty Name="ItemCount" ColumnName="ItemCount" />
-                <ScalarProperty Name="SupplierCount" ColumnName="SupplierCount" />
-                <ScalarProperty Name="CustomerCount" ColumnName="CustomerCount" />
-                <ScalarProperty Name="ProfileID" ColumnName="ProfileID" />
-                <ScalarProperty Name="CompanyName" ColumnName="CompanyName" />
-                <ScalarProperty Name="CompanyID" ColumnName="CompanyID" />
-                <ScalarProperty Name="UpdateEnd" ColumnName="UpdateEnd" />
-                <ScalarProperty Name="UpdateStart" ColumnName="UpdateStart" />
-                <ScalarProperty Name="LogID" ColumnName="LogID" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
           <EntitySetMapping Name="ItemTransferLines">
             <EntityTypeMapping TypeName="SBMSModel.ItemTransferLine">
               <MappingFragment StoreEntitySet="ItemTransferLines">
@@ -5348,6 +5198,39 @@
                 <ScalarProperty Name="TrfDate" ColumnName="TrfDate" />
                 <ScalarProperty Name="CompanyID" ColumnName="CompanyID" />
                 <ScalarProperty Name="TrfID" ColumnName="TrfID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="ItemTransactions">
+            <EntityTypeMapping TypeName="SBMSModel.ItemTransaction">
+              <MappingFragment StoreEntitySet="ItemTransaction">
+                <ScalarProperty Name="StoreAvgCost" ColumnName="StoreAvgCost" />
+                <ScalarProperty Name="ExchRate" ColumnName="ExchRate" />
+                <ScalarProperty Name="TransactionReference" ColumnName="TransactionReference" />
+                <ScalarProperty Name="ByRoleID" ColumnName="ByRoleID" />
+                <ScalarProperty Name="TransactionDate" ColumnName="TransactionDate" />
+                <ScalarProperty Name="TotalLineValIncl" ColumnName="TotalLineValIncl" />
+                <ScalarProperty Name="TotalLineValExcl" ColumnName="TotalLineValExcl" />
+                <ScalarProperty Name="TotalUnitPriceInclInclAdd" ColumnName="TotalUnitPriceInclInclAdd" />
+                <ScalarProperty Name="TotalUnitPriceExclInclAdd" ColumnName="TotalUnitPriceExclInclAdd" />
+                <ScalarProperty Name="AdditionalCosts" ColumnName="AdditionalCosts" />
+                <ScalarProperty Name="PriceInclusive" ColumnName="PriceInclusive" />
+                <ScalarProperty Name="PriceExclusive" ColumnName="PriceExclusive" />
+                <ScalarProperty Name="Qty" ColumnName="Qty" />
+                <ScalarProperty Name="ToID" ColumnName="ToID" />
+                <ScalarProperty Name="FromID" ColumnName="FromID" />
+                <ScalarProperty Name="Unit" ColumnName="Unit" />
+                <ScalarProperty Name="LotNumber" ColumnName="LotNumber" />
+                <ScalarProperty Name="LotNumberID" ColumnName="LotNumberID" />
+                <ScalarProperty Name="Barcode" ColumnName="Barcode" />
+                <ScalarProperty Name="ItemDescription" ColumnName="ItemDescription" />
+                <ScalarProperty Name="ItemCode" ColumnName="ItemCode" />
+                <ScalarProperty Name="ItemID" ColumnName="ItemID" />
+                <ScalarProperty Name="TransactionType" ColumnName="TransactionType" />
+                <ScalarProperty Name="DocumentType" ColumnName="DocumentType" />
+                <ScalarProperty Name="DocumentID" ColumnName="DocumentID" />
+                <ScalarProperty Name="CompanyID" ColumnName="CompanyID" />
+                <ScalarProperty Name="TrnID" ColumnName="TrnID" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>

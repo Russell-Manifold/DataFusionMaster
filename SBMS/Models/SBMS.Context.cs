@@ -35,7 +35,6 @@ namespace SBMS.Models
         public virtual DbSet<ItemsMaster> ItemsMasters { get; set; }
         public virtual DbSet<ItemsReorderLevel> ItemsReorderLevels { get; set; }
         public virtual DbSet<ItemStoreLinkMaster> ItemStoreLinkMasters { get; set; }
-        public virtual DbSet<ItemTransaction> ItemTransactions { get; set; }
         public virtual DbSet<JobCardLine> JobCardLines { get; set; }
         public virtual DbSet<JobTransaction> JobTransactions { get; set; }
         public virtual DbSet<KitHeader> KitHeaders { get; set; }
@@ -73,6 +72,7 @@ namespace SBMS.Models
         public virtual DbSet<ReceivingOutstanding> ReceivingOutstandings { get; set; }
         public virtual DbSet<CompanyMaster> CompanyMasters { get; set; }
         public virtual DbSet<ItemTransferHeader> ItemTransferHeaders { get; set; }
+        public virtual DbSet<ItemTransaction> ItemTransactions { get; set; }
     
         public virtual ObjectResult<GetActiveLotNumbersLinkedToStores_Result> GetActiveLotNumbersLinkedToStores(Nullable<long> coID)
         {

@@ -63,9 +63,9 @@
                                   <asp:Panel ID="Panel1" runat="server" DefaultButton="lbtnfind" Style="font-size: 1em; width: 100%">
                                   <table style="width: 100%">
                                       <tr>
-                                          <td>Find (Supplier / PO Num) &nbsp;<asp:TextBox ID="txtfind" runat="server"></asp:TextBox><asp:LinkButton ID="lbtnfind" runat="server" CssClass="fa fa-search buttonC" OnClick="lbtnfind_Click"></asp:LinkButton></td>
-                                          <td></td>
-                                           <td style="text-align:right"><asp:CheckBox ID="chkArchived" runat="server" Text="Show Archived" AutoPostBack="true" OnCheckedChanged="chkCompl_CheckedChanged"/></td>
+                                          <td>Find (Supplier / PO Num) &nbsp;<asp:TextBox ID="txtfind" runat="server"></asp:TextBox></td>
+                                          <td>Find (Code / Description) &nbsp;<asp:TextBox ID="txtfindItem" runat="server"></asp:TextBox><asp:LinkButton ID="lbtnfind" runat="server" CssClass="fa fa-search buttonC" OnClick="lbtnfind_Click"></asp:LinkButton></td>
+                                           <td></td>
                                       </tr>
                                   </table>
                                   </asp:Panel>
@@ -81,24 +81,17 @@
                                         <PagerStyle CssClass="gridViewPager" />
                                         <PagerSettings Visible="true" Mode="Numeric" PageButtonCount="5" />
                                         <Columns>
-                                            <asp:BoundField DataField="id" ReadOnly="True" />
+                                            <asp:BoundField DataField="PODocID" ReadOnly="True" />
                                             <asp:BoundField HeaderText="PO Number" DataField="PONumber" ReadOnly="True" ItemStyle-Width="8em" SortExpression="PONumber" />
                                             <asp:BoundField HeaderText="Date" DataField="CreatedDate" ReadOnly="True" DataFormatString="{0:dd MMM yyyy}" ItemStyle-Width="8em" SortExpression="CreatedDate" />
                                             <asp:BoundField HeaderText="Supplier Name" DataField="Supplier" ReadOnly="True" SortExpression="Supplier" />
                                             <asp:BoundField HeaderText="Code" DataField="ItemCode" ReadOnly="True" SortExpression="ItemCode" />
                                             <asp:BoundField HeaderText="Description" DataField="ItemDescription" ReadOnly="True" SortExpression="ItemDescription" />
-                                            <asp:BoundField HeaderText="Order Qty" DataField="OrigQty" ReadOnly="True" DataFormatString="{0:N2}" ItemStyle-HorizontalAlign="Center" HeaderStyle-HorizontalAlign="Center" ItemStyle-Width="5em"  />
-                                            <asp:BoundField HeaderText="Received" DataField="RecQty" ReadOnly="True" DataFormatString="{0:N2}" ItemStyle-HorizontalAlign="Center" HeaderStyle-HorizontalAlign="Center" ItemStyle-Width="5em"  />
-                                            <asp:BoundField HeaderText="Balance" DataField="QtyLeft" ReadOnly="True" DataFormatString="{0:N2}" ItemStyle-HorizontalAlign="Center" HeaderStyle-HorizontalAlign="Center" ItemStyle-Width="5em"  />
-                                            <asp:TemplateField HeaderText="Archive" ItemStyle-HorizontalAlign="Center" ItemStyle-Width="5em" SortExpression="Archive">
-                                                <ItemTemplate>
-                                                    <asp:CheckBox ID="chkArchive" runat="server" Text=" " Checked='<%# Eval("Archive")%>'  />
-                                                </ItemTemplate>
-                                            </asp:TemplateField>
-                                             <asp:BoundField HeaderText="Re Order PO #" DataField="ReOrderPONum" ReadOnly="True" SortExpression="ReOrderPONum" />
+                                            <asp:BoundField HeaderText="Order Qty" DataField="OrigQty" ReadOnly="True" DataFormatString="{0:N2}" ItemStyle-HorizontalAlign="Center" HeaderStyle-HorizontalAlign="Center" ItemStyle-Width="5em" SortExpression="OrigQty"  />
+                                            <asp:BoundField HeaderText="Received" DataField="RecQty" ReadOnly="True" DataFormatString="{0:N2}" ItemStyle-HorizontalAlign="Center" HeaderStyle-HorizontalAlign="Center" ItemStyle-Width="5em" SortExpression="RecQty"  />
+                                            <asp:BoundField HeaderText="Balance" DataField="QtyLeft" ReadOnly="True" DataFormatString="{0:N2}" ItemStyle-HorizontalAlign="Center" HeaderStyle-HorizontalAlign="Center" ItemStyle-Width="5em"  SortExpression="QtyLeft" />
                                         </Columns>
                                     </asp:GridView>
-                                     <asp:LinkButton ID="lbtnArchive" runat="server" Text="  Archive Selected Records" ToolTip="Archive selected records without generating new purchase orders for the outstanding quantity." CssClass="fa fa-archive buttonSage" style="float:right" OnClick="lbtnArchive_Click"></asp:LinkButton>
                                 </div>
                             </div>
                             </div>

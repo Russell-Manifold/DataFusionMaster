@@ -222,6 +222,15 @@ namespace SBMS
         protected global::System.Web.UI.WebControls.TextBox txtfind;
 
         /// <summary>
+        /// txtfindItem control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtfindItem;
+
+        /// <summary>
         /// lbtnfind control.
         /// </summary>
         /// <remarks>
@@ -231,15 +240,6 @@ namespace SBMS
         protected global::System.Web.UI.WebControls.LinkButton lbtnfind;
 
         /// <summary>
-        /// chkArchived control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.CheckBox chkArchived;
-
-        /// <summary>
         /// GridPOs control.
         /// </summary>
         /// <remarks>
@@ -247,14 +247,5 @@ namespace SBMS
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.GridView GridPOs;
-
-        /// <summary>
-        /// lbtnArchive control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton lbtnArchive;
     }
 }

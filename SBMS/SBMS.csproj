@@ -971,6 +971,9 @@
     <Compile Include="Models\GetValidateBarcode_Result.cs">
       <DependentUpon>SBMS.tt</DependentUpon>
     </Compile>
+    <Compile Include="Models\ItemTransaction.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
     <Compile Include="Models\ItemTransferHeader.cs">
       <DependentUpon>SBMS.tt</DependentUpon>
     </Compile>
@@ -1065,6 +1068,7 @@
       <DependentUpon>ItemConvertUOM.aspx</DependentUpon>
     </Compile>
     <Compile Include="Classes\AlertHelper.cs" />
+    <Compile Include="Classes\StoreCosting.cs" />
     <Compile Include="Classes\Authentication.cs" />
     <Compile Include="Classes\ChatService.cs" />
     <Compile Include="Classes\HelpService.cs" />
@@ -1354,9 +1358,6 @@
       <DependentUpon>SBMS.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\ItemStoreLinkMaster.cs">
-      <DependentUpon>SBMS.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Models\ItemTransaction.cs">
       <DependentUpon>SBMS.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\ItemTransferLine.cs">

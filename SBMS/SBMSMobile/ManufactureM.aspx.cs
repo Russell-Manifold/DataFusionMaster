@@ -248,6 +248,15 @@ namespace SBMS
 
                 if (unitcost == 0) unitcost = itm.AverageCost ?? 0;
 
+                // Draws leave at the draw store's running weighted average (outs never
+                // revalue a store). The same number then drives the Sage adjustment and
+                // the local row below — one cost, every side (mirrors desktop DoItemAdjustment).
+                if (qty < 0)
+                {
+                    decimal drawAvg = StoreCosting.GetStoreAvgCost(db, CurrentUser.CoID, itmid, storeId);
+                    if (drawAvg > 0) unitcost = drawAvg;
+                }
+
                 decimal currentQOH = itm.QuantityOnHand ?? 0;
                 decimal sageAvCost = itm.AverageCost ?? 0;
                 decimal thisValue = qty * unitcost;
@@ -286,6 +295,20 @@ namespace SBMS
                     if (res != "Success") return res;
                 }
 
+                // Stamp the store's running average after this movement: a DRAW leaves it
+                // unchanged (unitcost already IS the store average); MANF re-blends it.
+                // Computed BEFORE the Add so the new row is not yet in the ledger.
+                decimal storeAvgAfter;
+                if (qty < 0)
+                {
+                    storeAvgAfter = unitcost;
+                }
+                else
+                {
+                    decimal manfVal;
+                    storeAvgAfter = StoreCosting.ComputeMovement(db, CurrentUser.CoID, itmid, storeId, qty, unitcost * qty, out manfVal);
+                }
+
                 db.ItemTransactions.Add(new ItemTransaction
                 {
                     CompanyID = CurrentUser.CoID,
@@ -305,6 +328,7 @@ namespace SBMS
                     AdditionalCosts = 0,
                     TotalUnitPriceExclInclAdd = unitcost,
                     TotalLineValExcl = unitcost * qty,
+                    StoreAvgCost = storeAvgAfter,
                     ExchRate = 1,
                     TransactionReference = (qty > 0 ? "MANF" : "DRAW") + ": WO" + WONum
                 });

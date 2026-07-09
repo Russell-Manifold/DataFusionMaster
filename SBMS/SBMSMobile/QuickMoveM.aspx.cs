@@ -263,7 +263,12 @@ namespace SBMS
                     Step = 2; InConfirmed = false; RenderStep(); return;
                 }
 
-                decimal cost = row.TotalUnitPriceExclInclAdd ?? row.PriceExclusive ?? Cost;
+                // OUT leg leaves at the source store's running weighted average (outs never
+                // revalue a store); the IN leg arrives at that same cost and re-blends the
+                // destination's running average.
+                decimal srcAvg = StoreCosting.GetStoreAvgCost(db, CurrentUser.CoID, ItemId, SrcId);
+                decimal inLineVal;
+                decimal destAvg = StoreCosting.ComputeMovement(db, CurrentUser.CoID, ItemId, DestId, MoveQty, srcAvg * MoveQty, out inLineVal);
 
                 // IN to destination
                 db.ItemTransactions.Add(new ItemTransaction
@@ -280,10 +285,11 @@ namespace SBMS
                     FromID                    = SrcId,
                     ToID                      = DestId,
                     Qty                       = MoveQty,
-                    PriceExclusive            = cost,
+                    PriceExclusive            = srcAvg,
                     AdditionalCosts           = 0m,
-                    TotalUnitPriceExclInclAdd = cost,
-                    TotalLineValExcl          = cost * MoveQty,
+                    TotalUnitPriceExclInclAdd = srcAvg,
+                    TotalLineValExcl          = inLineVal,
+                    StoreAvgCost              = destAvg,
                     TransactionDate           = DateTime.Now,
                     ByRoleID                  = CurrentUser.RoleID,
                     TransactionReference      = row.ItemCode + " Quick Move " + MoveQty.ToString("0.##") + " to " + DestCode,
@@ -307,10 +313,11 @@ namespace SBMS
                     FromID                    = DestId,
                     ToID                      = SrcId,
                     Qty                       = MoveQty * -1,
-                    PriceExclusive            = cost,
+                    PriceExclusive            = srcAvg,
                     AdditionalCosts           = 0m,
-                    TotalUnitPriceExclInclAdd = cost,
-                    TotalLineValExcl          = cost * (MoveQty * -1),
+                    TotalUnitPriceExclInclAdd = srcAvg,
+                    TotalLineValExcl          = srcAvg * (MoveQty * -1),
+                    StoreAvgCost              = srcAvg,
                     TransactionDate           = DateTime.Now,
                     ByRoleID                  = CurrentUser.RoleID,
                     TransactionReference      = row.ItemCode + " Quick Move " + MoveQty.ToString("0.##") + " from " + SrcCode,

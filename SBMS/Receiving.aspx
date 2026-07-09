@@ -317,10 +317,6 @@
                                                 </tr>
                                                  <tr><td colspan="2"><hr /></td></tr>
                                                 <tr>
-                                                    <td colspan="2"><span style="font-size:0.8em; text-align:center">The layout of this pop-up has been re-modelled, </br> in preparation for the barcode scanning receiving,</br> which is due to be release before the end of 2025.</span></td>
-                                                </tr>
-                                                <tr><td colspan="2"><hr /></td></tr>
-                                                <tr>
                                                      <td>Ordered Qty</td>
                                                     <td><asp:textbox id="txtordqty" runat="server" readonly="true" Enabled="false" style="width:6em; text-align:center" ClientIDMode="Static" Text="" onblur="startCalc()" TabIndex="99"></asp:textbox></td>  <%--onblur="startCalc()"--%>   
                                                  </tr> 

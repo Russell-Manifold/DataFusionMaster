@@ -54,7 +54,6 @@
                                     <a href="https://mydatafusion.online" title="My Data Fusion website">
                                         <img src="images/Logo.png" style="border-radius: 0.25em; float: left" class="logoImg" /></a>
                                     <asp:Image ID="imgCoImg" runat="server" Style="float: right" class="logoImg" />
-                                     <asp:LinkButton ID="lbtnSOs" runat="server" class="buttonC fa fa-chevron-circle-right" PostBackUrl="~/PurchaseOrdersIncomplete.aspx" style="float:left; margin:1em">&nbsp;Purchase Order Tracking</asp:LinkButton>
                                     <h3 style="padding-top: 2em; line-height: 1em">Purchase Orders<asp:Label ID="lblpoqty" runat="server" Text=""></asp:Label></h3>
                                 </div>
                                 </div>

@@ -282,9 +282,15 @@ namespace SBMS
                     return;
                 }
 
-                decimal cost = row.TotalUnitPriceExclInclAdd ?? row.PriceExclusive ?? 0m;
+                // One number drives both legs: stock leaves holding at the holding store's
+                // running average and arrives at the destination carrying the same value.
+                decimal holdAvg = StoreCosting.GetStoreAvgCost(db, CurrentUser.CoID, itemId, SourceStoreID);
+                decimal cost = holdAvg != 0m ? holdAvg : (row.TotalUnitPriceExclInclAdd ?? row.PriceExclusive ?? 0m);
 
-                // IN to destination
+                // IN to destination: re-blends the destination store's running weighted average.
+                decimal inVal;
+                decimal destAvg = StoreCosting.ComputeMovement(db, CurrentUser.CoID, itemId, dest.StoreID, qty, cost * qty, out inVal);
+
                 db.ItemTransactions.Add(new ItemTransaction
                 {
                     CompanyID                 = CurrentUser.CoID,
@@ -306,12 +312,15 @@ namespace SBMS
                     TransactionDate           = DateTime.Now,
                     ByRoleID                  = CurrentUser.RoleID,
                     TransactionReference      = row.ItemCode + " Put-away " + qty + " to " + dest.StoreCode,
-                    ExchRate                  = 1
+                    ExchRate                  = 1,
+                    StoreAvgCost              = destAvg
                 });
                 db.SaveChanges();
                 EnsureStoreLink(db, itemId, dest.StoreID);
 
-                // OUT of holding (mirror)
+                // OUT of holding (mirror): same unit value as the IN leg above.
+                decimal outCost = cost;
+
                 db.ItemTransactions.Add(new ItemTransaction
                 {
                     CompanyID                 = CurrentUser.CoID,
@@ -326,14 +335,15 @@ namespace SBMS
                     ToID                      = SourceStoreID,
                     FromID                    = dest.StoreID,
                     Qty                       = qty * -1,
-                    PriceExclusive            = cost,
+                    PriceExclusive            = outCost,
                     AdditionalCosts           = 0m,
-                    TotalUnitPriceExclInclAdd = cost,
-                    TotalLineValExcl          = cost * (qty * -1),
+                    TotalUnitPriceExclInclAdd = outCost,
+                    TotalLineValExcl          = outCost * (qty * -1),
                     TransactionDate           = DateTime.Now,
                     ByRoleID                  = CurrentUser.RoleID,
                     TransactionReference      = row.ItemCode + " Put-away " + qty + " from " + SourceStoreCode,
-                    ExchRate                  = 1
+                    ExchRate                  = 1,
+                    StoreAvgCost              = outCost
                 });
 
                 db.SaveChanges();

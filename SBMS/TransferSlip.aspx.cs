@@ -901,29 +901,20 @@ namespace SBMS
                 ItemTrans.ToID = fromStoreId;
                 ItemTrans.Qty = line.TrfOutQty * -1;
                 trfQty = (decimal)line.TrfOutQty * -1;
-                //ItemTrans.PriceInclusive = line.PriceInclusive;
-                ItemTrans.PriceExclusive = line.TotalUnitPriceExclInclAdd;
-                TrfUnitCost = (decimal)ItemTrans.PriceExclusive;
-                decimal ToBal = trfQty;
-                var QOHIn = (from it2 in _db.ItemTransactions
-                                where it2.ItemID == line.ItemSelectionId && it2.CompanyID == line.CompanyID && it2.LotNumber == line.LotNumber && it2.ToID == ItemTrans.ToID
-                                orderby it2.TransactionDate descending
-                                select new
-                                {
-                                    it2.TotalUnitPriceExclInclAdd
-                                }).FirstOrDefault();
-                if (QOHIn != null)
-                {
-                    if (QOHIn.TotalUnitPriceExclInclAdd.HasValue) ItemTrans.PriceExclusive = QOHIn.TotalUnitPriceExclInclAdd;
-                }
+                // OUT leg (issuing store): stock leaves at the source store's running weighted
+                // average; an outbound movement never changes the source average.
+                long itemId = (long)line.ItemSelectionId;
+                long coId = (long)line.CompanyID;
+                decimal srcAvg = StoreCosting.GetStoreAvgCost(_db, coId, itemId, fromStoreId);
+                ItemTrans.PriceExclusive = srcAvg;
+                TrfUnitCost = srcAvg;
                 ItemTrans.TransactionDate = DateTime.Now;
                 ItemTrans.DocumentType = 4;
                 ItemTrans.ByRoleID = CurrentUser.RoleID; // roleid
-
-                // OUT leg (issuing store): base cost only, never carries additional costs.
                 ItemTrans.AdditionalCosts = 0;
-                ItemTrans.TotalUnitPriceExclInclAdd = ItemTrans.PriceExclusive;
-                ItemTrans.TotalLineValExcl = ItemTrans.TotalUnitPriceExclInclAdd * trfQty;
+                ItemTrans.TotalUnitPriceExclInclAdd = srcAvg;
+                ItemTrans.TotalLineValExcl = srcAvg * trfQty;
+                ItemTrans.StoreAvgCost = srcAvg;
                 ItemTrans.TransactionReference = line.ItemCode + " " + trfref + " " + trfQty + " out to " + _stores.Where(x => x.StoreID == toStoreId).Select(x => x.StoreCode).FirstOrDefault();
                 ItemTrans.ExchRate = 1;
                 
@@ -962,13 +953,17 @@ namespace SBMS
                 ItemTransOUT.TransactionDate = DateTime.Now;
                 ItemTransOUT.ByRoleID = CurrentUser.RoleID; // roleid
 
-                // IN leg (receiving store): base cost plus the amortised freight per unit.
-                // The receiving store's average is derived from the ledger, so posting the uplifted
-                // value here blends it correctly against stock already in that warehouse.
-                ItemTransOUT.PriceExclusive = ItemTrans.PriceExclusive;
+                // IN leg (receiving store): arrives at source average + amortised freight, and the
+                // destination's running weighted average re-blends against stock already there.
+                decimal inQty = trfQty * -1;
+                decimal unitLanded = srcAvg + freightPerUnit;
+                decimal lineVal;
+                decimal destAvg = StoreCosting.ComputeMovement(_db, coId, itemId, toStoreId, inQty, unitLanded * inQty, out lineVal);
+                ItemTransOUT.PriceExclusive = srcAvg;
                 ItemTransOUT.AdditionalCosts = freightPerUnit;
-                ItemTransOUT.TotalUnitPriceExclInclAdd = ItemTrans.PriceExclusive + freightPerUnit;
-                ItemTransOUT.TotalLineValExcl = ItemTransOUT.TotalUnitPriceExclInclAdd * (trfQty * -1);
+                ItemTransOUT.TotalUnitPriceExclInclAdd = unitLanded;
+                ItemTransOUT.TotalLineValExcl = lineVal;
+                ItemTransOUT.StoreAvgCost = destAvg;
                 ItemTransOUT.TransactionReference = ItemTrans.ItemCode + " " + trfref + " " + trfQty * -1 + " in from " + _stores.Where(x => x.StoreID == fromStoreId).Select(x => x.StoreCode).FirstOrDefault();
                 ItemTransOUT.ExchRate = 1;
                 _db.ItemTransactions.Add(ItemTransOUT);

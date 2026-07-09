@@ -1214,6 +1214,15 @@ namespace SBMS
                         ItemTrans.TransactionReference = lblDocNum.Text + " Complete - Issued to Sage";
                         ItemTrans.LotNumber = dl.LotNumber;
                         ItemTrans.ExchRate = (decimal)dl.ExchRate;
+                        // cost fields deliberately carry the selling price here; StoreAvgCost still tracks the true store cost
+                        if (ItemTrans.Qty < 0)
+                        {
+                            ItemTrans.StoreAvgCost = StoreCosting.GetStoreAvgCost(_db, CurrentUser.CoID, (long)ItemTrans.ItemID, (long)ItemTrans.ToID);
+                        }
+                        else
+                        {
+                            ItemTrans.StoreAvgCost = StoreCosting.ComputeMovement(_db, CurrentUser.CoID, (long)ItemTrans.ItemID, (long)ItemTrans.ToID, ItemTrans.Qty ?? 0, ItemTrans.TotalLineValExcl ?? 0, out var _v);
+                        }
                         _db.ItemTransactions.Add(ItemTrans);
 
                         Itm.QuantityOnHand = Itm.QuantityOnHand + ItemTrans.Qty;

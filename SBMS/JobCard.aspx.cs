@@ -746,6 +746,7 @@ namespace SBMS
                                 ItemTrans.TotalLineValExcl = ItemTrans.TotalUnitPriceExclInclAdd * ItemTrans.Qty;
                                 ItemTrans.TransactionReference = lblDocNum.Text + " Reversal";
                                 ItemTrans.LotNumber = ItmR.LotNumber;
+                                ItemTrans.StoreAvgCost = StoreCosting.ComputeMovement(_db, CurrentUser.CoID, (long)ItemTrans.ItemID, FrmStorid, ItemTrans.Qty ?? 0, ItemTrans.TotalLineValExcl ?? 0, out var _v);
                                 _db.ItemTransactions.Add(ItemTrans);
                                 NewJCLine.ItemTransLineID = null;
                                 _db.SaveChanges();
@@ -809,8 +810,16 @@ namespace SBMS
                                     }
                                 }
                             }
+                            // per-store weighted average drives the issue cost; the last-row cost above is only the fallback
+                            decimal storeAvg = StoreCosting.GetStoreAvgCost(_db, CurrentUser.CoID, (long)ItemTrans.ItemID, FrmStorid);
+                            if (storeAvg != 0)
+                            {
+                                ItemTrans.PriceExclusive = storeAvg;
+                                ItemTrans.TotalUnitPriceExclInclAdd = storeAvg;
+                            }
+                            ItemTrans.StoreAvgCost = ItemTrans.TotalUnitPriceExclInclAdd;
                             ItemTrans.TransactionDate = DateTime.Now;
-                            ItemTrans.ByRoleID = CurrentUser.RoleID; // roleid     
+                            ItemTrans.ByRoleID = CurrentUser.RoleID; // roleid
                             ItemTrans.AdditionalCosts = 0;
                             ItemTrans.TotalLineValExcl = ItemTrans.TotalUnitPriceExclInclAdd * ItemTrans.Qty;
                             ItemTrans.TransactionReference = lblDocNum.Text;
@@ -1143,6 +1152,7 @@ namespace SBMS
                             ItemTrans.TotalLineValExcl = ItemTrans.TotalUnitPriceExclInclAdd * ItemTrans.Qty;
                             ItemTrans.TransactionReference = lblDocNum.Text;
                             ItemTrans.LotNumber = JCLn.LotNumber ?? "";
+                            ItemTrans.StoreAvgCost = StoreCosting.ComputeMovement(_db, CurrentUser.CoID, (long)ItemTrans.ItemID, (long)ItemTrans.ToID, ItemTrans.Qty ?? 0, ItemTrans.TotalLineValExcl ?? 0, out var _v);
                             _db.ItemTransactions.Add(ItemTrans);
                             _db.SaveChanges();
                         }
@@ -2058,8 +2068,16 @@ namespace SBMS
                                 ItemTrans.PriceExclusive = lastTrn.PriceExclusive;
                                 ItemTrans.TotalUnitPriceExclInclAdd = lastTrn.TotalUnitPriceExclInclAdd;
                             }
+                            // per-store weighted average drives the outbound cost; the last-row cost above is only the fallback
+                            decimal storeAvg = StoreCosting.GetStoreAvgCost(_db, CurrentUser.CoID, (long)ItemTrans.ItemID, (long)ItemTrans.ToID);
+                            if (storeAvg != 0)
+                            {
+                                ItemTrans.PriceExclusive = storeAvg;
+                                ItemTrans.TotalUnitPriceExclInclAdd = storeAvg;
+                            }
+                            ItemTrans.StoreAvgCost = ItemTrans.TotalUnitPriceExclInclAdd;
                             ItemTrans.TransactionDate = DateTime.Now;
-                            ItemTrans.ByRoleID = CurrentUser.RoleID; // roleid     
+                            ItemTrans.ByRoleID = CurrentUser.RoleID; // roleid
                             ItemTrans.AdditionalCosts = 0;
                             ItemTrans.TotalLineValExcl = ItemTrans.TotalUnitPriceExclInclAdd * ItemTrans.Qty;
                             ItemTrans.TransactionReference = lblDocNum.Text;
