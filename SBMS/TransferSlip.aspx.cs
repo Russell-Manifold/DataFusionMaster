@@ -1,5 +1,7 @@
 using iTextSharp.text;
 using iTextSharp.text.pdf;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Org.BouncyCastle.Pqc.Crypto.Lms;
 using SBMS.Classes;
 using SBMS.Models;
@@ -9,6 +11,7 @@ using System.Data.Entity.Core.Common.CommandTrees.ExpressionBuilder;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Web.UI.WebControls;
 
 namespace SBMS
@@ -776,7 +779,7 @@ namespace SBMS
                 }
             }
         }
-        protected void lbtnCompleteTrf_Click(object sender, EventArgs e)
+        protected async void lbtnCompleteTrf_Click(object sender, EventArgs e)
         {
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {
@@ -795,19 +798,91 @@ namespace SBMS
                 long fromStoreId = header.TrfFromID ?? 0;
                 long toStoreId = header.TrfToID ?? 0;
 
+                // Read the additional costs straight off the panel (they post with the form regardless
+                // of the Save click), falling back to anything saved earlier via the costs panel.
+                decimal totalAddCost = 0m;
+                decimal.TryParse(txtAddCost.Text, out totalAddCost);
+                bool sageUpd = chkSageUpdate.Checked;
+                string addReason = (txtAddCostReason.Text ?? "").Trim();
+                if (totalAddCost <= 0 && (header.TrfAddCost ?? 0m) > 0)
+                {
+                    totalAddCost = header.TrfAddCost ?? 0m;
+                    sageUpd = header.TrfAddCostSageUpd ?? false;
+                    addReason = header.TrfAddCostReason ?? "";
+                }
+                // Persist what is actually being applied.
+                header.TrfAddCost = totalAddCost > 0 ? (decimal?)totalAddCost : header.TrfAddCost;
+                header.TrfAddCostReason = string.IsNullOrEmpty(addReason) ? header.TrfAddCostReason : addReason;
+                header.TrfAddCostSageUpd = sageUpd;
+
+                // Freight is one charge for the whole slip; amortise by quantity across every unit moved.
+                decimal totalQty = lines.Sum(l => l.TrfOutQty ?? 0m);
+                decimal freightPerUnit = (totalAddCost > 0 && totalQty > 0) ? totalAddCost / totalQty : 0m;
+
                 foreach (var line in lines)
                 {
                     line.TrfInQty = line.TrfOutQty;
-                    DoAdjustments(header.TrfReference, line, fromStoreId, toStoreId);
+                    DoAdjustments(header.TrfReference, line, fromStoreId, toStoreId, freightPerUnit);
                 }
 
                 _db.SaveChanges();
+
+                // Optional: lift the item average cost in Sage so qty x avg cost matches both platforms.
+                if (sageUpd && totalAddCost > 0 && CurrentUser.UATMode == false)
+                {
+                    var byItem = lines.Where(l => l.ItemSelectionId != null)
+                                      .GroupBy(l => l.ItemSelectionId.Value)
+                                      .Select(g => new { ItemID = g.Key, Qty = g.Sum(x => x.TrfOutQty ?? 0m) })
+                                      .ToList();
+
+                    foreach (var it in byItem)
+                    {
+                        var Itm = _db.ItemsMasters.FirstOrDefault(x => x.CompanyID == CurrentUser.CoID && x.ID == it.ItemID);
+                        if (Itm == null || (Itm.QuantityOnHand ?? 0m) == 0m) continue;
+
+                        decimal totQOH = (decimal)Itm.QuantityOnHand;
+                        decimal oldAvg = (decimal)(Itm.AverageCost ?? 0m);
+                        decimal itemFreight = freightPerUnit * it.Qty;
+
+                        // Remove qty at the current average, then add it back at the new average that
+                        // blends the existing on-hand value with the freight just added.
+                        ItemAdjustment iAdj = new ItemAdjustment
+                        {
+                            Date = DateTime.Now,
+                            ItemID = it.ItemID,
+                            AverageCost = oldAvg,
+                            Quantity = it.Qty * -1,
+                            Reason = "ADJ Out Trf " + header.TrfReference + " - " + addReason,
+                            Created = DateTime.Now
+                        };
+                        await SendItemAdjustment(JsonConvert.SerializeObject(iAdj, Formatting.Indented));
+
+                        decimal newAvg = (totQOH * oldAvg + itemFreight) / totQOH;
+                        iAdj = new ItemAdjustment
+                        {
+                            Date = DateTime.Now,
+                            ItemID = it.ItemID,
+                            AverageCost = newAvg,
+                            Quantity = it.Qty,
+                            Reason = "ADJ In Trf " + header.TrfReference + " - " + addReason,
+                            Created = DateTime.Now
+                        };
+                        await SendItemAdjustment(JsonConvert.SerializeObject(iAdj, Formatting.Indented));
+                    }
+                }
+
                 LoadTransfer();
                 AlertHelper.ShowSweetAlert(this, "Transfer Completed", "success");
             }
         }
 
-        private void DoAdjustments(string trfref, ItemTransferLine line, long fromStoreId, long toStoreId)
+        private async Task SendItemAdjustment(string Item)
+        {
+            ApiUrlCall Api = new ApiUrlCall();
+            JObject parsedJSON = await Api.APIPostDocumentAsync("ItemAdjustment", Item, CurrentUser);
+        }
+
+        private void DoAdjustments(string trfref, ItemTransferLine line, long fromStoreId, long toStoreId, decimal freightPerUnit)
         {
             decimal trfQty = 0, TrfUnitCost = 0;
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
@@ -844,14 +919,10 @@ namespace SBMS
                 ItemTrans.TransactionDate = DateTime.Now;
                 ItemTrans.DocumentType = 4;
                 ItemTrans.ByRoleID = CurrentUser.RoleID; // roleid
-                                                            // Additional costs ????
-                decimal AddCosts = 0, UnitPrInclAddCosts = 0;
+
+                // OUT leg (issuing store): base cost only, never carries additional costs.
                 ItemTrans.AdditionalCosts = 0;
-
                 ItemTrans.TotalUnitPriceExclInclAdd = ItemTrans.PriceExclusive;
-                if (AddCosts > 0) { ItemTrans.TotalUnitPriceExclInclAdd = ItemTrans.TotalUnitPriceExclInclAdd + (AddCosts / trfQty); }
-                UnitPrInclAddCosts = (decimal)ItemTrans.TotalUnitPriceExclInclAdd;
-
                 ItemTrans.TotalLineValExcl = ItemTrans.TotalUnitPriceExclInclAdd * trfQty;
                 ItemTrans.TransactionReference = line.ItemCode + " " + trfref + " " + trfQty + " out to " + _stores.Where(x => x.StoreID == toStoreId).Select(x => x.StoreCode).FirstOrDefault();
                 ItemTrans.ExchRate = 1;
@@ -891,11 +962,12 @@ namespace SBMS
                 ItemTransOUT.TransactionDate = DateTime.Now;
                 ItemTransOUT.ByRoleID = CurrentUser.RoleID; // roleid
 
-                // Additional costs ????
-                ItemTransOUT.AdditionalCosts = 0;
-                //if (AddCosts > 0) { ItemTrans.AdditionalCosts = AddCosts / trfQty; }
+                // IN leg (receiving store): base cost plus the amortised freight per unit.
+                // The receiving store's average is derived from the ledger, so posting the uplifted
+                // value here blends it correctly against stock already in that warehouse.
                 ItemTransOUT.PriceExclusive = ItemTrans.PriceExclusive;
-                ItemTransOUT.TotalUnitPriceExclInclAdd = ItemTrans.TotalUnitPriceExclInclAdd;
+                ItemTransOUT.AdditionalCosts = freightPerUnit;
+                ItemTransOUT.TotalUnitPriceExclInclAdd = ItemTrans.PriceExclusive + freightPerUnit;
                 ItemTransOUT.TotalLineValExcl = ItemTransOUT.TotalUnitPriceExclInclAdd * (trfQty * -1);
                 ItemTransOUT.TransactionReference = ItemTrans.ItemCode + " " + trfref + " " + trfQty * -1 + " in from " + _stores.Where(x => x.StoreID == fromStoreId).Select(x => x.StoreCode).FirstOrDefault();
                 ItemTransOUT.ExchRate = 1;
@@ -1231,7 +1303,27 @@ namespace SBMS
 
         protected void btnSaveConfirm_Click(object sender, EventArgs e)
         {
+            decimal addCost = 0;
+            decimal.TryParse(txtAddCost.Text, out addCost);
+            if (addCost <= 0)
+            {
+                AlertHelper.ShowSweetAlert(this, "Please enter a valid additional cost amount.", "error");
+                return;
+            }
 
+            using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+            {
+                var header = _db.ItemTransferHeaders.FirstOrDefault(x => x.CompanyID == CurrentUser.CoID && x.TrfID == TrfThisID);
+                if (header != null)
+                {
+                    header.TrfAddCost = addCost;
+                    header.TrfAddCostReason = (txtAddCostReason.Text ?? "").Trim();
+                    header.TrfAddCostSageUpd = chkSageUpdate.Checked;
+                    _db.SaveChanges();
+                }
+            }
+
+            AlertHelper.ShowSweetAlert(this, "Additional costs saved. Complete the transfer to apply.", "success");
         }
     }
 }

@@ -1,4 +1,4 @@
-<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="TransferSlip.aspx.cs" Inherits="SBMS.TransferSlip" %>
+<%@ Page Language="C#" Async="true" AutoEventWireup="true" CodeBehind="TransferSlip.aspx.cs" Inherits="SBMS.TransferSlip" %>
 <%@ Register Assembly="AjaxControlToolkit" Namespace="AjaxControlToolkit" TagPrefix="cci" %>
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -204,12 +204,21 @@
                                  <h4>Add Shipping/Additional Costs<asp:Label ID="lblTpe" runat="server" Text=""></asp:Label></h4>
                              </div>
                              <div class="PopupBody" style="text-align: center">
-                                 <span style="font-size:0.8em">Costs captured will be allocated across all items on this Transfer Slip.<br /> The stock value in the receiving warehouse will be adjusted accordingly. <br /><br /> Attention ! Sage average unit is NOT updated. </span><br /><br />
-                                 <table style="width: 250px; margin: auto; font-size: .8em; text-align: left">
+                                 <span style="font-size:0.8em">Costs captured will be allocated across all items on this Transfer Slip.<br /> The stock value in the receiving warehouse will be adjusted accordingly. <br /><br /> Tick below to also lift the item average cost in Sage. </span><br /><br />
+                                 <table style="width: 300px; margin: auto; font-size: .8em; text-align: left">
                                      <tr>
                                          <td>Additional Cost *</td>
                                          <td style="padding: .5em">
                                              <asp:TextBox ID="txtAddCost" runat="server" Width="100px" Style="padding: .5em; text-align:center"></asp:TextBox></td>
+                                     </tr>
+                                     <tr>
+                                         <td>Description</td>
+                                         <td style="padding: .5em">
+                                             <asp:TextBox ID="txtAddCostReason" runat="server" TextMode="MultiLine" Rows="2" Width="160px" MaxLength="100" Style="padding: .5em"></asp:TextBox></td>
+                                     </tr>
+                                     <tr>
+                                         <td colspan="2" style="padding: .5em">
+                                             <asp:CheckBox ID="chkSageUpdate" runat="server" Text="Update item average cost in Sage?" /></td>
                                      </tr>
                                  </table>
                                  <cci:FilteredTextBoxExtender ID="ftbe" runat="server" TargetControlID="txtAddCost" FilterType="Custom, Numbers" ValidChars="." />

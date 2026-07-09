@@ -475,7 +475,7 @@ namespace SBMS
                         TL.QtyLeft = Convert.ToDecimal(ApiUrlCall.NumberToDecimal(TL.QtyLeft.ToString(), CurrentUser.CompanyDecPlaces));
                     }
                     // Reject uses the same decimal places as the other qty fields; default 0.
-                    TL.RejectQty = Convert.ToDecimal(ApiUrlCall.NumberToDecimal((TL.RejectQty ?? 0).ToString(), CurrentUser.CompanyDecPlaces));
+                    TL.RejectQty = Convert.ToDecimal(ApiUrlCall.NumberToDecimal(TL.RejectQty.ToString(), CurrentUser.CompanyDecPlaces));
                 }
                 GridPOLines.DataSource = TempLines;
                 GridPOLines.DataBind();
@@ -1000,7 +1000,7 @@ namespace SBMS
                             DL.TaxTypeId = (int)dl.LineTaxTypeID;
                             DL.Description = dl.ItemDescription;
                             DL.LineType = (int)dl.LineType;  // 0 = Inventory Item
-                            DL.Quantity = (decimal)dl.ReceiveQty + (dl.RejectQty ?? 0);   // bill accept + reject; reject is split to the reject store after the GRN
+                            DL.Quantity = (decimal)dl.ReceiveQty + (dl.RejectQty);   // bill accept + reject; reject is split to the reject store after the GRN
                             DL.UnitPriceExclusive = (decimal)dl.UnitPriceExclusive;
                             DL.UnitPriceInclusive = (decimal)dl.UnitPriceInclusive;
                             DL.Unit = dl.Unit;
@@ -1293,7 +1293,10 @@ namespace SBMS
                                     if (dl.LotNumber != null)
                                     {
                                         var LotNumUpdate = _db.LotTrackingMasters.Where(x => x.CompanyID == CurrentUser.CoID && x.LotNumber == dl.LotNumber).FirstOrDefault();
-                                        LotNumUpdate.LotTotUnitPrice = ThisItemUnitNett / exchRate;
+                                        // Write-once: only price a lot that has not been priced yet. A re-used
+                                        // or already-priced lot must never have its fixed cost overwritten.
+                                        if (LotNumUpdate != null && LotNumUpdate.LotTotUnitPrice == 0)
+                                            LotNumUpdate.LotTotUnitPrice = ThisItemUnitNett / exchRate;
                                     }
 
                                     // check for itemstore link
@@ -1387,7 +1390,7 @@ namespace SBMS
                         // denominator for the add-cost split = value of the fully-received stock lines only
                         decimal fullLinesValue = FLines
                             .Where(x => x.ToReceive == true && x.ItemType == 0
-                                     && ((x.QtyLeft ?? 0) - (x.ReceiveQty ?? 0) - (x.RejectQty ?? 0)) <= 0)
+                                     && ((x.QtyLeft ?? 0) - (x.ReceiveQty ?? 0) - (x.RejectQty)) <= 0)
                             .Sum(x => x.ReceiveTotalExcl ?? 0);
                         decimal totval = DocValue;
                         if (AddC.Count > 0 && receiveComplete)
@@ -1406,7 +1409,7 @@ namespace SBMS
                                 decimal linevalue = dl.ReceiveTotalExcl ?? 0;
                                 decimal qty = dl.ReceiveQty ?? 0;
                                 // a line only carries add-costs when it is fully received in this action
-                                bool lineFull = ((dl.QtyLeft ?? 0) - (dl.ReceiveQty ?? 0) - (dl.RejectQty ?? 0)) <= 0;
+                                bool lineFull = ((dl.QtyLeft ?? 0) - (dl.ReceiveQty ?? 0) - (dl.RejectQty)) <= 0;
                                 decimal linevalueperc = 0;
                                 if (lineFull && linevalue != 0 && fullLinesValue != 0)
                                 {
@@ -1488,7 +1491,9 @@ namespace SBMS
                                         var LotNumUpdate = _db.LotTrackingMasters.Where(x => x.CompanyID == CurrentUser.CoID && x.LotNumber == dl.LotNumber).FirstOrDefault();
                                         // Cardinal rule: lot carries the SAME uplifted unit cost as the ledger
                                         // (TotalUnitPriceExclInclAdd) and the Sage adjust-in (newunitcost) — never base.
-                                        LotNumUpdate.LotTotUnitPrice = newunitcost / exchRate;
+                                        // Write-once: only price a lot that has not been priced yet; never overwrite a fixed cost.
+                                        if (LotNumUpdate != null && LotNumUpdate.LotTotUnitPrice == 0)
+                                            LotNumUpdate.LotTotUnitPrice = newunitcost / exchRate;
                                     }
                                     // check for itemstore link
                                     var ItS = _db.ItemStoreLinkMasters.Where(x => x.CompanyID == CurrentUser.CoID && x.StoreID == ItemTrans.ToID && x.ItemID == dl.SelectionId).FirstOrDefault();
@@ -1602,7 +1607,7 @@ namespace SBMS
                         long corStoreId = getstoreid("CoR");
                         foreach (var dl in FLines)
                         {
-                            decimal rejQty = dl.RejectQty ?? 0;
+                            decimal rejQty = dl.RejectQty;
                             if (rejQty <= 0 || dl.ItemType != 0) continue;
 
                             var ItmConR = _db.ItemsMasters.Where(x => x.CompanyID == CurrentUser.CoID && x.ID == dl.SelectionId).FirstOrDefault();

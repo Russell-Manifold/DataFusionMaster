@@ -971,6 +971,9 @@
     <Compile Include="Models\GetValidateBarcode_Result.cs">
       <DependentUpon>SBMS.tt</DependentUpon>
     </Compile>
+    <Compile Include="Models\ItemTransferHeader.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
     <Compile Include="Models\ReceivingOutstanding.cs">
       <DependentUpon>SBMS.tt</DependentUpon>
     </Compile>
@@ -1207,9 +1210,6 @@
     <Compile Include="Models\DelivMethod.cs">
       <DependentUpon>SBMS.tt</DependentUpon>
     </Compile>
-    <Compile Include="Models\DITransactionsTbl.cs">
-      <DependentUpon>SBMS.tt</DependentUpon>
-    </Compile>
     <Compile Include="Models\DIUpdateLog.cs">
       <DependentUpon>SBMS.tt</DependentUpon>
     </Compile>
@@ -1357,9 +1357,6 @@
       <DependentUpon>SBMS.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\ItemTransaction.cs">
-      <DependentUpon>SBMS.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Models\ItemTransferHeader.cs">
       <DependentUpon>SBMS.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\ItemTransferLine.cs">
