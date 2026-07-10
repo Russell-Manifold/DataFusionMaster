@@ -445,10 +445,21 @@ namespace SBMS
             {
                 CalcTotals();
                 var TempLines = _db.TempDocLines.Where(x => x.DocID == docid).ToList();
+
+                // Receiving complete? defaults to No; auto-select Yes once every stock line
+                // is fully covered (QtyLeft on the temp line is already net of staged qty).
+                if (TempLines.Count > 0 && TempLines.Where(x => x.ItemType == 0).All(x => (x.QtyLeft ?? 0) <= 0))
+                {
+                    RBpoStatus.SelectedIndex = 0;
+                }
+
                 bool containsServ = false; PnlServices.Style.Add("display", "none"); ViewState["pnlServicesDisplay"] = "none";
                 // Option A: the estimated-costs modal is for POs WITHOUT in-PO service lines only.
                 // Default it visible; hidden below if a service line is detected (those use Branch A).
-                LbtnAddCosts.Enabled = true; LbtnAddCosts.Style.Add("display", "inline-block");
+                LbtnAddCosts.Enabled = true; 
+                LbtnAddCosts.Style.Add("display", "inline-block");
+                PnlAddCostNote.Style.Add("display", "inline-block");
+
                 foreach (var TL in TempLines)
                 {
                     // detect service / addcost lines (but keep iterating so EVERY row gets formatted)
@@ -460,6 +471,7 @@ namespace SBMS
                         PnlServices.Style.Add("max-width", "50%");
                         containsServ = true;
                         LbtnAddCosts.Enabled = false; LbtnAddCosts.Style.Add("display", "none");   // service line present -> hide estimates modal
+                        PnlAddCostNote.Enabled = false; PnlAddCostNote.Style.Add("display", "none");   // service line present -> hide estimates modal
                         if (TL.ItemType == 2) RBAllocateCosts.Enabled = false;
                     }
                     if (TL.Quantity != null)
@@ -2780,6 +2792,61 @@ namespace SBMS
                 lblLotNum.Text = DateTime.Today.ToString("ddMMyyyy") + DDStoreEdit.SelectedValue.ToString() + recnum.ToString();
             }
             ModalPopupExtender1.Show();
+        }
+
+        protected void lbtnSaveClose_Click(object sender, EventArgs e)
+        {
+            docid = Convert.ToInt64(lblDocID.Text);
+            string invTrim = txtInvNum.Text.Trim();
+            string dnTrim = txtDNNum.Text.Trim();
+
+            // prefer the supplier invoice # when present, otherwise fall back to the delivery note #
+            string SuppInvN = invTrim.Length >= 1 ? invTrim : dnTrim;
+
+            using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+            {
+                // check if Supplier Inv Num has already been received (on another PO)
+                if (SuppInvN.Length > 0)
+                {
+                    int SuppInvNumb = _db.DocHeaders.Count(x => x.CompanyID == CurrentUser.CoID && x.SupplierInvNum == SuppInvN && x.DocID != docid);
+                    if (SuppInvNumb > 0)
+                    {
+                        string warnMsg = "Supplier Invoice number already used, unable to duplicate.";
+                        AlertHelper.ShowSweetAlert(this, warnMsg, "warning");
+                        return;
+                    }
+                }
+
+                var Head = _db.DocHeaders.Where(x => x.DocID == docid).FirstOrDefault();
+                if (Head == null) return;
+
+                // save the editable page details; EF only issues an update if something changed
+                Head.Reference = txtRef.Text.Trim();
+                Head.DNNum = dnTrim;
+                Head.InvNum = invTrim;
+                if (decimal.TryParse(txtExRate.Text.Trim(), out decimal exR) && exR > 0)
+                {
+                    Head.Supplier_ExchangeRate = exR;
+                }
+
+                bool closeOff = RBpoStatus.SelectedValue.ToString() == "0";
+                if (closeOff)
+                {
+                    Head.Complete = true;
+                    Head.RecStatus = 2;
+                    Head.CompleteDate = DateTime.Now;
+                }
+
+                _db.SaveChanges();
+
+                if (closeOff)
+                {
+                    Response.Redirect("~/OSPurchaseOrders.aspx", false);
+                    Context.ApplicationInstance.CompleteRequest();
+                    return;
+                }
+            }
+            AlertHelper.ShowSweetAlert(this, "Saved.", "success");
         }
 
         protected void OpenFirstMatchingItemCode(string itemCode)

@@ -339,6 +339,42 @@ namespace SBMS
         protected global::System.Web.UI.WebControls.GridView GridAddCosts;
 
         /// <summary>
+        /// PnlAddCostNote control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel PnlAddCostNote;
+
+        /// <summary>
+        /// lbtnAddCostInfo control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton lbtnAddCostInfo;
+
+        /// <summary>
+        /// BalloonAddCostInfo control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::AjaxControlToolkit.BalloonPopupExtender BalloonAddCostInfo;
+
+        /// <summary>
+        /// pnlAddCostInfo control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlAddCostInfo;
+
+        /// <summary>
         /// PnlTotals control.
         /// </summary>
         /// <remarks>
@@ -418,6 +454,15 @@ namespace SBMS
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.LinkButton lbtnPrintRN;
+
+        /// <summary>
+        /// lbtnSaveClose control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton lbtnSaveClose;
 
         /// <summary>
         /// lbtnReceiveFinish control.

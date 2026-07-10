@@ -164,10 +164,15 @@
                                     </asp:TemplateField>
                               </Columns>
                           </asp:GridView>
-                              <br /><br /><span style="font-size:0.8em">Notes: <br />
-                                  The total value of ESTIMATED additional costs will be automatically split and allocated to each PO line.<br />
-                                  A Supplier Adjustment will be generated in Sage Accounting for each additional cost line.
-                              </span>
+                             <asp:Panel ID="PnlAddCostNote" runat="server" style="font-size:0.8em">Note:The total value of ESTIMATED additional costs will be</br> automatically split and allocated to each PO line.
+                                  <asp:LinkButton ID="lbtnAddCostInfo" runat="server" CssClass="fa fa-info-circle buttonTransparent" ToolTip="More info" OnClientClick="return false;"></asp:LinkButton>
+                                  <cci:BalloonPopupExtender ID="BalloonAddCostInfo" TargetControlID="lbtnAddCostInfo" UseShadow="true"
+                                      DisplayOnMouseOver="true" Position="BottomRight" BalloonPopupControlID="pnlAddCostInfo" BalloonStyle="Rectangle" runat="server" />
+                                  <asp:Panel ID="pnlAddCostInfo" runat="server" style="font-size:small">
+                                      A Supplier Adjustment will be generated in Sage Accounting for each additional cost line.
+                                      <p>It is advisable to capture estimated costs to a temp/holding account. <br />On receipt of actual supporting documentation from suppliers, <br /> process the supplier invoice(s) and then Journal Credit <br />the temp/holding account to ensure accounts balance</p>
+                                  </asp:Panel>
+                              </asp:Panel>
                            </asp:Panel>
                           
                          <asp:Panel ID="PnlTotals" runat="server" style="float:right; border:1px gray solid; margin-top:1em; margin-right:1em;">
@@ -216,7 +221,9 @@
                         <asp:LinkButton ID="lbtnReset" runat="server" style="color:red" CssClass="icon fa-ban buttonTransparent" OnClick="lbtnReset_Click" >&nbsp;Reset Receiving</asp:LinkButton></td>
                          <cci:ConfirmButtonExtender ID="lbtnReset_ConfirmButtonExtender1" runat="server" ConfirmText="You are about to reset receiving of this PO? Are you sure?" Enabled="True" TargetControlID="lbtnReset"></cci:ConfirmButtonExtender>          
                         <asp:LinkButton ID="lbtnPrintRN" runat="server" class="buttonRed icon fa-print" OnClick="lbtnPrintRN_Click">&nbsp;Print Preview</asp:LinkButton>
-                        <asp:LinkButton ID="lbtnReceiveFinish" runat="server" style="font-size:1em" CssClass="icon fa-save buttonSage" OnClick="lbtnReceiveFinish_Click" 
+                        <asp:LinkButton ID="lbtnSaveClose" runat="server" style="font-size:1em" CssClass="icon fa-save buttonRed" OnClick="lbtnSaveClose_Click" ToolTip="Save PO status"
+                            OnClientClick="var y=document.getElementById('RBpoStatus_0'); if (y && y.checked) return confirm('Complete without additional receiving? The outstanding balance will NOT be received.'); return true;">&nbsp;Save</asp:LinkButton>
+                        <asp:LinkButton ID="lbtnReceiveFinish" runat="server" style="font-size:1em" CssClass="icon fa-save buttonSage" OnClick="lbtnReceiveFinish_Click"
                             ToolTip="Receive all marked items and generate a Good Received Note" 
                             OnClientClick="disableReceiveButtons('<%= lbtnReset.ClientID %>', '<%= lbtnPrintRN.ClientID %>', '<%= lbtnReceiveFinish.ClientID %>', 'Receive & Generate GRN); return true;" >
                             &nbsp;Receive & Generate GRN</asp:LinkButton>
@@ -225,14 +232,14 @@
                         <div style="float:right">
                         <strong>Receiving complete?</strong>
                          <asp:RadioButtonList ID="RBpoStatus" runat="server" RepeatDirection="Horizontal" AutoPostBack="true" OnSelectedIndexChanged="RBpoStatus_SelectedIndexChanged">
-                             <asp:ListItem Value="0" Selected="True">Yes</asp:ListItem>
-                             <asp:ListItem Value="1">No</asp:ListItem>
+                             <asp:ListItem Value="0">Yes</asp:ListItem>
+                             <asp:ListItem Value="1" Selected="True">No</asp:ListItem>
                         </asp:RadioButtonList>
                             </div>
                          <div style="font-size:.8em; text-align:center; color:orange">Receiving a PO will generate an "Unpaid" Supplier invoice in Sage. Verification and payment processing is to be completed using Sage.</div>
                     </div>
-                    <div class="2u 12u$(medium)" style="text-align:left">     
-                   
+                    <div class="2u 12u$(medium)" style="text-align:left"><br />
+
                        </div>
                     <div class="1u 12u$(medium)">&nbsp;</div>
                 </div>
@@ -261,22 +268,32 @@
                         <div class="HellowWorldPopup">
                             <div id="Div45" class="PopupHeader">
                                 <h4>Estimated Additional Costs.</h4>
-                                    <span>Costs captured here will be distributed across all inventory items<br /> received and alter their receiving value only. <br /><br /><div style="text-align:center; color:orange">Additional Costs will generate a <br /> Supplier Adjustment in Sage for the selected Supplier Account..</div></span>  
                             </div>
                             <div class="PopupBody" style="margin-top:1em">
-                                  Supplier: <br />  <asp:DropDownList ID="DDSupplier" runat="server" style="width:12em">
-                                
-                                </asp:DropDownList><br />
-                                <p>It is advisable to capture estimated costs to a temp/holding account. <br />On receipt of actual supporting documentation from suppliers, <br /> process the supplier invoice(s) and then Journal Credit <br />the temp/holding account to ensure accounts balance</p>
-                                <br />
-                                GL Account: <br />  <asp:DropDownList ID="DDAcctList" runat="server" style="width:12em">
-                                </asp:DropDownList><br />
-                                <br />
-                                Additional Costs Reason<br /><asp:TextBox ID="txtAddCostsReason" runat="server" TextMode="MultiLine" Rows="3" Columns="45" style="text-align:left;" MaxLength="100"></asp:TextBox><br />
-                                Total (Ex Vat) Value Of Additional Cost(s) <br /><asp:TextBox ID="txtAddCosts" runat="server" style="text-align:center; width:12em"></asp:TextBox><br />
-                                <cci:FilteredTextBoxExtender ID="FilteredTextBoxExtender1" runat="server" TargetControlID="txtAddCosts" FilterType="Custom, Numbers" ValidChars="." /> 
-                                Vat Type: <br />  <asp:DropDownList ID="DDVat" runat="server" style="width:12em">
-                                </asp:DropDownList><br />
+                               <table style="text-align:left; width:400px; margin:auto">
+                                   <tr>
+                                       <td> Supplier:</td>
+                                       <td><asp:DropDownList ID="DDSupplier" runat="server" style="width:12em"> </asp:DropDownList></td>
+                                   </tr>
+                                   <tr>
+                                       <td>GL Account:</td>
+                                       <td><asp:DropDownList ID="DDAcctList" runat="server" style="width:12em"></asp:DropDownList></td>
+                                   </tr>
+                                   <tr>
+                                       <td colspan="2">Additional Costs Reason</td>
+                                   </tr>
+                                 <tr>
+                                    <td colspan="2"><asp:TextBox ID="txtAddCostsReason" runat="server" TextMode="MultiLine" Rows="3" Columns="45" style="text-align:left;" MaxLength="100"></asp:TextBox></td>
+                                </tr>
+                                   <tr>
+                                       <td>Total (Ex Vat) Value</td>
+                                       <td><asp:TextBox ID="txtAddCosts" runat="server" style="text-align:center; width:12em"></asp:TextBox><cci:FilteredTextBoxExtender ID="FilteredTextBoxExtender1" runat="server" TargetControlID="txtAddCosts" FilterType="Custom, Numbers" ValidChars="." /> </td>
+                                   </tr>
+                                   <tr>
+                                       <td>Vat Type: </td>
+                                       <td>  <asp:DropDownList ID="DDVat" runat="server" style="width:12em"></asp:DropDownList></td>
+                                   </tr>
+                               </table>
                             </div>
                             <div class="Controls">
                                 <input id="btnAdCSave" type="button" value="OK" runat="server" style="display:none"/>

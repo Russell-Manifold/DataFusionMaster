@@ -18,7 +18,8 @@
                     <div class="8u 12u$(medium)">
                         <asp:LinkButton ID="lbtnHome" runat="server" class="buttonC icon fa-home" onclick="lbtnHome_Click">&nbsp;&nbsp;</asp:LinkButton>
                          <asp:LinkButton ID="lbtnBack" runat="server" class="buttonC icon fa-align-left" PostBackUrl="~/ItemsHeaders.aspx" >&nbsp;Items</asp:LinkButton>
-                        <asp:LinkButton ID="lbtnBOM" runat="server" class="buttonC icon fa-book" onclick="lbtnBOM_Click" >&nbsp;View Bill Of Materials (BOM)</asp:LinkButton> 
+                        <asp:LinkButton ID="lbtnBOM" runat="server" class="buttonC icon fa-book" onclick="lbtnBOM_Click" >&nbsp;View Bill Of Materials (BOM)</asp:LinkButton>
+                        <asp:LinkButton ID="lbtnBOMLinks" runat="server" class="buttonC icon fa-sitemap" onclick="lbtnBOMLinks_Click" Visible="false" ToolTip="View all BOMs that use this item as a component" >&nbsp;View BOMs Using This Item</asp:LinkButton>
                         <asp:LinkButton ID="LbtnKit" runat="server" class="buttonC icon fa-bookmark" onclick="LbtnKit_Click">&nbsp;View Kit</asp:LinkButton>
                         <asp:LinkButton ID="lbtnLogOut" runat="server" class="buttonTransparent icon fa-eject" style="float:right" onclick="lbtnLogOut_Click">&nbsp;</asp:LinkButton><br />
                         <h3 style="padding-top:0; line-height:1em">Item Master</h3>                    
@@ -31,8 +32,7 @@
                         <table style="width:100%; font-size:1.25em">
                             <tr>
                                 <td>Item Code: <asp:Label ID="lblItemCode" runat="server" Text=""></asp:Label></td>
-                                <td style="vertical-align:top; text-align:right">Item Description:&nbsp; </td>
-                                <td colspan="2" ><asp:Label ID="txtDescription" runat="server" style="width:100%"></asp:Label></td>
+                                <td style="vertical-align:top; text-align:left">Description:&nbsp; <asp:Label ID="txtDescription" runat="server" style="width:100%"></asp:Label></td>
                             </tr>
                          </table>
                         <br /><br />

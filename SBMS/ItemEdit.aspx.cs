@@ -169,7 +169,11 @@ namespace SBMS
                                     if (Item.IsFromBOM == true) lbtnBOM.Visible = true;
                                     chkIsFromBom.Checked = (bool)Item.IsFromBOM;
                                 }
-                                if (Item.IsBOMComponent != null) chkisBom.Checked = (bool)Item.IsBOMComponent;
+                                if (Item.IsBOMComponent != null)
+                                {
+                                    chkisBom.Checked = (bool)Item.IsBOMComponent;
+                                    if (Item.IsBOMComponent == true) lbtnBOMLinks.Visible = true;
+                                }
                             }
                         }
                         else
@@ -418,6 +422,11 @@ namespace SBMS
                     Response.Redirect("~/KitDetailed.aspx?kitid=" + newbhid, false);
                 }
             }
+        }
+
+        protected void lbtnBOMLinks_Click(object sender, EventArgs e)
+        {
+            Response.Redirect("~/BOMComponentLinks.aspx?itm=" + itmid, false);
         }
 
         protected void lbtnBOM_Click(object sender, EventArgs e)

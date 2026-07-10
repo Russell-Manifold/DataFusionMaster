@@ -878,6 +878,7 @@
     <Content Include="KitCreate.aspx" />
     <Content Include="BOMCreate.aspx" />
     <Content Include="BOMDetailed.aspx" />
+    <Content Include="BOMComponentLinks.aspx" />
     <Content Include="ItemEdit.aspx" />
     <Content Include="KitHeaders.aspx" />
     <Content Include="images\logo.png" />
@@ -1842,6 +1843,13 @@
     </Compile>
     <Compile Include="BOMDetailed.aspx.designer.cs">
       <DependentUpon>BOMDetailed.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="BOMComponentLinks.aspx.cs">
+      <DependentUpon>BOMComponentLinks.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="BOMComponentLinks.aspx.designer.cs">
+      <DependentUpon>BOMComponentLinks.aspx</DependentUpon>
     </Compile>
     <Compile Include="ItemEdit.aspx.cs">
       <DependentUpon>ItemEdit.aspx</DependentUpon>
