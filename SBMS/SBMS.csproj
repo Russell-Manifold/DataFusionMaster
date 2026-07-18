@@ -1215,9 +1215,6 @@
     <Compile Include="Models\DelivMethod.cs">
       <DependentUpon>SBMS.tt</DependentUpon>
     </Compile>
-    <Compile Include="Models\DIUpdateLog.cs">
-      <DependentUpon>SBMS.tt</DependentUpon>
-    </Compile>
     <Compile Include="Models\DocHeader.cs">
       <DependentUpon>SBMS.tt</DependentUpon>
     </Compile>
@@ -2104,17 +2101,6 @@
     <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\types\layout.d.ts" />
     <TypeScriptCompile Include="niceadmin\assets\vendor\chart.js\types\utils.d.ts" />
     <TypeScriptCompile Include="niceadmin\assets\vendor\tinymce\tinymce.d.ts" />
-  </ItemGroup>
-  <ItemGroup>
-    <COMReference Include="PasSDK">
-      <Guid>{DB9E3444-F323-4046-940E-F4D3878E7A0F}</Guid>
-      <VersionMajor>2</VersionMajor>
-      <VersionMinor>4</VersionMinor>
-      <Lcid>0</Lcid>
-      <WrapperTool>tlbimp</WrapperTool>
-      <Isolated>False</Isolated>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </COMReference>
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

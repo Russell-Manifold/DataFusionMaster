@@ -51,6 +51,7 @@ namespace SBMS.Classes
         public bool UseAutoManf { get; set; }
         public bool UsePickSlipTracking { get; set; }
         public bool UseBarcodes { get; set; }
+        public bool MobileModule { get; set; }
         public bool AutoUpdateSageSOs { get; set; }
         public bool AutoGenTaxInvoice { get; set; }
         public string LoggedInSessionID { get; set; }

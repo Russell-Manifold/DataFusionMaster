@@ -833,6 +833,21 @@ namespace SBMS
         protected async void lbtnReceiveFinish_Click(object sender, EventArgs e)
         {
             docid = Convert.ToInt64(lblDocID.Text);
+
+            // Double-click / re-submit guard: a fully-received PO is marked RecStatus = 2 once its
+            // supplier invoice has posted. ASP.NET serialises a session's postbacks, so a rapid second
+            // click runs only after the first has committed - if it's already submitted, bail rather
+            // than post a second supplier invoice.
+            using (SBMSEntities _dbChk = new SBMSEntities(Config.GetConnectionString()))
+            {
+                var hdrChk = _dbChk.DocHeaders.FirstOrDefault(x => x.CompanyID == CurrentUser.CoID && x.DocID == docid);
+                if (hdrChk != null && hdrChk.RecStatus == 2)
+                {
+                    AlertHelper.ShowSweetAlert(this, "This receipt has already been submitted.", "warning");
+                    return;
+                }
+            }
+
             decimal exchRate =1;
             string SuppInvN = "";
 
@@ -1283,7 +1298,7 @@ namespace SBMS
 
                                 if (dl.ItemType == 0)
                                 {
-                                    var tempLine = _db.DocLines.Where(x => x.SBCALineID == dl.SBCALineID).FirstOrDefault();
+                                    var tempLine = _db.DocLines.Where(x => x.CompanyID == CurrentUser.CoID && x.DocID == docid && x.SBCALineID == dl.SBCALineID).FirstOrDefault();
                                     tempLine.ItemDescription = dl.ItemDescription;
                                     tempLine.Quantity = dl.Quantity;
                                     tempLine.UnitPriceExclusive = dl.UnitPriceExclusive;
@@ -1308,7 +1323,8 @@ namespace SBMS
                                     tempLine.ExchRate = dl.ExchRate;
 
                                     var ItmCon = _db.ItemsMasters.Where(x => x.CompanyID == CurrentUser.CoID && x.ID == dl.SelectionId).FirstOrDefault();
-                                    decimal ConvRate = (decimal)ItmCon.UOMConvert;
+                                    decimal ConvRate = ItmCon != null ? ItmCon.UOMConvert : 1m;
+                                    if (ConvRate == 0) ConvRate = 1;   // 0 = misconfigured item; treat as 1:1 (no conversion), matching the reject-line handling below
 
                                     // 1) Create transaction to move items from supplier into the selected warehouse.
                                     ItemTransaction ItemTrans = new ItemTransaction();
@@ -1402,11 +1418,12 @@ namespace SBMS
 
                                         decimal ThisUnitVal = ThisItemUnitNett;
                                         decimal NewQty = (decimal)(origqty + dl.ReceiveQty);
-                                        // Sage must receive the SAME uplifted value written to the lot/ledger
-                                        // (ThisItemUnitNett incl. allocated add-cost), not the base price -
-                                        // otherwise the SBCA average understates by the additional cost.
-                                        decimal NewTotVal = (decimal)(origvalue + (ThisItemUnitNett * dl.ReceiveQty));
-                                        decimal NewAvCost = (NewTotVal / NewQty) / exchRate;
+                                        // Blend in HOME currency. origvalue is already home (Sage on-hand);
+                                        // convert ONLY the received foreign value to home (/ exchRate) before
+                                        // adding it - matching the local ledger's TotalLineValExcl. Previously
+                                        // the whole sum was divided by exchRate, wrongly deflating origvalue.
+                                        decimal NewTotVal = (decimal)(origvalue + ((ThisItemUnitNett / exchRate) * dl.ReceiveQty));
+                                        decimal NewAvCost = NewQty != 0 ? NewTotVal / NewQty : 0;
 
                                         iAdj = new ItemAdjustment();
                                         iAdj.Date = DateTime.Now;
@@ -1478,7 +1495,7 @@ namespace SBMS
                                     newunitcost = unitAddCosts + (linevalue / qty);
                                 }
                                 #region data fusion stock transactions
-                                var tempLine = _db.DocLines.Where(x => x.SBCALineID == dl.SBCALineID).FirstOrDefault();
+                                var tempLine = _db.DocLines.Where(x => x.CompanyID == CurrentUser.CoID && x.DocID == docid && x.SBCALineID == dl.SBCALineID).FirstOrDefault();
                                 tempLine.ItemDescription = dl.ItemDescription;
                                 tempLine.Quantity = dl.Quantity;
                                 tempLine.UnitPriceExclusive = dl.UnitPriceExclusive;
@@ -1507,7 +1524,8 @@ namespace SBMS
                                 if (dl.ItemType == 0)
                                 {
                                     var ItmCon = _db.ItemsMasters.Where(x => x.CompanyID == CurrentUser.CoID && x.ID == dl.SelectionId).FirstOrDefault();
-                                    decimal ConvRate = (decimal)ItmCon.UOMConvert;
+                                    decimal ConvRate = ItmCon != null ? ItmCon.UOMConvert : 1m;
+                                    if (ConvRate == 0) ConvRate = 1;   // 0 = misconfigured item; treat as 1:1 (no conversion), matching the reject-line handling below
 
                                     // 1) Create transaction to move items from supplier into the selected warehouse.
                                     ItemTransaction ItemTrans = new ItemTransaction();
@@ -1583,7 +1601,7 @@ namespace SBMS
                                             decimal QOH = (decimal)Itm.QuantityOnHand;
                                             decimal AvCost = (decimal)Itm.AverageCost;
 
-                                            iAdj.AverageCost = (decimal)dl.UnitPriceExclusive;
+                                            iAdj.AverageCost = (decimal)dl.UnitPriceExclusive / exchRate;   // convert base price to HOME currency, consistent with Branch A and the in-adjustment below
                                             iAdj.Quantity = (decimal)qty * -1;
                                             iAdj.Reason = "ADJ Out Trans ID: " + itemtransnum + " - " + txtAddCostsReason.Text.ToString();
                                             iAdj.Created = DateTime.Now;
@@ -1597,14 +1615,18 @@ namespace SBMS
                                             iAdj = new ItemAdjustment();
                                             iAdj.Date = DateTime.Now;
                                             iAdj.ItemID = dl.SelectionId;
-                                            decimal origqty = avcostlist.Where(x => x.ID == dl.SelectionId).FirstOrDefault().QuantityOnHand;
-                                            decimal origavcost = avcostlist.Where(x => x.ID == dl.SelectionId).FirstOrDefault().AverageCost;
+                                            var origRow = avcostlist.Where(x => x.ID == dl.SelectionId).FirstOrDefault();
+                                            decimal origqty = origRow?.QuantityOnHand ?? 0;
+                                            decimal origavcost = origRow?.AverageCost ?? 0;
                                             decimal origvalue = origqty * origavcost;
 
                                             decimal ThisUnitVal = ThisItemUnitNett;
                                             decimal NewQty = (decimal)(origqty + qty);
-                                            decimal NewTotVal = (decimal)(origvalue + dl.Exclusive - dl.Discount + linevalAddCosts);
-                                            decimal NewAvCost = NewTotVal / NewQty;
+                                            // Blend in HOME currency. origvalue is already home; convert ONLY the
+                                            // received foreign value (line + allocated add-costs) to home - matching
+                                            // the local ledger's ReceiveTotalExcl / exchRate.
+                                            decimal NewTotVal = (decimal)(origvalue + ((dl.Exclusive - dl.Discount + linevalAddCosts) / exchRate));
+                                            decimal NewAvCost = NewQty != 0 ? NewTotVal / NewQty : 0;
 
                                             // Audit trail: record the Sage average-cost change driven by add-costs.
                                             _db.AvCostChangeLogs.Add(new AvCostChangeLog

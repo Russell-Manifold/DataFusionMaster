@@ -88,7 +88,8 @@
             </div>
         </div>
 
-        <%-- Barcode scan bar --%>
+        <%-- Barcode scan bar (hidden when the company is not barcode-based) --%>
+        <asp:Panel ID="pnlScanBar" runat="server">
         <div class="mob-scan-bar">
             <div class="mob-scan-wrap">
                 <span class="mob-scan-ico"><svg class="mob-ico" aria-hidden="true"><use href="#i-scan"/></svg></span>
@@ -100,6 +101,7 @@
                     CssClass="mob-scan-clear" title="Clear">&#10005;</asp:LinkButton>
             </div>
         </div>
+        </asp:Panel>
 
         <%-- Scan feedback --%>
         <asp:Label ID="lblScanFeedback" runat="server" />

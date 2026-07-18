@@ -262,8 +262,14 @@ namespace SBMS
             }
             catch { }
 
+            if (trfQty <= 0)
+            {
+                AlertHelper.ShowSweetAlert(this, "Enter a transfer quantity greater than zero.", "error");
+                return;
+            }
+
             if (trfQty > AvailQty)
-            { 
+            {
                 AlertHelper.ShowSweetAlert(this, "Insufficient stock available for this item.", "error");
                 return;
             }
@@ -291,18 +297,14 @@ namespace SBMS
                 ItemTrans.DocumentType = 4;
                 ItemTrans.ByRoleID = CurrentUser.RoleID; // roleid
 
-                decimal AddCosts = 0;
-                try { AddCosts = Convert.ToDecimal(txtTrfAddCosts.Text); } catch { }
-                decimal freightPerUnit = AddCosts > 0 ? AddCosts / trfQty : 0m;
-
                 // IN leg (receiving store): arrives at source store average + freight per unit,
                 // and the destination's running weighted average re-blends against stock already there.
                 decimal srcAvg = StoreCosting.GetStoreAvgCost(_db, CurrentUser.CoID, (long)trfitem.ItemID, fromId);
-                decimal unitLanded = srcAvg + freightPerUnit;
+                decimal unitLanded = srcAvg;
                 decimal lineVal;
                 decimal destAvg = StoreCosting.ComputeMovement(_db, CurrentUser.CoID, (long)trfitem.ItemID, toId, trfQty, unitLanded * trfQty, out lineVal);
                 ItemTrans.PriceExclusive = srcAvg;
-                ItemTrans.AdditionalCosts = freightPerUnit;
+                ItemTrans.AdditionalCosts = 0;
                 ItemTrans.TotalUnitPriceExclInclAdd = unitLanded;
                 ItemTrans.TotalLineValExcl = lineVal;
                 ItemTrans.StoreAvgCost = destAvg;
@@ -357,53 +359,7 @@ namespace SBMS
                 _db.SaveChanges();
 
                 string itemtransnum = ItemTrans.TrnID.ToString();
-                #region updateAveragePriceInSage
-                if (chkSageUpdate.Checked)
-                {
-                    #region AdjustItemOut
-                    ItemAdjustment iAdj = new ItemAdjustment();
-                    iAdj.Date = DateTime.Now;
-                    iAdj.ItemID = (long) trfitem.ItemID;
-                    var Itm = _db.ItemsMasters.Where(x => x.CompanyID == CurrentUser.CoID && x.ID == trfitem.ItemID).FirstOrDefault();
-                    decimal TotQtyOnHand = (decimal) Itm.QuantityOnHand;
-                    iAdj.AverageCost = (decimal)Itm.AverageCost;
-                    iAdj.Quantity = (decimal)trfQty * -1;
-                    iAdj.Reason = "ADJ Out Trf ID: " + itemtransnum + " - " + txtAddCostsReason.Text.ToString();
-                    iAdj.Created = DateTime.Now;
-                    string jsonBody = JsonConvert.SerializeObject(iAdj, Formatting.Indented);
-                    if (CurrentUser.UATMode == false)
-                    {
-                        await SendItemAdjustment(jsonBody);
-                    }
-                        #endregion
-                    // --------------------------------------------------
-                        #region AdjustItemIn
-                        // adjust items back in at new price including additional costs
-                        iAdj = new ItemAdjustment();
-                        iAdj.Date = DateTime.Now;
-                        iAdj.ItemID = (long)trfitem.ItemID;
-                    
-                    decimal OldTotVal = TotQtyOnHand * (decimal)Itm.AverageCost;
-                    decimal NewTotValue = OldTotVal + AddCosts;
-                    decimal NewAvCost = NewTotValue/ TotQtyOnHand;
-
-                    iAdj.AverageCost = NewAvCost;
-                    iAdj.Quantity = (decimal)trfQty;
-                    iAdj.Reason = "ADJ IN Trf ID: " + itemtransnum + " - " + txtAddCostsReason.Text.ToString();
-                    iAdj.Created = DateTime.Now;
-                    jsonBody = JsonConvert.SerializeObject(iAdj, Formatting.Indented);
-                    if (CurrentUser.UATMode == false)
-                    {
-                        await SendItemAdjustment(jsonBody);
-                    }
-                        #endregion
-                    #endregion
-                }
                 txtQtyToTrf.Text = null;
-                txtAddCostsReason.Text = null;
-                txtTrfAddCosts.Text = null;
-                chkSageUpdate.Checked = false;
-
                 lblerr.Text = "Transfer Successful";
                 LoadOpeningBalances();
                 LoadToBalances();

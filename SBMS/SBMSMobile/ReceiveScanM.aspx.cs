@@ -62,6 +62,9 @@ namespace SBMS
 
             lblUsername.Text = CurrentUser.UserName;
 
+            // Barcode-off companies receive by tapping the line (qty prefilled); hide the scan bar.
+            pnlScanBar.Visible = CurrentUser.UseBarcodes == true;
+
             // Manual lot numbers → scanner receiving disabled (web only).
             if (CurrentUser.CompanyUseLotNumbers && !CurrentUser.CompanyAllowSystemLotNumbers)
             {
@@ -154,7 +157,7 @@ namespace SBMS
             if (lblRemaining != null) lblRemaining.Text = BaseOutstanding(line).ToString("0.##");
 
             var txtQty = (TextBox)e.Item.FindControl("txtRecQty");
-            if (txtQty != null && isMatched)
+            if (txtQty != null && (isMatched || CurrentUser.UseBarcodes != true))
                 txtQty.Text = BaseOutstanding(line).ToString("0.##");
 
             var txtLoc = (TextBox)e.Item.FindControl("txtLoc");
@@ -507,6 +510,21 @@ namespace SBMS
                     return;
                 }
                 string suppInvNum = parts.Length > 1 ? parts[1] : suppInvRef;
+
+                // Idempotency: the supplier invoice is now committed in Sage. Immediately
+                // clear ToReceive on the staged lines in their own commit, BEFORE the costing
+                // writes below. If anything fails past this point, a retry re-reads zero staged
+                // lines (fLines query requires ToReceive == true) and bails at "No lines
+                // captured", so it can never post a second supplier invoice for this receipt.
+                using (SBMSEntities dbMark = new SBMSEntities(Config.GetConnectionString()))
+                {
+                    foreach (var dl in fLines)
+                    {
+                        var ln = dbMark.DocLines.FirstOrDefault(l => l.LineID == dl.LineID && l.CompanyID == CurrentUser.CoID);
+                        if (ln != null) ln.ToReceive = false;
+                    }
+                    dbMark.SaveChanges();
+                }
 
                 if (chkReceivingComplete.Checked)
                 {

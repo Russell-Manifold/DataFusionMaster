@@ -222,6 +222,15 @@ namespace SBMS
         protected global::System.Web.UI.WebControls.Label lblPickMsg;
 
         /// <summary>
+        /// pnlScanBar control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlScanBar;
+
+        /// <summary>
         /// txtBarcode control.
         /// </summary>
         /// <remarks>

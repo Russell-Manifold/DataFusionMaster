@@ -51,11 +51,23 @@ namespace SBMS
             }
             lblUsername.Text = CurrentUser.UserName;
 
+            // Barcode-off: capture the Transfer number by typing + Load button (scanner auto-submits on scan).
+            bool scan = CurrentUser.UseBarcodes == true;
+            txtScan.AutoPostBack = scan;
+            lbtnLoadDoc.Visible = !scan;
+            if (!scan) txtScan.Attributes["placeholder"] = "Enter Transfer number";
+
             if (!IsPostBack)
             {
                 ResetCycle();
                 RenderMode();
             }
+        }
+
+        // Barcode-off: Load button submits the typed Transfer number (same path as a scan).
+        protected void lbtnLoadDoc_Click(object sender, EventArgs e)
+        {
+            txtScan_TextChanged(sender, e);
         }
 
         protected void lbtnModeOut_Click(object sender, EventArgs e) { Mode = "out"; ResetCycle(); RenderMode(); }
@@ -340,7 +352,7 @@ namespace SBMS
             lbtnModeIn.CssClass = "sm-toggle " + (outMode ? "off" : "on");
             lblModeTitle.Text = outMode ? "Send out to transit" : "Receive from transit";
             lblPrompt.Text = TrfID == 0
-                ? "Scan the Transfer barcode"
+                ? (CurrentUser.UseBarcodes == true ? "Scan the Transfer barcode" : "Enter the Transfer number")
                 : (outMode ? "Confirm and send the whole transfer to transit" : "Receive each line into the destination");
 
             pnlHdr.Visible = TrfID != 0;

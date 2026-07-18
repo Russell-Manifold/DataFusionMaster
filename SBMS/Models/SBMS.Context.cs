@@ -18,6 +18,7 @@ namespace SBMS.Models
     public partial class SBMSEntities : DbContext
     {
         public SBMSEntities(string connectionString) : base(connectionString) { }
+
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
             throw new UnintentionalCodeFirstException();
@@ -65,14 +66,13 @@ namespace SBMS.Models
         public virtual DbSet<AccountsMaster> AccountsMasters { get; set; }
         public virtual DbSet<TaxTypesMaster> TaxTypesMasters { get; set; }
         public virtual DbSet<DynamicReport> DynamicReports { get; set; }
-        public virtual DbSet<DIUpdateLog> DIUpdateLogs { get; set; }
         public virtual DbSet<ItemTransferLine> ItemTransferLines { get; set; }
         public virtual DbSet<StockCountLine> StockCountLines { get; set; }
         public virtual DbSet<Store> Stores { get; set; }
         public virtual DbSet<ReceivingOutstanding> ReceivingOutstandings { get; set; }
-        public virtual DbSet<CompanyMaster> CompanyMasters { get; set; }
         public virtual DbSet<ItemTransferHeader> ItemTransferHeaders { get; set; }
         public virtual DbSet<ItemTransaction> ItemTransactions { get; set; }
+        public virtual DbSet<CompanyMaster> CompanyMasters { get; set; }
     
         public virtual ObjectResult<GetActiveLotNumbersLinkedToStores_Result> GetActiveLotNumbersLinkedToStores(Nullable<long> coID)
         {

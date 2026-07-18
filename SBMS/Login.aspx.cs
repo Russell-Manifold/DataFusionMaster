@@ -319,6 +319,7 @@ namespace SBMS
                             x.UseAutoManf,
                             x.UsePickSlipTracking,
                             x.UseBarcodes,
+                            x.MobileModule,
                             x.AutoUpdateSageSOs,
                             x.AutoGenTaxInvoice,
                             x.UsePacks,
@@ -336,6 +337,7 @@ namespace SBMS
                     userDetails.SendMessages = (bool)GenLogIn.SendMessages;
                     userDetails.UsePickSlipTracking = (bool)GenLogIn.UsePickSlipTracking;
                     userDetails.UseBarcodes = (bool)GenLogIn.UseBarcodes;
+                    userDetails.MobileModule = GenLogIn.MobileModule;
                     userDetails.AutoUpdateSageSOs = (bool)GenLogIn.AutoUpdateSageSOs;
                     userDetails.AutoGenTaxInvoice = (bool)GenLogIn.AutoGenTaxInvoice;
                     userDetails.UseAutoManf = GenLogIn.UseAutoManf;

@@ -50,6 +50,10 @@ namespace SBMS
         // step 4: has the rescanned item matched (enable Finish)?
         private bool InConfirmed  { get { return ViewState["InConfirmed"] != null && (bool)ViewState["InConfirmed"]; } set { ViewState["InConfirmed"] = value; } }
 
+        // Barcode company = scan front-end; otherwise the tap (dropdown + list) front-end.
+        private bool ScanMode { get { return CurrentUser.UseBarcodes == true; } }
+        private string Search { get { return ViewState["Search"] as string ?? ""; } set { ViewState["Search"] = value; } }
+
         // ── Lifecycle ──────────────────────────────────────────────────────────
         protected void Page_Load(object sender, EventArgs e)
         {
@@ -73,9 +77,135 @@ namespace SBMS
             if (!IsPostBack)
             {
                 Session["QuickMoveSession"] = new List<MoveDone>();
+                if (!ScanMode) { LoadStores(ddFromStore); LoadStores(ddToStore); }
                 ResetCycle();
                 RenderStep();
                 BindDone();
+            }
+        }
+
+        // All active stores/bins (excl. reserved), for the tap-mode dropdowns.
+        private void LoadStores(DropDownList ddl)
+        {
+            using (SBMSEntities db = new SBMSEntities(Config.GetConnectionString()))
+            {
+                var stores = db.Stores
+                    .Where(s => s.CompanyID == CurrentUser.CoID && s.StoreActive == true
+                             && s.StoreCode != "CoR" && s.StoreCode != "CoD")
+                    .OrderBy(s => s.StoreCode).ToList();
+                ddl.Items.Clear();
+                ddl.Items.Add(new ListItem("- select location -", ""));
+                foreach (var s in stores)
+                    ddl.Items.Add(new ListItem(
+                        string.IsNullOrEmpty(s.StoreDescript) ? s.StoreCode : s.StoreCode + " - " + s.StoreDescript,
+                        s.StoreCode));
+            }
+        }
+
+        // ── Tap mode: From location chosen → list its contents ──
+        protected void ddFromStore_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            ResetCycle();
+            string code = ddFromStore.SelectedValue;
+            if (string.IsNullOrEmpty(code)) { RenderStep(); return; }
+
+            using (SBMSEntities db = new SBMSEntities(Config.GetConnectionString()))
+            {
+                var s = ResolveStore(db, code);
+                if (s == null) { SetFeedback(false, $"&#9888; '{code}' is not a valid location."); RenderStep(); return; }
+                SrcCode = s.StoreCode;
+                SrcId   = s.StoreID;
+            }
+            Step = 2;
+            Search = "";
+            txtSearch.Text = "";
+            BindContents();
+            ClearFeedback();
+            RenderStep();
+        }
+
+        protected void txtSearch_TextChanged(object sender, EventArgs e)
+        {
+            Search = (txtSearch.Text ?? "").Trim();
+            BindContents();
+            RenderStep();
+        }
+
+        protected void lbtnClearSearch_Click(object sender, EventArgs e)
+        {
+            Search = "";
+            txtSearch.Text = "";
+            BindContents();
+            RenderStep();
+        }
+
+        // Tap an item+lot row → lock it in as the item to move (same state a scan would set).
+        protected void rptContents_ItemCommand(object source, RepeaterCommandEventArgs e)
+        {
+            if (e.CommandName != "pick" || Step != 2) return;
+            string[] parts = Convert.ToString(e.CommandArgument).Split('|');
+            string itemCode = parts[0];
+            string lot = parts.Length > 1 ? parts[1] : "";
+
+            using (SBMSEntities db = new SBMSEntities(Config.GetConnectionString()))
+            {
+                var itm = db.ItemsMasters.FirstOrDefault(x => x.CompanyID == CurrentUser.CoID && x.Code == itemCode);
+                if (itm == null) { SetFeedback(false, $"&#9888; {itemCode} not found."); return; }
+
+                var chosen = SourceLines(db, itemCode).FirstOrDefault(r => (r.LotNumber ?? "") == (lot ?? ""));
+                if (chosen == null || (chosen.QOH ?? 0) <= 0)
+                {
+                    SetFeedback(false, "&#9888; That stock is no longer available."); BindContents(); RenderStep(); return;
+                }
+
+                ItemId   = itm.ID;
+                ItemCode = itm.Code;
+                ItemDescr = itm.Description;
+                ItemUnit = itm.Unit;
+                ApplyLot(chosen);
+                ItemResolved = true;
+            }
+            RenderStep();
+        }
+
+        // Tap mode: destination chosen → confirm (no rescan) and enable Finish.
+        protected void ddToStore_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (Step != 3) return;
+            string code = ddToStore.SelectedValue;
+            if (string.IsNullOrEmpty(code)) { DestCode = null; DestId = 0; InConfirmed = false; RenderStep(); return; }
+
+            using (SBMSEntities db = new SBMSEntities(Config.GetConnectionString()))
+            {
+                var s = ResolveStore(db, code);
+                if (s == null) { SetFeedback(false, $"&#9888; '{code}' is not a valid location."); RenderStep(); return; }
+                if (s.StoreID == SrcId) { SetFeedback(false, "&#9888; Destination must differ from the source."); RenderStep(); return; }
+                DestCode = s.StoreCode;
+                DestId   = s.StoreID;
+            }
+            Step = 4;
+            InConfirmed = true;
+            SetFeedback(true, "&#10003; Ready — press Finish to post the move.");
+            RenderStep();
+        }
+
+        private void BindContents()
+        {
+            using (SBMSEntities db = new SBMSEntities(Config.GetConnectionString()))
+            {
+                var rows = db.GetOpeningBalancesAllStores(CurrentUser.CoID)
+                    .Where(r => r.StoreCode == SrcCode && (r.QOH ?? 0) > 0)
+                    .ToList();
+                if (!string.IsNullOrEmpty(Search))
+                {
+                    string q = Search.ToLower();
+                    rows = rows.Where(r => (r.ItemCode ?? "").ToLower().Contains(q)
+                                        || (r.ItemDescription ?? "").ToLower().Contains(q)).ToList();
+                }
+                rows = rows.OrderBy(r => r.ItemCode).ThenBy(r => r.LotNumber).ToList();
+                rptContents.DataSource = rows;
+                rptContents.DataBind();
+                lblNoContents.Visible = rows.Count == 0;
             }
         }
 
@@ -295,8 +425,9 @@ namespace SBMS
                     TransactionReference      = row.ItemCode + " Quick Move " + MoveQty.ToString("0.##") + " to " + DestCode,
                     ExchRate                  = 1
                 });
-                db.SaveChanges();
                 EnsureStoreLink(db, ItemId, DestId);
+                // Both transfer legs (IN to destination, OUT of source) commit in ONE SaveChanges below,
+                // so a mid-operation failure can't leave phantom stock (destination up, source not down).
 
                 // OUT of source (mirror)
                 db.ItemTransactions.Add(new ItemTransaction
@@ -331,6 +462,7 @@ namespace SBMS
 
             string movedItem = ItemCode; decimal movedQty = MoveQty; string fromC = SrcCode, toC = DestCode;
             ResetCycle();
+            ResetTapInputs();
             SetFeedback(true, $"&#10003; Moved {movedQty:0.##} {movedItem} from {fromC} to {toC}.");
             RenderStep();
             BindDone();
@@ -343,8 +475,19 @@ namespace SBMS
         protected void lbtnRestart_Click(object sender, EventArgs e)
         {
             ResetCycle();
+            ResetTapInputs();
             ClearFeedback();
             RenderStep();
+        }
+
+        // Tap mode only: clear the From/To dropdowns, search box and contents list for a fresh move.
+        private void ResetTapInputs()
+        {
+            if (ScanMode) return;
+            Search = ""; txtSearch.Text = "";
+            if (ddFromStore.Items.Count > 0) ddFromStore.SelectedIndex = 0;
+            if (ddToStore.Items.Count > 0) ddToStore.SelectedIndex = 0;
+            rptContents.DataSource = null; rptContents.DataBind();
         }
 
         protected void lbtnClearScan_Click(object sender, EventArgs e)
@@ -358,29 +501,51 @@ namespace SBMS
         {
             RenderSteps();
 
+            pnlScanBar.Visible = ScanMode;
+            pnlTapMode.Visible = !ScanMode;
+
             pnlOutDetail.Visible = (Step == 2 && ItemResolved);
             pnlSummary.Visible   = (Step >= 3);
             lbtnFinish.Visible   = (Step == 4 && InConfirmed);
             lbtnRestart.Visible  = (Step > 1);
 
-            switch (Step)
+            if (!ScanMode)
             {
-                case 1:
-                    lblPrompt.Text   = "Scan the source bin / location";
-                    txtScan.Attributes["placeholder"] = "Scan source location...";
-                    break;
-                case 2:
-                    lblPrompt.Text   = "Scan the item to move out of " + SrcCode;
-                    txtScan.Attributes["placeholder"] = "Scan item...";
-                    break;
-                case 3:
-                    lblPrompt.Text   = "Scan the destination bin / location";
-                    txtScan.Attributes["placeholder"] = "Scan destination location...";
-                    break;
-                case 4:
-                    lblPrompt.Text   = "Scan the item again at " + DestCode + " to confirm";
-                    txtScan.Attributes["placeholder"] = "Scan item to confirm...";
-                    break;
+                pnlContents.Visible = (SrcId != 0 && Step == 2);
+                pnlToStore.Visible  = (Step == 3);
+            }
+
+            if (ScanMode)
+            {
+                switch (Step)
+                {
+                    case 1:
+                        lblPrompt.Text = "Scan the source bin / location";
+                        txtScan.Attributes["placeholder"] = "Scan source location...";
+                        break;
+                    case 2:
+                        lblPrompt.Text = "Scan the item to move out of " + SrcCode;
+                        txtScan.Attributes["placeholder"] = "Scan item...";
+                        break;
+                    case 3:
+                        lblPrompt.Text = "Scan the destination bin / location";
+                        txtScan.Attributes["placeholder"] = "Scan destination location...";
+                        break;
+                    case 4:
+                        lblPrompt.Text = "Scan the item again at " + DestCode + " to confirm";
+                        txtScan.Attributes["placeholder"] = "Scan item to confirm...";
+                        break;
+                }
+            }
+            else
+            {
+                switch (Step)
+                {
+                    case 1: lblPrompt.Text = "Choose the From location"; break;
+                    case 2: lblPrompt.Text = "Tap the item to move out of " + SrcCode; break;
+                    case 3: lblPrompt.Text = "Choose the To location"; break;
+                    case 4: lblPrompt.Text = "Press Finish to post the move"; break;
+                }
             }
 
             if (pnlOutDetail.Visible)
@@ -390,7 +555,7 @@ namespace SBMS
                 lblOutUnit.Text  = ItemUnit;
                 lblAvail.Text    = Avail.ToString("0.##");
                 ddLot.Visible    = ddLot.Items.Count > 1;
-                decimal def      = Avail >= 1 ? 1m : Avail;
+                decimal def      = ScanMode ? (Avail >= 1 ? 1m : Avail) : Avail;
                 txtQty.Text      = def.ToString("0.##");
             }
 

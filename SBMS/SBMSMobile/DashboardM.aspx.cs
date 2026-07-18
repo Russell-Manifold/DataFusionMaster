@@ -18,6 +18,12 @@ namespace SBMS
                 Response.Redirect("~/LoginM.aspx", false); Context.ApplicationInstance.CompleteRequest();
                 return;
             }
+            // Mobile module gate: company not licensed for mobile -> back to the web dashboard.
+            if (!userDets.MobileModule)
+            {
+                Response.Redirect("~/Dashboard.aspx", false); Context.ApplicationInstance.CompleteRequest();
+                return;
+            }
             lblUsername.Text = userDets.UserName;
             if (!IsPostBack)
             {

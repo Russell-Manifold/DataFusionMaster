@@ -19,6 +19,7 @@ namespace SBMS
         protected global::System.Web.UI.WebControls.Label lblPrompt;
         protected global::System.Web.UI.WebControls.Panel pnlScan;
         protected global::System.Web.UI.WebControls.TextBox txtScan;
+        protected global::System.Web.UI.WebControls.LinkButton lbtnLoadDoc;
         protected global::System.Web.UI.WebControls.LinkButton lbtnClearScan;
         protected global::System.Web.UI.WebControls.Label lblFeedback;
 

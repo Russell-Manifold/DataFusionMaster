@@ -53,6 +53,12 @@ namespace SBMS
             }
             lblUsername.Text = CurrentUser.UserName;
 
+            // Barcode-off: capture the WO number by typing + Load button (scanner auto-submits on scan).
+            bool scan = CurrentUser.UseBarcodes == true;
+            txtScan.AutoPostBack = scan;
+            lbtnLoadDoc.Visible = !scan;
+            if (!scan) txtScan.Attributes["placeholder"] = "Enter WO number";
+
             if (!IsPostBack)
             {
                 Session["ManfSession"] = new List<ManfDone>();
@@ -176,6 +182,20 @@ namespace SBMS
                 return;
             }
 
+            // Double-tap / second-device guard: 'Remaining' comes from ViewState and is stale across
+            // postbacks, so a fast second tap would re-manufacture the order. Session postbacks
+            // serialise, so re-read the live WO line: if it is already complete (or the live balance is
+            // now below what was requested), bail instead of producing the order a second time.
+            using (SBMSEntities dbChk = new SBMSEntities(Config.GetConnectionString()))
+            {
+                var lineChk = dbChk.WorksOrderLines.FirstOrDefault(x => x.CompanyID == CurrentUser.CoID && x.LineID == FGLineID);
+                if (lineChk == null || lineChk.Complete == true || makeQty > (lineChk.Quantity ?? 0))
+                {
+                    SetFeedback(false, "&#9888; This Works Order has already been manufactured (or its outstanding quantity has changed). Please re-scan.");
+                    return;
+                }
+            }
+
             IsProcessing = true;
             try
             {
@@ -206,7 +226,7 @@ namespace SBMS
                     if (line != null)
                     {
                         line.OrderedQty = line.OrderedQty ?? Remaining;
-                        line.Quantity = Remaining - makeQty;
+                        line.Quantity = (line.Quantity ?? 0) - makeQty;   // decrement the LIVE balance, not the (stale-across-postbacks) ViewState Remaining
                         if ((line.Quantity ?? 0) <= 0)
                         {
                             line.Quantity = 0;
@@ -387,7 +407,8 @@ namespace SBMS
 
             pnlWO.Visible = WOLoaded;
             pnlMake.Visible = WOLoaded;
-            lblPrompt.Text = WOLoaded ? "Choose store and quantity, then Manufacture" : "Scan the Works Order barcode";
+            lblPrompt.Text = WOLoaded ? "Choose store and quantity, then Manufacture"
+                : (CurrentUser.UseBarcodes == true ? "Scan the Works Order barcode" : "Enter the Works Order number");
             if (WOLoaded)
             {
                 lblWONum.Text = WONum;
@@ -413,6 +434,15 @@ namespace SBMS
 
         protected void lbtnRestart_Click(object sender, EventArgs e) { ResetCycle(); ClearFeedback(); RenderForm(); }
         protected void lbtnClearScan_Click(object sender, EventArgs e) { txtScan.Text = string.Empty; ClearFeedback(); }
+
+        // Barcode-off: Load button submits the typed WO number (same path as a scan).
+        protected void lbtnLoadDoc_Click(object sender, EventArgs e)
+        {
+            string raw = (txtScan.Text ?? "").Trim();
+            txtScan.Text = string.Empty;
+            if (string.IsNullOrEmpty(raw) || LotBlocked) return;
+            HandleWOScan(raw);
+        }
 
         // ── "Made this session" list ──
         [Serializable]

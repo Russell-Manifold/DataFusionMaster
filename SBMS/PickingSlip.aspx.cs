@@ -368,7 +368,7 @@ namespace SBMS
                                 ItemTrans.ItemDescription = ItmR.ItemDescription ?? "";
                                 ItemTrans.Unit = ItmR.Unit;
                                 ItemTrans.FromID = 0;
-                                ItemTrans.ToID = FrmStorid;
+                                ItemTrans.ToID = ItmR.ToID ?? FrmStorid;   // reverse INTO the store it was originally picked from, not the store currently selected in the dropdown
                                 ItemTrans.Qty = Convert.ToDecimal(ItmR.Qty) * -1;
                                 ItemTrans.DocumentType = 10;
                                 ItemTrans.PriceExclusive = ItmR.PriceExclusive;
@@ -411,7 +411,7 @@ namespace SBMS
                                 // Reversal puts the pick back at its original cost and re-blends
                                 // the store's running average.
                                 decimal revVal;
-                                ItemTrans.StoreAvgCost = StoreCosting.ComputeMovement(_db, CurrentUser.CoID, (long)ItemTrans.ItemID, FrmStorid, (decimal)ItemTrans.Qty, (decimal)ItemTrans.TotalLineValExcl, out revVal);
+                                ItemTrans.StoreAvgCost = StoreCosting.ComputeMovement(_db, CurrentUser.CoID, (long)ItemTrans.ItemID, ItmR.ToID ?? FrmStorid, (decimal)ItemTrans.Qty, (decimal)ItemTrans.TotalLineValExcl, out revVal);
                                 _db.ItemTransactions.Add(ItemTrans);
                                 _db.SaveChanges();
                             }
@@ -462,6 +462,25 @@ namespace SBMS
                         _db.SaveChanges();
                     }
                 }
+            }
+            RefreshPickStatus(PsID);
+        }
+
+        // PSStatus lifecycle when Pick-Slip Tracking is off: Captured -> Started -> Picked.
+        // (Complete is set at close-off; when tracking is on, station names drive PSStatus.)
+        private void RefreshPickStatus(long psid)
+        {
+            if (CurrentUser.UsePickSlipTracking == true) return;
+            using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+            {
+                var psm = _db.PickingSlipMasters.FirstOrDefault(x => x.CustomerID == CurrentUser.CoID && x.PSID == (int)psid);
+                if (psm == null || psm.PSComplete == true) return;
+                var lines = _db.PickSlipLines.Where(l => l.PSID == psid && l.CompanyID == CurrentUser.CoID && l.LineType == 0).ToList();
+                if (lines.Count == 0) return;
+                string newStatus = lines.All(l => l.PickComplete == true) ? "Picked"
+                                 : lines.Any(l => l.PickComplete == true) ? "Started"
+                                 : "Captured";
+                if (psm.PSStatus != newStatus) { psm.PSStatus = newStatus; _db.SaveChanges(); }
             }
         }
 
@@ -842,7 +861,7 @@ namespace SBMS
                     }
                     if (PsL.SBCALineID != 0)
                     {
-                        var SOLine = _db.DocLines.Where(x => x.SBCALineID == PsL.SBCALineID).FirstOrDefault();
+                        var SOLine = _db.DocLines.Where(x => x.CompanyID == CurrentUser.CoID && x.DocID == Docid && x.SBCALineID == PsL.SBCALineID).FirstOrDefault();
                         if (SOLine != null)
                         {
                             FirstLineID = (long)PsL.SBCALineID;
@@ -862,8 +881,8 @@ namespace SBMS
                             SOLine.LotNumber = PsL.LotNumber;
                             SOLine.Exclusive = SOLine.UnitPriceExclusive * pickQty;
                             SOLine.Discount = (SOLine.UnitPriceExclusive * pickQty) * SOLine.DiscountPercentage;
-                            SOLine.Total = SOLine.Exclusive - SOLine.Discount + SOLine.Tax;
                             SOLine.Tax = (SOLine.UnitPriceExclusive * pickQty) * SOLine.TaxPercentage;
+                            SOLine.Total = SOLine.Exclusive - SOLine.Discount + SOLine.Tax;
                             SOLine.LotNumber = PsL.LotNumber;
                             SOLine.ExchRate = 1;
                             SOLine.localCurrLineVal = SOLine.Exclusive - SOLine.Discount;
@@ -889,7 +908,7 @@ namespace SBMS
                         DLn.LotNumber = PsL.LotNumber;
  
                         // Get values from first line of the same item
-                        var FirstSOLine = _db.DocLines.Where(x => x.SBCALineID == FirstLineID).FirstOrDefault();
+                        var FirstSOLine = _db.DocLines.Where(x => x.CompanyID == CurrentUser.CoID && x.DocID == Docid && x.SBCALineID == FirstLineID).FirstOrDefault();
                         // Clamp to the parent line's outstanding balance so re-closing the same slip
                         // after a back order can't re-invoice qty already banked in an earlier cycle.
                         decimal prevLeftSplit = FirstSOLine != null ? (FirstSOLine.QtyLeft ?? (decimal)FirstSOLine.Quantity) : pickQty;
@@ -962,7 +981,7 @@ namespace SBMS
                 var PSH = _db.PickingSlipMasters.Where(x => x.CustomerID == CurrentUser.CoID && x.PSID == slipid).FirstOrDefault();
                 int fromstat = (int)PSH.PSStationID;
                 PSH.PSStationID = Stat.PSPID;
-                PSH.PSStatus = Stat.PSName.ToString();
+                PSH.PSStatus = (CurrentUser.UsePickSlipTracking == true) ? Stat.PSName.ToString() : "Complete";
                 PSH.PSComplete = true;
                 PSH.PSCompleteDate = DateTime.Now;
                 PSH.PSCompleteBy = CurrentUser.RoleID;

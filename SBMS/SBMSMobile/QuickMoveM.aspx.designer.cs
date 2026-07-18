@@ -65,6 +65,11 @@ namespace SBMS
         protected global::System.Web.UI.WebControls.Label lblPrompt;
 
         /// <summary>
+        /// pnlScanBar control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Panel pnlScanBar;
+
+        /// <summary>
         /// txtScan control.
         /// </summary>
         protected global::System.Web.UI.WebControls.TextBox txtScan;
@@ -73,6 +78,19 @@ namespace SBMS
         /// lbtnClearScan control.
         /// </summary>
         protected global::System.Web.UI.WebControls.LinkButton lbtnClearScan;
+
+        /// <summary>
+        /// tap-mode controls.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Panel pnlTapMode;
+        protected global::System.Web.UI.WebControls.DropDownList ddFromStore;
+        protected global::System.Web.UI.WebControls.Panel pnlContents;
+        protected global::System.Web.UI.WebControls.TextBox txtSearch;
+        protected global::System.Web.UI.WebControls.LinkButton lbtnClearSearch;
+        protected global::System.Web.UI.WebControls.Repeater rptContents;
+        protected global::System.Web.UI.WebControls.Label lblNoContents;
+        protected global::System.Web.UI.WebControls.Panel pnlToStore;
+        protected global::System.Web.UI.WebControls.DropDownList ddToStore;
 
         /// <summary>
         /// lblFeedback control.

@@ -154,6 +154,7 @@
           <Property Name="AllowScannerReceive" Type="bit" Nullable="false" />
           <Property Name="AllowScannerPutAway" Type="bit" Nullable="false" />
           <Property Name="BinDelimiter" Type="varchar" MaxLength="3" />
+          <Property Name="MobileModule" Type="bit" Nullable="false" />
         </EntityType>
         <EntityType Name="DelivMethods">
           <Key>
@@ -2155,9 +2156,9 @@
           <EntitySet Name="StockCountLines" EntityType="SBMSModel.StockCountLine" />
           <EntitySet Name="Stores" EntityType="SBMSModel.Store" />
           <EntitySet Name="ReceivingOutstandings" EntityType="SBMSModel.ReceivingOutstanding" />
-          <EntitySet Name="CompanyMasters" EntityType="SBMSModel.CompanyMaster" />
           <EntitySet Name="ItemTransferHeaders" EntityType="SBMSModel.ItemTransferHeader" />
           <EntitySet Name="ItemTransactions" EntityType="SBMSModel.ItemTransaction" />
+          <EntitySet Name="CompanyMasters" EntityType="SBMSModel.CompanyMaster" />
         </EntityContainer>
         <ComplexType Name="GetActiveLotNumbersLinkedToStores_Result">
           <Property Type="String" Name="LotNumber" Nullable="true" MaxLength="50" />
@@ -3211,54 +3212,6 @@
           <Property Name="RejectReason" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
           <Property Name="BatchID" Type="Guid" />
         </EntityType>
-        <EntityType Name="CompanyMaster">
-          <Key>
-            <PropertyRef Name="CoID" />
-          </Key>
-          <Property Name="CoID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="SBCACoID" Type="Int64" />
-          <Property Name="SBCAemail" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
-          <Property Name="SBCApwd" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
-          <Property Name="CompanyName" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
-          <Property Name="Contact" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
-          <Property Name="Contactemail" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
-          <Property Name="UseStartDate" Type="DateTime" Precision="0" />
-          <Property Name="UseEndDate" Type="DateTime" Precision="0" />
-          <Property Name="BillAddress1" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
-          <Property Name="BillAddress2" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
-          <Property Name="BillAddress3" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
-          <Property Name="CoGenericLoginEmail" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
-          <Property Name="CoGenericLoginPwd" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
-          <Property Name="UseModule2" Type="Boolean" Nullable="false" />
-          <Property Name="UseModule3" Type="Boolean" Nullable="false" />
-          <Property Name="UATMode" Type="Boolean" Nullable="false" />
-          <Property Name="SendMessages" Type="Boolean" Nullable="false" />
-          <Property Name="UseLotTracking" Type="Boolean" Nullable="false" />
-          <Property Name="UseLotAddDetails" Type="Boolean" Nullable="false" />
-          <Property Name="ItemQtyDecPlaces" Type="Int32" Nullable="false" />
-          <Property Name="SageConsultRNum" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
-          <Property Name="ProfileStatus" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
-          <Property Name="Active" Type="Boolean" Nullable="false" />
-          <Property Name="Created" Type="DateTime" Precision="3" />
-          <Property Name="Modified" Type="DateTime" Precision="3" />
-          <Property Name="ModifiedBy" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
-          <Property Name="CreatedBy" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
-          <Property Name="BillAddress4" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
-          <Property Name="UseAutoManf" Type="Boolean" Nullable="false" />
-          <Property Name="UsePickSlipTracking" Type="Boolean" Nullable="false" />
-          <Property Name="UseBarcodes" Type="Boolean" Nullable="false" />
-          <Property Name="AutoUpdateSageSOs" Type="Boolean" Nullable="false" />
-          <Property Name="AutoGenTaxInvoice" Type="Boolean" Nullable="false" />
-          <Property Name="UsePacks" Type="Boolean" Nullable="false" />
-          <Property Name="ShowManfCosts" Type="Boolean" Nullable="false" />
-          <Property Name="SageWeightField" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
-          <Property Name="AllowSystemLotNumbers" Type="Boolean" Nullable="false" />
-          <Property Name="AllowScannerCount" Type="Boolean" Nullable="false" />
-          <Property Name="AllowScannerReceive" Type="Boolean" Nullable="false" />
-          <Property Name="AllowScannerPutAway" Type="Boolean" Nullable="false" />
-          <Property Name="BinSegments" Type="String" MaxLength="200" FixedLength="false" Unicode="false" />
-          <Property Name="BinDelimiter" Type="String" MaxLength="3" FixedLength="false" Unicode="false" />
-        </EntityType>
         <EntityType Name="ItemTransferHeader">
           <Key>
             <PropertyRef Name="TrfID" />
@@ -3312,6 +3265,55 @@
           <Property Name="TransactionReference" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
           <Property Name="ExchRate" Type="Decimal" Nullable="false" Precision="18" Scale="4" />
           <Property Name="StoreAvgCost" Type="Decimal" Precision="18" Scale="4" />
+        </EntityType>
+        <EntityType Name="CompanyMaster">
+          <Key>
+            <PropertyRef Name="CoID" />
+          </Key>
+          <Property Name="CoID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="SBCACoID" Type="Int64" />
+          <Property Name="SBCAemail" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="SBCApwd" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="CompanyName" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Contact" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Contactemail" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="UseStartDate" Type="DateTime" Precision="0" />
+          <Property Name="UseEndDate" Type="DateTime" Precision="0" />
+          <Property Name="BillAddress1" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="BillAddress2" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="BillAddress3" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="CoGenericLoginEmail" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="CoGenericLoginPwd" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="UseModule2" Type="Boolean" Nullable="false" />
+          <Property Name="UseModule3" Type="Boolean" Nullable="false" />
+          <Property Name="UATMode" Type="Boolean" Nullable="false" />
+          <Property Name="SendMessages" Type="Boolean" Nullable="false" />
+          <Property Name="UseLotTracking" Type="Boolean" Nullable="false" />
+          <Property Name="UseLotAddDetails" Type="Boolean" Nullable="false" />
+          <Property Name="ItemQtyDecPlaces" Type="Int32" Nullable="false" />
+          <Property Name="SageConsultRNum" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="ProfileStatus" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Active" Type="Boolean" Nullable="false" />
+          <Property Name="Created" Type="DateTime" Precision="3" />
+          <Property Name="Modified" Type="DateTime" Precision="3" />
+          <Property Name="ModifiedBy" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="CreatedBy" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="BillAddress4" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="UseAutoManf" Type="Boolean" Nullable="false" />
+          <Property Name="UsePickSlipTracking" Type="Boolean" Nullable="false" />
+          <Property Name="UseBarcodes" Type="Boolean" Nullable="false" />
+          <Property Name="AutoUpdateSageSOs" Type="Boolean" Nullable="false" />
+          <Property Name="AutoGenTaxInvoice" Type="Boolean" Nullable="false" />
+          <Property Name="UsePacks" Type="Boolean" Nullable="false" />
+          <Property Name="ShowManfCosts" Type="Boolean" Nullable="false" />
+          <Property Name="SageWeightField" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="AllowSystemLotNumbers" Type="Boolean" Nullable="false" />
+          <Property Name="BinSegments" Type="String" MaxLength="200" FixedLength="false" Unicode="false" />
+          <Property Name="AllowScannerCount" Type="Boolean" Nullable="false" />
+          <Property Name="AllowScannerReceive" Type="Boolean" Nullable="false" />
+          <Property Name="AllowScannerPutAway" Type="Boolean" Nullable="false" />
+          <Property Name="BinDelimiter" Type="String" MaxLength="3" FixedLength="false" Unicode="false" />
+          <Property Name="MobileModule" Type="Boolean" Nullable="false" />
         </EntityType>
         </Schema>
     </edmx:ConceptualModels>
@@ -5129,55 +5131,6 @@
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
-          <EntitySetMapping Name="CompanyMasters">
-            <EntityTypeMapping TypeName="SBMSModel.CompanyMaster">
-              <MappingFragment StoreEntitySet="CompanyMaster">
-                <ScalarProperty Name="BinDelimiter" ColumnName="BinDelimiter" />
-                <ScalarProperty Name="BinSegments" ColumnName="BinSegments" />
-                <ScalarProperty Name="AllowScannerPutAway" ColumnName="AllowScannerPutAway" />
-                <ScalarProperty Name="AllowScannerReceive" ColumnName="AllowScannerReceive" />
-                <ScalarProperty Name="AllowScannerCount" ColumnName="AllowScannerCount" />
-                <ScalarProperty Name="AllowSystemLotNumbers" ColumnName="AllowSystemLotNumbers" />
-                <ScalarProperty Name="SageWeightField" ColumnName="SageWeightField" />
-                <ScalarProperty Name="ShowManfCosts" ColumnName="ShowManfCosts" />
-                <ScalarProperty Name="UsePacks" ColumnName="UsePacks" />
-                <ScalarProperty Name="AutoGenTaxInvoice" ColumnName="AutoGenTaxInvoice" />
-                <ScalarProperty Name="AutoUpdateSageSOs" ColumnName="AutoUpdateSageSOs" />
-                <ScalarProperty Name="UseBarcodes" ColumnName="UseBarcodes" />
-                <ScalarProperty Name="UsePickSlipTracking" ColumnName="UsePickSlipTracking" />
-                <ScalarProperty Name="UseAutoManf" ColumnName="UseAutoManf" />
-                <ScalarProperty Name="BillAddress4" ColumnName="BillAddress4" />
-                <ScalarProperty Name="CreatedBy" ColumnName="CreatedBy" />
-                <ScalarProperty Name="ModifiedBy" ColumnName="ModifiedBy" />
-                <ScalarProperty Name="Modified" ColumnName="Modified" />
-                <ScalarProperty Name="Created" ColumnName="Created" />
-                <ScalarProperty Name="Active" ColumnName="Active" />
-                <ScalarProperty Name="ProfileStatus" ColumnName="ProfileStatus" />
-                <ScalarProperty Name="SageConsultRNum" ColumnName="SageConsultRNum" />
-                <ScalarProperty Name="ItemQtyDecPlaces" ColumnName="ItemQtyDecPlaces" />
-                <ScalarProperty Name="UseLotAddDetails" ColumnName="UseLotAddDetails" />
-                <ScalarProperty Name="UseLotTracking" ColumnName="UseLotTracking" />
-                <ScalarProperty Name="SendMessages" ColumnName="SendMessages" />
-                <ScalarProperty Name="UATMode" ColumnName="UATMode" />
-                <ScalarProperty Name="UseModule3" ColumnName="UseModule3" />
-                <ScalarProperty Name="UseModule2" ColumnName="UseModule2" />
-                <ScalarProperty Name="CoGenericLoginPwd" ColumnName="CoGenericLoginPwd" />
-                <ScalarProperty Name="CoGenericLoginEmail" ColumnName="CoGenericLoginEmail" />
-                <ScalarProperty Name="BillAddress3" ColumnName="BillAddress3" />
-                <ScalarProperty Name="BillAddress2" ColumnName="BillAddress2" />
-                <ScalarProperty Name="BillAddress1" ColumnName="BillAddress1" />
-                <ScalarProperty Name="UseEndDate" ColumnName="UseEndDate" />
-                <ScalarProperty Name="UseStartDate" ColumnName="UseStartDate" />
-                <ScalarProperty Name="Contactemail" ColumnName="Contactemail" />
-                <ScalarProperty Name="Contact" ColumnName="Contact" />
-                <ScalarProperty Name="CompanyName" ColumnName="CompanyName" />
-                <ScalarProperty Name="SBCApwd" ColumnName="SBCApwd" />
-                <ScalarProperty Name="SBCAemail" ColumnName="SBCAemail" />
-                <ScalarProperty Name="SBCACoID" ColumnName="SBCACoID" />
-                <ScalarProperty Name="CoID" ColumnName="CoID" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
           <EntitySetMapping Name="ItemTransferHeaders">
             <EntityTypeMapping TypeName="SBMSModel.ItemTransferHeader">
               <MappingFragment StoreEntitySet="ItemTransferHeaders">
@@ -5231,6 +5184,56 @@
                 <ScalarProperty Name="DocumentID" ColumnName="DocumentID" />
                 <ScalarProperty Name="CompanyID" ColumnName="CompanyID" />
                 <ScalarProperty Name="TrnID" ColumnName="TrnID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="CompanyMasters">
+            <EntityTypeMapping TypeName="SBMSModel.CompanyMaster">
+              <MappingFragment StoreEntitySet="CompanyMaster">
+                <ScalarProperty Name="MobileModule" ColumnName="MobileModule" />
+                <ScalarProperty Name="BinDelimiter" ColumnName="BinDelimiter" />
+                <ScalarProperty Name="AllowScannerPutAway" ColumnName="AllowScannerPutAway" />
+                <ScalarProperty Name="AllowScannerReceive" ColumnName="AllowScannerReceive" />
+                <ScalarProperty Name="AllowScannerCount" ColumnName="AllowScannerCount" />
+                <ScalarProperty Name="BinSegments" ColumnName="BinSegments" />
+                <ScalarProperty Name="AllowSystemLotNumbers" ColumnName="AllowSystemLotNumbers" />
+                <ScalarProperty Name="SageWeightField" ColumnName="SageWeightField" />
+                <ScalarProperty Name="ShowManfCosts" ColumnName="ShowManfCosts" />
+                <ScalarProperty Name="UsePacks" ColumnName="UsePacks" />
+                <ScalarProperty Name="AutoGenTaxInvoice" ColumnName="AutoGenTaxInvoice" />
+                <ScalarProperty Name="AutoUpdateSageSOs" ColumnName="AutoUpdateSageSOs" />
+                <ScalarProperty Name="UseBarcodes" ColumnName="UseBarcodes" />
+                <ScalarProperty Name="UsePickSlipTracking" ColumnName="UsePickSlipTracking" />
+                <ScalarProperty Name="UseAutoManf" ColumnName="UseAutoManf" />
+                <ScalarProperty Name="BillAddress4" ColumnName="BillAddress4" />
+                <ScalarProperty Name="CreatedBy" ColumnName="CreatedBy" />
+                <ScalarProperty Name="ModifiedBy" ColumnName="ModifiedBy" />
+                <ScalarProperty Name="Modified" ColumnName="Modified" />
+                <ScalarProperty Name="Created" ColumnName="Created" />
+                <ScalarProperty Name="Active" ColumnName="Active" />
+                <ScalarProperty Name="ProfileStatus" ColumnName="ProfileStatus" />
+                <ScalarProperty Name="SageConsultRNum" ColumnName="SageConsultRNum" />
+                <ScalarProperty Name="ItemQtyDecPlaces" ColumnName="ItemQtyDecPlaces" />
+                <ScalarProperty Name="UseLotAddDetails" ColumnName="UseLotAddDetails" />
+                <ScalarProperty Name="UseLotTracking" ColumnName="UseLotTracking" />
+                <ScalarProperty Name="SendMessages" ColumnName="SendMessages" />
+                <ScalarProperty Name="UATMode" ColumnName="UATMode" />
+                <ScalarProperty Name="UseModule3" ColumnName="UseModule3" />
+                <ScalarProperty Name="UseModule2" ColumnName="UseModule2" />
+                <ScalarProperty Name="CoGenericLoginPwd" ColumnName="CoGenericLoginPwd" />
+                <ScalarProperty Name="CoGenericLoginEmail" ColumnName="CoGenericLoginEmail" />
+                <ScalarProperty Name="BillAddress3" ColumnName="BillAddress3" />
+                <ScalarProperty Name="BillAddress2" ColumnName="BillAddress2" />
+                <ScalarProperty Name="BillAddress1" ColumnName="BillAddress1" />
+                <ScalarProperty Name="UseEndDate" ColumnName="UseEndDate" />
+                <ScalarProperty Name="UseStartDate" ColumnName="UseStartDate" />
+                <ScalarProperty Name="Contactemail" ColumnName="Contactemail" />
+                <ScalarProperty Name="Contact" ColumnName="Contact" />
+                <ScalarProperty Name="CompanyName" ColumnName="CompanyName" />
+                <ScalarProperty Name="SBCApwd" ColumnName="SBCApwd" />
+                <ScalarProperty Name="SBCAemail" ColumnName="SBCAemail" />
+                <ScalarProperty Name="SBCACoID" ColumnName="SBCACoID" />
+                <ScalarProperty Name="CoID" ColumnName="CoID" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>

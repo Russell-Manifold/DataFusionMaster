@@ -128,21 +128,7 @@
                                         <br /> (Max = <asp:Label ID="lblMax" runat="server" Text=""></asp:Label>)
                                             <cci:FilteredTextBoxExtender ID="ftbe" runat="server" TargetControlID="txtQtyToTrf" FilterType="Custom, Numbers" ValidChars="." />
                                         <br /><br /><h3>From <asp:Label ID="lblFromStore" runat="server" Text=""></asp:Label> --> <asp:Label ID="lblToStore" runat="server" Text=""></asp:Label> Store</h3>
-                                        <hr />
-                                        <asp:Panel ID="Panel2" runat="server" style="display:none">
-                                            Transfer Additional Costs
-                                        <hr />
-                                            Additional Costs Reason<br />
-                                            <asp:TextBox ID="txtAddCostsReason" runat="server" TextMode="MultiLine" Rows="3" Columns="45" Style="text-align: left;" MaxLength="100"></asp:TextBox><br />
-                                            Total (Ex Vat) Value Of Additional Cost(s)
-                                            <br />
-                                            <asp:TextBox ID="txtTrfAddCosts" runat="server" Style="text-align: center"></asp:TextBox><br />
-                                            <br />
-                                            <cci:FilteredTextBoxExtender ID="FilteredTextBoxExtender1" runat="server" TargetControlID="txtTrfAddCosts" FilterType="Custom, Numbers" ValidChars="." />
-                                            <asp:CheckBox ID="chkSageUpdate" runat="server" Text="Update item average cost in Sage?" />
-                                            <hr />
-                                        </asp:Panel>
-                                    </div>
+                                     </div>
                                     <div class="Controls">
                                         <input id="btnCancel5" type="button" class="fa fa-times-circle" value="" runat="server" style="display:none"/>
                                         <input id="btnOkay5" type="button" class="buttonYellow" value="OK" runat="server" style="display:none"/>

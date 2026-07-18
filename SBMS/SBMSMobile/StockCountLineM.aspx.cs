@@ -65,6 +65,9 @@ namespace SBMS
 
             lblUsername.Text = CurrentUser.UserName;
 
+            // Barcode-off companies count by tapping the line's ✎ button; hide the scan bar.
+            pnlScanBar.Visible = CurrentUser.UseBarcodes == true;
+
             if (!IsPostBack)
             {
                 Session.Remove("SCLineCountedIDs");
@@ -492,7 +495,7 @@ namespace SBMS
         private void HideCalculator()
         {
             pnlCalculator.Visible = false;
-            pnlScanBar.Visible    = true;
+            pnlScanBar.Visible    = CurrentUser.UseBarcodes == true;
             MatchedLineID         = 0;
         }
 

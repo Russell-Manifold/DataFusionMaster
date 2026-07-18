@@ -55,9 +55,9 @@
         <EntityTypeShape EntityType="SBMSModel.StockCountLine" Width="1.5" PointX="23.375" PointY="25.75" />
         <EntityTypeShape EntityType="SBMSModel.Store" Width="1.5" PointX="21.375" PointY="0.75" />
         <EntityTypeShape EntityType="SBMSModel.ReceivingOutstanding" Width="1.5" PointX="25.375" PointY="25.75" />
-        <EntityTypeShape EntityType="SBMSModel.CompanyMaster" Width="1.5" PointX="0.75" PointY="26.75" />
         <EntityTypeShape EntityType="SBMSModel.ItemTransferHeader" Width="1.5" PointX="23.375" PointY="0.75" />
         <EntityTypeShape EntityType="SBMSModel.ItemTransaction" Width="1.5" PointX="23.375" PointY="6.75" />
+        <EntityTypeShape EntityType="SBMSModel.CompanyMaster" Width="1.5" PointX="25.375" PointY="0.75" />
       </Diagram>
     </edmx:Diagrams>
   </edmx:Designer>

@@ -90,6 +90,9 @@ namespace SBMS
 
             lblUsername.Text = CurrentUser.UserName;
 
+            // Barcode-off companies pick by tapping the line (qty prefilled to full); hide the scan bar.
+            pnlScanBar.Visible = CurrentUser.UseBarcodes == true;
+
             using (SBMSEntities db = new SBMSEntities(Config.GetConnectionString()))
             {
                 _activeLotNums = db.GetActiveLotNumbersLinkedToStores(CurrentUser.CoID)
@@ -238,8 +241,16 @@ namespace SBMS
                     .OrderBy(l => l.LineID)
                     .ToList();
 
+                // Barcode-off: prefill each unpicked line's qty to its full quantity so
+                // the operator picks with a single tap. Barcode-on keeps the 0 default.
+                bool prefillFull = CurrentUser.UseBarcodes != true;
                 foreach (var l in lines)
-                    if (l.PickQty == null) l.PickQty = 0;
+                {
+                    if (prefillFull && l.PickComplete != true)
+                        l.PickQty = l.Quantity;
+                    else if (l.PickQty == null)
+                        l.PickQty = 0;
+                }
 
                 return lines;
             }
@@ -579,7 +590,26 @@ namespace SBMS
                 db.SaveChanges();
             }
 
+            RefreshPickStatus(PSID);
             return null;
+        }
+
+        // PSStatus lifecycle when Pick-Slip Tracking is off: Captured -> Started -> Picked.
+        // (Complete is set at close-off; when tracking is on, station names drive PSStatus.)
+        private void RefreshPickStatus(int psid)
+        {
+            if (CurrentUser.UsePickSlipTracking == true) return;
+            using (SBMSEntities db = new SBMSEntities(Config.GetConnectionString()))
+            {
+                var psm = db.PickingSlipMasters.FirstOrDefault(x => x.CustomerID == CurrentUser.CoID && x.PSID == psid);
+                if (psm == null || psm.PSComplete == true) return;
+                var lines = db.PickSlipLines.Where(l => l.PSID == psid && l.CompanyID == CurrentUser.CoID && l.LineType == 0).ToList();
+                if (lines.Count == 0) return;
+                string newStatus = lines.All(l => l.PickComplete == true) ? "Picked"
+                                 : lines.Any(l => l.PickComplete == true) ? "Started"
+                                 : "Captured";
+                if (psm.PSStatus != newStatus) { psm.PSStatus = newStatus; db.SaveChanges(); }
+            }
         }
 
         // ── Finalise ───────────────────────────────────────────────────────────────
@@ -630,7 +660,7 @@ namespace SBMS
                         if (psl.SBCALineID != null && psl.SBCALineID != 0)
                         {
                             var soLine = db.DocLines
-                                .FirstOrDefault(x => x.SBCALineID == psl.SBCALineID);
+                                .FirstOrDefault(x => x.CompanyID == CurrentUser.CoID && x.SBCALineID == psl.SBCALineID);
 
                             if (soLine != null)
                             {
@@ -691,7 +721,7 @@ namespace SBMS
                     {
                         fromStat           = (int)(psm.PSStationID ?? 0);
                         psm.PSStationID    = finalStat.PSPID;
-                        psm.PSStatus       = finalStat.PSName;
+                        psm.PSStatus       = (CurrentUser.UsePickSlipTracking == true) ? finalStat.PSName : "Complete";
                         psm.PSComplete     = true;
                         psm.PSCompleteDate = DateTime.Now;
                         psm.PSCompleteBy   = CurrentUser.RoleID;

@@ -4084,11 +4084,53 @@ namespace SBMS
                         if (ddStore.SelectedItem != null) store = ddStore.SelectedItem.Text;
                         string Quantity = itemqty.ToString();
 
-                        string key = $"{selectionId}|{LotNumber}|{store}|{Quantity}";
+                        // Compute the finished-good cost SERVER-SIDE from the actual value of the
+                        // components about to be drawn - each at its draw store's weighted average,
+                        // exactly as DoItemAdjustment posts the "L" draws below - so the value produced
+                        // into the FG equals the value removed from raw materials. The client-JS
+                        // HiddenTotalCost used a 2-dp displayed cost that could diverge from the store
+                        // average, and was 0 whenever the script had not run (posting the FG at zero cost).
+                        // Draws are outbound and never move a store's average, so these read-only lookups
+                        // match the values the draws will actually use.
+                        decimal serverTotCost = 0;
+                        foreach (Control ctrlPre in pane.ContentContainer.Controls)
+                        {
+                            if (ctrlPre is GridView gridPre)
+                            {
+                                foreach (GridViewRow rowPre in gridPre.Rows)
+                                {
+                                    if (rowPre.RowType != DataControlRowType.DataRow) continue;
+                                    TextBox txtUseQtyPre = rowPre.FindControl("txtUseQty") as TextBox;
+                                    DropDownList ddStorePre = rowPre.FindControl("DDStore") as DropDownList;
+                                    decimal useQtyPre = 0;
+                                    try { useQtyPre = Convert.ToDecimal(txtUseQtyPre.Text); } catch { }
+                                    if (useQtyPre <= 0 || ddStorePre?.SelectedItem == null) continue;
+                                    long rmItemIdPre = Convert.ToInt64(rowPre.Cells[1].Text);
+                                    int rmLineIdPre = Convert.ToInt32(rowPre.Cells[0].Text);
+                                    long storeIdPre = _db.Stores.Where(x => x.CompanyID == CoID && x.StoreCode == ddStorePre.SelectedItem.Text).Select(x => x.StoreID).FirstOrDefault();
+                                    decimal drawAvgPre = StoreCosting.GetStoreAvgCost(_db, CoID, rmItemIdPre, storeIdPre);
+                                    if (drawAvgPre <= 0)
+                                    {
+                                        var wrmPre = _db.WorksOrderRMLines.FirstOrDefault(x => x.CompanyID == CoID && x.LineID == rmLineIdPre);
+                                        drawAvgPre = (decimal)(wrmPre != null ? wrmPre.UnitCost : 0);
+                                    }
+                                    serverTotCost += useQtyPre * drawAvgPre;
+                                }
+                            }
+                        }
+
+                        // Key the dedup on the WorksOrderLine LineID (+ a type tag), not just the
+                        // item/qty values. Two batches of an equal part-manufacture split (e.g. 10 -> 5+5)
+                        // have identical item/store/qty, so a value-only key made the second batch collide
+                        // with the first and silently skip its FG produce + component draws.
+                        string key = $"H|{lineID}|{selectionId}|{LotNumber}|{store}|{Quantity}";
                         if (!SentKeys.Contains(key))
                         {
                             int Lid = Convert.ToInt32(lineID);
-                            decimal thisunitcost = thistotcost != 0 && itemqty != 0 ? thistotcost / itemqty : 0; // Fallback to 0 if itemqty is 0 to avoid division by zero
+                            // Prefer the server-computed material value; fall back to the JS total only if
+                            // it couldn't be computed (e.g. no store history and no RM unit cost).
+                            decimal fgTotCost = serverTotCost > 0 ? serverTotCost : thistotcost;
+                            decimal thisunitcost = fgTotCost != 0 && itemqty != 0 ? fgTotCost / itemqty : 0;
                             string RetStr = DoItemAdjustment(Convert.ToInt64(selectionId), LotNumber, store, itemqty, 0, "H", thisunitcost);
                             if (RetStr != "OK")
                             {
@@ -4145,7 +4187,9 @@ namespace SBMS
 
                                             if (useQty > 0)
                                             {
-                                                string usageKey = $"{gridSelectionId}|{gridLotNumber}|{gridStore}|{useQty}";
+                                                // Key on the RM LineID (+ type tag) so identical component rows
+                                                // on two split batches don't collide (see the FG key note above).
+                                                string usageKey = $"use|{TLineID}|{gridSelectionId}|{gridLotNumber}|{gridStore}|{useQty}";
                                                 if (!SentKeys.Contains(usageKey))
                                                 {
                                                     string RetStr = DoItemAdjustment(Convert.ToInt64(gridSelectionId), gridLotNumber, gridStore, useQty * -1, 0, "L", (decimal)WRMLine.UnitCost);
@@ -4160,10 +4204,15 @@ namespace SBMS
 
                                             if (scrapQty > 0)
                                             {
-                                                string scrapKey = $"{gridSelectionId}|{gridLotNumber}|{gridStore}|{scrapQty}";
+                                                // Scrap is consumed material: draw it OUT of the source store
+                                                // (negative useqty), exactly like usage, so it is removed from
+                                                // both the local store balance and Sage at the store average.
+                                                // (Passing it as the reject arg posted a zero-qty Sage adjustment
+                                                //  that removed no stock but still revalued the item.)
+                                                string scrapKey = $"scrap|{TLineID}|{gridSelectionId}|{gridLotNumber}|{gridStore}|{scrapQty}";
                                                 if (!SentKeys.Contains(scrapKey))
                                                 {
-                                                    string RetStr = DoItemAdjustment(Convert.ToInt64(gridSelectionId), gridLotNumber, gridStore, 0, scrapQty * -1, "L", (decimal)WRMLine.UnitCost);
+                                                    string RetStr = DoItemAdjustment(Convert.ToInt64(gridSelectionId), gridLotNumber, gridStore, scrapQty * -1, 0, "L", (decimal)WRMLine.UnitCost);
                                                     if (RetStr != "OK")
                                                     {
                                                         string msg = $"Error performing Item Adjustment for scrap: {RetStr}";

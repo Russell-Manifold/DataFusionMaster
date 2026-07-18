@@ -69,6 +69,9 @@ namespace SBMS
 
             lblUsername.Text = CurrentUser.UserName;
 
+            // Barcode-off companies put away by tapping the card (qty prefilled to QOH); hide the scan bar.
+            pnlScanBar.Visible = CurrentUser.UseBarcodes == true;
+
             // Resolve the holding store on every load so the put-away handlers have it.
             if (!ResolveSourceStore())
             {
@@ -315,8 +318,10 @@ namespace SBMS
                     ExchRate                  = 1,
                     StoreAvgCost              = destAvg
                 });
-                db.SaveChanges();
                 EnsureStoreLink(db, itemId, dest.StoreID);
+                // Both transfer legs (IN to destination, OUT of holding) commit in ONE SaveChanges
+                // below - a mid-operation failure must not leave the destination credited while the
+                // source is never debited (phantom stock).
 
                 // OUT of holding (mirror): same unit value as the IN leg above.
                 decimal outCost = cost;

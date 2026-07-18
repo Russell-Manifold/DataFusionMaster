@@ -26,6 +26,13 @@ namespace SBMS.Classes
                     Response.Redirect("~/Login.aspx?returnUrl=" + returnUrl, false);
                     Context.ApplicationInstance.CompleteRequest();
                 }
+                // Mobile module gate: block the whole mobile suite (incl. direct URLs)
+                // when the company isn't licensed for it.
+                else if (path.Contains("/sbmsmobile/") && !CurrentUser.MobileModule)
+                {
+                    Response.Redirect("~/Dashboard.aspx", false);
+                    Context.ApplicationInstance.CompleteRequest();
+                }
             }
         }
     }

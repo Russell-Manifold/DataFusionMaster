@@ -90,6 +90,7 @@ namespace SBMS
                chkUAT.Checked = (bool)Comp.UATMode;
                chkPickSlip.Checked = (bool)Comp.UsePickSlipTracking;
                chkBarCodes.Checked = (bool)Comp.UseBarcodes;
+               chkMobileModule.Checked = Comp.MobileModule;
                chkPSAuto.Checked = (bool)Comp.AutoUpdateSageSOs;
                chkTaxInvAuto.Checked = (bool)Comp.AutoGenTaxInvoice;
                chkUsePacks.Checked = (bool)Comp.UsePacks;
@@ -177,6 +178,8 @@ namespace SBMS
                     CurrentUser.UsePickSlipTracking = Comp.UsePickSlipTracking;
                     Comp.UseBarcodes = chkBarCodes.Checked;
                     CurrentUser.UseBarcodes = Comp.UseBarcodes;
+                    Comp.MobileModule = chkMobileModule.Checked;
+                    CurrentUser.MobileModule = Comp.MobileModule;
                     Comp.AutoUpdateSageSOs = chkPSAuto.Checked;
                     CurrentUser.AutoUpdateSageSOs = Comp.AutoUpdateSageSOs;
                     Comp.AutoGenTaxInvoice = chkTaxInvAuto.Checked;

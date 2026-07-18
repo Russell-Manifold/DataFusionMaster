@@ -718,7 +718,7 @@ namespace SBMS
                                 ItemTrans.ItemDescription = ItmR.ItemDescription ?? "";
                                 ItemTrans.Unit = ItmR.Unit;
                                 ItemTrans.FromID = 0;
-                                ItemTrans.ToID = FrmStorid;
+                                ItemTrans.ToID = ItmR.ToID ?? FrmStorid;   // reverse back into the store it was issued from, not the (possibly-changed) current line store
                                 ItemTrans.Qty = Convert.ToDecimal(ItmR.Qty) * -1;
                                 ItemTrans.DocumentType = 10;
                                 ItemTrans.PriceExclusive = ItmR.PriceExclusive;
@@ -729,7 +729,7 @@ namespace SBMS
                                     var ItmT = _db.ItemTransactions.Where(x => x.CompanyID == CurrentUser.CoID && x.ItemID == NewJCLine.SelectionId && x.ToID == FrmStorid && x.LotNumber == DDlotNum.SelectedValue).OrderByDescending(x => x.TrnID);
                                     if (ItmT != null)
                                     {
-                                        qoh = (decimal)ItmT.Sum(x=>x.Qty);
+                                        qoh = ItmT.Sum(x=>x.Qty) ?? 0;   // SUM over zero rows is NULL (first-ever movement); default to 0 instead of throwing
                                     }
                                 }
                                 else
@@ -737,7 +737,7 @@ namespace SBMS
                                     var ItmT = _db.ItemTransactions.Where(x => x.CompanyID == CurrentUser.CoID && x.ItemID == NewJCLine.SelectionId && x.ToID == FrmStorid).OrderByDescending(x => x.TrnID);
                                     if (ItmT != null)
                                     {
-                                        qoh = (decimal)ItmT.Sum(x => x.Qty);
+                                        qoh = ItmT.Sum(x => x.Qty) ?? 0;   // SUM over zero rows is NULL (first-ever movement); default to 0 instead of throwing
                                     }
                                 }
                                 ItemTrans.TransactionDate = DateTime.Now;
@@ -746,7 +746,7 @@ namespace SBMS
                                 ItemTrans.TotalLineValExcl = ItemTrans.TotalUnitPriceExclInclAdd * ItemTrans.Qty;
                                 ItemTrans.TransactionReference = lblDocNum.Text + " Reversal";
                                 ItemTrans.LotNumber = ItmR.LotNumber;
-                                ItemTrans.StoreAvgCost = StoreCosting.ComputeMovement(_db, CurrentUser.CoID, (long)ItemTrans.ItemID, FrmStorid, ItemTrans.Qty ?? 0, ItemTrans.TotalLineValExcl ?? 0, out var _v);
+                                ItemTrans.StoreAvgCost = StoreCosting.ComputeMovement(_db, CurrentUser.CoID, (long)ItemTrans.ItemID, ItmR.ToID ?? FrmStorid, ItemTrans.Qty ?? 0, ItemTrans.TotalLineValExcl ?? 0, out var _v);
                                 _db.ItemTransactions.Add(ItemTrans);
                                 NewJCLine.ItemTransLineID = null;
                                 _db.SaveChanges();
@@ -784,10 +784,13 @@ namespace SBMS
                                 var ItmT = _db.ItemTransactions.Where(x => x.CompanyID == CurrentUser.CoID && x.ItemID == NewJCLine.SelectionId && x.ToID == FrmStorid && x.LotNumber == DDlotNum.SelectedValue).OrderByDescending(x => x.TrnID);
                                 if (ItmT != null)
                                 {
-                                    qoh = (decimal)ItmT.Sum(x=>x.Qty);
+                                    qoh = ItmT.Sum(x=>x.Qty) ?? 0;   // SUM over zero rows is NULL (first-ever movement); default to 0 instead of throwing
                                     var lastTrn = ItmT.OrderByDescending(x => x.TrnID).FirstOrDefault();
-                                    ItemTrans.PriceExclusive = lastTrn.PriceExclusive;
-                                    ItemTrans.TotalUnitPriceExclInclAdd = lastTrn.TotalUnitPriceExclInclAdd;
+                                    if (lastTrn != null)
+                                    {
+                                        ItemTrans.PriceExclusive = lastTrn.PriceExclusive;
+                                        ItemTrans.TotalUnitPriceExclInclAdd = lastTrn.TotalUnitPriceExclInclAdd;
+                                    }
                                 }
                             }
                             else
@@ -797,25 +800,30 @@ namespace SBMS
                                 {
                                     try
                                     {
-                                        qoh = (decimal)ItmT.Sum(x => x.Qty);
+                                        qoh = ItmT.Sum(x => x.Qty) ?? 0;   // SUM over zero rows is NULL (first-ever movement); default to 0 instead of throwing
                                         var lastTrn = ItmT.OrderByDescending(x => x.TrnID).FirstOrDefault();
-                                        ItemTrans.PriceExclusive = lastTrn.PriceExclusive;
-                                        ItemTrans.TotalUnitPriceExclInclAdd = lastTrn.TotalUnitPriceExclInclAdd;
+                                        if (lastTrn != null)
+                                        {
+                                            ItemTrans.PriceExclusive = lastTrn.PriceExclusive;
+                                            ItemTrans.TotalUnitPriceExclInclAdd = lastTrn.TotalUnitPriceExclInclAdd;
+                                        }
                                     }
-                                    catch 
+                                    catch
                                     {
                                         qoh = 0;
-                                        ItemTrans.PriceExclusive = Itm.PriceExclusive ;
-                                        ItemTrans.TotalUnitPriceExclInclAdd = Itm.PriceExclusive;
+                                        ItemTrans.PriceExclusive = (decimal)(Itm?.AverageCost ?? 0);
+                                        ItemTrans.TotalUnitPriceExclInclAdd = (decimal)(Itm?.AverageCost ?? 0);
                                     }
                                 }
                             }
-                            // per-store weighted average drives the issue cost; the last-row cost above is only the fallback
+                            // Issue cost = the store's weighted average, else the item's average cost -
+                            // never the selling price (the last-row read above is only a further fallback).
                             decimal storeAvg = StoreCosting.GetStoreAvgCost(_db, CurrentUser.CoID, (long)ItemTrans.ItemID, FrmStorid);
-                            if (storeAvg != 0)
+                            decimal issueCost = storeAvg != 0 ? storeAvg : (decimal)(Itm?.AverageCost ?? 0);
+                            if (issueCost != 0)
                             {
-                                ItemTrans.PriceExclusive = storeAvg;
-                                ItemTrans.TotalUnitPriceExclInclAdd = storeAvg;
+                                ItemTrans.PriceExclusive = issueCost;
+                                ItemTrans.TotalUnitPriceExclInclAdd = issueCost;
                             }
                             ItemTrans.StoreAvgCost = ItemTrans.TotalUnitPriceExclInclAdd;
                             ItemTrans.TransactionDate = DateTime.Now;
@@ -849,9 +857,49 @@ namespace SBMS
             long Lnid = Convert.ToInt64(lbtnDeleteLine.CommandArgument);
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {
-                var Ln = _db.JobCardLines.Where(x => x.LineID == Lnid);
-                _db.JobCardLines.RemoveRange(Ln);
-                _db.SaveChanges();
+                var Ln = _db.JobCardLines.FirstOrDefault(x => x.CompanyID == CoID && x.LineID == Lnid);
+                if (Ln != null)
+                {
+                    // If this line already issued stock (completed), reverse that issue before deleting -
+                    // otherwise the stock stays gone with no document referencing it.
+                    long trnId = 0;
+                    try { trnId = Convert.ToInt64(Ln.ItemTransLineID); } catch { }
+                    if (trnId > 0)
+                    {
+                        var ItmR = _db.ItemTransactions.FirstOrDefault(x => x.CompanyID == CurrentUser.CoID && x.TrnID == trnId);
+                        if (ItmR != null)
+                        {
+                            long storeId = ItmR.ToID ?? 0;
+                            ItemTransaction rev = new ItemTransaction
+                            {
+                                CompanyID = CurrentUser.CoID,
+                                DocumentID = ItmR.DocumentID,
+                                TransactionType = ItmR.TransactionType,
+                                ItemID = ItmR.ItemID,
+                                ItemCode = ItmR.ItemCode ?? "",
+                                ItemDescription = ItmR.ItemDescription ?? "",
+                                Unit = ItmR.Unit,
+                                FromID = 0,
+                                ToID = storeId,
+                                Qty = Convert.ToDecimal(ItmR.Qty) * -1,
+                                DocumentType = 10,
+                                PriceExclusive = ItmR.PriceExclusive,
+                                TotalUnitPriceExclInclAdd = ItmR.TotalUnitPriceExclInclAdd,
+                                AdditionalCosts = 0,
+                                TransactionDate = DateTime.Now,
+                                ByRoleID = CurrentUser.RoleID,
+                                TransactionReference = lblDocNum.Text + " Reversal (line deleted)",
+                                LotNumber = ItmR.LotNumber,
+                                ExchRate = 1,
+                            };
+                            rev.TotalLineValExcl = rev.TotalUnitPriceExclInclAdd * rev.Qty;
+                            rev.StoreAvgCost = StoreCosting.ComputeMovement(_db, CurrentUser.CoID, (long)rev.ItemID, storeId, rev.Qty ?? 0, rev.TotalLineValExcl ?? 0, out var _v);
+                            _db.ItemTransactions.Add(rev);
+                        }
+                    }
+                    _db.JobCardLines.Remove(Ln);
+                    _db.SaveChanges();
+                }
                 BindGrid();
             }
         }
@@ -1066,7 +1114,7 @@ namespace SBMS
                 {
                    if (JCLn.Quantity > 0 && JCLn.SelectionId != 0 && JCLn.isKit == true) 
                     { 
-                    var ItemT = _db.ItemTransactions.Where(x => x.CompanyID == CurrentUser.CoID && x.DocumentID == jcid && x.ItemID == JCLn.SelectionId && x.LotNumber == JCLn.LotNumber && x.Qty == JCLn.Quantity * -1).FirstOrDefault();
+                    var ItemT = _db.ItemTransactions.Where(x => x.CompanyID == CurrentUser.CoID && x.DocumentID == jcid && x.ItemID == JCLn.SelectionId && x.TransactionType == "JC-Mf").FirstOrDefault();
                         if (ItemT == null)
                         {
                             // add a new item transaction - primarilly used for primary Kit Items
@@ -1080,12 +1128,14 @@ namespace SBMS
                             ItemTrans.Unit = JCLn.Unit;
                             ItemTrans.FromID = 0;
                             ItemTrans.ToID = _db.Stores.FirstOrDefault(x => x.CompanyID == CurrentUser.CoID && x.StoreCode == JCLn.StoreCodeFrom).StoreID;
-                            ItemTrans.Qty = Convert.ToDecimal(JCLn.LinePickQty);
-                            //ItemTrans.Qty = Convert.ToDecimal(JCLn.Quantity);
+                            ItemTrans.Qty = Convert.ToDecimal(JCLn.Quantity);   // produce the full kit quantity into stock (LinePickQty is unset on the kit header -> was posting 0)
                             ItemTrans.DocumentType = 7;
                             ItemTrans.ExchRate = 1;
-                            ItemTrans.PriceExclusive = JCLn.UnitPriceExclusive;
-                            ItemTrans.TotalUnitPriceExclInclAdd = JCLn.UnitPriceExclusive;
+                            // Cost basis = the kit item's average cost, never the selling price; a prior FG movement (if any) overrides below.
+                            var fgItm = _db.ItemsMasters.FirstOrDefault(x => x.CompanyID == CurrentUser.CoID && x.ID == JCLn.SelectionId);
+                            decimal fgCost = (decimal)(fgItm?.AverageCost ?? 0);
+                            ItemTrans.PriceExclusive = fgCost;
+                            ItemTrans.TotalUnitPriceExclInclAdd = fgCost;
 
                             decimal qoh;
                             if (JCLn.LotNumber != null)
@@ -1095,17 +1145,23 @@ namespace SBMS
                                     var ItmT = _db.ItemTransactions.Where(x => x.CompanyID == CurrentUser.CoID && x.ItemID == JCLn.SelectionId && x.ToID == ItemTrans.ToID && x.LotNumber == JCLn.LotNumber).OrderByDescending(x => x.TrnID);
                                     if (ItmT != null)
                                     {
-                                        qoh = (decimal)ItmT.Sum(x => x.Qty);
+                                        qoh = ItmT.Sum(x => x.Qty) ?? 0;   // SUM over zero rows is NULL (first-ever movement); default to 0 instead of throwing
                                         var lastTrn = ItmT.OrderByDescending(x => x.TrnID).FirstOrDefault();
-                                        ItemTrans.PriceExclusive = lastTrn.PriceExclusive;
-                                        ItemTrans.TotalUnitPriceExclInclAdd = lastTrn.TotalUnitPriceExclInclAdd;
+                                        if (lastTrn != null)
+                                        {
+                                            ItemTrans.PriceExclusive = lastTrn.PriceExclusive;
+                                            ItemTrans.TotalUnitPriceExclInclAdd = lastTrn.TotalUnitPriceExclInclAdd;
+                                        }
                                     }
                                     else
                                     {
-                                        qoh = (decimal)ItmT.Sum(x => x.Qty);
+                                        qoh = ItmT.Sum(x => x.Qty) ?? 0;   // SUM over zero rows is NULL (first-ever movement); default to 0 instead of throwing
                                         var lastTrn = ItmT.OrderByDescending(x => x.TrnID).FirstOrDefault();
-                                        ItemTrans.PriceExclusive = lastTrn.PriceExclusive;
-                                        ItemTrans.TotalUnitPriceExclInclAdd = lastTrn.TotalUnitPriceExclInclAdd;
+                                        if (lastTrn != null)
+                                        {
+                                            ItemTrans.PriceExclusive = lastTrn.PriceExclusive;
+                                            ItemTrans.TotalUnitPriceExclInclAdd = lastTrn.TotalUnitPriceExclInclAdd;
+                                        }
                                     }
                                 }
                                 else
@@ -1113,17 +1169,23 @@ namespace SBMS
                                     var ItmT = _db.ItemTransactions.Where(x => x.CompanyID == CurrentUser.CoID && x.ItemID == JCLn.SelectionId && x.ToID == ItemTrans.ToID).OrderByDescending(x => x.TrnID);
                                     if (ItmT != null)
                                     {
-                                        qoh = (decimal)ItmT.Sum(x => x.Qty);
+                                        qoh = ItmT.Sum(x => x.Qty) ?? 0;   // SUM over zero rows is NULL (first-ever movement); default to 0 instead of throwing
                                         var lastTrn = ItmT.OrderByDescending(x => x.TrnID).FirstOrDefault();
-                                        ItemTrans.PriceExclusive = lastTrn.PriceExclusive;
-                                        ItemTrans.TotalUnitPriceExclInclAdd = lastTrn.TotalUnitPriceExclInclAdd;
+                                        if (lastTrn != null)
+                                        {
+                                            ItemTrans.PriceExclusive = lastTrn.PriceExclusive;
+                                            ItemTrans.TotalUnitPriceExclInclAdd = lastTrn.TotalUnitPriceExclInclAdd;
+                                        }
                                     }
                                     else
                                     {
-                                        qoh = (decimal)ItmT.Sum(x => x.Qty);
+                                        qoh = ItmT.Sum(x => x.Qty) ?? 0;   // SUM over zero rows is NULL (first-ever movement); default to 0 instead of throwing
                                         var lastTrn = ItmT.OrderByDescending(x => x.TrnID).FirstOrDefault();
-                                        ItemTrans.PriceExclusive = lastTrn.PriceExclusive;
-                                        ItemTrans.TotalUnitPriceExclInclAdd = lastTrn.TotalUnitPriceExclInclAdd;
+                                        if (lastTrn != null)
+                                        {
+                                            ItemTrans.PriceExclusive = lastTrn.PriceExclusive;
+                                            ItemTrans.TotalUnitPriceExclInclAdd = lastTrn.TotalUnitPriceExclInclAdd;
+                                        }
                                     }
                                 }
 
@@ -1133,21 +1195,41 @@ namespace SBMS
                                 var ItmT = _db.ItemTransactions.Where(x => x.CompanyID == CurrentUser.CoID && x.ItemID == JCLn.SelectionId && x.ToID == ItemTrans.ToID).OrderByDescending(x => x.TrnID);
                                 if (ItmT != null)
                                 {
-                                    qoh = (decimal)ItmT.Sum(x => x.Qty);
+                                    qoh = ItmT.Sum(x => x.Qty) ?? 0;   // SUM over zero rows is NULL (first-ever movement); default to 0 instead of throwing
                                     var lastTrn = ItmT.OrderByDescending(x => x.TrnID).FirstOrDefault();
-                                    ItemTrans.PriceExclusive = lastTrn.PriceExclusive;
-                                    ItemTrans.TotalUnitPriceExclInclAdd = lastTrn.TotalUnitPriceExclInclAdd;
+                                    if (lastTrn != null)
+                                    {
+                                        ItemTrans.PriceExclusive = lastTrn.PriceExclusive;
+                                        ItemTrans.TotalUnitPriceExclInclAdd = lastTrn.TotalUnitPriceExclInclAdd;
+                                    }
                                 }
                                 else
                                 {
-                                    qoh = (decimal)ItmT.Sum(x => x.Qty);
+                                    qoh = ItmT.Sum(x => x.Qty) ?? 0;   // SUM over zero rows is NULL (first-ever movement); default to 0 instead of throwing
                                     var lastTrn = ItmT.OrderByDescending(x => x.TrnID).FirstOrDefault();
-                                    ItemTrans.PriceExclusive = lastTrn.PriceExclusive;
-                                    ItemTrans.TotalUnitPriceExclInclAdd = lastTrn.TotalUnitPriceExclInclAdd;
+                                    if (lastTrn != null)
+                                    {
+                                        ItemTrans.PriceExclusive = lastTrn.PriceExclusive;
+                                        ItemTrans.TotalUnitPriceExclInclAdd = lastTrn.TotalUnitPriceExclInclAdd;
+                                    }
                                 }
                             }
+                            // Roll the FG cost up from the kit recipe: cost of one kit = sum of (per-kit
+                            // component qty x the component's average cost). Authoritative produced cost;
+                            // overrides the last-row / item-average fallbacks above, never the selling price.
+                            decimal kitRollup = 0;
+                            foreach (var kl in _db.KitLines.Where(x => x.CompanyID == CurrentUser.CoID && x.KitCode == JCLn.ItemCode && x.ItemID != null).ToList())
+                            {
+                                decimal compAvg = (decimal)(_db.ItemsMasters.Where(x => x.CompanyID == CurrentUser.CoID && x.ID == kl.ItemID).Select(x => x.AverageCost).FirstOrDefault() ?? 0);
+                                kitRollup += (decimal)(kl.FGQty ?? 0) * compAvg;
+                            }
+                            if (kitRollup > 0)
+                            {
+                                ItemTrans.PriceExclusive = kitRollup;
+                                ItemTrans.TotalUnitPriceExclInclAdd = kitRollup;
+                            }
                             ItemTrans.TransactionDate = DateTime.Now;
-                            ItemTrans.ByRoleID = CurrentUser.RoleID; // roleid     
+                            ItemTrans.ByRoleID = CurrentUser.RoleID; // roleid
                             ItemTrans.AdditionalCosts = 0;
                             ItemTrans.TotalLineValExcl = ItemTrans.TotalUnitPriceExclInclAdd * ItemTrans.Qty;
                             ItemTrans.TransactionReference = lblDocNum.Text;
@@ -2055,18 +2137,24 @@ namespace SBMS
                             if (!jcln.LotNumber.ToLower().Contains("number") && jcln.LotNumber != null)
                             {
                                 var ItmT = _db.ItemTransactions.Where(x => x.CompanyID == CurrentUser.CoID && x.ItemID == jcln.SelectionId && x.ToID == ItemTrans.ToID && x.LotNumber == jcln.LotNumber).OrderByDescending(x => x.TrnID);
-                                qoh = (decimal)ItmT.Sum(x => x.Qty);
+                                qoh = ItmT.Sum(x => x.Qty) ?? 0;   // SUM over zero rows is NULL (first-ever movement); default to 0 instead of throwing
                                 var lastTrn = ItmT.OrderByDescending(x => x.TrnID).FirstOrDefault();
-                                ItemTrans.PriceExclusive = lastTrn.PriceExclusive;
-                                ItemTrans.TotalUnitPriceExclInclAdd = lastTrn.TotalUnitPriceExclInclAdd;
+                                if (lastTrn != null)
+                                {
+                                    ItemTrans.PriceExclusive = lastTrn.PriceExclusive;
+                                    ItemTrans.TotalUnitPriceExclInclAdd = lastTrn.TotalUnitPriceExclInclAdd;
+                                }
                             }
                             else
                             {
                                 var ItmT = _db.ItemTransactions.Where(x => x.CompanyID == CurrentUser.CoID && x.ItemID == jcln.SelectionId && x.ToID == ItemTrans.ToID).OrderByDescending(x => x.TrnID);
-                                qoh = (decimal)ItmT.Sum(x => x.Qty);
+                                qoh = ItmT.Sum(x => x.Qty) ?? 0;   // SUM over zero rows is NULL (first-ever movement); default to 0 instead of throwing
                                 var lastTrn = ItmT.OrderByDescending(x => x.TrnID).FirstOrDefault();
-                                ItemTrans.PriceExclusive = lastTrn.PriceExclusive;
-                                ItemTrans.TotalUnitPriceExclInclAdd = lastTrn.TotalUnitPriceExclInclAdd;
+                                if (lastTrn != null)
+                                {
+                                    ItemTrans.PriceExclusive = lastTrn.PriceExclusive;
+                                    ItemTrans.TotalUnitPriceExclInclAdd = lastTrn.TotalUnitPriceExclInclAdd;
+                                }
                             }
                             // per-store weighted average drives the outbound cost; the last-row cost above is only the fallback
                             decimal storeAvg = StoreCosting.GetStoreAvgCost(_db, CurrentUser.CoID, (long)ItemTrans.ItemID, (long)ItemTrans.ToID);

@@ -60,7 +60,7 @@ namespace SBMS
 
         private void showhidebuttons()
         {
-            chkMobile.Visible = ApiUrlCall.dbName == "MyDataFusionDemo2";
+            chkMobile.Visible = userDets.MobileModule;
             if (userDets.UATMode == false) lbluat.Style.Add("display", "none");
             if (userDets.CanReceive != true) ibtmWorksOrders.Style.Add("display", "none");
             if (userDets.CanViewPickSlips != true) ibtnPickSlips.Style.Add("display", "none");

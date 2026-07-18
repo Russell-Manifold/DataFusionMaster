@@ -120,7 +120,8 @@
         <%-- Step prompt --%>
         <div class="qm-prompt"><asp:Label ID="lblPrompt" runat="server" /></div>
 
-        <%-- Barcode / location scan bar --%>
+        <%-- Barcode / location scan bar (barcode companies) --%>
+        <asp:Panel ID="pnlScanBar" runat="server">
         <div class="mob-scan-bar">
             <div class="mob-scan-wrap">
                 <asp:TextBox ID="txtScan" runat="server" placeholder="Scan&hellip;"
@@ -131,6 +132,54 @@
                     CssClass="mob-scan-clear" title="Clear">&#10005;</asp:LinkButton>
             </div>
         </div>
+        </asp:Panel>
+
+        <%-- Tap mode (non-barcode companies): From dropdown -> contents list -> To dropdown --%>
+        <asp:Panel ID="pnlTapMode" runat="server" Visible="false">
+            <div style="padding:.4em .6em;">
+                <div class="mob-qty-label">From location</div>
+                <asp:DropDownList ID="ddFromStore" runat="server" CssClass="mob-modal-select"
+                    AutoPostBack="true" OnSelectedIndexChanged="ddFromStore_SelectedIndexChanged" />
+            </div>
+
+            <asp:Panel ID="pnlContents" runat="server" Visible="false">
+                <div class="mob-scan-bar"><div class="mob-scan-wrap">
+                    <asp:TextBox ID="txtSearch" runat="server" placeholder="Find item&hellip;"
+                        AutoPostBack="true" OnTextChanged="txtSearch_TextChanged"
+                        autocomplete="off" autocorrect="off" autocapitalize="off" style="font-size:16px;" />
+                    <asp:LinkButton ID="lbtnClearSearch" runat="server" OnClick="lbtnClearSearch_Click"
+                        CssClass="mob-scan-clear" title="Clear">&#10005;</asp:LinkButton>
+                </div></div>
+                <div class="mob-linelist">
+                    <asp:Repeater ID="rptContents" runat="server" OnItemCommand="rptContents_ItemCommand">
+                        <ItemTemplate>
+                            <div class="mob-linecard"><div class="mob-linecard-body">
+                                <div class="mob-card-main">
+                                    <div class="mob-item-code"><%# Eval("ItemCode") %></div>
+                                    <div class="mob-item-descr"><%# Eval("ItemDescription") %></div>
+                                    <div class="mob-qty-row">
+                                        <span class="mob-qty-badge ordered">On hand&nbsp;<%# Eval("QOH", "{0:0.##}") %></span>
+                                        <%# string.IsNullOrEmpty(Convert.ToString(Eval("LotNumber"))) ? "" : "<span class=\"mob-qty-badge\">Lot " + Eval("LotNumber") + "</span>" %>
+                                    </div>
+                                </div>
+                                <asp:LinkButton ID="lbtnPick" runat="server" CssClass="mob-action-btn"
+                                    CommandName="pick"
+                                    CommandArgument='<%# Eval("ItemCode") + "|" + Eval("LotNumber") %>'>&#10004;</asp:LinkButton>
+                            </div></div>
+                        </ItemTemplate>
+                    </asp:Repeater>
+                    <asp:Label ID="lblNoContents" runat="server" CssClass="mob-empty" Visible="false" Text="No stock in this location." />
+                </div>
+            </asp:Panel>
+
+            <asp:Panel ID="pnlToStore" runat="server" Visible="false">
+                <div style="padding:.4em .6em;">
+                    <div class="mob-qty-label">To location</div>
+                    <asp:DropDownList ID="ddToStore" runat="server" CssClass="mob-modal-select"
+                        AutoPostBack="true" OnSelectedIndexChanged="ddToStore_SelectedIndexChanged" />
+                </div>
+            </asp:Panel>
+        </asp:Panel>
 
         <%-- Scan feedback --%>
         <asp:Label ID="lblFeedback" runat="server" CssClass="mob-feedback" />

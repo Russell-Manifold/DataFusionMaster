@@ -23,6 +23,7 @@ namespace SBMS
         protected global::System.Web.UI.WebControls.Label lblSupplier;
         protected global::System.Web.UI.WebControls.Label lblDueDate;
         protected global::System.Web.UI.WebControls.Label lblLineCount;
+        protected global::System.Web.UI.WebControls.Panel pnlScanBar;
         protected global::System.Web.UI.WebControls.TextBox txtBarcode;
         protected global::System.Web.UI.WebControls.LinkButton lbtnClearScan;
         protected global::System.Web.UI.WebControls.Label lblScanFeedback;

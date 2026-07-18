@@ -1134,6 +1134,13 @@ namespace SBMS
             string jsonBody = "";
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {
+                // Idempotency guard: PostOrder sets DH.Active = false on completion, so an order that is
+                // already inactive has been posted. Bail before re-sending the SO update and re-posting
+                // kit stock adjustments (e.g. a browser refresh re-firing the ?autosave=true post).
+                var hdrPosted = _db.DocHeaders.FirstOrDefault(x => x.CompanyID == CurrentUser.CoID && x.DocID == docid);
+                if (hdrPosted != null && hdrPosted.Active == false)
+                    return "This Sales Order has already been posted to Sage.";
+
                 var SOLines = _db.DocLines.Where(x => x.DocID == docid).OrderBy(x=>x.LineID).ToList();
                 List<DocumentLine> documentLines = new List<DocumentLine>();
                 DateTime DueDt = Convert.ToDateTime(txtPODate.Text);
@@ -1422,6 +1429,7 @@ namespace SBMS
                                 // Balance transferred to the new SO - clear it off this order's lines so
                                 // the invoice step can finalise this SO as "Invoiced".
                                 foreach (var bl in SOLines.Where(x => (x.QtyLeft ?? 0) > 0)) bl.QtyLeft = 0;
+                                _db.SaveChanges();   // persist the cleared balance NOW (its own commit) so a later failure + retry sees no outstanding balance and cannot create a 2nd back-order SO
                                 lblErr.Text = "Back order Sales Order " + BOResult.Split('|')[1] + " created for the outstanding balance.";
                             }
                             else
@@ -1514,7 +1522,6 @@ namespace SBMS
             string doctype = "";
             doctype = "SalesOrder";
             ApiUrlCall Api = new ApiUrlCall();
-           var RetJson = await Api.APIUpdateSalesOrderAsync(doctype, Doc, CurrentUser);
             JObject parsedJSON = await Api.APIUpdateSalesOrderAsync(doctype, Doc, CurrentUser);
             if (parsedJSON.HasValues)
             {
@@ -2089,7 +2096,7 @@ namespace SBMS
                     foreach (JObject line in soLines)
                     {
                         var id = line["ID"]?.Value<long>() ?? 0;
-                        decimal qtyLeft = _db.DocLines.Where(x => x.SBCALineID == id).Select(x => x.QtyLeft ?? 0).FirstOrDefault();
+                        decimal qtyLeft = _db.DocLines.Where(x => x.CompanyID == CurrentUser.CoID && x.SBCALineID == id).Select(x => x.QtyLeft ?? 0).FirstOrDefault();
                         if (qtyLeft <= 0) continue;
 
                         JObject newLine = new JObject
@@ -2128,13 +2135,29 @@ namespace SBMS
                 long docidS = Convert.ToInt64(lblDocID.Text);
                 ApiUrlCall ApiC = new ApiUrlCall();
 
+                // Idempotency guard: never generate a second tax invoice for an order that is
+                // already fully invoiced. Blocks double-click / postback re-fire / retry-after-
+                // success / a 2nd user re-invoicing. Only "Invoiced" (the terminal state this
+                // method sets on success) is blocked — "Partially Invoiced" is allowed through so
+                // an outstanding balance can still be invoiced.
+                using (SBMSEntities _dbGuard = new SBMSEntities(Config.GetConnectionString()))
+                {
+                    var hdrGuard = _dbGuard.DocHeaders.FirstOrDefault(x => x.CompanyID == CurrentUser.CoID && x.DocID == docidS);
+                    if (hdrGuard != null && hdrGuard.Status == "Invoiced")
+                    {
+                        AlertHelper.ShowSweetAlert(this, "This Sales Order has already been invoiced.", "warning");
+                        return;
+                    }
+                }
+
                 // 1) Get full Sales Order JSON
                 JObject soJson = await ApiC.GetOneSOFull(CurrentUser, docidS);
 
                 if (soJson != null && soJson.Count > 0)
                 {       
                     // 2) Post updated Sales Order back to Sage
-                   string soResponse = await SendSalesOrder(soJson.ToString());
+                    // Disabled: re-posts the SO unchanged (it was fetched from Sage in step 1), so it's a redundant API call. Restore if needed.
+                    //string soResponse = await SendSalesOrder(soJson.ToString());
 
                     // 3) Convert to Tax Invoice JSON
                     JObject taxInvoiceJson = ConvertSOtoTaxInvoice(soJson);
@@ -2214,7 +2237,7 @@ namespace SBMS
                     using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
                     {
                         var id = line["ID"]?.Value<long>() ?? 0;
-                        var dl = _db.DocLines.Where(x => x.SBCALineID == id).Select(x => new { x.ReceiveQty, x.LineType }).FirstOrDefault();
+                        var dl = _db.DocLines.Where(x => x.CompanyID == CurrentUser.CoID && x.SBCALineID == id).Select(x => new { x.ReceiveQty, x.LineType }).FirstOrDefault();
                         if (dl != null)
                         {
                             pickQty = dl.ReceiveQty ?? 0;

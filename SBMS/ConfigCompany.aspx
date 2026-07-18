@@ -273,7 +273,13 @@
                                       <td>Barcode Module Active</td>
                                 <td><asp:CheckBox ID="chkBarCodes" runat="server"/>
                                 </td>
-                                  </tr> 
+                                  </tr>
+
+                                <tr>
+                                      <td>Mobile Module Active</td>
+                                <td><asp:CheckBox ID="chkMobileModule" runat="server"/>
+                                </td>
+                                  </tr>
 
                                 
                                 

@@ -395,7 +395,9 @@ namespace SBMS
             // This total cost should be distributed to the target items
             // Therefore, new unit cost for target = (fromAverageCost * convertFromQty) / convertToQty
             decimal fromAverageCost = fromItem.AverageCost ?? 0;
-            decimal toCost = (fromAverageCost * convertFromQty) / convertToQty;
+            // toCost = per-unit cost of the target units for the LOCAL per-store ledger. Set below,
+            // once the source item's per-store average is known, so the store's value is conserved.
+            decimal toCost = 0;
 
             // 1. Add item transaction for From Qty Down (OUT)
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
@@ -404,6 +406,11 @@ namespace SBMS
                 // per-store weighted average drives the outbound cost; item-wide average only when the store has no history
                 decimal fromStoreCost = StoreCosting.GetStoreAvgCost(_db, CurrentUser.CoID, (long)fromItem.ItemID, storeid);
                 if (fromStoreCost == 0) fromStoreCost = fromAverageCost;
+                // Local ledger: the target units carry the SAME per-store value that left the source
+                // item, so the store's stock value is conserved. (The OUT leg books at fromStoreCost;
+                // the IN leg must match. Previously toCost came from the item-wide average, which did
+                // not match the per-store cost booked out, quietly creating/destroying ledger value.)
+                toCost = (fromStoreCost * convertFromQty) / convertToQty;
                 ItemTransaction ItemTransOUT = new ItemTransaction();
                 ItemTransOUT.CompanyID = CurrentUser.CoID;
                 ItemTransOUT.DocumentID = 0;
@@ -460,18 +467,19 @@ namespace SBMS
                 _db.ItemTransactions.Add(ItemTransIN);
                 _db.SaveChanges();
 
-                //Update the AverageCost in ItemsMaster for the target item
+                // Target item's new ITEM-WIDE average (Sage keeps one average per item). Blend the
+                // item-wide value that left the source item (fromAverageCost x convertFromQty) with the
+                // target's existing item-wide value, over the item-wide quantity. Previously this mixed
+                // the item-wide cost with a single store's QOH - the same defect as ItemStkAdjustment.
                 var itemMaster = _db.ItemsMasters.FirstOrDefault(x => x.ID == toItem.ItemID && x.CompanyID == CurrentUser.CoID);
+                decimal ToCurrAvcost = (decimal)(itemMaster?.AverageCost ?? 0);
+                decimal ToItemWideQty = (decimal)(itemMaster?.QuantityOnHand ?? 0);
+                decimal ConvertedValue = fromAverageCost * convertFromQty;
+                // Denominator is always > 0 (convertToQty is validated > 0 above).
+                decimal toItemNewAvg = (ConvertedValue + (ToCurrAvcost * ToItemWideQty)) / (convertToQty + ToItemWideQty);
                 if (itemMaster != null)
                 {
-                    // Calc old stock Value 
-                    decimal ToCurrAvcost = (decimal)toItem.AverageCost;
-                    decimal ToQOH = (decimal)toItem.QOH;
-                    decimal PreItemTotalValue = ToCurrAvcost * ToQOH;
-
-                    // Calc new Av cost
-                    decimal PostAvCost = ((toCost * convertToQty) + PreItemTotalValue) / (convertToQty + ToQOH);
-                    itemMaster.AverageCost = PostAvCost;
+                    itemMaster.AverageCost = toItemNewAvg;
                     _db.SaveChanges();
                 }
 
@@ -492,7 +500,7 @@ namespace SBMS
                     ItemAdjustment iAdjIn = new ItemAdjustment();
                     iAdjIn.Date = DateTime.Now;
                     iAdjIn.ItemID = (long)ItemTransIN.ItemID;
-                    iAdjIn.AverageCost = (decimal)toCost;
+                    iAdjIn.AverageCost = toItemNewAvg;   // Sage SETS the item average to this value, so send the correctly-blended item-wide average, not the raw incoming unit cost
                     iAdjIn.Quantity = (decimal)ItemTransIN.Qty;
                     iAdjIn.Reason = ItemTransIN.TransactionReference;
                     iAdjIn.Created = DateTime.Now;

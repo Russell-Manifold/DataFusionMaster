@@ -287,12 +287,15 @@ namespace SBMS
                 decimal CurrVal = (decimal)itm.QuantityOnHand * (decimal)itm.AverageCost;
                 decimal LotMoveVal = ThisAvCost * Convert.ToDecimal(txtAdjQty.Text);
                 decimal NewStckTotVal = CurrVal + LotMoveVal;
-                decimal NewStckQty = Convert.ToDecimal(txtAdjQty.Text) + QOH;
-                decimal NewAvCost = NewStckTotVal / NewStckQty;
+                // Sage holds ONE company-wide average per item, so divide the company-wide value
+                // (CurrVal, above) by the company-wide quantity - NOT the per-store QOH. Mixing
+                // item-wide value with one store's quantity inflated the average for multi-store items.
+                decimal NewStckQty = Convert.ToDecimal(txtAdjQty.Text) + (decimal)itm.QuantityOnHand;
+                decimal NewAvCost = NewStckQty != 0 ? NewStckTotVal / NewStckQty : 0;   // guard /0 when the in-adjustment cancels on-hand to zero (mirrors the out-path guard below)
                 if (DDInOut.SelectedIndex == 2)
                 {
                     NewStckTotVal = CurrVal - LotMoveVal;
-                    NewStckQty = QOH - Convert.ToDecimal(txtAdjQty.Text);
+                    NewStckQty = (decimal)itm.QuantityOnHand - Convert.ToDecimal(txtAdjQty.Text);   // company-wide quantity, to match CurrVal's company-wide value
                     if (NewStckQty != 0)
                     {
                         NewAvCost = NewStckTotVal / NewStckQty;

@@ -88,6 +88,7 @@
             <div class="mob-scan-wrap">
                 <asp:TextBox ID="txtScan" runat="server" placeholder="Scan WO&hellip;" AutoPostBack="true" OnTextChanged="txtScan_TextChanged"
                     autocomplete="off" autocorrect="off" autocapitalize="off" style="font-size:16px;" />
+                <asp:LinkButton ID="lbtnLoadDoc" runat="server" OnClick="lbtnLoadDoc_Click" Visible="false" CssClass="mob-action-btn" style="min-width:4em;">Load</asp:LinkButton>
                 <asp:LinkButton ID="lbtnClearScan" runat="server" OnClick="lbtnClearScan_Click" CssClass="mob-scan-clear" title="Clear">&#10005;</asp:LinkButton>
             </div>
         </asp:Panel>

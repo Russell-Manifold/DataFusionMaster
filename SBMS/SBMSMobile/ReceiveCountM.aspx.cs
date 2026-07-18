@@ -54,6 +54,9 @@ namespace SBMS
 
             lblUsername.Text = CurrentUser.UserName;
 
+            // Barcode-off companies count by tapping the line (qty prefilled); hide the scan bar.
+            pnlScanBar.Visible = CurrentUser.UseBarcodes == true;
+
             // Manual lot numbers → scanner receiving disabled (web only).
             if (CurrentUser.CompanyUseLotNumbers && !CurrentUser.CompanyAllowSystemLotNumbers)
             {
@@ -147,7 +150,7 @@ namespace SBMS
             if (lblRem != null) lblRem.Text = remaining.ToString("0.##");
 
             var txtQty = (TextBox)e.Item.FindControl("txtQty");
-            if (txtQty != null && isMatched)
+            if (txtQty != null && (isMatched || CurrentUser.UseBarcodes != true))
                 txtQty.Text = remaining > 0 ? remaining.ToString("0.##") : "";
 
             var ddMode = (DropDownList)e.Item.FindControl("ddMode");
