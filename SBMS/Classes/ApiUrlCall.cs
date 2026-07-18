@@ -39,8 +39,8 @@ namespace SBMS.Classes
       //public static string dbName = $"MyDataFusion";
       /// </summary>
 
-        public static string constr = $"Data Source=SYNCFLO-DESKTOP\\SYNCFLOSQL;Initial Catalog={dbName};Persist Security Info=True;User ID=sa;Password=M@nif0LD";
-        //public static string constr = $"Data Source=RUSSELL-DELL\\DELLSQL;Initial Catalog={dbName};Persist Security Info=True;User ID=sa;Password=M@nif0LD";
+        //public static string constr = $"Data Source=SYNCFLO-DESKTOP\\SYNCFLOSQL;Initial Catalog={dbName};Persist Security Info=True;User ID=sa;Password=M@nif0LD";
+        public static string constr = $"Data Source=RUSSELL-DELL\\DELLSQL;Initial Catalog={dbName};Persist Security Info=True;User ID=sa;Password=M@nif0LD";
         public static string constrP = $"Data Source=RHYOLITEHEXAGON\\MANIFOLDSQL;Initial Catalog={dbName};Persist Security Info=True;User ID=sa;Password=M@nif0LD";
               
         static DateTime CustDT = Convert.ToDateTime("01 Jan 2015"), SuppDT = Convert.ToDateTime("01 Jan 2015"), ItemDT = Convert.ToDateTime("01 Jan 2015"), PODT = Convert.ToDateTime("01 Jan 2015"), InvoiceDT = Convert.ToDateTime("01 Jan 2015"), CNoteDT = Convert.ToDateTime("01 Jan 2015");

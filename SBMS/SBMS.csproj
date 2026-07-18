@@ -1069,6 +1069,7 @@
       <DependentUpon>ItemConvertUOM.aspx</DependentUpon>
     </Compile>
     <Compile Include="Classes\AlertHelper.cs" />
+    <Compile Include="Classes\CellParse.cs" />
     <Compile Include="Classes\StoreCosting.cs" />
     <Compile Include="Classes\Authentication.cs" />
     <Compile Include="Classes\ChatService.cs" />

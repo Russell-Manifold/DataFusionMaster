@@ -1197,7 +1197,7 @@ namespace SBMS
             if (DDlotNum.SelectedIndex > 0)
             {
                 long ItemID = Convert.ToInt64(row.Cells[1].Text);
-                decimal ItemQty = Convert.ToDecimal(row.Cells[5].Text);
+                decimal ItemQty = CellParse.ToDecimal(row.Cells[5].Text);
                 LoadActiveLotNums();
                 var LotNums = _ActiveLotNums.Where(x => x.StoreCode == DDStore.SelectedItem.ToString() && x.ItemId == ItemID);
                 if (LotNums.Sum(x=>x.QtyHandToStore) < ItemQty)

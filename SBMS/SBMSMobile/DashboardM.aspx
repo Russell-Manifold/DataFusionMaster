@@ -203,20 +203,22 @@
 
 </form>
 
-<%-- PWA install banner --%>
+<%-- PWA install banner: Chrome-family browsers get the native install prompt via
+     beforeinstallprompt; browsers without it (Firefox Android, iOS Safari) get
+     one-time manual "Add to Home screen" instructions instead. --%>
 <div id="pwaPrompt" style="display:none;position:fixed;bottom:1rem;left:1rem;right:1rem;
      background:var(--mob-brand);color:#fff;padding:.9rem 1rem;border-radius:var(--mob-radius-lg);
      z-index:1000;box-shadow:var(--mob-shadow-modal);">
-    <p style="margin:0 0 .6rem;font-size:.9rem;font-weight:600;">
+    <p id="pwaPromptMsg" style="margin:0 0 .6rem;font-size:.9rem;font-weight:600;">
         Install Data Fusion on your home screen for the best experience.
     </p>
     <div style="display:flex;gap:.6rem;">
-        <button onclick="installPWA()"
+        <button id="pwaInstallBtn" onclick="installPWA()"
             style="flex:1;background:#fff;color:var(--mob-brand);border:none;padding:.5rem;
                    border-radius:var(--mob-radius-md);font-weight:700;font-size:.85rem;cursor:pointer;">
             Install
         </button>
-        <button onclick="document.getElementById('pwaPrompt').style.display='none'"
+        <button id="pwaDismissBtn" onclick="dismissPWAPrompt()"
             style="flex:1;background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,.6);
                    padding:.5rem;border-radius:8px;font-size:.85rem;cursor:pointer;">
             Later
@@ -226,6 +228,7 @@
 
 <script>
     let deferredPrompt;
+    let pwaManualMode = false;
     window.addEventListener('beforeinstallprompt', function (e) {
         e.preventDefault();
         deferredPrompt = e;
@@ -238,6 +241,32 @@
         }
         document.getElementById('pwaPrompt').style.display = 'none';
     }
+    function dismissPWAPrompt() {
+        document.getElementById('pwaPrompt').style.display = 'none';
+        // Manual-instruction mode only nags once; the Chrome banner re-offers next visit.
+        if (pwaManualMode) {
+            try { localStorage.setItem('dfmInstallHintDismissed', '1'); } catch (e) { }
+        }
+    }
+    (function () {
+        // Manual install hint for mobile browsers without beforeinstallprompt.
+        // Desktop Firefox is skipped entirely - it cannot install PWAs.
+        var standalone = window.matchMedia('(display-mode: standalone)').matches
+            || window.navigator.standalone === true;
+        if (standalone || ('onbeforeinstallprompt' in window)) return;
+        try { if (localStorage.getItem('dfmInstallHintDismissed') === '1') return; } catch (e) { return; }
+        var ua = navigator.userAgent;
+        var isIOS = /iPad|iPhone|iPod/.test(ua);
+        var isAndroid = /Android/.test(ua);
+        if (!isIOS && !isAndroid) return;
+        pwaManualMode = true;
+        document.getElementById('pwaPromptMsg').textContent = isIOS
+            ? 'Install Data Fusion: tap the Share button, then "Add to Home Screen".'
+            : 'Install Data Fusion: open the browser menu (⋮), then tap "Add to Home screen".';
+        document.getElementById('pwaInstallBtn').style.display = 'none';
+        document.getElementById('pwaDismissBtn').textContent = 'Got it';
+        document.getElementById('pwaPrompt').style.display = 'block';
+    })();
     if (!window.matchMedia('(display-mode: standalone)').matches) {
         window.addEventListener('load', function () {
             document.body.style.height = (window.screen.height + 50) + 'px';

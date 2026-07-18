@@ -1590,7 +1590,10 @@ body {
 	body, input, select, textarea {
 		/*color: rgba(255, 255, 255, 0.75);*/
 		font-family: 'Montserrat', sans-serif;
-		/*font-size: .9em;*/
+		/* Global base size. Kept compact so labels/headers/forms stay dense on
+		   smaller laptop screens and at browser zoom. Data grids override this
+		   back up via .gridview so table data stays readable. */
+		font-size: 0.85em;
 		font-weight: 100;
 		line-height: 1.5em;
         background-color:#fff;
@@ -4497,7 +4500,9 @@ height:16px;
 	background-color:transparent;
 }
 	.gridview {
-       font-size:.8em;
+       /* Bumped back up (was .8em) so grid data stays readable now that the
+          global body font is smaller. */
+       font-size:1em;
        text-align:left;
         width:99%;
         margin:0;  

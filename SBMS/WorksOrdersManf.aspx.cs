@@ -2475,7 +2475,7 @@ namespace SBMS
             foreach (GridViewRow gvr in grid.Rows)
             {
                 TextBox txtUseQty = gvr.FindControl("txtUseQty") as TextBox;
-                txtUseQty.Text = ApiUrlCall.NumberToDecimal(Convert.ToDecimal(gvr.Cells[5].Text, CultureInfo.InvariantCulture), CurrentUser.CompanyDecPlaces).ToString();
+                txtUseQty.Text = ApiUrlCall.NumberToDecimal(CellParse.ToDecimal(gvr.Cells[5].Text), CurrentUser.CompanyDecPlaces).ToString();
 
                 DropDownList ddStore = gvr.FindControl("DDStore") as DropDownList;
                 if (ddStore.Items.Count > 2)
@@ -2577,7 +2577,7 @@ namespace SBMS
                 {
                     if (gvr.RowType != DataControlRowType.DataRow) continue;
                     long itemId = Convert.ToInt64(gvr.Cells[1].Text);
-                    decimal required = Convert.ToDecimal(gvr.Cells[5].Text, CultureInfo.InvariantCulture);
+                    decimal required = CellParse.ToDecimal(gvr.Cells[5].Text);
                     if (required <= 0) continue;
 
                     decimal onHand = _db.ItemTransactions
@@ -2603,7 +2603,7 @@ namespace SBMS
                     if (gvr.RowType != DataControlRowType.DataRow) continue;
                     long itemId = Convert.ToInt64(gvr.Cells[1].Text);
                     long lineId = Convert.ToInt64(gvr.Cells[0].Text);
-                    decimal required = Convert.ToDecimal(gvr.Cells[5].Text, CultureInfo.InvariantCulture);
+                    decimal required = CellParse.ToDecimal(gvr.Cells[5].Text);
 
                     TextBox txtUseQty = gvr.FindControl("txtUseQty") as TextBox;
                     if (txtUseQty != null)
@@ -2895,7 +2895,7 @@ namespace SBMS
             {
                 string LotNum = DDlotNum.SelectedValue.ToString();
                 long ItemID = Convert.ToInt64(row.Cells[1].Text);
-                decimal ItemQty = Convert.ToDecimal(row.Cells[5].Text);
+                decimal ItemQty = CellParse.ToDecimal(row.Cells[5].Text);
                 LoadActiveLotNums();
                 var LotNums = _ActiveLotNums.Where(x => x.StoreCode == DDStore.SelectedItem.ToString() && x.ItemId == ItemID && x.LotNumber == LotNum).ToList();
                 

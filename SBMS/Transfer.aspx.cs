@@ -424,11 +424,8 @@ namespace SBMS
 
                 lblMax.ForeColor = System.Drawing.Color.Black;
                 btnApprovYes.Visible = true;
-                try
-                {
-                    TrfQty = Convert.ToDecimal(row.Cells[5].Text.ToString());
-                }
-                catch { btnApprovYes.Visible = false; }
+                TrfQty = CellParse.ToDecimal(row.Cells[5].Text);
+                if (TrfQty == 0) btnApprovYes.Visible = false;
 
                 if (TrfQty == 0)
                 {

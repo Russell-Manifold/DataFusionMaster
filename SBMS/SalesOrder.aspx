@@ -7,6 +7,12 @@
     <link id="Link3" runat="server" rel="shortcut icon" href="images/datafusionicon.ico" type="image/x-icon" />
     <link id="Link4" runat="server" rel="icon" href="images/datafusionicon.ico" type="image/ico" />
     <link rel="stylesheet" href="assets/css/main.css" />
+    <style>
+        /* Keep the header labels (Picking Slip, Issued To, etc.) on one line. */
+        .soHeader td { white-space: nowrap; }
+        /* Compact the Due Date / Doc Date fields so both fit on one line. */
+        #txtPODate, #txtCaptDate { width: 7em; }
+    </style>
           <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     </head>
 <body>
@@ -49,7 +55,7 @@
                 <div class="row 150%">
                     <div class="1u 12u$(medium)">&nbsp;</div>
                     <div class="10u 12u$(medium)">
-                        <table style="width:100%">  
+                        <table style="width:100%" class="soHeader">  
                             <tr>
                                 <td colspan="6">
                                      <asp:LinkButton ID="lbtnDelSO" CssClass="icon fa-ban buttonTransparent" runat="server" ForeColor="Red" ToolTip="Delete Sales Order" OnClick="lbtnDelSO_Click" Style="margin-right: 2em; float:right"> Delete</asp:LinkButton>

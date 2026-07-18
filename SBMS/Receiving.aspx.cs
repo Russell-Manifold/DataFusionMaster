@@ -583,7 +583,7 @@ namespace SBMS
             }
             if (e.Row.RowType == DataControlRowType.DataRow)
             {
-                if(Convert.ToDecimal(e.Row.Cells[5].Text.ToString()) > (decimal)0)
+                if (CellParse.ToDecimal(e.Row.Cells[5].Text) > 0m)
                 {
                     e.Row.Cells[5].BackColor = System.Drawing.Color.Honeydew;
                     e.Row.Cells[5].Font.Bold = true;
@@ -594,7 +594,8 @@ namespace SBMS
                 {
                     e.Row.Cells[10].BackColor = System.Drawing.Color.AntiqueWhite;
                 }
-                if (Convert.ToDecimal(e.Row.Cells[14].Text.ToString()) > (decimal)1.05 || Convert.ToDecimal(e.Row.Cells[14].Text.ToString()) < (decimal)0.95) e.Row.Cells[8].Style.Add("border", "1px solid red");
+                decimal ratio = CellParse.ToDecimal(e.Row.Cells[14].Text);
+                if (ratio > 1.05m || ratio < 0.95m) e.Row.Cells[8].Style.Add("border", "1px solid red");
                 if (e.Row.Cells[16].Text.ToString() == "2")
                 {
                     LinkButton lbtn = new LinkButton();
@@ -608,7 +609,7 @@ namespace SBMS
                     lbtnLotNumAdd = (LinkButton)e.Row.FindControl("lbtnLotNumAdd");
                     lbtnLotNumAdd.Visible = true;
                 }
-                recqty += Convert.ToDecimal(e.Row.Cells[8].Text.ToString());
+                recqty += CellParse.ToDecimal(e.Row.Cells[8].Text);
             }
             else if (e.Row.RowType == DataControlRowType.Footer)
             {
@@ -2596,7 +2597,7 @@ namespace SBMS
             {
                 try
                 {
-                    addcosts += Convert.ToDecimal(e.Row.Cells[2].Text.ToString());
+                    addcosts += CellParse.ToDecimal(e.Row.Cells[2].Text);
                 }
                 catch { }
             }

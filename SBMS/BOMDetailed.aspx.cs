@@ -526,6 +526,8 @@ namespace SBMS
                     // ratio is NOT used as the primary source: it is wrong whenever the stored prices
                     // don't embed VAT (Inc == Ex) and it drifts with rounding. A configured 0% (zero-
                     // rated) is respected; only an unknown tax type falls back to the local heuristic.
+                    // NOTE: TaxPerc is stored as a FRACTION (0.15 = 15%), matching Sage's
+                    // TaxType.Percentage — do not divide by 100.
                     decimal? taxPerc = null;
                     int taxTypeId = itemObj.Value<int?>("TaxTypeIdSales") ?? 0;
                     if (taxTypeId > 0)
@@ -534,7 +536,7 @@ namespace SBMS
                             .Where(x => x.CompanyID == CurrentUser.CoID && x.TaxTypeID == taxTypeId)
                             .Select(x => (decimal?)x.TaxPerc).FirstOrDefault();
                     }
-                    decimal taxRate = taxPerc.HasValue ? taxPerc.Value / 100m : ResolveLocalTaxRate(thisItem);
+                    decimal taxRate = taxPerc.HasValue ? taxPerc.Value : ResolveLocalTaxRate(thisItem);
                     if (taxRate < 0) taxRate = 0m;
                     newPriceInc = ApiUrlCall.NumberToDecimal(newPriceEx * (1 + taxRate), dp);
 
@@ -627,11 +629,12 @@ namespace SBMS
         }
 
         // Tax rate as a fraction (0.15 = 15%) derived from the local item: prefer the
-        // configured sales tax %, fall back to the existing inclusive/exclusive ratio.
+        // configured sales tax rate (TaxTypeSalesPerc, already stored as a fraction),
+        // fall back to the existing inclusive/exclusive ratio.
         private static decimal ResolveLocalTaxRate(ItemsMaster item)
         {
             if (item.TaxTypeSalesPerc.HasValue && item.TaxTypeSalesPerc.Value > 0)
-                return item.TaxTypeSalesPerc.Value / 100m;
+                return item.TaxTypeSalesPerc.Value;
 
             if (item.PriceExclusive.HasValue && item.PriceExclusive.Value > 0 && item.PriceInclusive.HasValue)
             {

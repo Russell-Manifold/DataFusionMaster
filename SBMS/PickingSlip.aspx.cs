@@ -1556,7 +1556,7 @@ namespace SBMS
             catch { }
             if (chkComplete.Checked && pickqty == 0)
             {
-                OrdQty = Convert.ToDecimal(row.Cells[5].Text);
+                OrdQty = CellParse.ToDecimal(row.Cells[5].Text);
                 txtPickQty.Text = OrdQty.ToString();
                 pickqty = OrdQty;
             }
@@ -1792,7 +1792,7 @@ namespace SBMS
                 if (grv.RowType == DataControlRowType.DataRow)
                 {
                     TextBox txtUseQty = (TextBox)grv.FindControl("txtUseQty");
-                    decimal AvailQty = Convert.ToDecimal(grv.Cells[1].Text);
+                    decimal AvailQty = CellParse.ToDecimal(grv.Cells[1].Text);
                     decimal UseQty = Convert.ToDecimal(txtUseQty.Text);
                     useqtyT += UseQty;
                     if (UseQty > AvailQty)
@@ -2007,7 +2007,7 @@ namespace SBMS
             LinkButton lbtnLineSave = (LinkButton)row.FindControl("lbtnLineSave");
             CheckBox chkComplete = (CheckBox)row.FindControl("chkComplete");
             TextBox txtPickQty = (TextBox)row.FindControl("txtPickQty");
-            decimal OrdQty = Convert.ToDecimal(row.Cells[5].Text);
+            decimal OrdQty = CellParse.ToDecimal(row.Cells[5].Text);
             
             chkComplete.Checked = true;
             if (DDlotNum.SelectedIndex == 0) chkComplete.Checked = false;

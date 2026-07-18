@@ -259,7 +259,7 @@ namespace SBMS
             {
                 ScriptManager.RegisterStartupScript(this, this.GetType(), "SetFocus", $"document.getElementById('{txtAdd1.ClientID}').focus();", true);
             }
-            decimal LinesVal = Convert.ToDecimal(GridkitLines.FooterRow.Cells[5].Text);
+            decimal LinesVal = CellParse.ToDecimal(GridkitLines.FooterRow.Cells[5].Text);
         }
 
         protected void LbtnSaveKit_Click(object sender, EventArgs e)

@@ -197,8 +197,8 @@ namespace SBMS
             decimal SBCAQty = 0, MDFQty = 0;
             if (e.Row.RowType == DataControlRowType.DataRow)
             {
-                try { SBCAQty = Convert.ToDecimal(e.Row.Cells[3].Text); } catch { }
-                try { MDFQty = Convert.ToDecimal(e.Row.Cells[4].Text); } catch { }
+                SBCAQty = CellParse.ToDecimal(e.Row.Cells[3].Text);
+                MDFQty = CellParse.ToDecimal(e.Row.Cells[4].Text);
 
                 if (SBCAQty != MDFQty)
                 {
@@ -251,19 +251,14 @@ namespace SBMS
                     chkb = (CheckBox)gvr.FindControl("chkSelect");
                     if (chkb.Checked == true)
                     {
-                        decimal SBCAQty = 0, MDFQty = 0;
-                        try { SBCAQty = Convert.ToDecimal(gvr.Cells[3].Text); } catch { }
-                        try { MDFQty = Convert.ToDecimal(gvr.Cells[4].Text); } catch { }
+                        decimal SBCAQty = CellParse.ToDecimal(gvr.Cells[3].Text);
+                        decimal MDFQty = CellParse.ToDecimal(gvr.Cells[4].Text);
                         if (MDFQty != SBCAQty)
                         {
                             string itmCode = HttpUtility.HtmlDecode(gvr.Cells[0].Text);
                             string StorCode = DDStoreTo.SelectedValue.ToString();
                             var itm = _db.ItemsMasters.Where(x => x.CompanyID == CurrentUser.CoID && x.Code == itmCode).FirstOrDefault();
-                            decimal qoh = 0;
-                            if (gvr?.Cells != null && gvr.Cells.Count > 3 && !string.IsNullOrWhiteSpace(gvr.Cells[3].Text))
-                            {
-                                decimal.TryParse(gvr.Cells[3].Text.Trim(), out qoh);
-                            }
+                            decimal qoh = SBCAQty;
                             itm.TotQOH_MDF = qoh;
 
                             // remove all historic transactions
@@ -284,7 +279,7 @@ namespace SBMS
                             ItemTrans.Unit = itm.Unit;
                             ItemTrans.FromID = 0;
                             ItemTrans.ToID = _db.Stores.Where(x => x.StoreCode == StorCode && x.CompanyID == CurrentUser.CoID).Select(x => x.StoreID).FirstOrDefault();
-                            ItemTrans.Qty = Convert.ToDecimal(gvr.Cells[3].Text);
+                            ItemTrans.Qty = SBCAQty;
                             ItemTrans.DocumentType = 1;
                             ItemTrans.TransactionDate = DateTime.Now;
                             ItemTrans.ByRoleID = CurrentUser.RoleID; // roleid

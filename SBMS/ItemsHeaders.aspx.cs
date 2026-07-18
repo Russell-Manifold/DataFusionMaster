@@ -302,10 +302,10 @@ namespace SBMS
             decimal SBCAQty = 0, MDFQty = 0, PickQty = 0, JCQty = 0;
             if (e.Row.RowType == DataControlRowType.DataRow)
             {
-                try { SBCAQty = Convert.ToDecimal(e.Row.Cells[2].Text); } catch { }
-                try { MDFQty = Convert.ToDecimal(e.Row.Cells[3].Text); } catch { }
-                try { PickQty = Convert.ToDecimal(e.Row.Cells[4].Text); } catch { }
-                try { JCQty = Convert.ToDecimal(e.Row.Cells[5].Text); } catch { }
+                SBCAQty = CellParse.ToDecimal(e.Row.Cells[2].Text);
+                MDFQty = CellParse.ToDecimal(e.Row.Cells[3].Text);
+                PickQty = CellParse.ToDecimal(e.Row.Cells[4].Text);
+                JCQty = CellParse.ToDecimal(e.Row.Cells[5].Text);
 
                 if (SBCAQty < MDFQty + PickQty + JCQty)
                 {
