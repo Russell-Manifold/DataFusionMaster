@@ -1,4 +1,4 @@
-<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="StockMoveM.aspx.cs" Inherits="SBMS.StockMoveM" %>
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="StockMoveM.aspx.cs" Inherits="SBMS.StockMoveM" %>
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
@@ -76,6 +76,7 @@
 
     <asp:UpdatePanel ID="upMain" runat="server">
     <ContentTemplate>
+        <asp:HiddenField ID="hfActionToken" runat="server" />
 
         <div class="sm-toggle-row">
             <asp:LinkButton ID="lbtnModeOut" runat="server" OnClick="lbtnModeOut_Click" CssClass="sm-toggle on">Send Out &#8594;</asp:LinkButton>

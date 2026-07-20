@@ -99,7 +99,9 @@
             </div>
             <div class="mob-panel-row">
                 <label>Receive Date</label>
-                <asp:TextBox ID="txtRecDate" runat="server" TextMode="Date" />
+                <%-- Receive date IS the scan date (posted at DateTime.Now) - shown
+                     read-only so the operator is not misled into backdating. --%>
+                <asp:TextBox ID="txtRecDate" runat="server" TextMode="Date" ReadOnly="true" />
             </div>
             <div class="mob-panel-check">
                 <asp:CheckBox ID="chkReceivingComplete" runat="server" Checked="true" Text=" " />
@@ -173,8 +175,13 @@
 
 <script>
     function focusScanBox() {
-        var b = document.getElementById('<%= txtBarcode.ClientID %>');
-        if (b) b.focus();
+        // When a line was just matched, the next natural scan is its destination
+        // LOCATION - focus that field so the operator never has to tap. Otherwise
+        // focus the item barcode box.
+        var matched = document.querySelector('.mob-linecard.matched');
+        var loc = matched && matched.querySelector('input[id*="txtLoc"]');
+        var target = loc || document.getElementById('<%= txtBarcode.ClientID %>');
+        if (target) target.focus();
     }
     var prm = Sys && Sys.WebForms && Sys.WebForms.PageRequestManager.getInstance();
     if (prm) {

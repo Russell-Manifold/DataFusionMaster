@@ -15,8 +15,14 @@ namespace SBMS
     // ItemTransaction "TRF" legs (no header, no Sage) — the same movement record the
     // desktop Quick Transfer and the mobile put-away write.
     // Cycle: scan source bin → scan item out (+ qty) → scan destination bin → scan item in → finish.
-    public partial class QuickMoveM : BasePage
+    public partial class QuickMoveM : MobileBasePage
     {
+        protected override void OnPreRender(EventArgs e)
+        {
+            base.OnPreRender(e);
+            StampActionToken(hfActionToken);   // fresh one-shot token per render (double-tap guard)
+        }
+
         private new UserDetails CurrentUser
         {
             get { return Session["UserDetails"] as UserDetails; }
@@ -51,7 +57,7 @@ namespace SBMS
         private bool InConfirmed  { get { return ViewState["InConfirmed"] != null && (bool)ViewState["InConfirmed"]; } set { ViewState["InConfirmed"] = value; } }
 
         // Barcode company = scan front-end; otherwise the tap (dropdown + list) front-end.
-        private bool ScanMode { get { return CurrentUser.UseBarcodes == true; } }
+        private bool ScanMode { get { return CurrentUser.MobileModule == true; } }
         private string Search { get { return ViewState["Search"] as string ?? ""; } set { ViewState["Search"] = value; } }
 
         // ── Lifecycle ──────────────────────────────────────────────────────────
@@ -376,6 +382,11 @@ namespace SBMS
         protected void lbtnFinish_Click(object sender, EventArgs e)
         {
             if (Step != 4 || !InConfirmed) return;
+            if (!TryConsumeActionToken(hfActionToken))
+            {
+                SetFeedback(false, "&#9888; Already processed &mdash; that move was recorded once.");
+                return;
+            }
 
             string toastMsg = null;
             using (SBMSEntities db = new SBMSEntities(Config.GetConnectionString()))
@@ -556,7 +567,7 @@ namespace SBMS
                 lblAvail.Text    = Avail.ToString("0.##");
                 ddLot.Visible    = ddLot.Items.Count > 1;
                 decimal def      = ScanMode ? (Avail >= 1 ? 1m : Avail) : Avail;
-                txtQty.Text      = def.ToString("0.##");
+                txtQty.Text      = def.ToString("0.##", CultureInfo.InvariantCulture);
             }
 
             if (pnlSummary.Visible)

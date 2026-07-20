@@ -10,7 +10,7 @@ using System.Web.UI.WebControls;
 
 namespace SBMS
 {
-    public partial class OSPurchaseOrdersM : BasePage
+    public partial class OSPurchaseOrdersM : MobileBasePage
     {
         private new UserDetails CurrentUser
         {
@@ -77,9 +77,14 @@ namespace SBMS
                 var query = db.GetListOfDocHeadersByType(CurrentUser.CoID, 1).AsQueryable();
 
                 if (find.Length > 1)
+                {
+                    // Case-insensitive, null-safe: this is LINQ-to-objects (the proc
+                    // already ran), so Contains is ordinal and null fields would NRE.
+                    string findLower = find.ToLower();
                     query = query.Where(x =>
-                        x.DocumentNumber.Contains(find) ||
-                        x.CustSupName.Contains(find));
+                        (x.DocumentNumber != null && x.DocumentNumber.ToLower().Contains(findLower)) ||
+                        (x.CustSupName != null && x.CustSupName.ToLower().Contains(findLower)));
+                }
 
                 if (selectedStatus == "Completed")
                 {

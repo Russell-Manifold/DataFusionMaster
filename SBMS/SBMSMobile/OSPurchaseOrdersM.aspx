@@ -90,7 +90,7 @@
     </ContentTemplate>
     </asp:UpdatePanel>
 </form>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="../SBMSMobile/js/sweetalert2.all.min.js"></script>
 <script>
     // Hide URL bar on mobile (best-effort; full hiding requires installing as PWA)
     if (!window.matchMedia('(display-mode: standalone)').matches) {

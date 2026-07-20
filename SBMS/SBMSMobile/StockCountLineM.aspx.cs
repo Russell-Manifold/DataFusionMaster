@@ -9,7 +9,7 @@ using System.Web.UI.WebControls;
 
 namespace SBMS
 {
-    public partial class StockCountLineM : BasePage
+    public partial class StockCountLineM : MobileBasePage
     {
         // ── Session/ViewState helpers ──────────────────────────────────────────────
         private new UserDetails CurrentUser
@@ -66,7 +66,7 @@ namespace SBMS
             lblUsername.Text = CurrentUser.UserName;
 
             // Barcode-off companies count by tapping the line's ✎ button; hide the scan bar.
-            pnlScanBar.Visible = CurrentUser.UseBarcodes == true;
+            pnlScanBar.Visible = CurrentUser.MobileModule == true;
 
             if (!IsPostBack)
             {
@@ -163,7 +163,7 @@ namespace SBMS
                 // Load CountExpression from StockCountLines for each line
                 var lineIds = lines.Select(l => l.CtLineID).ToList();
                 var expressions = db.StockCountLines
-                    .Where(x => lineIds.Contains(x.CtLineID))
+                    .Where(x => x.CompanyID == CurrentUser.CoID && lineIds.Contains(x.CtLineID))
                     .ToDictionary(x => x.CtLineID, x => x.CountExpression ?? "");
 
                 ViewState["LineExpressions"] = expressions;
@@ -230,7 +230,8 @@ namespace SBMS
             long ctLineId = line.CtLineID;
             StockCountLine dbLine = null;
             using (SBMSEntities db = new SBMSEntities(Config.GetConnectionString()))
-                dbLine = db.StockCountLines.FirstOrDefault(x => x.CtLineID == ctLineId);
+                dbLine = db.StockCountLines.FirstOrDefault(x =>
+                    x.CompanyID == CurrentUser.CoID && x.CtLineID == ctLineId);
 
             bool isFinished    = dbLine != null && dbLine.LineFinished;
             // A count EXISTS once a value is recorded - including a deliberate 0 (empty shelf).
@@ -250,7 +251,7 @@ namespace SBMS
             var finalBadge = (Label)e.Item.FindControl("lblFinalCountBadge");
             if (finalBadge != null)
             {
-                decimal qoh = dbLine.QtyOnHand ?? 0;
+                decimal qoh = dbLine?.QtyOnHand ?? 0;
                 finalBadge.Visible = isFinished && hasCount1 && hasCount2 && dbLine.Count1Qty != qoh && dbLine.Count2Qty != qoh;
             }
 
@@ -495,7 +496,7 @@ namespace SBMS
         private void HideCalculator()
         {
             pnlCalculator.Visible = false;
-            pnlScanBar.Visible    = CurrentUser.UseBarcodes == true;
+            pnlScanBar.Visible    = CurrentUser.MobileModule == true;
             MatchedLineID         = 0;
         }
 
@@ -507,7 +508,9 @@ namespace SBMS
             string totalStr   = hfCalcTotal.Value ?? "0";
 
             // Allow 0 (empty shelf) - only a negative/invalid entry is rejected.
-            if (!decimal.TryParse(totalStr, out decimal total) || total < 0)
+            // Invariant parse: the JS calculator emits dot-decimal.
+            if (!decimal.TryParse(totalStr, System.Globalization.NumberStyles.Any,
+                    System.Globalization.CultureInfo.InvariantCulture, out decimal total) || total < 0)
             {
                 SetFeedback(false, "&#9888; Please enter a valid count quantity.");
                 return;
@@ -517,6 +520,18 @@ namespace SBMS
 
             using (SBMSEntities db = new SBMSEntities(Config.GetConnectionString()))
             {
+                // Closed-off counts are read-only: their variances have already been
+                // posted, so new counts against them would silently diverge from Sage.
+                bool countClosed = db.StockCountMasters.Any(x =>
+                    x.CompanyID == CurrentUser.CoID && x.StCntID == CountID && x.ClosedOff == true);
+                if (countClosed)
+                {
+                    SetFeedback(false, "&#9888; This count is closed off - it can no longer be counted.");
+                    HideCalculator();
+                    BindLines();
+                    return;
+                }
+
                 var line = db.StockCountLines
                     .FirstOrDefault(x => x.CompanyID == CurrentUser.CoID && x.CtLineID == ctLineID);
 

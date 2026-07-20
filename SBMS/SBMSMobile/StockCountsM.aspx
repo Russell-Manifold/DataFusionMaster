@@ -1,4 +1,4 @@
-<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="StockCountsM.aspx.cs" Inherits="SBMS.StockCountsM" %>
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="StockCountsM.aspx.cs" Inherits="SBMS.StockCountsM" %>
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
@@ -144,7 +144,7 @@
     </asp:UpdatePanel>
 </form>
 
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="../SBMSMobile/js/sweetalert2.all.min.js"></script>
 <script>
     if (!window.matchMedia('(display-mode: standalone)').matches) {
         window.addEventListener('load', function () {

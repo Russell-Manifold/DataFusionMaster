@@ -465,13 +465,22 @@ namespace SBMS
         protected global::System.Web.UI.WebControls.Panel pnlBOM;
 
         /// <summary>
-        /// chkBarCodes control.
+        /// DDLPNMode control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.CheckBox chkBarCodes;
+        protected global::System.Web.UI.WebControls.DropDownList DDLPNMode;
+
+        /// <summary>
+        /// chkPickByBin control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.CheckBox chkPickByBin;
 
         /// <summary>
         /// chkMobileModule control.
@@ -481,6 +490,24 @@ namespace SBMS
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.CheckBox chkMobileModule;
+
+        /// <summary>
+        /// phMobileTabBtn control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.PlaceHolder phMobileTabBtn;
+
+        /// <summary>
+        /// phMobileTab control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.PlaceHolder phMobileTab;
 
         /// <summary>
         /// chkNotifs control.

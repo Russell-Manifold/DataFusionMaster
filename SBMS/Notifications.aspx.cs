@@ -66,9 +66,17 @@ namespace SBMS
         [WebMethod]
         public static void MarkMessageAsRead(int messageId)
         {
+            // Same session + tenant guards as GetNewNotifications: without them any
+            // caller could mark any company's notifications read by enumerating ids.
+            var context = HttpContext.Current;
+            if (context == null) return;
+            var currentUser = context.Session["UserDetails"] as UserDetails;
+            if (currentUser == null) return;
+
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
         {
-                var Notif = _db.Notifications.FirstOrDefault(x => x.Id == messageId);
+                var Notif = _db.Notifications.FirstOrDefault(x => x.Id == messageId
+                    && x.CompanyID == currentUser.CoID);
                 if (Notif != null)
             {
                     Notif.IsRead = true;

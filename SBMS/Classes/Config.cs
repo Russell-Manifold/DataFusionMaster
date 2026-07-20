@@ -27,5 +27,6 @@ namespace SBMS.Classes
                 "data source={0};initial catalog={1};persist security info=True;user id={2};password={3};MultipleActiveResultSets=True;App=EntityFramework",
                 sqlInstance, dbName, dbUser, dbPassword);
         }
+
      }
 }

@@ -14,8 +14,14 @@ namespace SBMS
     // Accept/Reject toggle, default Accept), then taps Mark Ready (RecStatus = 1). No Sage and
     // no stock movement here — the web Receiving screen posts the GRN, booking accepted qty into
     // the default receiving warehouse and rejected qty into the reject warehouse.
-    public partial class ReceiveCountM : BasePage
+    public partial class ReceiveCountM : MobileBasePage
     {
+        protected override void OnPreRender(EventArgs e)
+        {
+            base.OnPreRender(e);
+            StampActionToken(hfActionToken);   // fresh one-shot token per render (double-tap guard)
+        }
+
         private new UserDetails CurrentUser
         {
             get { return Session["UserDetails"] as UserDetails; }
@@ -55,7 +61,7 @@ namespace SBMS
             lblUsername.Text = CurrentUser.UserName;
 
             // Barcode-off companies count by tapping the line (qty prefilled); hide the scan bar.
-            pnlScanBar.Visible = CurrentUser.UseBarcodes == true;
+            pnlScanBar.Visible = CurrentUser.MobileModule == true;
 
             // Manual lot numbers → scanner receiving disabled (web only).
             if (CurrentUser.CompanyUseLotNumbers && !CurrentUser.CompanyAllowSystemLotNumbers)
@@ -70,7 +76,7 @@ namespace SBMS
                 string docGuidStr = Request.QueryString["docid"];
                 if (string.IsNullOrEmpty(docGuidStr) || !Guid.TryParse(docGuidStr, out Guid docGuid))
                 {
-                    Response.Redirect("~/SBMSMobile/OSPurchaseOrdersM.aspx", false);
+                    Response.Redirect("~/SBMSMobile/OSPurchaseOrdersM.aspx?mode=count", false);
                     return;
                 }
 
@@ -80,7 +86,7 @@ namespace SBMS
                                                                 && h.CompanyID == CurrentUser.CoID);
                     if (header == null)
                     {
-                        Response.Redirect("~/SBMSMobile/OSPurchaseOrdersM.aspx", false);
+                        Response.Redirect("~/SBMSMobile/OSPurchaseOrdersM.aspx?mode=count", false);
                         return;
                     }
 
@@ -150,8 +156,8 @@ namespace SBMS
             if (lblRem != null) lblRem.Text = remaining.ToString("0.##");
 
             var txtQty = (TextBox)e.Item.FindControl("txtQty");
-            if (txtQty != null && (isMatched || CurrentUser.UseBarcodes != true))
-                txtQty.Text = remaining > 0 ? remaining.ToString("0.##") : "";
+            if (txtQty != null && (isMatched || CurrentUser.MobileModule != true))
+                txtQty.Text = remaining > 0 ? remaining.ToString("0.##", CultureInfo.InvariantCulture) : "";
 
             var ddMode = (DropDownList)e.Item.FindControl("ddMode");
             if (ddMode != null && ddMode.Items.Count == 0)
@@ -223,6 +229,12 @@ namespace SBMS
 
         protected void lbtnSaveLine_Click(object sender, EventArgs e)
         {
+            // This handler ACCUMULATES quantities - a double-tap would double-count.
+            if (!TryConsumeActionToken(hfActionToken))
+            {
+                SetFeedback(false, "&#9888; Already saved &mdash; that count was recorded once.");
+                return;
+            }
             var item = ((LinkButton)sender).NamingContainer as RepeaterItem;
             if (item == null) return;
 
@@ -341,7 +353,7 @@ namespace SBMS
 
         protected void lbtnTopBack_Click(object sender, EventArgs e)
         {
-            Response.Redirect("~/SBMSMobile/OSPurchaseOrdersM.aspx", false);
+            Response.Redirect("~/SBMSMobile/OSPurchaseOrdersM.aspx?mode=count", false);
             Context.ApplicationInstance.CompleteRequest();
         }
 

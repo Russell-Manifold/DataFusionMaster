@@ -17,8 +17,14 @@ namespace SBMS
     //   • RECEIVE IN: GIT -> destination store (per line, with count checks; completes when all in)
     // Store moves are local-only in SBMS (Sage tracks item-level QOH), so each leg is two local
     // TRF ItemTransactions. The GIT store is a reserved store (code "GIT"), auto-created if missing.
-    public partial class StockMoveM : BasePage
+    public partial class StockMoveM : MobileBasePage
     {
+        protected override void OnPreRender(EventArgs e)
+        {
+            base.OnPreRender(e);
+            StampActionToken(hfActionToken);   // fresh one-shot token per render (double-tap guard)
+        }
+
         private const string GitCode = "GIT";
 
         private new UserDetails CurrentUser
@@ -52,7 +58,7 @@ namespace SBMS
             lblUsername.Text = CurrentUser.UserName;
 
             // Barcode-off: capture the Transfer number by typing + Load button (scanner auto-submits on scan).
-            bool scan = CurrentUser.UseBarcodes == true;
+            bool scan = CurrentUser.MobileModule == true;
             txtScan.AutoPostBack = scan;
             lbtnLoadDoc.Visible = !scan;
             if (!scan) txtScan.Attributes["placeholder"] = "Enter Transfer number";
@@ -122,6 +128,11 @@ namespace SBMS
         // ── SEND OUT: move every line source -> GIT ──
         protected void lbtnSendOut_Click(object sender, EventArgs e)
         {
+            if (!TryConsumeActionToken(hfActionToken))
+            {
+                SetFeedback(false, "&#9888; Already processed &mdash; the transfer was sent once.");
+                return;
+            }
             if (IsProcessing || TrfID == 0 || Mode != "out") return;
             IsProcessing = true;
             try
@@ -136,15 +147,34 @@ namespace SBMS
                     long gitId = GitStoreId(db);
                     var lines = db.ItemTransferLines.Where(x => x.TrfID == TrfID && x.CompanyID == CurrentUser.CoID && (x.TrfOutQty ?? 0) > 0).ToList();
 
-                    string trfref = "TRF" + TrfNum;
-                    foreach (var line in lines)
-                        MoveStock(db, line, FromStoreId, gitId, line.TrfOutQty ?? 0, trfref);
+                    // All-or-nothing: a failure mid-loop must not leave some lines in
+                    // GIT while the header stays open (a resend would then move the
+                    // earlier lines twice). Store moves are local-only, so a plain DB
+                    // transaction covers everything.
+                    using (var tx = db.Database.BeginTransaction())
+                    {
+                        try
+                        {
+                            string trfref = "TRF" + TrfNum;
+                            foreach (var line in lines)
+                                MoveStock(db, line, FromStoreId, gitId, line.TrfOutQty ?? 0, trfref);
 
-                    hdr.TrfStatus = "In Transit";
-                    hdr.TrfStarted = true;
-                    hdr.TrfActive = true;
-                    hdr.TrfBy = CurrentUser.UserName;
-                    db.SaveChanges();
+                            hdr.TrfStatus = "In Transit";
+                            hdr.TrfStarted = true;
+                            hdr.TrfActive = true;
+                            hdr.TrfBy = CurrentUser.UserName;
+                            db.SaveChanges();
+                            tx.Commit();
+                        }
+                        catch (Exception ex)
+                        {
+                            tx.Rollback();
+                            new ApiUrlCall().LogErrorToFile($"CoID:{CurrentUser.CoID} StockMoveM SendOut failed - rolled back - {ex}");
+                            SetFeedback(false, "&#9888; Send failed - nothing was moved. Please try again.");
+                            AlertHelper.ShowSweetAlert(this, "Send failed - nothing was moved. Please try again.", "error");
+                            BindLines(); RenderMode(); return;
+                        }
+                    }
                 }
 
                 string num = TrfNum;
@@ -159,6 +189,11 @@ namespace SBMS
         protected void rptLines_ItemCommand(object source, RepeaterCommandEventArgs e)
         {
             if (e.CommandName != "receive" || IsProcessing || Mode != "in") return;
+            if (!TryConsumeActionToken(hfActionToken))
+            {
+                SetFeedback(false, "&#9888; Already processed &mdash; that receive was recorded once.");
+                return;
+            }
             IsProcessing = true;
             try
             {
@@ -183,10 +218,16 @@ namespace SBMS
                         BindLines(); RenderMode(); return;
                     }
 
-                    long gitId = GitStoreId(db);
-                    MoveStock(db, line, gitId, ToStoreId, recvQty, "TRF" + TrfNum);
-                    line.TrfInQty = already + recvQty;
-                    db.SaveChanges();
+                    // Atomic: the stock movement and the TrfInQty increment must land
+                    // together, or a retry after a partial failure double-receives.
+                    using (var tx = db.Database.BeginTransaction())
+                    {
+                        long gitId = GitStoreId(db);
+                        MoveStock(db, line, gitId, ToStoreId, recvQty, "TRF" + TrfNum);
+                        line.TrfInQty = already + recvQty;
+                        db.SaveChanges();
+                        tx.Commit();
+                    }
 
                     // Complete the transfer once every line is fully received.
                     var open = db.ItemTransferLines.Any(x => x.TrfID == TrfID && x.CompanyID == CurrentUser.CoID
@@ -228,7 +269,7 @@ namespace SBMS
                     l.ItemDescription,
                     Sent = (l.TrfOutQty ?? 0).ToString("0.##") + " " + (l.Unit ?? ""),
                     Remaining = ((l.TrfOutQty ?? 0) - (l.TrfInQty ?? 0)),
-                    RemainingText = ((l.TrfOutQty ?? 0) - (l.TrfInQty ?? 0)).ToString("0.##")
+                    RemainingText = ((l.TrfOutQty ?? 0) - (l.TrfInQty ?? 0)).ToString("0.##", CultureInfo.InvariantCulture)
                 }).ToList();
                 rptLines.DataSource = disp;
                 rptLines.DataBind();
@@ -352,7 +393,7 @@ namespace SBMS
             lbtnModeIn.CssClass = "sm-toggle " + (outMode ? "off" : "on");
             lblModeTitle.Text = outMode ? "Send out to transit" : "Receive from transit";
             lblPrompt.Text = TrfID == 0
-                ? (CurrentUser.UseBarcodes == true ? "Scan the Transfer barcode" : "Enter the Transfer number")
+                ? (CurrentUser.MobileModule == true ? "Scan the Transfer barcode" : "Enter the Transfer number")
                 : (outMode ? "Confirm and send the whole transfer to transit" : "Receive each line into the destination");
 
             pnlHdr.Visible = TrfID != 0;

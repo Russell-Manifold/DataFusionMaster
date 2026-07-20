@@ -58,5 +58,6 @@ namespace SBMS.Models
         public bool AllowScannerPutAway { get; set; }
         public string BinDelimiter { get; set; }
         public bool MobileModule { get; set; }
+        public string LPNPickMode { get; set; }
     }
 }

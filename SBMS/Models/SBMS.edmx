@@ -155,6 +155,7 @@
           <Property Name="AllowScannerPutAway" Type="bit" Nullable="false" />
           <Property Name="BinDelimiter" Type="varchar" MaxLength="3" />
           <Property Name="MobileModule" Type="bit" Nullable="false" />
+          <Property Name="LPNPickMode" Type="varchar" MaxLength="10" Nullable="false" />
         </EntityType>
         <EntityType Name="DelivMethods">
           <Key>
@@ -3314,6 +3315,7 @@
           <Property Name="AllowScannerPutAway" Type="Boolean" Nullable="false" />
           <Property Name="BinDelimiter" Type="String" MaxLength="3" FixedLength="false" Unicode="false" />
           <Property Name="MobileModule" Type="Boolean" Nullable="false" />
+          <Property Name="LPNPickMode" Type="String" Nullable="false" MaxLength="10" FixedLength="false" Unicode="false" />
         </EntityType>
         </Schema>
     </edmx:ConceptualModels>
@@ -5190,6 +5192,7 @@
           <EntitySetMapping Name="CompanyMasters">
             <EntityTypeMapping TypeName="SBMSModel.CompanyMaster">
               <MappingFragment StoreEntitySet="CompanyMaster">
+                <ScalarProperty Name="LPNPickMode" ColumnName="LPNPickMode" />
                 <ScalarProperty Name="MobileModule" ColumnName="MobileModule" />
                 <ScalarProperty Name="BinDelimiter" ColumnName="BinDelimiter" />
                 <ScalarProperty Name="AllowScannerPutAway" ColumnName="AllowScannerPutAway" />

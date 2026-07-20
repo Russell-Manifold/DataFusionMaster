@@ -17,8 +17,14 @@ namespace SBMS
     // exactly like the desktop Works Order Manufacture (DoItemAdjustment). Supports PART
     // MANUFACTURE: making less than the remaining qty leaves the balance open on the WO line.
     // Lot-tracked companies are blocked here and must use the full desktop version.
-    public partial class ManufactureM : BasePage
+    public partial class ManufactureM : MobileBasePage
     {
+        protected override void OnPreRender(EventArgs e)
+        {
+            base.OnPreRender(e);
+            StampActionToken(hfActionToken);   // fresh one-shot token per render (double-tap guard)
+        }
+
         private new UserDetails CurrentUser
         {
             get { return Session["UserDetails"] as UserDetails; }
@@ -54,7 +60,7 @@ namespace SBMS
             lblUsername.Text = CurrentUser.UserName;
 
             // Barcode-off: capture the WO number by typing + Load button (scanner auto-submits on scan).
-            bool scan = CurrentUser.UseBarcodes == true;
+            bool scan = CurrentUser.MobileModule == true;
             txtScan.AutoPostBack = scan;
             lbtnLoadDoc.Visible = !scan;
             if (!scan) txtScan.Attributes["placeholder"] = "Enter WO number";
@@ -168,6 +174,11 @@ namespace SBMS
         // remaining leaves the balance open (part manufacture).
         private void DoManufacture(string fromStore, string targetStore)
         {
+            if (!TryConsumeActionToken(hfActionToken))
+            {
+                SetFeedback(false, "&#9888; Already processed &mdash; that manufacture ran once.");
+                return;
+            }
             if (IsProcessing || LotBlocked) return;
             if (!WOLoaded) { SetFeedback(false, "&#9888; Scan a Works Order first."); return; }
             if (string.IsNullOrEmpty(fromStore)) { SetFeedback(false, "&#9888; Select the From store."); return; }
@@ -203,36 +214,83 @@ namespace SBMS
                 {
                     long fromStoreId = db.Stores.Where(x => x.CompanyID == CurrentUser.CoID && x.StoreCode == fromStore).Select(x => (long)x.StoreID).FirstOrDefault();
                     long targetStoreId = db.Stores.Where(x => x.CompanyID == CurrentUser.CoID && x.StoreCode == targetStore).Select(x => (long)x.StoreID).FirstOrDefault();
+                    if (fromStoreId == 0 || targetStoreId == 0)
+                    {
+                        SetFeedback(false, "&#9888; Store not found - cannot manufacture.");
+                        return;
+                    }
                     var rms = db.WorksOrderRMLines.Where(x => x.CompanyID == CurrentUser.CoID && x.LinkedWOLineID == FGLineID).ToList();
+
+                    // ── Pre-validate every leg before anything is written ──
+                    foreach (var r in rms)
+                    {
+                        if (PerUnit(r) * makeQty <= 0) continue;
+                        bool exists = db.ItemsMasters.Any(x => x.CompanyID == CurrentUser.CoID && x.ID == r.SelectionId);
+                        if (!exists)
+                        {
+                            SetFeedback(false, $"&#9888; Component {r.ItemCode} not found - nothing was manufactured.");
+                            AlertHelper.ShowSweetAlert(this, $"Component {r.ItemCode} not found - nothing was manufactured.", "error");
+                            return;
+                        }
+                    }
+                    if (!db.ItemsMasters.Any(x => x.CompanyID == CurrentUser.CoID && x.ID == OutItemId))
+                    {
+                        SetFeedback(false, $"&#9888; Finished good {OutCode} not found - nothing was manufactured.");
+                        return;
+                    }
 
                     // Finished-good unit cost rolls up from the BOM (cost flows through).
                     decimal fgUnitCost = rms.Sum(r => PerUnit(r) * (r.UnitCost ?? 0));
 
-                    // Backflush each raw material (DRAW / negative) from the From store.
-                    foreach (var r in rms)
+                    // ── All-or-nothing: local rows in ONE transaction; Sage posts are
+                    // tracked so a failure can post compensating reversals. Nothing is
+                    // left half-done on either side.
+                    var sagePosted = new List<SagePostedAdjustment>();
+                    using (var tx = db.Database.BeginTransaction())
                     {
-                        decimal useQty = PerUnit(r) * makeQty;
-                        if (useQty <= 0) continue;
-                        string res = PostAdjustment(db, r.SelectionId, r.ItemCode, r.ItemDescription, r.Unit, fromStoreId, useQty * -1m, r.UnitCost ?? 0);
-                        if (res != "OK") { SetFeedback(false, "&#9888; Manufacture failed on " + r.ItemCode + ": " + res); return; }
-                    }
-
-                    // Produce the finished good (MANF / positive) into the target store.
-                    string fres = PostAdjustment(db, OutItemId, OutCode, OutDescr, OutUnit, targetStoreId, makeQty, fgUnitCost);
-                    if (fres != "OK") { SetFeedback(false, "&#9888; Manufacture failed on " + OutCode + ": " + fres); return; }
-
-                    // Update the WO line: reduce the outstanding balance; close it when done.
-                    var line = db.WorksOrderLines.FirstOrDefault(x => x.CompanyID == CurrentUser.CoID && x.LineID == FGLineID);
-                    if (line != null)
-                    {
-                        line.OrderedQty = line.OrderedQty ?? Remaining;
-                        line.Quantity = (line.Quantity ?? 0) - makeQty;   // decrement the LIVE balance, not the (stale-across-postbacks) ViewState Remaining
-                        if ((line.Quantity ?? 0) <= 0)
+                        try
                         {
-                            line.Quantity = 0;
-                            line.Complete = true;
+                            // Backflush each raw material (DRAW / negative) from the From store.
+                            foreach (var r in rms)
+                            {
+                                decimal useQty = PerUnit(r) * makeQty;
+                                if (useQty <= 0) continue;
+                                string res = PostAdjustment(db, r.SelectionId, r.ItemCode, r.ItemDescription, r.Unit, fromStoreId, useQty * -1m, r.UnitCost ?? 0, sagePosted);
+                                if (res != "OK") throw new ApplicationException("Manufacture failed on " + r.ItemCode + ": " + res);
+                            }
+
+                            // Produce the finished good (MANF / positive) into the target store.
+                            string fres = PostAdjustment(db, OutItemId, OutCode, OutDescr, OutUnit, targetStoreId, makeQty, fgUnitCost, sagePosted);
+                            if (fres != "OK") throw new ApplicationException("Manufacture failed on " + OutCode + ": " + fres);
+
+                            // Update the WO line: reduce the outstanding balance; close it when done.
+                            var line = db.WorksOrderLines.FirstOrDefault(x => x.CompanyID == CurrentUser.CoID && x.LineID == FGLineID);
+                            if (line != null)
+                            {
+                                line.OrderedQty = line.OrderedQty ?? Remaining;
+                                line.Quantity = (line.Quantity ?? 0) - makeQty;   // decrement the LIVE balance, not the (stale-across-postbacks) ViewState Remaining
+                                if ((line.Quantity ?? 0) <= 0)
+                                {
+                                    line.Quantity = 0;
+                                    line.Complete = true;
+                                }
+                                db.SaveChanges();
+                            }
+
+                            tx.Commit();
                         }
-                        db.SaveChanges();
+                        catch (Exception ex)
+                        {
+                            tx.Rollback();
+                            string compErr = CompensateSage(sagePosted);
+                            string msg = ex.Message + (compErr == null
+                                ? " Nothing was manufactured - no stock moved."
+                                : " ATTENTION: " + compErr);
+                            new ApiUrlCall().LogErrorToFile($"CoID:{CurrentUser.CoID} ManufactureM rollback - {msg}");
+                            SetFeedback(false, "&#9888; " + msg);
+                            AlertHelper.ShowSweetAlert(this, msg, "error");
+                            return;
+                        }
                     }
                 }
 
@@ -254,10 +312,55 @@ namespace SBMS
             }
         }
 
+        // A Sage adjustment that has already been posted this manufacture - kept so a
+        // later leg's failure can post the compensating reversal (Sage has no rollback).
+        private class SagePostedAdjustment
+        {
+            public long ItemID;
+            public string ItemCode;
+            public decimal Qty;
+            public decimal AvCost;
+        }
+
+        // Reverses any Sage adjustments already posted by a failed manufacture.
+        // Returns null when clean (or nothing to reverse); otherwise a message
+        // describing what must be corrected in Sage manually.
+        private string CompensateSage(List<SagePostedAdjustment> posted)
+        {
+            if (posted == null || posted.Count == 0) return null;
+            var failures = new List<string>();
+            foreach (var p in posted)
+            {
+                try
+                {
+                    var iAdj = new ItemAdjustment
+                    {
+                        Date = DateTime.Now,
+                        ItemID = p.ItemID,
+                        AverageCost = p.AvCost,
+                        Quantity = p.Qty * -1m,
+                        Reason = "Reversal: WO" + WONum + " manufacture failed - " + DateTime.Now.ToString(),
+                        Created = DateTime.Now
+                    };
+                    string res = SendItemAdjustment(JsonConvert.SerializeObject(iAdj, Formatting.Indented));
+                    if (res != "Success") failures.Add($"{p.ItemCode} qty {p.Qty * -1m:0.##} ({res})");
+                }
+                catch (Exception ex)
+                {
+                    failures.Add($"{p.ItemCode} qty {p.Qty * -1m:0.##} ({ex.Message})");
+                }
+            }
+            return failures.Count == 0
+                ? null
+                : "Sage reversal failed for: " + string.Join("; ", failures) +
+                  ". Correct these item adjustments in Sage manually.";
+        }
+
         // Mirrors the desktop DoItemAdjustment: weighted-average cost, Sage post (UATMode-gated),
         // then the local MANF/DRAW ItemTransaction. Sage adjusts item-level QOH/cost; the store
-        // is a local concept only.
-        private string PostAdjustment(SBMSEntities db, long itmid, string code, string descr, string unit, long storeId, decimal qty, decimal unitcost)
+        // is a local concept only. Successful Sage posts are recorded in sagePosted so the
+        // caller can compensate if a later leg fails.
+        private string PostAdjustment(SBMSEntities db, long itmid, string code, string descr, string unit, long storeId, decimal qty, decimal unitcost, List<SagePostedAdjustment> sagePosted)
         {
             try
             {
@@ -313,6 +416,10 @@ namespace SBMS
                     };
                     string res = SendItemAdjustment(JsonConvert.SerializeObject(iAdj, Formatting.Indented));
                     if (res != "Success") return res;
+                    sagePosted?.Add(new SagePostedAdjustment
+                    {
+                        ItemID = itmid, ItemCode = code, Qty = qty, AvCost = newAvCost
+                    });
                 }
 
                 // Stamp the store's running average after this movement: a DRAW leaves it
@@ -408,7 +515,7 @@ namespace SBMS
             pnlWO.Visible = WOLoaded;
             pnlMake.Visible = WOLoaded;
             lblPrompt.Text = WOLoaded ? "Choose store and quantity, then Manufacture"
-                : (CurrentUser.UseBarcodes == true ? "Scan the Works Order barcode" : "Enter the Works Order number");
+                : (CurrentUser.MobileModule == true ? "Scan the Works Order barcode" : "Enter the Works Order number");
             if (WOLoaded)
             {
                 lblWONum.Text = WONum;
@@ -416,7 +523,7 @@ namespace SBMS
                 lblOutDescr.Text = OutDescr;
                 lblOutUnit.Text = OutUnit;
                 lblRemaining.Text = Remaining.ToString("0.##") + " " + (OutUnit ?? "");
-                if (string.IsNullOrEmpty(txtQty.Text)) txtQty.Text = Remaining.ToString("0.##");
+                if (string.IsNullOrEmpty(txtQty.Text)) txtQty.Text = Remaining.ToString("0.##", CultureInfo.InvariantCulture);
             }
             lbtnRestart.Visible = WOLoaded;
         }

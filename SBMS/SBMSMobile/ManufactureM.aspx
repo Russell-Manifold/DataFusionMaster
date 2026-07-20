@@ -1,4 +1,4 @@
-<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="ManufactureM.aspx.cs" Inherits="SBMS.ManufactureM" %>
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="ManufactureM.aspx.cs" Inherits="SBMS.ManufactureM" %>
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
@@ -81,6 +81,7 @@
 
     <asp:UpdatePanel ID="upMain" runat="server">
     <ContentTemplate>
+        <asp:HiddenField ID="hfActionToken" runat="server" />
 
         <div class="qm-prompt"><asp:Label ID="lblPrompt" runat="server" /></div>
 

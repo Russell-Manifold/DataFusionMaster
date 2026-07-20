@@ -483,7 +483,9 @@ namespace SBMS
                 using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
                 {
                     string jcnum = txtMsgBody.Text.ToString().Trim();
-                    var jcChk = _db.JobCardsMasters.Where(x => x.JCNumber == jcnum).FirstOrDefault();
+                    // Tenant-scoped: without CustomerID, tenant B is wrongly told a JC number
+                    // is taken when tenant A owns it.
+                    var jcChk = _db.JobCardsMasters.Where(x => x.CustomerID == CurrentUser.CoID && x.JCNumber == jcnum).FirstOrDefault();
                     if (jcChk != null)
                     {
                         string message = "JC Number already in use, please create a new one";
@@ -1134,6 +1136,11 @@ namespace SBMS
             string jsonBody = "";
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {
+                // When true, a back-order sub-step failed: keep the order ACTIVE below so
+                // "Update Sage SO" can retry the balance SO (declared here so it is in scope
+                // at both the failure branch and the deactivation block).
+                bool backOrderFailed = false;
+
                 // Idempotency guard: PostOrder sets DH.Active = false on completion, so an order that is
                 // already inactive has been posted. Bail before re-sending the SO update and re-posting
                 // kit stock adjustments (e.g. a browser refresh re-firing the ?autosave=true post).
@@ -1182,6 +1189,16 @@ namespace SBMS
                     {
                         // 1) Adjust Kit Item IN  (Stock counted down via the invoice)
                         #region AdjustItemIn
+                        // Per-line idempotency key: if THIS line's kit adjustment was already
+                        // posted to Sage AND recorded locally on a prior attempt (e.g. the SO
+                        // update below failed and the user clicked Update Sage SO again), skip it
+                        // so the irreversible Sage adjustment is never posted a second time.
+                        // Keyed on LineID so the same kit item on two lines is handled correctly.
+                        string kitRef = lblDocNum.Text + " Complete - Issued to Sage L" + dl.LineID;
+                        bool kitAlreadyDone = _db.ItemTransactions.Any(x => x.CompanyID == CurrentUser.CoID
+                            && x.TransactionType == "Jc-Mf" && x.TransactionReference == kitRef);
+                        if (!kitAlreadyDone)
+                        {
                         ItemAdjustment iAdj = new ItemAdjustment();
                         iAdj.Date = DateTime.Now;
                         iAdj.ItemID = dl.SelectionId;
@@ -1218,7 +1235,7 @@ namespace SBMS
                         ItemTrans.AdditionalCosts = 0;
                         ItemTrans.TotalUnitPriceExclInclAdd = dl.Exclusive;
                         ItemTrans.TotalLineValExcl = ItemTrans.PriceExclusive * ItemTrans.Qty;
-                        ItemTrans.TransactionReference = lblDocNum.Text + " Complete - Issued to Sage";
+                        ItemTrans.TransactionReference = kitRef;
                         ItemTrans.LotNumber = dl.LotNumber;
                         ItemTrans.ExchRate = (decimal)dl.ExchRate;
                         // cost fields deliberately carry the selling price here; StoreAvgCost still tracks the true store cost
@@ -1233,6 +1250,10 @@ namespace SBMS
                         _db.ItemTransactions.Add(ItemTrans);
 
                         Itm.QuantityOnHand = Itm.QuantityOnHand + ItemTrans.Qty;
+                        // Durable NOW (its own commit): so a later failure + retry sees this
+                        // line's adjustment already recorded and skips re-posting it to Sage.
+                        _db.SaveChanges();
+                        }   // end if (!kitAlreadyDone)
                         #endregion
                     }
                    
@@ -1436,7 +1457,11 @@ namespace SBMS
                             {
                                 // QtyLeft stays owing, so this SO keeps "Partially Invoiced" as a visible
                                 // flag that the balance SO was NOT created (update to Sage again to retry).
-                                lblErr.Text = "Warning: the back order Sales Order could not be created in Sage.";
+                                // Do NOT deactivate the order below, or the idempotency guard (Active==false)
+                                // would block that retry and the balance would be silently lost.
+                                backOrderFailed = true;
+                                lblErr.Text = "Warning: the back order Sales Order could not be created in Sage. " +
+                                              "Click 'Update Sage SO' again to retry the outstanding balance.";
                             }
                         }
                     }
@@ -1446,7 +1471,7 @@ namespace SBMS
                     }
                 }
                     var DH = _db.DocHeaders.Where(x => x.DocID == docid).FirstOrDefault();
-                    if (DH != null)
+                    if (DH != null && !backOrderFailed)
                     {
                         DH.Active = false;
                         // update Job Car or picking slip header to Active=false
@@ -1557,8 +1582,11 @@ namespace SBMS
                         var Proc = _db.PickSlipProcesses.Where(x => x.CompanyID == CurrentUser.CoID && x.PSActive == true).OrderByDescending(x => x.Seq).ToList();
                         if (Proc.Count > 0)
                         {
-                            Procid = Proc[1].PSPID;
-                            ProcName = Proc[1].PSName ?? "";
+                            // [1] = the station before "complete"; fall back to [0] when only
+                            // one is configured (was an IndexOutOfRange crash → Undo impossible).
+                            int idx = Proc.Count > 1 ? 1 : 0;
+                            Procid = Proc[idx].PSPID;
+                            ProcName = Proc[idx].PSName ?? "";
                         }
                         var PSH = _db.PickingSlipMasters.Where(x => x.PSID == DocH.LinkedPSID).FirstOrDefault();
                         if (PSH != null)
@@ -1612,8 +1640,11 @@ namespace SBMS
                         var JCWstat = _db.WorkStations.Where(x => x.CompanyID == CurrentUser.CoID && x.WSActive == true).OrderByDescending(x => x.Seq).ToList();
                         if (JCWstat.Count > 0)
                         {
-                            Procid = JCWstat[1].WSID;
-                            ProcName = JCWstat[1].WSName ?? "";
+                            // [1] = the station before "complete"; fall back to [0] when only
+                            // one is configured (was an IndexOutOfRange crash → Undo impossible).
+                            int idx = JCWstat.Count > 1 ? 1 : 0;
+                            Procid = JCWstat[idx].WSID;
+                            ProcName = JCWstat[idx].WSName ?? "";
                         }
                         var PJC = _db.JobCardsMasters.Where(x => x.JCID == DocH.LinkedJCID).FirstOrDefault();
                         if (PJC != null)
@@ -2164,8 +2195,27 @@ namespace SBMS
                     // 4) Send Tax Invoice
                     string response = await SendTaxInvoice(taxInvoiceJson.ToString());
 
+                    // Success is signalled by the "ID|DocumentNumber" shape (SendTaxInvoice
+                    // returns raw error JSON otherwise). Without this check a transient Sage
+                    // failure (timeout / 401 / validation) was reported as success, the order
+                    // was set "Invoiced", and the idempotency guard then blocked every retry -
+                    // so the invoice was silently never raised in Sage. On failure we surface
+                    // the error and leave Status untouched so the operator can retry.
+                    bool invoiceOk = !string.IsNullOrEmpty(response)
+                                     && response.Contains("|")
+                                     && long.TryParse(response.Split('|')[0], out _);
+                    if (!invoiceOk)
+                    {
+                        ApiC.LogErrorToFile($"CoID:{CurrentUser.CoID} SalesOrder GenerateTaxInvoice Sage error DocID:{docidS} - {response}");
+                        AlertHelper.ShowSweetAlert(this,
+                            "The tax invoice was NOT created in Sage. Nothing was changed - please try again. (Sage response: "
+                            + System.Text.RegularExpressions.Regex.Replace(response ?? "no response", "[\r\n]+", " ") + ")",
+                            "error");
+                        return;
+                    }
+
                     // 6) Show success alert
-                    string docNumber = response.Contains("|") ? response.Split('|')[1] : response;
+                    string docNumber = response.Split('|')[1];
                     lbtnPost.Style.Add("display", "none");
                     lbtnUndo.Style.Add("display", "none");
                     lbtnTaxInv.Style.Add("display", "none");

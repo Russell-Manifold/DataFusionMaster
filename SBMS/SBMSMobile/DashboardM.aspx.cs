@@ -15,7 +15,7 @@ namespace SBMS
             SessionValidator.ValidateUserSession(userDets);
             if (userDets == null)
             {
-                Response.Redirect("~/LoginM.aspx", false); Context.ApplicationInstance.CompleteRequest();
+                Response.Redirect("~/Login.aspx", false); Context.ApplicationInstance.CompleteRequest();
                 return;
             }
             // Mobile module gate: company not licensed for mobile -> back to the web dashboard.

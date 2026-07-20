@@ -137,7 +137,7 @@ namespace SBMS
 
                         // Handle returnUrl
                         string returnUrl = Request.QueryString["returnUrl"];
-                        if (!string.IsNullOrEmpty(returnUrl) && returnUrl.StartsWith("/"))
+                        if (IsLocalReturnUrl(returnUrl))
                             Response.Redirect(returnUrl, false);
                         else
                         {
@@ -318,7 +318,6 @@ namespace SBMS
                             x.ItemQtyDecPlaces,
                             x.UseAutoManf,
                             x.UsePickSlipTracking,
-                            x.UseBarcodes,
                             x.MobileModule,
                             x.AutoUpdateSageSOs,
                             x.AutoGenTaxInvoice,
@@ -336,7 +335,6 @@ namespace SBMS
                     userDetails.UATMode = (bool)GenLogIn.UATMode;
                     userDetails.SendMessages = (bool)GenLogIn.SendMessages;
                     userDetails.UsePickSlipTracking = (bool)GenLogIn.UsePickSlipTracking;
-                    userDetails.UseBarcodes = (bool)GenLogIn.UseBarcodes;
                     userDetails.MobileModule = GenLogIn.MobileModule;
                     userDetails.AutoUpdateSageSOs = (bool)GenLogIn.AutoUpdateSageSOs;
                     userDetails.AutoGenTaxInvoice = (bool)GenLogIn.AutoGenTaxInvoice;
@@ -973,7 +971,7 @@ namespace SBMS
 
                         // Handle returnUrl
                         string returnUrl = Request.QueryString["returnUrl"];
-                        if (!string.IsNullOrEmpty(returnUrl) && returnUrl.StartsWith("/"))
+                        if (IsLocalReturnUrl(returnUrl))
                         {
                             Response.Redirect(returnUrl, false);
                         }
@@ -998,6 +996,18 @@ namespace SBMS
             }
         }
 
+
+        // A returnUrl is only safe to redirect to if it is a same-site relative path.
+        // StartsWith("/") alone also passed protocol-relative URLs ("//evil.com",
+        // "/\evil.com") which browsers resolve to an EXTERNAL host - an open-redirect
+        // / phishing vector. Require a single leading slash and no scheme/authority.
+        private static bool IsLocalReturnUrl(string url)
+        {
+            if (string.IsNullOrEmpty(url)) return false;
+            if (!url.StartsWith("/")) return false;
+            if (url.StartsWith("//") || url.StartsWith("/\\")) return false;
+            return Uri.IsWellFormedUriString(url, UriKind.Relative);
+        }
 
         private bool IsMobileDevice()
         {

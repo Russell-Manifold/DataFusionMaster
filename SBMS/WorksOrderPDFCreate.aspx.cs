@@ -1,4 +1,4 @@
-﻿using DocumentFormat.OpenXml.Math;
+using DocumentFormat.OpenXml.Math;
 using DocumentFormat.OpenXml.Wordprocessing;
 using iTextSharp.text;
 using iTextSharp.text.pdf;
@@ -112,7 +112,7 @@ namespace SBMS
                     table.AddCell(cell);
 
                     Phrase wonHead = new Phrase();
-                    if (CurrentUser.UseBarcodes)
+                    if (CurrentUser.MobileModule)
                     {
                         Barcode128 bc = new Barcode128();
                         bc.Code = WO.WONum.ToString();

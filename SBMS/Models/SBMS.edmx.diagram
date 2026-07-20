@@ -4,7 +4,7 @@
   <edmx:Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
     <!-- Diagram content (shape and connector positions) -->
     <edmx:Diagrams>
-      <Diagram DiagramId="b5b950073c7746a0935aa80d04d1b620" Name="Diagram1" ZoomLevel="108">
+      <Diagram DiagramId="b5b950073c7746a0935aa80d04d1b620" Name="Diagram1" ZoomLevel="80">
         <EntityTypeShape EntityType="SBMSModel.BOMHeader" Width="1.5" PointX="2" PointY="0.5" IsExpanded="true" />
         <EntityTypeShape EntityType="SBMSModel.BOMLine" Width="1.5" PointX="4.75" PointY="0.75" IsExpanded="true" />
         <EntityTypeShape EntityType="SBMSModel.DelivMethod" Width="1.5" PointX="0.75" PointY="5.75" IsExpanded="true" />

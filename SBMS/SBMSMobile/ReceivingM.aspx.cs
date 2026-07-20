@@ -14,8 +14,14 @@ namespace SBMS
     // already been received into the holding store (the single store flagged AllowReceiving)
     // out to its destination — any AllowPicking bin, IsWip store, or the IsRejectStore.
     // Each tap is an immediate internal transfer (TRF) — no Sage, no PO, no finalise.
-    public partial class ReceivingM : BasePage
+    public partial class ReceivingM : MobileBasePage
     {
+        protected override void OnPreRender(EventArgs e)
+        {
+            base.OnPreRender(e);
+            StampActionToken(hfActionToken);   // fresh one-shot token per render (double-tap guard)
+        }
+
         private new UserDetails CurrentUser
         {
             get { return Session["UserDetails"] as UserDetails; }
@@ -70,7 +76,7 @@ namespace SBMS
             lblUsername.Text = CurrentUser.UserName;
 
             // Barcode-off companies put away by tapping the card (qty prefilled to QOH); hide the scan bar.
-            pnlScanBar.Visible = CurrentUser.UseBarcodes == true;
+            pnlScanBar.Visible = CurrentUser.MobileModule == true;
 
             // Resolve the holding store on every load so the put-away handlers have it.
             if (!ResolveSourceStore())
@@ -230,6 +236,11 @@ namespace SBMS
 
         protected void lbtnPutAway_Click(object sender, EventArgs e)
         {
+            if (!TryConsumeActionToken(hfActionToken))
+            {
+                SetFeedback(false, "&#9888; Already processed &mdash; that put-away was recorded once.");
+                return;
+            }
             string toastMsg = null;
             var item = ((LinkButton)sender).NamingContainer as RepeaterItem;
             if (item == null) return;

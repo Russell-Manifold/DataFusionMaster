@@ -1,4 +1,4 @@
-<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="PickingSlipM.aspx.cs" Inherits="SBMS.PickingSlipM" %>
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="PickingSlipM.aspx.cs" Inherits="SBMS.PickingSlipM" %>
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
@@ -36,6 +36,16 @@
             transition: border-color .15s, box-shadow .15s;
         }
         .mob-lot-select:focus { outline: none; border-color: var(--mob-brand); box-shadow: var(--mob-focus); }
+        /* LPN mode segmented toggle */
+        .mob-lpn-modes { display: flex; gap: .4rem; margin-bottom: .4rem; }
+        .mob-lpn-mode {
+            flex: 1; text-align: center; padding: .45rem .3rem;
+            border: 1px solid #ccc; border-radius: .45em;
+            font-size: .8rem; font-weight: 600;
+            color: var(--mob-brand); background: var(--mob-surface, #fff);
+            text-decoration: none; -webkit-tap-highlight-color: transparent;
+        }
+        .mob-lpn-mode.on { background: var(--mob-brand); color: #fff; border-color: var(--mob-brand); }
     </style>
 </head>
 <body>
@@ -132,6 +142,30 @@
         </div>
         </asp:Panel>
 
+        <%-- LPN strips, driven by the company-level LPNPickMode setting (ConfigCompany).
+             ALL scanning goes through the single ITEM scan box above - the app tells
+             box labels from stock automatically, and the placeholder guides each step:
+             off  - hidden entirely; picking works exactly as before LPNs existed.
+             box  - "Scan Box LPN" opens a box, then "Scan Item" repeatedly; every
+                    pick is stamped into the open box (50 widgets into a box).
+                    Scanning the next label switches boxes; picks need an open box.
+             unit - every shipped unit is its own box: sticker scan -> stock scan,
+                    one pair per unit; the line auto-completes at full qty. --%>
+        <asp:Panel ID="pnlLPNBar" runat="server">
+        <asp:Panel ID="pnlActiveLPN" runat="server" Visible="false" CssClass="mob-doc-selection-strip">
+            &#128230; Packing into box: <strong><asp:Label ID="lblActiveLPN" runat="server" /></strong>
+            &nbsp;&middot;&nbsp;
+            <asp:LinkButton ID="lbtnCloseBox" runat="server" OnClick="lbtnCloseBox_Click"
+                CssClass="mob-selection-change-link">Close box</asp:LinkButton>
+        </asp:Panel>
+        <asp:Panel ID="pnlUnitLPN" runat="server" Visible="false" CssClass="mob-doc-selection-strip">
+            &#127991;&#65039; <asp:Label ID="lblUnitLPNInfo" runat="server" />
+            &nbsp;&middot;&nbsp;
+            <asp:LinkButton ID="lbtnSkipLabels" runat="server" OnClick="lbtnSkipLabels_Click"
+                CssClass="mob-selection-change-link">Discard</asp:LinkButton>
+        </asp:Panel>
+        </asp:Panel>
+
         <%-- Scan feedback --%>
         <asp:Label ID="lblScanFeedback" runat="server" />
 
@@ -168,12 +202,24 @@
                                     <%# Eval("ItemCode") %>
                                     <asp:Label ID="lblSavedBadge" runat="server"
                                         CssClass="mob-saved-badge" Visible="false">&#10003; Picked</asp:Label>
+                                    <asp:Label ID="lblLPNBadge" runat="server"
+                                        CssClass="mob-saved-badge" Visible="false" />
+                                    <asp:LinkButton ID="lbtnResetLine" runat="server"
+                                        CssClass="mob-saved-badge" Visible="false"
+                                        Style="color:#c0392b; text-decoration:none;"
+                                        OnClick="lbtnResetLine_Click"
+                                        OnClientClick="return confirm('Reset this picked line? Its stock movement will be reversed and its box labels cleared.');">&#8634; Reset</asp:LinkButton>
                                 </div>
                                 <div class="mob-item-unit"><%# Eval("Unit") %></div>
                                 <div class="mob-item-descr"><%# Eval("ItemDescription") %></div>
 
                                 <div class="mob-qty-row">
                                     <span class="mob-qty-badge ordered">To Pick&nbsp;<%# Eval("Quantity", "{0:0.##}") %></span>
+                                    <asp:Label ID="lblBinProgress" runat="server" CssClass="mob-saved-badge" Visible="false" />
+                                    <asp:LinkButton ID="lbtnDoneShort" runat="server" CssClass="mob-saved-badge"
+                                        Visible="false" Style="color:#b26a00; text-decoration:none;"
+                                        OnClick="lbtnDoneShort_Click"
+                                        OnClientClick="return confirm('Finish this line short at what has been picked so far?');">&#10003; Done short</asp:LinkButton>
                                     <asp:HiddenField ID="hfLineID" runat="server" Value='<%# Eval("LineID") %>' />
                                 </div>
 
@@ -181,7 +227,7 @@
                                     <span class="mob-qty-label">Qty</span>
                                     <asp:TextBox ID="txtPickQty" runat="server"
                                         TextMode="Number"
-                                        Text='<%# Eval("PickQty", "{0:0.##}") %>'
+                                        Text='<%# FormatQty(Eval("PickQty")) %>'
                                         style="width:6em;height:2.7em;border:1px solid #ccc;border-radius:.45em;
                                                text-align:center;font-size:1.05em;font-weight:600;" />
                                 </div>
@@ -211,14 +257,19 @@
     <div class="mob-toolbar">
         <asp:LinkButton ID="lbtnBack"    runat="server" OnClick="lbtnBack_Click"    style="display:none;" />
         <asp:LinkButton ID="lbtnPickAll" runat="server" OnClick="lbtnPickAll_Click" style="display:none;" />
+        <asp:LinkButton ID="lbtnResetSlip" runat="server" OnClick="lbtnResetSlip_Click"
+            CssClass="mob-btn-cancel"
+            OnClientClick="return confirm('Reset ALL picked lines on this slip? Every stock movement will be reversed and all box labels cleared.');">&#8634; Reset</asp:LinkButton>
         <asp:LinkButton ID="lbtnFinalise" runat="server" OnClick="lbtnFinalise_Click"
             CssClass="mob-btn-primary"><svg class="mob-ico" aria-hidden="true"><use href="#i-arrow-up"/></svg> Close Off</asp:LinkButton>
     </div>
 </form>
 
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="../SBMSMobile/js/sweetalert2.all.min.js"></script>
 <script>
     function focusScanBox() {
+        // Unit mode routes stickers and stock through the item box, so it is
+        // always the scan target after a postback.
         var b = document.getElementById('<%= txtBarcode.ClientID %>');
         if (b) b.focus();
     }

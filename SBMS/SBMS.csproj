@@ -759,6 +759,7 @@
     <Content Include="niceadmin\assets\vendor\tinymce\package.json" />
     <Content Include="niceadmin\assets\vendor\tinymce\README.md" />
     <Content Include="SBMSMobile\manifest.json" />
+    <Content Include="SBMSMobile\js\sweetalert2.all.min.js" />
     <None Include="scripts\jquery-3.7.1.intellisense.js" />
     <Content Include="BundleHeaders.aspx" />
     <Content Include="BundleDetailed.aspx" />
@@ -1070,6 +1071,9 @@
     </Compile>
     <Compile Include="Classes\AlertHelper.cs" />
     <Compile Include="Classes\CellParse.cs" />
+    <Compile Include="Classes\MobileBasePage.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
     <Compile Include="Classes\StoreCosting.cs" />
     <Compile Include="Classes\Authentication.cs" />
     <Compile Include="Classes\ChatService.cs" />

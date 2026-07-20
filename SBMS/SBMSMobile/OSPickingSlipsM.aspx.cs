@@ -1,4 +1,4 @@
-using SBMS.Classes;
+﻿using SBMS.Classes;
 using SBMS.Models;
 using System;
 using System.Collections.Generic;
@@ -8,7 +8,7 @@ using System.Web.UI.WebControls;
 
 namespace SBMS
 {
-    public partial class OSPickingSlipsM : BasePage
+    public partial class OSPickingSlipsM : MobileBasePage
     {
         private new UserDetails CurrentUser
         {

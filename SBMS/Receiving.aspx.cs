@@ -662,6 +662,7 @@ namespace SBMS
                 decimal Prerecqty = _db.ReceivingOutstandings
                          .Where(x => x.PODocID == docid
                                   && x.Archive == false
+                                  && x.LineID != lineid   // exclude THIS line's own staged row (updated in place below) so a re-stage doesn't double-subtract
                                   && (x.SBCALineID == sbcaLineId
                                       || (x.SBCALineID == null && x.ItemCode == Docline.ItemCode)))
                          .Sum(x => (decimal?)x.RecQty) ?? 0;
@@ -677,27 +678,44 @@ namespace SBMS
 
                 if (QtyRec > 0)
                 {
-                    ReceivingOutstanding or = new ReceivingOutstanding
+                    // Within-session re-stage (e.g. correcting the store/qty) updates the
+                    // existing staged row instead of adding a duplicate that double-counts
+                    // the receipt (mirrors lbtnRecAll's existingOS pattern). A prior-cycle
+                    // row has a different LineID so it never matches - history is preserved.
+                    var existingOS = _db.ReceivingOutstandings.FirstOrDefault(x =>
+                        x.PODocID == docid && x.Archive == false && x.LineID == lineid);
+                    if (existingOS != null)
                     {
-                        CompanyID = CurrentUser.CoID,
-                        PONumber = txtDocNum.Text,
-                        PODocID = Convert.ToInt64(lblDocID.Text),
-                        Supplier = txtSuppName.Text,
-                        SupplierID = Convert.ToInt64(lblSupplierID.Text), // get supplier id from docheader
-                        ItemCode = Docline.ItemCode,
-                        SelectionId = Convert.ToInt64(Docline.SelectionId),
-                        ItemDescription = Docline.ItemDescription,
-                        OrigQty = QtyOrd,
-                        RecQty = QtyRec,
-                        QtyLeft = QtyLeft,
-                        LineID = Convert.ToInt64(lblLineID.Text),
-                        SBCALineID = sbcaLineId,
-                        CreatedBy = CurrentUser.RoleID,
-                        CreatedDate = DateTime.Now,
-                        Archive = false
-                    };
+                        existingOS.RecQty      = QtyRec;
+                        existingOS.QtyLeft     = QtyLeft;
+                        existingOS.CreatedBy   = CurrentUser.RoleID;
+                        existingOS.CreatedDate = DateTime.Now;
+                        if (existingOS.SBCALineID == null) existingOS.SBCALineID = sbcaLineId;
+                    }
+                    else
+                    {
+                        ReceivingOutstanding or = new ReceivingOutstanding
+                        {
+                            CompanyID = CurrentUser.CoID,
+                            PONumber = txtDocNum.Text,
+                            PODocID = Convert.ToInt64(lblDocID.Text),
+                            Supplier = txtSuppName.Text,
+                            SupplierID = Convert.ToInt64(lblSupplierID.Text), // get supplier id from docheader
+                            ItemCode = Docline.ItemCode,
+                            SelectionId = Convert.ToInt64(Docline.SelectionId),
+                            ItemDescription = Docline.ItemDescription,
+                            OrigQty = QtyOrd,
+                            RecQty = QtyRec,
+                            QtyLeft = QtyLeft,
+                            LineID = Convert.ToInt64(lblLineID.Text),
+                            SBCALineID = sbcaLineId,
+                            CreatedBy = CurrentUser.RoleID,
+                            CreatedDate = DateTime.Now,
+                            Archive = false
+                        };
 
-                    _db.ReceivingOutstandings.Add(or);
+                        _db.ReceivingOutstandings.Add(or);
+                    }
                 }
                 
                 if (chkAddLotNum.Checked == true)
@@ -847,6 +865,16 @@ namespace SBMS
                     AlertHelper.ShowSweetAlert(this, "This receipt has already been submitted.", "warning");
                     return;
                 }
+                // RecStatus 1 = the supplier invoice posted to Sage but finalising did not
+                // complete (a crash mid-pipeline). Do NOT resubmit - the invoice already
+                // exists in Sage; this needs manual reconciliation, not a blind retry.
+                if (hdrChk != null && hdrChk.RecStatus == 1)
+                {
+                    AlertHelper.ShowSweetAlert(this,
+                        "This receipt's supplier invoice was already posted to Sage, but finalising did not complete. " +
+                        "Do NOT resubmit - please contact support to reconcile this PO.", "error");
+                    return;
+                }
             }
 
             decimal exchRate =1;
@@ -961,9 +989,15 @@ namespace SBMS
                     {
                         SuppInvN = dnTrim;
                     }
-                    // check and update Foreign Currency rate
-                    int SuppInvNumb = _db.DocHeaders.Where(x => x.CompanyID == CurrentUser.CoID && x.SupplierInvNum == SuppInvN).Count();
-                    if (SuppInvNumb > 0)
+                    // Duplicate check: the TYPED invoice/DN number is stored in InvNum/DNNum
+                    // (SupplierInvNum holds the Sage-generated document number after finalise),
+                    // so the old comparison against SupplierInvNum never matched and the guard
+                    // did nothing. Compare against the field the typed value actually lives in,
+                    // excluding this PO itself.
+                    bool dupInv = invTrim.Length >= 1
+                        ? _db.DocHeaders.Any(x => x.CompanyID == CurrentUser.CoID && x.DocID != docid && x.InvNum == invTrim)
+                        : (dnTrim.Length >= 1 && _db.DocHeaders.Any(x => x.CompanyID == CurrentUser.CoID && x.DocID != docid && x.DNNum == dnTrim));
+                    if (dupInv)
                     {
                         string warnMsg = "Supplier Invoice number already used, unable to duplicate.";
                         AlertHelper.ShowSweetAlert(this, warnMsg, "warning");
@@ -1190,6 +1224,18 @@ namespace SBMS
                         {
                             SuppInvNum = SupInv.Split('|')[1].ToString();
 
+                            // Durable idempotency marker: the supplier invoice is now committed in
+                            // Sage. Record it in its OWN context so that even if the costing pipeline
+                            // below throws (and the main context never SaveChanges), a retry is
+                            // blocked from posting the invoice a SECOND time. RecStatus 1 =
+                            // "invoice posted, finalising" (unused elsewhere); the main context
+                            // overwrites it to 2 (full) or 0 (partial) on successful completion.
+                            using (SBMSEntities _dbMark = new SBMSEntities(Config.GetConnectionString()))
+                            {
+                                var hMark = _dbMark.DocHeaders.FirstOrDefault(x => x.CompanyID == CurrentUser.CoID && x.DocID == docid);
+                                if (hMark != null) { hMark.RecStatus = 1; _dbMark.SaveChanges(); }
+                            }
+
                             //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                             if (RBpoStatus.SelectedValue == "0")
                             {
@@ -1275,6 +1321,7 @@ namespace SBMS
                             if (dl.ToReceive == true)
                             {
                                 decimal dlRecQty = dl.ReceiveQty ?? 0;
+                                decimal dlOrdQty = dl.Quantity ?? 0;   // ordered qty = correct per-unit denominator
                                 // W1 guard: only auto-allocate the in-PO service cost on a COMPLETE receive.
                                 // On a partial receive, drop to base cost - the user handles add-costs manually.
                                 if (RBAllocateCosts.SelectedValue.ToString() == "1" && RBpoStatus.SelectedValue.ToString() == "0")
@@ -1286,7 +1333,11 @@ namespace SBMS
                                     AddCostPerc = totalPriceExclusive != 0 ? ThisLineVal / totalPriceExclusive : 0;
                                     AddCostPropValue = AddCostPerc * AddCost;
                                     ThisItemNettCost = (decimal)dl.Exclusive + AddCostPropValue;
-                                    ThisItemUnitNett = dlRecQty != 0 ? ThisItemNettCost / dlRecQty : 0;
+                                    // Per-unit = full line value / ORDERED qty (not received): dividing by
+                                    // received then multiplying by received later reproduced the full line
+                                    // value on a partial receive. Full receives (ordered == received) are
+                                    // unchanged.
+                                    ThisItemUnitNett = dlOrdQty != 0 ? ThisItemNettCost / dlOrdQty : 0;
                                 }
                                 else
                                 {
@@ -1294,7 +1345,7 @@ namespace SBMS
                                     AddCostPerc = 0;
                                     AddCostPropValue = 0;
                                     ThisItemNettCost = (decimal)dl.Exclusive;
-                                    ThisItemUnitNett = dlRecQty != 0 ? ThisItemNettCost / dlRecQty : 0;
+                                    ThisItemUnitNett = dlOrdQty != 0 ? ThisItemNettCost / dlOrdQty : 0;
                                 }
 
                                 if (dl.ItemType == 0)
@@ -1519,7 +1570,15 @@ namespace SBMS
                                 tempLine.LineTaxTypeID = dl.LineTaxTypeID;
                                 tempLine.AddCostsAmount = linevalAddCosts;
                                 tempLine.AddCostsReason = dl.AddCostsReason;
-                                tempLine.ReceiveTotalExcl =dl.Exclusive - dl.Discount + linevalAddCosts;
+                                // Costing must value the RECEIVED portion, not the full ordered line.
+                                // Scale net-of-discount by received/ordered so a partial receive does
+                                // not book the whole line's value into the store weighted average (which
+                                // then double-booked when the balance arrived). A full receive
+                                // (ReceiveQty == Quantity) is byte-for-byte unchanged.
+                                decimal _ordQ = dl.Quantity ?? 0;
+                                decimal _fullNet = (dl.Exclusive ?? 0) - (dl.Discount ?? 0);
+                                decimal _recvNet = _ordQ > 0 ? _fullNet * ((dl.ReceiveQty ?? 0) / _ordQ) : _fullNet;
+                                tempLine.ReceiveTotalExcl = _recvNet + linevalAddCosts;
                                 tempLine.ExchRate = (decimal)exchRate;
                                 tempLine.localCurrLineVal = (decimal)tempLine.ReceiveTotalExcl / (decimal)exchRate;
                                 if (dl.ItemType == 0)
@@ -1624,9 +1683,10 @@ namespace SBMS
                                             decimal ThisUnitVal = ThisItemUnitNett;
                                             decimal NewQty = (decimal)(origqty + qty);
                                             // Blend in HOME currency. origvalue is already home; convert ONLY the
-                                            // received foreign value (line + allocated add-costs) to home - matching
-                                            // the local ledger's ReceiveTotalExcl / exchRate.
-                                            decimal NewTotVal = (decimal)(origvalue + ((dl.Exclusive - dl.Discount + linevalAddCosts) / exchRate));
+                                            // received foreign value to home - matching the local ledger's
+                                            // ReceiveTotalExcl / exchRate (now the RECEIVED-portion value, not the
+                                            // full ordered line, so partial receives blend the correct amount).
+                                            decimal NewTotVal = (decimal)(origvalue + ((tempLine.ReceiveTotalExcl ?? 0) / exchRate));
                                             decimal NewAvCost = NewQty != 0 ? NewTotVal / NewQty : 0;
 
                                             // Audit trail: record the Sage average-cost change driven by add-costs.
@@ -1752,10 +1812,13 @@ namespace SBMS
                         {
                             Head.SupplierInvNum = SuppInvNum.ToString();
                         }
-                        Head.InvNum = txtInvNum.Text.ToString().Replace("'", "'')");
-                        Head.DNNum = txtDNNum.Text.ToString().Replace("'", "'')");
+                        // EF parameterises values - the old .Replace("'","'')") was a botched
+                        // SQL-escape that corrupted apostrophes (O'Brien -> O'')Brien).
+                        Head.InvNum = txtInvNum.Text.ToString();
+                        Head.DNNum = txtDNNum.Text.ToString();
                     }
                     if (RBpoStatus.SelectedValue.ToString() == "1") { Head.Complete = false; Head.RecStatus = 0; }   // partial -> still in progress (Started)
+                    else { Head.RecStatus = 2; }   // complete: always resolve to Submitted - also clears the intermediate "finalising" marker (RecStatus 1) so a successful finalise never leaves the PO stuck
 
                     // Stamp this GRN's receivings with a single BatchID so the receiving-note PDF
                     // can print just this delivery ("This Receiving Only") vs the running total.
@@ -1933,6 +1996,20 @@ namespace SBMS
             docid = Convert.ToInt64(lblDocID.Text);
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {
+                // Guard: once a GRN has posted stock (and a Sage supplier invoice) for this
+                // PO, this destructive reset would erase the local history while leaving the
+                // posted ItemTransactions and Sage invoice standing - re-receiving would then
+                // duplicate both. Block it and direct the correction to Sage.
+                bool alreadyPosted = _db.ItemTransactions.Any(x => x.CompanyID == CurrentUser.CoID
+                    && x.DocumentID == docid && x.TransactionType == "GRN");
+                if (alreadyPosted)
+                {
+                    AlertHelper.ShowSweetAlert(this,
+                        "This PO already has posted receipts and cannot be reset here. Reverse the GRN / supplier invoice in Sage first.",
+                        "error");
+                    return;
+                }
+
                 var DocHeaderDelete = _db.DocHeaders.Where(x => x.DocID == docid).ToList();
                 DocHeaderDelete.ForEach(x => x.Active = false);
                 DocHeaderDelete.ForEach(x => x.Started = false);
@@ -2339,7 +2416,7 @@ namespace SBMS
                     table.AddCell(cell);
 
                     Phrase rsHead = new Phrase();
-                    if (CurrentUser.UseBarcodes)
+                    if (CurrentUser.MobileModule)
                     {
                         Barcode128 bc = new Barcode128();
                         bc.Code = DH.DocumentNumber;

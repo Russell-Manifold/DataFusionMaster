@@ -1,4 +1,4 @@
-<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="ReceiveCountM.aspx.cs"
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="ReceiveCountM.aspx.cs"
          Inherits="SBMS.ReceiveCountM" %>
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -52,6 +52,7 @@
 
     <asp:UpdatePanel ID="upMain" runat="server">
     <ContentTemplate>
+        <asp:HiddenField ID="hfActionToken" runat="server" />
 
         <div class="mob-doc-header">
             <div class="mob-doc-header-main">

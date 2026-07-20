@@ -1,10 +1,10 @@
-using SBMS.Classes;
+﻿using SBMS.Classes;
 using SBMS.Models;
 using System;
 
 namespace SBMS
 {
-    public partial class NotificationsM : BasePage
+    public partial class NotificationsM : MobileBasePage
     {
         private new UserDetails CurrentUser
         {

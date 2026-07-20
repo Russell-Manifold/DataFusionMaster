@@ -1,4 +1,4 @@
-<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="StockCountLineM.aspx.cs" Inherits="SBMS.StockCountLineM" %>
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="StockCountLineM.aspx.cs" Inherits="SBMS.StockCountLineM" %>
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
@@ -369,7 +369,7 @@
     </div>
 </form>
 
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="../SBMSMobile/js/sweetalert2.all.min.js"></script>
 <script>
     // ── Calculator JS ──────────────────────────────────────────────────────
     var calcExpr = "";

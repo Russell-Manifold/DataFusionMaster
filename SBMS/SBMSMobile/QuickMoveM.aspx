@@ -1,4 +1,4 @@
-<%@ Page Language="C#" Async="true" AutoEventWireup="true" CodeBehind="QuickMoveM.aspx.cs"
+﻿<%@ Page Language="C#" Async="true" AutoEventWireup="true" CodeBehind="QuickMoveM.aspx.cs"
          Inherits="SBMS.QuickMoveM" %>
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -113,6 +113,7 @@
 
     <asp:UpdatePanel ID="upMain" runat="server">
     <ContentTemplate>
+        <asp:HiddenField ID="hfActionToken" runat="server" />
 
         <%-- Step indicator (rendered from code) --%>
         <asp:Literal ID="lblSteps" runat="server" />

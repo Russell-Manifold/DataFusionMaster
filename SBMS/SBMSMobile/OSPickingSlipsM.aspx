@@ -1,4 +1,4 @@
-<%@ Page Language="C#" Async="true" AutoEventWireup="true" CodeBehind="OSPickingSlipsM.aspx.cs" Inherits="SBMS.OSPickingSlipsM" %>
+﻿<%@ Page Language="C#" Async="true" AutoEventWireup="true" CodeBehind="OSPickingSlipsM.aspx.cs" Inherits="SBMS.OSPickingSlipsM" %>
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
@@ -93,7 +93,7 @@
     </ContentTemplate>
     </asp:UpdatePanel>
 </form>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="../SBMSMobile/js/sweetalert2.all.min.js"></script>
 <script>
     // Hide URL bar on mobile (best-effort; full hiding requires installing as PWA)
     if (!window.matchMedia('(display-mode: standalone)').matches) {

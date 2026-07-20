@@ -15,7 +15,14 @@ namespace SBMS
 {
     public partial class PurchaseOrdersIncomplete : BasePage
     {
-        public static DataTable MainDtbl;
+        // Per-session, NOT static: a static DataTable is shared across every user in
+        // the app domain, so two tenants saw/exported each other's PO data (last load
+        // wins). Session-scoping keeps each user's grid data private.
+        private DataTable MainDtbl
+        {
+            get { return Session["POIncompleteMainDtbl"] as DataTable; }
+            set { Session["POIncompleteMainDtbl"] = value; }
+        }
         private string filtstr = string.Empty;
         private string rowSort = string.Empty;
         public static byte[] key = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24 };

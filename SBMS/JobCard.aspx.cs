@@ -626,8 +626,9 @@ namespace SBMS
             
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {
-                // update existing line
-                var NewJCLine = _db.JobCardLines.Where(x => x.LineID == ThisLineID).FirstOrDefault();
+                // update existing line (tenant-scoped: this handler writes stock off the loaded line)
+                var NewJCLine = _db.JobCardLines.Where(x => x.CompanyID == CurrentUser.CoID && x.LineID == ThisLineID).FirstOrDefault();
+                if (NewJCLine == null) return;
                 if (NewJCLine.IsLotTracked == true)
                 {
                     if (DDlotNum.SelectedItem == null ||  DDlotNum.SelectedItem.Value.ToLower().Contains("number") || DDlotNum.Items.Count ==0)

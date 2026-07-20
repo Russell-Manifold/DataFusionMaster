@@ -1046,7 +1046,7 @@ namespace SBMS
                     table.AddCell(cell);
 
                     Phrase tsHead = new Phrase();
-                    if (CurrentUser.UseBarcodes)
+                    if (CurrentUser.MobileModule)
                     {
                         Barcode128 bc = new Barcode128();
                         bc.Code = (DH.TransferID ?? 0).ToString();

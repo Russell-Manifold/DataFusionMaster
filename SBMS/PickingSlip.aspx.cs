@@ -1,4 +1,4 @@
-﻿using iTextSharp.text;
+using iTextSharp.text;
 using iTextSharp.text.pdf;
 using SBMS.Classes;
 using SBMS.Models;
@@ -196,18 +196,13 @@ namespace SBMS
                     }
                     else
                     {
-                        itm.PickQty = 0;
-                        if (CurrentUser.UseBarcodes != true) itm.PickQty = itm.Quantity;
+                        itm.PickQty = itm.Quantity;
                     }
                 }
 
                 GridPSLines.DataSource = TempLines;
                 GridPSLines.DataBind();
-                if (!CurrentUser.UseBarcodes)
-                {
-                    GridPSLines.Columns[3].Visible = false;
-                    GridPSLines.Columns[7].Visible = false;   // Pick_Qty (shifted by the Qty_Left column)
-                }
+                GridPSLines.Columns[6].Visible = false;   // Pick_Qty hidden - auto-filled to full order qty (barcode column removed)
             }
         }
 
@@ -221,7 +216,6 @@ namespace SBMS
             GridViewRow row = (GridViewRow)lbtnLineSave.NamingContainer;
             DropDownList DDlotNum = (DropDownList)row.FindControl("DDlotNum");
             DropDownList DDStore = (DropDownList)row.FindControl("DDStore");
-            TextBox txtBarcode = (TextBox)row.FindControl("txtBarcode");
             TextBox txtPickQty = (TextBox)row.FindControl("txtPickQty");
             CheckBox chkComplete = (CheckBox)row.FindControl("chkComplete");
             Label lblLotNum = (Label)row.FindControl("lblLotNum");
@@ -328,7 +322,6 @@ namespace SBMS
                     }
                     NewPSLine.PickTime = DateTime.Now;
                     NewPSLine.StoreCodeFrom = DDStore.Text;
-                    NewPSLine.BarCode = txtBarcode.Text;
                 } else
                 {
                     if (NewPSLine.IsLotTracked == true)
@@ -552,103 +545,12 @@ namespace SBMS
             Button25_ModalPopupExtender.Show();
         }
 
-        protected void txtBarcode_TextChanged(object sender, EventArgs e)
-        {
-            TextBox txtBarcode = (TextBox)sender;
-            GridViewRow row = (GridViewRow)txtBarcode.NamingContainer;
-            string itemid = row.Cells[0].Text;
-            TextBox txtPickQty = (TextBox)row.FindControl("txtPickQty");
-            DropDownList DDlotNum = (DropDownList)row.FindControl("DDlotNum");
-            Label lblBCError = (Label)row.FindControl("lblBCError");
-            string scannedBarcode = txtBarcode.Text;
-
-            if (!string.IsNullOrEmpty(scannedBarcode))
-            {
-                // Get item details from stored procedure
-                var (itemIdResult, qtyPerBarcode) = GetItemDetails(CurrentUser.CoID, scannedBarcode);
-
-                // Validate if item was found and matches the expected itemid
-                if (itemIdResult == 0)
-                {
-                    lblBCError.Text = "Warning! Invalid Barcode Scanned";
-                    // Clear and focus for next scan
-                    txtBarcode.Text = "";
-                    ScriptManager.RegisterStartupScript(this, this.GetType(), "SetFocus", $"setTimeout(function() {{ document.getElementById('{txtBarcode.ClientID}').focus(); }}, 100);", true);
-                    return;
-                }
-
-                // Validate that the scanned barcode matches the expected item
-                if (itemIdResult.ToString() != itemid)
-                {
-                    lblBCError.Text = "Warning! Barcode does not match this item";
-                    // Clear and focus for next scan
-                    txtBarcode.Text = "";
-                    ScriptManager.RegisterStartupScript(this, this.GetType(), "SetFocus", $"setTimeout(function() {{ document.getElementById('{txtBarcode.ClientID}').focus(); }}, 100);", true);
-                    return;
-                }
-
-                // If we get here, barcode is valid and matches the item
-                int picked = 0;
-                try
-                {
-                    picked = Convert.ToInt32(txtPickQty.Text);
-                }
-                catch { }
-
-                // Use the QtyPerBarcode from the stored procedure result
-                picked += Convert.ToInt32(qtyPerBarcode);
-                if (!lblBCError.Text.StartsWith("+")) lblBCError.Text = ""; // Clear previous error if any
-                lblBCError.Text = lblBCError.Text + $"+{qtyPerBarcode}"; // Show the quantity added
-                txtPickQty.Text = picked.ToString();
-
-                // Clear the barcode field for next scan
-                txtBarcode.Text = "";
-
-                // Set focus with a small delay to ensure the page has rendered
-                ScriptManager.RegisterStartupScript(this, this.GetType(), "SetFocus",
-                    $"setTimeout(function() {{ var txt = document.getElementById('{txtBarcode.ClientID}'); if(txt) {{ txt.focus(); txt.select(); }} }}, 200);", true);
-            }
-        }
-
-        // Your GetItemDetails method (make sure it's accessible from this page)
-        private (Int64 ItemID, decimal QtyPerBarcode) GetItemDetails(long companyID, string barCode)
-        {
-            try
-            {
-                var parameters = new Dictionary<string, object>
-                    {
-                        { "@CoID", companyID },
-                        { "@itmCode", barCode }
-                    };
-
-                DataSet ds = ApiUrlCall.GetSQLDataFromStoredProc("GetValidateBarcode", parameters);
-
-                if (ds.Tables.Count > 0 && ds.Tables[0].Rows.Count > 0)
-                {
-                    DataRow firstRow = ds.Tables[0].Rows[0];
-                    return (
-                        Convert.ToInt64(firstRow["ItemID"]),
-                        Convert.ToDecimal(firstRow["QtyPerBarcode"])
-                    );
-                }
-                else
-                {
-                    return (0, 0);
-                }
-            }
-            catch
-            {
-                return (0, 0);
-            }
-        }       
-        
         protected void GridPSLines_RowDataBound(object sender, GridViewRowEventArgs e)
         {
             long PsID = Convert.ToInt64(lblPSid.Text);
             if (e.Row.RowType == DataControlRowType.DataRow)
             {
                 LinkButton lbtnLotNumAdd = (LinkButton)e.Row.FindControl("lbtnLotNumAdd");
-                TextBox txtBC = (TextBox)e.Row.FindControl("txtBarcode");
                 DropDownList ddLt = (DropDownList)e.Row.FindControl("DDlotNum");
 
                 long itemID = Convert.ToInt64(e.Row.Cells[0].Text.ToString());
@@ -715,7 +617,6 @@ namespace SBMS
                     DDStore.Visible = false;
                     
                     ddLt.Visible = false;
-                    txtBC.Visible = false;
                     lbtnLotNumAdd.Visible = false;
                 }
                 if (CurrentUser.CompanyUseLotNumbers == true)
@@ -778,8 +679,8 @@ namespace SBMS
             e.Row.Cells[0].Visible = false;
             if (CurrentUser.CompanyUseLotNumbers == false)
             {
-                e.Row.Cells[9].Visible = false;    // Lot Number (shifted by the Qty_Left column)
-                e.Row.Cells[10].Visible = false;   // lot-add button
+                e.Row.Cells[8].Visible = false;    // Lot Number (barcode column removed)
+                e.Row.Cells[9].Visible = false;    // lot-add button
             }
         }
 
@@ -881,7 +782,8 @@ namespace SBMS
                             SOLine.LotNumber = PsL.LotNumber;
                             SOLine.Exclusive = SOLine.UnitPriceExclusive * pickQty;
                             SOLine.Discount = (SOLine.UnitPriceExclusive * pickQty) * SOLine.DiscountPercentage;
-                            SOLine.Tax = (SOLine.UnitPriceExclusive * pickQty) * SOLine.TaxPercentage;
+                            // VAT is charged on the discounted-NET amount, not the gross line value.
+                            SOLine.Tax = (SOLine.Exclusive - SOLine.Discount) * SOLine.TaxPercentage;
                             SOLine.Total = SOLine.Exclusive - SOLine.Discount + SOLine.Tax;
                             SOLine.LotNumber = PsL.LotNumber;
                             SOLine.ExchRate = 1;
@@ -920,7 +822,8 @@ namespace SBMS
                         DLn.DiscountPercentage = FirstSOLine.DiscountPercentage;
                         DLn.Exclusive = DLn.UnitPriceExclusive * pickQty;
                         DLn.Discount = (DLn.UnitPriceExclusive * pickQty) * DLn.DiscountPercentage;
-                        DLn.Tax = (DLn.UnitPriceExclusive * pickQty) * DLn.TaxPercentage;
+                        // VAT is charged on the discounted-NET amount, not the gross line value.
+                        DLn.Tax = (DLn.Exclusive - DLn.Discount) * DLn.TaxPercentage;
                         DLn.Total = DLn.Exclusive - DLn.Discount + DLn.Tax;
                         DLn.AnalysisCategoryId1 = FirstSOLine.AnalysisCategoryId1;
                         DLn.AnalysisCategoryId2 = FirstSOLine.AnalysisCategoryId2;
@@ -1284,7 +1187,7 @@ namespace SBMS
                     table.AddCell(cell);
 
                     Phrase psHead = new Phrase();
-                    if (CurrentUser.UseBarcodes)
+                    if (CurrentUser.MobileModule)
                     {
                         Barcode128 bc = new Barcode128();
                         bc.Code = PS.PSIntNumber;
@@ -1556,7 +1459,7 @@ namespace SBMS
             catch { }
             if (chkComplete.Checked && pickqty == 0)
             {
-                OrdQty = CellParse.ToDecimal(row.Cells[5].Text);
+                OrdQty = CellParse.ToDecimal(row.Cells[4].Text);
                 txtPickQty.Text = OrdQty.ToString();
                 pickqty = OrdQty;
             }
@@ -1691,7 +1594,7 @@ namespace SBMS
             GridViewRow row = (GridViewRow)lbtnLotNumAdd.NamingContainer;
             //// get item linked stores & populate ddPopWHses
             lblSlipLine.Text = lbtnLotNumAdd.CommandArgument;
-            lblLineQty.Text = row.Cells[5].Text.ToString();
+            lblLineQty.Text = row.Cells[4].Text.ToString();
             long ItmID = Convert.ToInt64(row.Cells[0].Text);
             loadpopLotNumbers(ItmID);  
             ModalPopupExtender1.Show();
@@ -2007,7 +1910,7 @@ namespace SBMS
             LinkButton lbtnLineSave = (LinkButton)row.FindControl("lbtnLineSave");
             CheckBox chkComplete = (CheckBox)row.FindControl("chkComplete");
             TextBox txtPickQty = (TextBox)row.FindControl("txtPickQty");
-            decimal OrdQty = CellParse.ToDecimal(row.Cells[5].Text);
+            decimal OrdQty = CellParse.ToDecimal(row.Cells[4].Text);
             
             chkComplete.Checked = true;
             if (DDlotNum.SelectedIndex == 0) chkComplete.Checked = false;

@@ -4124,7 +4124,7 @@ namespace SBMS
                         // have identical item/store/qty, so a value-only key made the second batch collide
                         // with the first and silently skip its FG produce + component draws.
                         string key = $"H|{lineID}|{selectionId}|{LotNumber}|{store}|{Quantity}";
-                        if (!SentKeys.Contains(key))
+                        if (TryClaimManfAdj(key))   // durable claim; false = already posted (reload / concurrent) -> skip
                         {
                             int Lid = Convert.ToInt32(lineID);
                             // Prefer the server-computed material value; fall back to the JS total only if
@@ -4134,10 +4134,10 @@ namespace SBMS
                             string RetStr = DoItemAdjustment(Convert.ToInt64(selectionId), LotNumber, store, itemqty, 0, "H", thisunitcost);
                             if (RetStr != "OK")
                             {
+                                ReleaseManfAdj(key);   // Sage post failed -> release so a retry can redo it
                                 string msg = $"Error 1661 performing Item Adjustmnent in Data Fusion: {RetStr}";
                                 return msg;
                             }
-                            SentKeys.Add(key);
                         }
 
                         // PROCESS GRIDVIEW ROWS FOR API CALLS
@@ -4190,15 +4190,15 @@ namespace SBMS
                                                 // Key on the RM LineID (+ type tag) so identical component rows
                                                 // on two split batches don't collide (see the FG key note above).
                                                 string usageKey = $"use|{TLineID}|{gridSelectionId}|{gridLotNumber}|{gridStore}|{useQty}";
-                                                if (!SentKeys.Contains(usageKey))
+                                                if (TryClaimManfAdj(usageKey))
                                                 {
                                                     string RetStr = DoItemAdjustment(Convert.ToInt64(gridSelectionId), gridLotNumber, gridStore, useQty * -1, 0, "L", (decimal)WRMLine.UnitCost);
                                                     if (RetStr != "OK")
                                                     {
+                                                        ReleaseManfAdj(usageKey);
                                                         string msg = $"Error performing Item Adjustment for usage: {RetStr}";
                                                         return msg;
                                                     }
-                                                    SentKeys.Add(usageKey);
                                                 }
                                             }
 
@@ -4210,15 +4210,15 @@ namespace SBMS
                                                 // (Passing it as the reject arg posted a zero-qty Sage adjustment
                                                 //  that removed no stock but still revalued the item.)
                                                 string scrapKey = $"scrap|{TLineID}|{gridSelectionId}|{gridLotNumber}|{gridStore}|{scrapQty}";
-                                                if (!SentKeys.Contains(scrapKey))
+                                                if (TryClaimManfAdj(scrapKey))
                                                 {
                                                     string RetStr = DoItemAdjustment(Convert.ToInt64(gridSelectionId), gridLotNumber, gridStore, scrapQty * -1, 0, "L", (decimal)WRMLine.UnitCost);
                                                     if (RetStr != "OK")
                                                     {
+                                                        ReleaseManfAdj(scrapKey);
                                                         string msg = $"Error performing Item Adjustment for scrap: {RetStr}";
                                                         return msg;
                                                     }
-                                                    SentKeys.Add(scrapKey);
                                                 }
                                             }
                                         }
@@ -4522,6 +4522,50 @@ namespace SBMS
                 lotno = count + 1;
             }
             return lotno;
+        }
+
+        // ── Durable manufacture-adjustment dedup ───────────────────────────────────
+        // Replaces the in-Session "SentKeys" HashSet (wiped on every page reload), so a
+        // manufacture that posts irreversible Sage adjustments can never post the same
+        // one twice - across a reload after a mid-sequence failure, or two operators on
+        // the same WO. ManfPostedAdjustments is outside the EF model (raw SQL only);
+        // its UNIQUE index is the atomic gate. See SQL/Add_ManfPostedAdjustments.sql.
+        //
+        // Claim: INSERT the key. true  = WE claimed it -> go post to Sage.
+        //                        false = already claimed/posted -> skip.
+        // A real (non-unique) DB error rethrows, so a fault never silently skips a post.
+        private bool TryClaimManfAdj(string adjKey)
+        {
+            using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+            {
+                try
+                {
+                    _db.Database.ExecuteSqlCommand(
+                        "INSERT INTO dbo.ManfPostedAdjustments (CompanyID, WOID, AdjKey, PostedBy) VALUES (@p0, @p1, @p2, @p3)",
+                        CurrentUser.CoID, woid, adjKey, CurrentUser.RoleID);
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    var sqlEx = ex.GetBaseException() as System.Data.SqlClient.SqlException;
+                    if (sqlEx != null && (sqlEx.Number == 2601 || sqlEx.Number == 2627))
+                        return false;   // unique violation = already claimed/posted -> skip
+                    throw;              // any other error -> do NOT silently skip the Sage post
+                }
+            }
+        }
+
+        // Release a claim after a FAILED Sage post so a retry can redo that adjustment.
+        private void ReleaseManfAdj(string adjKey)
+        {
+            try
+            {
+                using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+                    _db.Database.ExecuteSqlCommand(
+                        "DELETE FROM dbo.ManfPostedAdjustments WHERE CompanyID = @p0 AND WOID = @p1 AND AdjKey = @p2",
+                        CurrentUser.CoID, woid, adjKey);
+            }
+            catch { }
         }
 
         protected string DoItemAdjustment(long itmid, string LotNum, string stor, decimal useqty, decimal rejqty, string LineType, decimal unitcost)

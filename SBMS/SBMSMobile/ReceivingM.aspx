@@ -1,4 +1,4 @@
-<%@ Page Language="C#" Async="true" AutoEventWireup="true" CodeBehind="ReceivingM.aspx.cs"
+﻿<%@ Page Language="C#" Async="true" AutoEventWireup="true" CodeBehind="ReceivingM.aspx.cs"
          Inherits="SBMS.ReceivingM" %>
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -77,6 +77,7 @@
 
     <asp:UpdatePanel ID="upMain" runat="server">
     <ContentTemplate>
+        <asp:HiddenField ID="hfActionToken" runat="server" />
 
         <%-- Source (holding) store header --%>
         <div class="mob-doc-header">
@@ -131,7 +132,7 @@
                                 <div class="mob-qty-input-row">
                                     <span class="mob-qty-label">Qty</span>
                                     <asp:TextBox ID="txtQty" runat="server" TextMode="Number"
-                                        Text='<%# Eval("QOH", "{0:0.##}") %>'
+                                        Text='<%# FormatQty(Eval("QOH")) %>'
                                         style="width:4.5em;height:2.7em;border:1px solid #ccc;border-radius:.45em;
                                                text-align:center;font-size:1.05em;font-weight:600;" />
                                     <span class="mob-qty-label" style="margin-left:.6em;">Loc</span>
@@ -177,8 +178,13 @@
 
 <script>
     function focusScanBox() {
-        var b = document.getElementById('<%= txtBarcode.ClientID %>');
-        if (b) b.focus();
+        // When a line was just matched, the next natural scan is its destination
+        // LOCATION - focus that field so the operator never has to tap. Otherwise
+        // focus the item barcode box.
+        var matched = document.querySelector('.mob-linecard.matched');
+        var loc = matched && matched.querySelector('input[id*="txtLoc"]');
+        var target = loc || document.getElementById('<%= txtBarcode.ClientID %>');
+        if (target) target.focus();
     }
 
     function showToast(msg) {

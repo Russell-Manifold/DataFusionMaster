@@ -98,12 +98,6 @@
                                                         <asp:BoundField DataField="SelectionID" /> 
                                                         <asp:BoundField HeaderText="ItemCode" DataField="ItemCode" ReadOnly="True" ItemStyle-Width="8em"  />
                                                          <asp:BoundField HeaderText="Description" DataField="ItemDescription" ReadOnly="True"  />
-                                                         <asp:TemplateField HeaderText="Barcode (Scan)" ItemStyle-Width="6em" HeaderStyle-HorizontalAlign="Center" >
-                                                             <ItemTemplate>
-                                                                 <asp:TextBox ID="txtBarcode" runat="server" AutoPostBack="true" OnTextChanged="txtBarcode_TextChanged" Text="" style="width:9em; text-align:center"></asp:TextBox><br />
-                                                                 <asp:Label ID="lblBCError" runat="server" Text="" ForeColor="Red" Font-Size="Small"></asp:Label>
-                                                             </ItemTemplate>
-                                                         </asp:TemplateField>
                                                          <asp:BoundField HeaderText="Unit" DataField="Unit" ReadOnly="True" ItemStyle-Width="4em" />                                              
                                                         <asp:BoundField HeaderText="Order_Qty" DataField="Quantity" ReadOnly="True" ItemStyle-Width="4em" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center"  />
                                                         <asp:TemplateField HeaderText="Qty_Left" ItemStyle-Width="4em" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center">

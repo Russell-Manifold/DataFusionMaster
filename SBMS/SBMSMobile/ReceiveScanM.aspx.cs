@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -16,7 +17,7 @@ namespace SBMS
     // Opens a PO, scans each line's qty + a destination location, then Finalise posts ONE Sage
     // supplier invoice (GRN) and lands each line's stock directly into its scanned location.
     // (Scenario 2 = receive on the web into a holding store, then put away with ReceivingM.)
-    public partial class ReceiveScanM : BasePage
+    public partial class ReceiveScanM : MobileBasePage
     {
         private new UserDetails CurrentUser
         {
@@ -63,7 +64,7 @@ namespace SBMS
             lblUsername.Text = CurrentUser.UserName;
 
             // Barcode-off companies receive by tapping the line (qty prefilled); hide the scan bar.
-            pnlScanBar.Visible = CurrentUser.UseBarcodes == true;
+            pnlScanBar.Visible = CurrentUser.MobileModule == true;
 
             // Manual lot numbers → scanner receiving disabled (web only).
             if (CurrentUser.CompanyUseLotNumbers && !CurrentUser.CompanyAllowSystemLotNumbers)
@@ -78,7 +79,7 @@ namespace SBMS
                 string docGuidStr = Request.QueryString["docid"];
                 if (string.IsNullOrEmpty(docGuidStr) || !Guid.TryParse(docGuidStr, out Guid docGuid))
                 {
-                    Response.Redirect("~/SBMSMobile/OSPurchaseOrdersM.aspx", false);
+                    Response.Redirect("~/SBMSMobile/OSPurchaseOrdersM.aspx?mode=direct", false);
                     return;
                 }
 
@@ -88,7 +89,7 @@ namespace SBMS
                                                                 && h.CompanyID == CurrentUser.CoID);
                     if (header == null)
                     {
-                        Response.Redirect("~/SBMSMobile/OSPurchaseOrdersM.aspx", false);
+                        Response.Redirect("~/SBMSMobile/OSPurchaseOrdersM.aspx?mode=direct", false);
                         return;
                     }
 
@@ -157,8 +158,8 @@ namespace SBMS
             if (lblRemaining != null) lblRemaining.Text = BaseOutstanding(line).ToString("0.##");
 
             var txtQty = (TextBox)e.Item.FindControl("txtRecQty");
-            if (txtQty != null && (isMatched || CurrentUser.UseBarcodes != true))
-                txtQty.Text = BaseOutstanding(line).ToString("0.##");
+            if (txtQty != null && (isMatched || CurrentUser.MobileModule != true))
+                txtQty.Text = BaseOutstanding(line).ToString("0.##", CultureInfo.InvariantCulture);
 
             var txtLoc = (TextBox)e.Item.FindControl("txtLoc");
             if (txtLoc != null && !string.IsNullOrEmpty(line.StoreCode))
@@ -219,7 +220,7 @@ namespace SBMS
 
             if (item == null)
             {
-                SetFeedback(false, $"&#128683; Barcode not recognised: {raw}");
+                SetFeedback(false, $"&#128683; Barcode not recognised: {HttpUtility.HtmlEncode(raw)}");
                 MatchedLineID = 0; BindLines(); return;
             }
 
@@ -299,7 +300,14 @@ namespace SBMS
                 var line = db.DocLines.FirstOrDefault(l => l.LineID == lineId && l.CompanyID == CurrentUser.CoID);
                 if (line == null) return;
 
-                line.ReceiveQty = qty;
+                // A re-capture ADDS to what is already staged (box two of the same
+                // delivery): the prefill shows the remaining balance, so capturing
+                // 6 then 4 stages 10. QtyLeft is already cumulative (it decrements
+                // per capture), so only the new qty is subtracted from it.
+                decimal alreadyStaged = line.ToReceive == true ? (line.ReceiveQty ?? 0m) : 0m;
+                decimal totalStaged   = alreadyStaged + qty;
+
+                line.ReceiveQty = totalStaged;
                 line.StoreCode  = loc.StoreCode;
                 line.ToReceive  = true;
                 decimal remaining = BaseOutstanding(line) - qty;
@@ -311,19 +319,38 @@ namespace SBMS
                         x => x.CompanyID == CurrentUser.CoID && x.Code == line.ItemCode);
                     if (itm != null && itm.IsLotTracked == true)
                     {
-                        int recnum = GetLotNum(CurrentUser.CoID);
-                        string lotNum = DateTime.Today.ToString("ddMMyyyy") + loc.StoreCode + recnum.ToString();
-                        line.LotNumber = lotNum;
-                        db.LotTrackingMasters.Add(new LotTrackingMaster
+                        if (string.IsNullOrEmpty(line.LotNumber))
                         {
-                            LotNumber   = lotNum,
-                            CreatedDate = DateTime.Now,
-                            CompanyID   = CurrentUser.CoID,
-                            ItemCode    = line.ItemCode,
-                            ItemId      = line.SelectionId,
-                            LotActive   = true,
-                            LotQuantity = qty
-                        });
+                            // The count-based sequence can collide when two devices
+                            // capture concurrently - bump until the number is unused.
+                            int recnum = GetLotNum(CurrentUser.CoID);
+                            string lotNum = DateTime.Today.ToString("ddMMyyyy") + loc.StoreCode + recnum.ToString();
+                            while (db.LotTrackingMasters.Any(x =>
+                                       x.CompanyID == CurrentUser.CoID && x.LotNumber == lotNum))
+                            {
+                                recnum++;
+                                lotNum = DateTime.Today.ToString("ddMMyyyy") + loc.StoreCode + recnum.ToString();
+                            }
+                            line.LotNumber = lotNum;
+                            db.LotTrackingMasters.Add(new LotTrackingMaster
+                            {
+                                LotNumber   = lotNum,
+                                CreatedDate = DateTime.Now,
+                                CompanyID   = CurrentUser.CoID,
+                                ItemCode    = line.ItemCode,
+                                ItemId      = line.SelectionId,
+                                LotActive   = true,
+                                LotQuantity = totalStaged
+                            });
+                        }
+                        else
+                        {
+                            // Re-capture keeps the line's existing lot - update its
+                            // quantity instead of minting an orphan lot per save.
+                            var lotRow = db.LotTrackingMasters.FirstOrDefault(x =>
+                                x.CompanyID == CurrentUser.CoID && x.LotNumber == line.LotNumber);
+                            if (lotRow != null) lotRow.LotQuantity = totalStaged;
+                        }
                     }
                 }
 
@@ -430,7 +457,11 @@ namespace SBMS
                     TaxReference       = poHeader.TaxReference ?? "",
                     Reference          = suppInvRef,
                     Message            = poHeader.Message ?? "",
-                    FromDocument       = poHeader.DocumentNumber ?? ""
+                    FromDocument       = poHeader.DocumentNumber ?? "",
+                    // Foreign-currency POs: without these the exchRate != 1 payload
+                    // serialised ExchangeRate 0 / CurrencyId 0 to Sage.
+                    Supplier_ExchangeRate = exchRate,
+                    Supplier_CurrencyId   = poHeader.Supplier_CurrencyId ?? 0
                 };
 
                 var documentLines = new List<DocumentLine>();
@@ -620,11 +651,21 @@ namespace SBMS
                         // Short register: this receipt + what's still owed. Outstanding is the
                         // ordered qty minus everything received so far (prior batches from the
                         // ledger + this receipt), so multi-batch part-receives stay correct.
+                        // Match by SBCALineID, then our own LineID; the legacy ItemCode
+                        // fallback only applies when the code appears on ONE line of this PO -
+                        // otherwise duplicate-item lines absorb each other's receipts and get
+                        // closed short.
+                        int sameCodeLines = db.DocLines.Count(l => l.DocID == DocID
+                            && l.CompanyID == CurrentUser.CoID && l.LineType == 0
+                            && l.ItemCode == dl.ItemCode);
                         decimal preRecQty = db.ReceivingOutstandings
-                            .Where(x => x.PODocID == DocID
+                            .Where(x => x.CompanyID == CurrentUser.CoID
+                                     && x.PODocID == DocID
                                      && x.Archive == false
-                                     && (x.SBCALineID == dl.SBCALineID
-                                         || (x.SBCALineID == null && x.ItemCode == dl.ItemCode)))
+                                     && ((x.SBCALineID != null && x.SBCALineID == dl.SBCALineID)
+                                         || x.LineID == dl.LineID
+                                         || (x.SBCALineID == null && x.LineID == null
+                                             && sameCodeLines == 1 && x.ItemCode == dl.ItemCode)))
                             .Sum(x => (decimal?)x.RecQty) ?? 0;
                         decimal remaining = (dl.Quantity ?? 0m) - (preRecQty + recvQty);
                         if (remaining < 0) remaining = 0;
@@ -726,7 +767,7 @@ namespace SBMS
 
         protected void lbtnTopBack_Click(object sender, EventArgs e)
         {
-            Response.Redirect("~/SBMSMobile/OSPurchaseOrdersM.aspx", false);
+            Response.Redirect("~/SBMSMobile/OSPurchaseOrdersM.aspx?mode=direct", false);
             Context.ApplicationInstance.CompleteRequest();
         }
 

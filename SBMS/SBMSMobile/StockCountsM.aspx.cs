@@ -1,4 +1,4 @@
-using SBMS.Classes;
+﻿using SBMS.Classes;
 using SBMS.Models;
 using System;
 using System.Linq;
@@ -6,7 +6,7 @@ using System.Web.UI.WebControls;
 
 namespace SBMS
 {
-    public partial class StockCountsM : BasePage
+    public partial class StockCountsM : MobileBasePage
     {
         private new UserDetails CurrentUser
         {
@@ -157,6 +157,19 @@ namespace SBMS
             {
                 AlertHelper.ShowSweetAlert(this, "Please select a store before counting.");
                 return;
+            }
+
+            // Closed-off counts have already posted their variances - they can be
+            // viewed via the Closed filter but never counted into again.
+            using (SBMSEntities db = new SBMSEntities(Config.GetConnectionString()))
+            {
+                bool closedOff = db.StockCountMasters.Any(x =>
+                    x.CompanyID == CurrentUser.CoID && x.StCntID == CountID && x.ClosedOff == true);
+                if (closedOff)
+                {
+                    AlertHelper.ShowSweetAlert(this, "This count is closed off - it can no longer be counted.");
+                    return;
+                }
             }
 
             string store = ddStore.SelectedValue;

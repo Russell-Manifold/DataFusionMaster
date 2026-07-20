@@ -46,11 +46,13 @@ namespace SBMS
                 {
                     chkMod2.Enabled = true;
                     chkMod3.Enabled = true;
+                    chkMobileModule.Enabled = true;
                 }
                 else
                 {
                     chkMod2.Enabled = false;
                     chkMod3.Enabled = false;
+                    chkMobileModule.Enabled = false;
                 }
             }
         }
@@ -89,8 +91,33 @@ namespace SBMS
                chkNotifs.Checked = (bool)Comp.SendMessages;
                chkUAT.Checked = (bool)Comp.UATMode;
                chkPickSlip.Checked = (bool)Comp.UsePickSlipTracking;
-               chkBarCodes.Checked = (bool)Comp.UseBarcodes;
                chkMobileModule.Checked = Comp.MobileModule;
+               // Mobile Picking tab is only shown to companies that have the Mobile Module
+               // (same gating idea as Modules 2/3). The toggle itself lives in General > Modules.
+               phMobileTab.Visible = Comp.MobileModule;
+               phMobileTabBtn.Visible = Comp.MobileModule;
+
+                // LPNPickMode lives outside the EF model (raw SQL, like PickSlipLineLPNs).
+                // Defaults to 'off' if the column is not there yet (script not run).
+                try
+                {
+                    string lpnMode = _db.Database.SqlQuery<string>(
+                            "SELECT LPNPickMode FROM dbo.CompanyMaster WHERE SBCACoID = @p0",
+                            CurrentUser.CoID)
+                        .FirstOrDefault() ?? "off";
+                    try { DDLPNMode.SelectedValue = lpnMode; } catch { DDLPNMode.SelectedValue = "off"; }
+                }
+                catch { DDLPNMode.SelectedValue = "off"; }
+
+                // PickByBin lives outside the EF model too (raw SQL). Default off if absent.
+                try
+                {
+                    chkPickByBin.Checked = _db.Database.SqlQuery<bool>(
+                            "SELECT PickByBin FROM dbo.CompanyMaster WHERE SBCACoID = @p0",
+                            CurrentUser.CoID)
+                        .FirstOrDefault();
+                }
+                catch { chkPickByBin.Checked = false; }
                chkPSAuto.Checked = (bool)Comp.AutoUpdateSageSOs;
                chkTaxInvAuto.Checked = (bool)Comp.AutoGenTaxInvoice;
                chkUsePacks.Checked = (bool)Comp.UsePacks;
@@ -176,10 +203,10 @@ namespace SBMS
                     CurrentUser.UseAutoManf = Comp.UseAutoManf;
                     Comp.UsePickSlipTracking = chkPickSlip.Checked;
                     CurrentUser.UsePickSlipTracking = Comp.UsePickSlipTracking;
-                    Comp.UseBarcodes = chkBarCodes.Checked;
-                    CurrentUser.UseBarcodes = Comp.UseBarcodes;
                     Comp.MobileModule = chkMobileModule.Checked;
                     CurrentUser.MobileModule = Comp.MobileModule;
+                    phMobileTab.Visible = chkMobileModule.Checked;
+                    phMobileTabBtn.Visible = chkMobileModule.Checked;
                     Comp.AutoUpdateSageSOs = chkPSAuto.Checked;
                     CurrentUser.AutoUpdateSageSOs = Comp.AutoUpdateSageSOs;
                     Comp.AutoGenTaxInvoice = chkTaxInvAuto.Checked;
@@ -202,7 +229,41 @@ namespace SBMS
                     }
                         _db.SaveChanges();
                 string message = "Successfully Saved";
-                AlertHelper.ShowSweetAlert(this, message, "success");
+                string icon = "success";
+
+                // LPNPickMode is outside the EF model - saved with raw SQL. Also
+                // refresh this session's cached mode so testing picks it up without
+                // a re-login (pickers on other sessions see it at their next login).
+                try
+                {
+                    _db.Database.ExecuteSqlCommand(
+                        "UPDATE dbo.CompanyMaster SET LPNPickMode = @p0 WHERE SBCACoID = @p1",
+                        DDLPNMode.SelectedValue, CurrentUser.CoID);
+                    Session["PSLPNMode"] = DDLPNMode.SelectedValue;
+                }
+                catch
+                {
+                    message = "Saved - but LPN Boxing mode was NOT saved. Run Add_CompanyLPNPickMode.sql on this database first.";
+                    icon = "warning";
+                }
+
+                // PickByBin - raw SQL; refresh this session's cache too.
+                try
+                {
+                    _db.Database.ExecuteSqlCommand(
+                        "UPDATE dbo.CompanyMaster SET PickByBin = @p0 WHERE SBCACoID = @p1",
+                        chkPickByBin.Checked, CurrentUser.CoID);
+                    Session["PSPickByBin"] = chkPickByBin.Checked;
+                }
+                catch
+                {
+                    // Don't clobber an existing LPN warning - append instead.
+                    message = (icon == "warning" ? message + " " : "Saved - but ")
+                              + "Pick by Bin was NOT saved. Run Add_PickByBin.sql on this database first.";
+                    icon = "warning";
+                }
+
+                AlertHelper.ShowSweetAlert(this, message, icon);
                 }
             }
         }
