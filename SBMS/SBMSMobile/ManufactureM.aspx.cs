@@ -365,9 +365,15 @@ namespace SBMS
             try
             {
                 ApiUrlCall api = new ApiUrlCall();
-                api.LoadOneItemNA(itmid, CurrentUser);
+                bool refreshed = api.LoadOneItemNA(itmid, CurrentUser);
                 var itm = db.ItemsMasters.FirstOrDefault(x => x.CompanyID == CurrentUser.CoID && x.ID == itmid);
                 if (itm == null) return "Item not found";
+
+                // GUARD B - never compute an average cost from stale data (mirrors the desktop).
+                // The average below is derived from QuantityOnHand / AverageCost and pushed to Sage,
+                // which SETS the average. A failed refresh means those inputs are old.
+                if (!refreshed)
+                    return $"Could not refresh {code} from Sage - nothing posted. Check the connection and try again.";
 
                 if (unitcost == 0) unitcost = itm.AverageCost ?? 0;
 

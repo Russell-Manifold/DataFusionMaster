@@ -188,12 +188,34 @@ namespace SBMS
                     AlertHelper.ShowSweetAlert(this, "BOM line not found.", "error");
                     return;
                 }
-                BL.ItemCode = DDItemCode.SelectedItem.Text ?? string.Empty;
+                // Read the code from the item itself - the dropdown now displays
+                // "CODE - Description", which must never be stored as the item code.
+                BL.ItemCode = _db.ItemsMasters
+                                 .Where(x => x.CompanyID == CurrentUser.CoID && x.ID == itemId)
+                                 .Select(x => x.Code).FirstOrDefault() ?? string.Empty;
                 BL.ItemID = itemId;
                 BL.RMQty = rmQty;
                 BL.BomUnit = row.Cells[4].Text.ToString();
                 _db.SaveChanges();
                 LoadBom();
+                FocusNextBomLine();
+            }
+        }
+
+        // After saving a line, LoadBom() appends a fresh blank line to the grid. Drop the
+        // cursor straight into that line's Item Code so the user can keep building the BOM
+        // from the keyboard instead of scrolling back up to the top of the screen.
+        private void FocusNextBomLine()
+        {
+            foreach (GridViewRow gvr in GridBOMLines.Rows)
+            {
+                if (gvr.RowType != DataControlRowType.DataRow) continue;
+                DropDownList ddl = gvr.FindControl("DDItemCode") as DropDownList;
+                if (ddl == null || ddl.SelectedValue != "0") continue;
+
+                ScriptManager.RegisterStartupScript(this, GetType(), "FocusNextBomLine",
+                    $"var el=document.getElementById('{ddl.ClientID}');if(el){{el.focus();el.scrollIntoView({{block:'center'}});}}", true);
+                return;
             }
         }
 
@@ -221,8 +243,9 @@ namespace SBMS
                 {
                   if (ddlItemCode != null)
                     {
-                        ddlItemCode.DataSource = _itemsB;
-                        ddlItemCode.DataTextField = "Code";
+                        // Show "CODE - Description" so the searchable picker can match on either.
+                        ddlItemCode.DataSource = _itemsB.Select(i => new { i.ID, Display = i.Code + " - " + i.Description }).ToList();
+                        ddlItemCode.DataTextField = "Display";
                         ddlItemCode.DataValueField = "ID";
                         ddlItemCode.DataBind();
                         ddlItemCode.Items.Insert(0, new ListItem("Select", "0"));

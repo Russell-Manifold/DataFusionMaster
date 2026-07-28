@@ -73,14 +73,11 @@
                                         <asp:DropDownList ID="DDItemList" runat="server"                                       
                                                 AutoPostBack="true" 
                                                 OnSelectedIndexChanged="DDItemList_SelectedIndexChanged"
-                                                CssClass="js-filterable-select optiondd"
+                                                CssClass="item-search optiondd"
                                                 MaxLength="100"
-                                                CaseSensitive="false"
-                                                AutoComplete="true"
                                                 Style="max-width:25em; max-width:90%; width: 100%;" >
                                                 <asp:ListItem Text="- Select -" Value="" />
                                             </asp:DropDownList>
-                                            <asp:HiddenField ID="hdnAllItems" runat="server" />
                                     </td>
                                 </tr>
                                         <tr>
@@ -206,119 +203,6 @@
         }
     </script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script type="text/javascript">
-        $(document).ready(function () {
-            var allItems = JSON.parse($('#<%= hdnAllItems.ClientID %>').val());
-        var select = $('.js-filterable-select');
-
-        // Convert to Select2 with local data and enhanced features
-        select.select2({
-            data: allItems,
-            minimumInputLength: 1,
-            placeholder: "- Select -",
-            allowClear: true,
-            width: 'style',
-            dropdownAutoWidth: true,
-            // Add search delay to wait for user to finish typing
-            delay: 1250, // 1.25 s delay before searching
-            // Show more results
-            maximumSelectionLength: 100,
-
-            // Better matching - search in both code and description
-            matcher: function (params, data) {
-                // If no search term, return all
-                if ($.trim(params.term) === '') return data;
-
-                var term = params.term.toLowerCase();
-                // Search in both code and text
-                if (data.text.toLowerCase().indexOf(term) > -1 ||
-                    data.id.toLowerCase().indexOf(term) > -1) {
-                    return data;
-                }
-                return null;
-            },
-
-            // Better template to show both code and description clearly
-            templateResult: function (item) {
-                if (!item.id) return item.text;
-
-                var $result = $('<span></span>');
-                // If it's a search result, highlight the match
-                if (item.text && item.text.includes(' - ')) {
-                    var parts = item.text.split(' - ');
-                    $result.append('<strong style="font-weight: bold;">' + parts[0] + '</strong> - ' + parts[1]);
-                } else {
-                    $result.text(item.text);
-                }
-                return $result;
-            },
-
-            // Show full text in selection
-            templateSelection: function (item) {
-                return item.text;
-            }
-        });
-
-        // Handle AutoPostBack when an item is selected
-        select.on('select2:select', function (e) {
-            // Only trigger postback if an actual item was selected (not clearing)
-            if (e.params.data && e.params.data.id !== '') {
-                // Small delay to ensure the dropdown value is set before postback
-                setTimeout(function () {
-                    __doPostBack('<%= DDItemList.ClientID %>', '');
-            }, 100);
-        }
-    });
-
-        // Ensure dropdown width matches the control width
-        select.on('select2:open', function () {
-            var dropdown = $('.select2-container--open .select2-dropdown');
-            dropdown.css('min-width', $(this).outerWidth() + 'px');
-        });
-    });
-
-        // Reinitialize Select2 after ASP.NET postback (if using UpdatePanel)
-        if (typeof (Sys) !== 'undefined') {
-            var prm = Sys.WebForms.PageRequestManager.getInstance();
-            prm.add_endRequest(function () {
-                var allItems = JSON.parse($('#<%= hdnAllItems.ClientID %>').val());
-        $('.js-filterable-select').select2({
-            data: allItems,
-            minimumInputLength: 1,
-            placeholder: "- Select -",
-            allowClear: true,
-            width: 'style',
-            delay: 1250,
-            maximumSelectionLength: 100,
-            matcher: function (params, data) {
-                if ($.trim(params.term) === '') return data;
-                var term = params.term.toLowerCase();
-                if (data.text.toLowerCase().indexOf(term) > -1 ||
-                    data.id.toLowerCase().indexOf(term) > -1) {
-                    return data;
-                }
-                return null;
-            },
-            templateResult: function (item) {
-                if (!item.id) return item.text;
-                var $result = $('<span></span>');
-                if (item.text && item.text.includes(' - ')) {
-                    var parts = item.text.split(' - ');
-                    $result.append('<strong style="font-weight: bold;">' + parts[0] + '</strong> - ' + parts[1]);
-                } else {
-                    $result.text(item.text);
-                }
-                return $result;
-            },
-            templateSelection: function (item) {
-                return item.text;
-            }
-        });
-    });
-        }
-    </script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+    <script src="<%= ResolveUrl("~/scripts/itemSearch.js") %>"></script>
 </body>
 </html>

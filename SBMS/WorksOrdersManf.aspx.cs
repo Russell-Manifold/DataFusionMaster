@@ -1671,6 +1671,7 @@ namespace SBMS
                 {
                     ddlItemCode.DataSource = _items.Select(i => new {i.ID, Display = i.Code + " - " + i.Description}).ToList();
                     ddlItemCode.DataTextField = "Display";
+                    ddlItemCode.CssClass = "item-search";   // searchable by code, description or keyword
                     ddlItemCode.DataValueField = "ID";
                     ddlItemCode.DataBind();
                     ddlItemCode.Items.Insert(0, new ListItem("Select", "0"));
@@ -1975,6 +1976,7 @@ namespace SBMS
                         }
                         ddlItemCode.DataSource = _items.Select(i => new { i.ID, Display = i.Code + " - " + i.Description }).ToList();
                         ddlItemCode.DataTextField = "Display";
+                        ddlItemCode.CssClass = "item-search";   // searchable by code, description or keyword
                         ddlItemCode.DataValueField = "ID";
                         ddlItemCode.DataBind();
                         ddlItemCode.Items.Insert(0, new ListItem("Select", "0"));
@@ -2447,6 +2449,7 @@ namespace SBMS
                 LoadItems();
                 ddlItemCode.DataSource = _items.Select(i => new { i.ID, Display = i.Code + " - " + i.Description }).ToList();
                 ddlItemCode.DataTextField = "Display";
+                ddlItemCode.CssClass = "item-search";   // searchable by code, description or keyword
                 ddlItemCode.DataValueField = "ID";
                 ddlItemCode.DataBind();
                 ddlItemCode.Items.Insert(0, "-Add Item-");
@@ -2891,70 +2894,90 @@ namespace SBMS
             Label txtUnitCost = (Label)row.FindControl("txtUnitCost");
             TextBox txtScrapQty = (TextBox)row.FindControl("txtScrapQty");
 
-            if (DDlotNum.SelectedIndex > 0)
+            if (DDlotNum.SelectedIndex <= 0) return;
+
+            string LotNum = DDlotNum.SelectedValue.ToString();
+            long ItemID = Convert.ToInt64(row.Cells[1].Text);
+            long LineID = Convert.ToInt64(row.Cells[0].Text);
+            decimal ItemQty = CellParse.ToDecimal(row.Cells[5].Text);
+
+            LoadActiveLotNums();
+            var LotNums = _ActiveLotNums.Where(x => x.StoreCode == DDStore.SelectedItem.ToString() && x.ItemId == ItemID && x.LotNumber == LotNum).ToList();
+
+            // The cost is carried as a decimal from here on. It used to be written into the
+            // label, read back out and parsed again - and the label is formatted "N2", which
+            // a culture using "," as the decimal separator cannot round-trip back to a number.
+            decimal? newUnitCost = null;    // null = leave the line's existing cost alone
+            decimal useQty;
+            string lotToSave;
+
+            if (LotNums.Count > 0)
             {
-                string LotNum = DDlotNum.SelectedValue.ToString();
-                long ItemID = Convert.ToInt64(row.Cells[1].Text);
-                decimal ItemQty = CellParse.ToDecimal(row.Cells[5].Text);
-                LoadActiveLotNums();
-                var LotNums = _ActiveLotNums.Where(x => x.StoreCode == DDStore.SelectedItem.ToString() && x.ItemId == ItemID && x.LotNumber == LotNum).ToList();
-                
-                if (LotNums.Count > 0)
+                newUnitCost = LotNums.Where(x => x.LotNumber == LotNum)
+                                     .Select(x => x.TotalUnitPriceExclInclAdd)
+                                     .FirstOrDefault();
+                lotToSave = LotNum;
+
+                decimal available = LotNums.Sum(x => x.QtyHandToStore);
+                if (available < ItemQty)
                 {
-                    txtUnitCost.Text = LotNums.Where(x => x.LotNumber == LotNum).Select(x => x.TotalUnitPriceExclInclAdd).FirstOrDefault().ToString();
-                    if (LotNums.Sum(x => x.QtyHandToStore) < ItemQty)
+                    // Short pick: cap the usage at what the lot actually holds and warn - but
+                    // the capped quantity, the lot and its cost STILL have to be persisted.
+                    // Leaving them unsaved meant the manufacture later drew this component at
+                    // whatever stale cost sat on the line, frequently zero, which silently
+                    // inflated the item's average cost.
+                    useQty = available;
+                    txtuseQty.BorderColor = System.Drawing.Color.Red;
+                    if (Session["InsufficientQtyAlertShown"] == null)
                     {
-                        txtuseQty.Text = LotNums.Sum(x => x.QtyHandToStore).ToString();
-                        txtuseQty.BorderColor = System.Drawing.Color.Red;
-                        if (Session["InsufficientQtyAlertShown"] == null)
-                        {
-                            AlertHelper.ShowSweetAlert(this, "Insufficient quantity available.", "warning");
-                            Session["InsufficientQtyAlertShown"] = true;
-                        }
-                    }
-                    else
-                    {
-                        txtuseQty.Text = ItemQty.ToString();
-                        long LineID = Convert.ToInt64(row.Cells[0].Text);
-                        using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
-                        {
-                            try
-                            {
-                                var WOLine = _db.WorksOrderRMLines.Where(x => x.LineID == LineID).FirstOrDefault();
-                                WOLine.UseQty = Convert.ToDecimal(txtuseQty.Text);
-                                var costText = txtUnitCost.Text?.Trim();
-                                WOLine.UnitCost = string.IsNullOrEmpty(costText)
-                                    ? 0m
-                                    : Convert.ToDecimal(costText);
-                                txtUnitCost.Text = Convert.ToDecimal(WOLine.UnitCost).ToString("N2");
-                                WOLine.ScrapQty = Convert.ToDecimal(txtScrapQty.Text);
-                                WOLine.LotNumber = LotNum;
-                                _db.SaveChanges();
-                            }
-                            catch { }                           
-                        }
+                        AlertHelper.ShowSweetAlert(this, "Insufficient quantity available.", "warning");
+                        Session["InsufficientQtyAlertShown"] = true;
                     }
                 }
                 else
                 {
-                    long LineID = Convert.ToInt64(row.Cells[0].Text);
-                    using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
-                    {
-                        try { 
-                        var WOLine = _db.WorksOrderRMLines.Where(x => x.LineID == LineID).FirstOrDefault();
-                        WOLine.UseQty = Convert.ToDecimal(txtuseQty.Text);
-                        var costText = txtUnitCost.Text?.Trim();
-                        WOLine.UnitCost = string.IsNullOrEmpty(costText)
-                            ? 0m
-                            : Convert.ToDecimal(costText);
-                        txtUnitCost.Text = Convert.ToDecimal(WOLine.UnitCost).ToString("N2");
-                        WOLine.ScrapQty = Convert.ToDecimal(txtScrapQty.Text);
-                        WOLine.LotNumber = "";
-                        _db.SaveChanges();
-                        }
-                        catch { }
-                    }
+                    useQty = ItemQty;
                 }
+            }
+            else
+            {
+                // No costed lot rows for this item/store - keep what was captured on screen and
+                // clear the lot. The existing unit cost is left as it is (newUnitCost stays null).
+                useQty = CellParse.ToDecimal(txtuseQty.Text);
+                lotToSave = "";
+            }
+
+            decimal scrapQty;
+            decimal.TryParse(txtScrapQty.Text, out scrapQty);
+
+            using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+            {
+                var WOLine = _db.WorksOrderRMLines.FirstOrDefault(x => x.CompanyID == CoID && x.LineID == LineID);
+                if (WOLine == null)
+                {
+                    AlertHelper.ShowSweetAlert(this, "Component line not found - the selection was not saved.", "error");
+                    return;
+                }
+
+                WOLine.UseQty = useQty;
+                WOLine.ScrapQty = scrapQty;
+                WOLine.LotNumber = lotToSave;
+                if (newUnitCost.HasValue) WOLine.UnitCost = newUnitCost.Value;
+
+                try
+                {
+                    _db.SaveChanges();
+                }
+                catch (Exception ex)
+                {
+                    // Was swallowed silently, so a failed save looked identical to a good one.
+                    new ApiUrlCall().LogErrorToFile(ex.ToString());
+                    AlertHelper.ShowSweetAlert(this, "Could not save the lot selection: " + ex.Message, "error");
+                    return;
+                }
+
+                txtuseQty.Text = useQty.ToString();
+                txtUnitCost.Text = (WOLine.UnitCost ?? 0m).ToString("N2");
             }
         }
 
@@ -4111,8 +4134,10 @@ namespace SBMS
                                     decimal drawAvgPre = StoreCosting.GetStoreAvgCost(_db, CoID, rmItemIdPre, storeIdPre);
                                     if (drawAvgPre <= 0)
                                     {
+                                        // Same nullable trap as the draw below: the ternary yields decimal?,
+                                        // so a row that exists with an unset UnitCost threw on the cast.
                                         var wrmPre = _db.WorksOrderRMLines.FirstOrDefault(x => x.CompanyID == CoID && x.LineID == rmLineIdPre);
-                                        drawAvgPre = (decimal)(wrmPre != null ? wrmPre.UnitCost : 0);
+                                        drawAvgPre = wrmPre?.UnitCost ?? 0m;
                                     }
                                     serverTotCost += useQtyPre * drawAvgPre;
                                 }
@@ -4166,6 +4191,21 @@ namespace SBMS
                                         string gridLotNumber = "";
                                         var WRMLine = _db.WorksOrderRMLines.Where(x => x.CompanyID == CoID && x.LineID == TLineID).FirstOrDefault();
 
+                                        // The component row on screen has no matching database line. Stop rather
+                                        // than draw stock against a line we cannot identify or write back to.
+                                        if (WRMLine == null)
+                                        {
+                                            return $"Component line {TLineID} could not be found - nothing was posted. "
+                                                 + "Reload the works order and try again.";
+                                        }
+
+                                        // UnitCost is nullable and is left unset on several capture paths (e.g. the
+                                        // lot dropdown's insufficient-quantity branch). Treat a missing cost as zero
+                                        // and let the draw fall back to the store's running average inside
+                                        // DoItemAdjustment; if that is also zero, Guard A stops the post with a
+                                        // readable message instead of this line throwing a cast exception.
+                                        decimal rmUnitCost = WRMLine.UnitCost ?? 0m;
+
                                         // FIX 4: Corrected || to && to prevent NullReferenceException on SelectedItem.Text
                                         if (CurrentUser.CompanyUseLotNumbers)
                                         {
@@ -4192,7 +4232,7 @@ namespace SBMS
                                                 string usageKey = $"use|{TLineID}|{gridSelectionId}|{gridLotNumber}|{gridStore}|{useQty}";
                                                 if (TryClaimManfAdj(usageKey))
                                                 {
-                                                    string RetStr = DoItemAdjustment(Convert.ToInt64(gridSelectionId), gridLotNumber, gridStore, useQty * -1, 0, "L", (decimal)WRMLine.UnitCost);
+                                                    string RetStr = DoItemAdjustment(Convert.ToInt64(gridSelectionId), gridLotNumber, gridStore, useQty * -1, 0, "L", rmUnitCost);
                                                     if (RetStr != "OK")
                                                     {
                                                         ReleaseManfAdj(usageKey);
@@ -4212,7 +4252,7 @@ namespace SBMS
                                                 string scrapKey = $"scrap|{TLineID}|{gridSelectionId}|{gridLotNumber}|{gridStore}|{scrapQty}";
                                                 if (TryClaimManfAdj(scrapKey))
                                                 {
-                                                    string RetStr = DoItemAdjustment(Convert.ToInt64(gridSelectionId), gridLotNumber, gridStore, scrapQty * -1, 0, "L", (decimal)WRMLine.UnitCost);
+                                                    string RetStr = DoItemAdjustment(Convert.ToInt64(gridSelectionId), gridLotNumber, gridStore, scrapQty * -1, 0, "L", rmUnitCost);
                                                     if (RetStr != "OK")
                                                     {
                                                         ReleaseManfAdj(scrapKey);
@@ -4581,8 +4621,21 @@ namespace SBMS
 
                         // Call API FIRST before any local DB saves
                         ApiUrlCall api = new ApiUrlCall();
-                        api.LoadOneItemNA(itmid, CurrentUser);
+                        bool refreshed = api.LoadOneItemNA(itmid, CurrentUser);
                         var itm = _db.ItemsMasters.FirstOrDefault(x => x.CompanyID == CurrentUser.CoID && x.ID == itmid);
+
+                        // GUARD B - never compute an average cost from stale data.
+                        // The new average below is derived from QuantityOnHand / AverageCost and is
+                        // then pushed to Sage, which SETS the average. If the refresh above failed
+                        // (API down, timeout - ApiCallNA swallows both) those inputs are whatever was
+                        // last synced, and posting would overwrite Sage's correct figure with one
+                        // calculated off old numbers. Stop instead; the operator can retry.
+                        if (!refreshed)
+                        {
+                            return $"Could not refresh {(itm != null ? itm.Code : itmid.ToString())} from Sage - "
+                                 + "cost not updated and nothing was posted. Check the connection and try again.";
+                        }
+                        if (itm == null) return $"Item {itmid} not found - unable to continue.";
 
                         // Draws leave at the draw store's running weighted average (outs never
                         // revalue a store). The same number then drives the Sage adjustment and
@@ -4591,6 +4644,19 @@ namespace SBMS
                         {
                             decimal drawAvg = StoreCosting.GetStoreAvgCost(_db, CurrentUser.CoID, itmid, store1);
                             if (drawAvg > 0) unitcost = drawAvg;
+                        }
+
+                        // GUARD A - never draw valued stock out at zero cost.
+                        // Removing quantity while removing NO value re-weights the remainder upwards:
+                        // draw half the stock at zero and the average cost doubles, draw two thirds
+                        // and it triples. Reachable whenever the store has no costed movement history
+                        // AND the works-order line carries no unit cost. An item that genuinely costs
+                        // nothing has a zero Sage average too, so this cannot fire on one of those.
+                        if (useqty < 0 && unitcost <= 0 && (itm.AverageCost ?? 0) > 0)
+                        {
+                            return $"No cost is available for {itm.Code} in store {stor}. "
+                                 + "Drawing it out at zero cost would inflate the item's average cost, so nothing was posted. "
+                                 + "Set the unit cost on the works order line (or receive costed stock into that store) and try again.";
                         }
 
                         // TESTING ONLY

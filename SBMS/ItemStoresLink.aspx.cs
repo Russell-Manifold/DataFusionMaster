@@ -272,9 +272,11 @@ namespace SBMS
 
         protected void lbtnUpdateYes_Click(object sender, EventArgs e)
         {
+            int linked = 0;
+            string storeCode = DDStoreTo.SelectedValue;
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {
-                int Storeid = _db.Stores.FirstOrDefault(x => x.CompanyID == CurrentUser.CoID && x.StoreCode == DDStoreTo.SelectedValue).StoreID;
+                int Storeid = _db.Stores.FirstOrDefault(x => x.CompanyID == CurrentUser.CoID && x.StoreCode == storeCode).StoreID;
                 foreach (GridViewRow gvr in GridItems.Rows)
                 {
                     CheckBox chk = new CheckBox();
@@ -287,12 +289,25 @@ namespace SBMS
                         StLink.StoreID = Convert.ToInt32(Storeid);
                         StLink.Active = true;
                         _db.ItemStoreLinkMasters.Add(StLink);
+                        linked++;
                     }
                 }
                 _db.SaveChanges();
             }
             LoadItems();
             LoadLinkedItems();
+
+            if (linked == 0)
+            {
+                AlertHelper.ShowSweetAlert(this, "No items were selected, so nothing was linked.", "warning");
+            }
+            else
+            {
+                string msg = linked == 1
+                    ? "Store link successfully saved - 1 item linked to " + storeCode + "."
+                    : "Store links successfully saved - " + linked + " items linked to " + storeCode + ".";
+                AlertHelper.ShowSweetAlert(this, msg, "success");
+            }
         }
 
         private void loadstores()

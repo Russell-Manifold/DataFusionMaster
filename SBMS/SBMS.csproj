@@ -857,6 +857,7 @@
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
     <Content Include="ConfigRoles.aspx" />
+    <Content Include="scripts\itemSearch.js" />
     <Content Include="scripts\notifications.js" />
     <Content Include="scripts\PickSlipRefresh.js" />
     <Content Include="scripts\sendKeepAlive.js" />

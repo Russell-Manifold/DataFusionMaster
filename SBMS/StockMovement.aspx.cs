@@ -94,7 +94,10 @@ namespace SBMS
                 dditem.DataTextField = "Description";
                 dditem.DataValueField = "ID";
                 dditem.DataBind();
-                dditem.Items.Insert(0, "-Select Item-");
+                // Give the placeholder an explicit "0" value so the searchable picker treats it
+                // as a placeholder and keeps it out of the results. Every selection test on this
+                // page uses SelectedIndex, so the added value changes nothing else.
+                dditem.Items.Insert(0, new System.Web.UI.WebControls.ListItem("-Select Item-", "0"));
             }
         }
 
@@ -126,6 +129,15 @@ namespace SBMS
         {
             if (CurrentUser.CompanyUseLotNumbers == true)
             {
+                // Selection cleared: drop the lot list and the results with it, otherwise the
+                // previous item's lot numbers stay on screen against no item.
+                if (dditem.SelectedIndex == 0)
+                {
+                    ddLotNum.Items.Clear();
+                    lbtnsearch_Click(sender, e);
+                    return;
+                }
+
                 if (dditem.SelectedIndex > 0)
                 {
                     long itmID = Convert.ToInt64(dditem.SelectedItem.Value);

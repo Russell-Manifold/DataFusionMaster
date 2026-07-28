@@ -85,7 +85,7 @@
                                     </tr>
                                     <tr>
                                         <td>Item</td>
-                                        <td><asp:DropDownList ID="ddConvertFrom" runat="server" style="width:35em" AutoPostBack="true" OnSelectedIndexChanged="ddConvertFrom_SelectedIndexChanged"></asp:DropDownList></td>
+                                        <td><asp:DropDownList ID="ddConvertFrom" runat="server" style="width:35em" CssClass="item-search" AutoPostBack="true" OnSelectedIndexChanged="ddConvertFrom_SelectedIndexChanged"></asp:DropDownList></td>
                                     </tr>
                                     <tr >
                                         <td><br />Unit Of Measure</td>
@@ -112,7 +112,7 @@
                                     </tr>
                                     <tr>
                                         <td>Item</td>
-                                        <td><asp:DropDownList ID="DDConvertTo" runat="server" style="width:35em"></asp:DropDownList></td>
+                                        <td><asp:DropDownList ID="DDConvertTo" runat="server" style="width:35em" CssClass="item-search"></asp:DropDownList></td>
                                     </tr>
                                     <tr>
                                         <td>Unit Of Measure</td>
@@ -146,5 +146,6 @@
         </div>
             </div>
     </form>
+    <script src="<%= ResolveUrl("~/scripts/itemSearch.js") %>"></script>
 </body>
 </html>

@@ -39,8 +39,8 @@ namespace SBMS.Classes
       //public static string dbName = $"MyDataFusion";
       /// </summary>
 
-        //public static string constr = $"Data Source=SYNCFLO-DESKTOP\\SYNCFLOSQL;Initial Catalog={dbName};Persist Security Info=True;User ID=sa;Password=M@nif0LD";
-        public static string constr = $"Data Source=RUSSELL-DELL\\DELLSQL;Initial Catalog={dbName};Persist Security Info=True;User ID=sa;Password=M@nif0LD";
+        public static string constr = $"Data Source=SYNCFLO-DESKTOP\\SYNCFLOSQL;Initial Catalog={dbName};Persist Security Info=True;User ID=sa;Password=M@nif0LD";
+        //public static string constr = $"Data Source=RUSSELL-DELL\\DELLSQL;Initial Catalog={dbName};Persist Security Info=True;User ID=sa;Password=M@nif0LD";
         public static string constrP = $"Data Source=RHYOLITEHEXAGON\\MANIFOLDSQL;Initial Catalog={dbName};Persist Security Info=True;User ID=sa;Password=M@nif0LD";
               
         static DateTime CustDT = Convert.ToDateTime("01 Jan 2015"), SuppDT = Convert.ToDateTime("01 Jan 2015"), ItemDT = Convert.ToDateTime("01 Jan 2015"), PODT = Convert.ToDateTime("01 Jan 2015"), InvoiceDT = Convert.ToDateTime("01 Jan 2015"), CNoteDT = Convert.ToDateTime("01 Jan 2015");
@@ -1785,14 +1785,23 @@ namespace SBMS.Classes
         }
 
         #region Non-Async calls
-        public void LoadOneItemNA(long ItemID, UserDetails Userdetails)
+        /// <summary>
+        /// Refreshes ONE item from Sage into ItemsMasters.
+        /// Returns TRUE only when Sage actually returned the item and it was written away.
+        /// ApiCallNA swallows every transport failure and hands back an empty object, so a
+        /// FALSE here means the local QuantityOnHand / AverageCost are STALE - callers that
+        /// compute a new average cost from them must not post, or they will push a figure
+        /// derived from old data into Sage (which SETS the average).
+        /// </summary>
+        public bool LoadOneItemNA(long ItemID, UserDetails Userdetails)
         {
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {
                 string requestUrl = sageurl + "Item/GET/" + ItemID + "?apikey={" + APIKey + "}&CompanyID=" + Userdetails.CoID;
                 JObject parsedJSON = ApiCallNA(requestUrl, Userdetails); // Call the API synchronously
 
-                if (parsedJSON.Count > 0)
+                if (parsedJSON.Count == 0) return false;   // Sage call failed - local copy is stale
+
                 {
                     string Categ = string.Empty;
                     int CategID = 0;
@@ -1875,6 +1884,7 @@ namespace SBMS.Classes
                 }
                 parsedJSON.RemoveAll();
                 _db.SaveChanges();
+                return true;
             }
         }
 

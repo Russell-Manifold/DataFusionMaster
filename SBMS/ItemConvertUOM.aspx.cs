@@ -252,11 +252,13 @@ namespace SBMS
                     var _items = _db.GetOpeningBalancesByStore(Storeid, CurrentUser.CoID).ToList();
                     if (_items.Any())
                     {
-                        ddConvertFrom.DataSource = _items;
-                        ddConvertFrom.DataTextField = "ItemDescription";
+                        // Show "CODE - Description" so the searchable picker matches on either.
+                        // The list showed the description alone, so the code was not even visible.
+                        ddConvertFrom.DataSource = _items.Select(i => new { i.ItemID, Display = i.Code + " - " + i.ItemDescription }).ToList();
+                        ddConvertFrom.DataTextField = "Display";
                         ddConvertFrom.DataValueField = "ItemID";
                         ddConvertFrom.DataBind();
-                        ddConvertFrom.Items.Insert(0, "- Select Item -");
+                        ddConvertFrom.Items.Insert(0, new System.Web.UI.WebControls.ListItem("- Select Item -", "0"));
                     }
                 }
             }
@@ -302,17 +304,17 @@ namespace SBMS
 
                         if (itemsToConvert.Any())
                         {
-                            DDConvertTo.DataSource = itemsToConvert;
-                            DDConvertTo.DataTextField = "ItemDescription";
+                            DDConvertTo.DataSource = itemsToConvert.Select(i => new { i.ItemID, Display = i.Code + " - " + i.ItemDescription }).ToList();
+                            DDConvertTo.DataTextField = "Display";
                             DDConvertTo.DataValueField = "ItemID";
                             DDConvertTo.DataBind();
-                            DDConvertTo.Items.Insert(0, "- Select Target Item -");
+                            DDConvertTo.Items.Insert(0, new System.Web.UI.WebControls.ListItem("- Select Target Item -", "0"));
                         }
                         else
                         {
                             DDConvertTo.DataSource = null;
                             DDConvertTo.Items.Clear();
-                            DDConvertTo.Items.Insert(0, "- No other items available -");
+                            DDConvertTo.Items.Insert(0, new System.Web.UI.WebControls.ListItem("- No other items available -", "0"));
                         }
 
                     }

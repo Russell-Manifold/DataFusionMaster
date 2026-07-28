@@ -220,5 +220,6 @@
         function convertToUpper(textBox) { textBox.value = textBox.value.toUpperCase(); }
     </script>
           <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+          <script src="<%= ResolveUrl("~/scripts/itemSearch.js") %>"></script>
 </body>
 </html>

@@ -61,7 +61,7 @@
                                 <asp:Panel ID="Panel1" runat="server" DefaultButton="lbtnsearch" style="text-align:center">
                                   <table>
                                       <tr>
-                                          <td>Select Item  <asp:DropDownList ID="dditem" runat="server" AutoPostBack="true" OnSelectedIndexChanged="dditem_SelectedIndexChanged" CssClass="optiondd" style="width:20em"></asp:DropDownList></td>
+                                          <td>Select Item  <asp:DropDownList ID="dditem" runat="server" AutoPostBack="true" OnSelectedIndexChanged="dditem_SelectedIndexChanged" CssClass="optiondd item-search" style="width:20em"></asp:DropDownList></td>
                                           <td> <asp:Panel ID="PnlLotNum" runat="server">
                                              Select LotNumber  <asp:DropDownList ID="ddLotNum" runat="server" style="min-width:10em" CssClass="optiondd"></asp:DropDownList>
                                          </asp:Panel></td>
@@ -111,5 +111,6 @@
             </div>
         
     </form>
+    <script src="<%= ResolveUrl("~/scripts/itemSearch.js") %>"></script>
 </body>
 </html>

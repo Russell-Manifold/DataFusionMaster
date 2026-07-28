@@ -104,11 +104,8 @@ namespace SBMS
                  .OrderBy(x => x.text)
                  .ToList();
 
-                // Store as JSON for client-side filtering
-                var serializer = new JavaScriptSerializer();
-                hdnAllItems.Value = serializer.Serialize(items);
-
-                // Optionally keep the original data binding for fallback
+                // The searchable picker filters the dropdown's own options, so the whole item
+                // list no longer has to be serialised into the page as JSON as well.
                 DDItemList.DataSource = items;
                 DDItemList.DataTextField = "text";
                 DDItemList.DataValueField = "id";

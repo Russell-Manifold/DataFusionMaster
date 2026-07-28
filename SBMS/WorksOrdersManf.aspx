@@ -377,5 +377,6 @@
         }
     </script>
      <script src="<%= ResolveUrl("~/js/cost-calculation.js") %>"></script>
+     <script src="<%= ResolveUrl("~/scripts/itemSearch.js") %>"></script>
 </body>
 </html>

@@ -68,7 +68,7 @@
                                         <asp:BoundField DataField="BLID"  />
                                          <asp:TemplateField HeaderText="Line Item Code" ItemStyle-Width="10em" SortExpression="ItemCode" >
                                             <ItemTemplate >
-                                                <asp:DropDownList ID="DDItemCode" runat="server" AutoPostBack="true" OnSelectedIndexChanged="DDItemCode_SelectedIndexChanged" Width="100px">
+                                                <asp:DropDownList ID="DDItemCode" runat="server" AutoPostBack="true" OnSelectedIndexChanged="DDItemCode_SelectedIndexChanged" Width="100px" CssClass="item-search">
                                                           <asp:ListItem Value="0">-Item Code-</asp:ListItem>
                                                           </asp:DropDownList>
                                             </ItemTemplate>
@@ -238,5 +238,6 @@
         }
     </script>
      <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+     <script src="<%= ResolveUrl("~/scripts/itemSearch.js") %>"></script>
 </body>
 </html>

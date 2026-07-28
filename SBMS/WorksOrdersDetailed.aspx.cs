@@ -257,6 +257,7 @@ namespace SBMS
                     {
                         ddlItemCode.DataSource = _items.Select(i => new {i.ID, DisplayText = i.Code + " - " + i.Description }).ToList();
                         ddlItemCode.DataTextField = "DisplayText";
+                        ddlItemCode.CssClass = "item-search";   // searchable by code, description or keyword
                         ddlItemCode.DataValueField = "ID";
                         ddlItemCode.DataBind();
                         ddlItemCode.Items.Insert(0, new ListItem("Select", "0"));
@@ -286,6 +287,7 @@ namespace SBMS
                     {
                         ddlItemCode.DataSource = _boms.Select(i => new { ID=i.FGID, DisplayText = i.FGCode + " - " + i.FGDescript }).ToList();
                         ddlItemCode.DataTextField = "DisplayText";
+                        ddlItemCode.CssClass = "item-search";   // searchable by code, description or keyword
                         ddlItemCode.DataValueField = "ID";
                         ddlItemCode.DataBind();
                         ddlItemCode.Items.Insert(0, new ListItem("Select", "0"));
@@ -306,6 +308,7 @@ namespace SBMS
                     {
                         ddlItemCode.DataSource = _kits.Select(i => new { ID = i.FGID, DisplayText = i.FGCode + " - " + i.FGDescript }).ToList(); ;
                         ddlItemCode.DataTextField = "DisplayText";
+                        ddlItemCode.CssClass = "item-search";   // searchable by code, description or keyword
                         ddlItemCode.DataValueField = "ID";
                         ddlItemCode.DataBind();
                         ddlItemCode.Items.Insert(0, new ListItem("Select", "0"));
@@ -740,6 +743,7 @@ namespace SBMS
                         _items = _db.ItemsMasters.Where(i => i.Active == true && i.CompanyID == CoID && i.Physical == true && i.IsFinishedGoods == true).OrderBy(x => x.Code).ToList();
                         ddlItemCode.DataSource = _items.Select(i => new { ID = i.ID, DisplayText = i.Code + " - " + i.Description }).ToList();
                         ddlItemCode.DataTextField = "DisplayText";
+                        ddlItemCode.CssClass = "item-search";   // searchable by code, description or keyword
                         ddlItemCode.DataValueField = "ID";
                         ddlItemCode.DataBind();
                         ddlItemCode.Items.Insert(0, new ListItem("Select", "0"));
@@ -752,6 +756,7 @@ namespace SBMS
                         _boms = _db.BOMHeaders.Where(i => i.BomActive == true && i.CompanyID == CoID).OrderBy(x => x.BOMCode).ToList();
                         ddlItemCode.DataSource = _boms.Select(i => new { ID = i.FGID, DisplayText = i.FGCode + " - " + i.FGDescript }).ToList();
                         ddlItemCode.DataTextField = "DisplayText";
+                        ddlItemCode.CssClass = "item-search";   // searchable by code, description or keyword
                         ddlItemCode.DataValueField = "ID";
                         ddlItemCode.DataBind();
                         ddlItemCode.Items.Insert(0, new ListItem("Select", "0"));
@@ -764,6 +769,7 @@ namespace SBMS
                         _kits = _db.KitHeaders.Where(i => i.KitActive == true && i.CompanyID == CoID).OrderBy(x => x.KitHID).ToList();
                         ddlItemCode.DataSource = _kits.Select(i => new { ID = i.FGID, DisplayText = i.FGCode + " - " + i.FGDescript }).ToList(); ;
                         ddlItemCode.DataTextField = "DisplayText";
+                        ddlItemCode.CssClass = "item-search";   // searchable by code, description or keyword
                         ddlItemCode.DataValueField = "ID";
                         ddlItemCode.DataBind();
                         ddlItemCode.Items.Insert(0, new ListItem("Select", "0"));
