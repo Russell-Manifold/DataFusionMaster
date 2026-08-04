@@ -2395,7 +2395,7 @@ namespace SBMS
                     if (File.Exists(imgpath))
                     {
                         gif = iTextSharp.text.Image.GetInstance(imgpath);
-                        gif.ScaleToFit(170.0F, 65.0F);
+                        gif.ScaleToFit(125.0F, 60.0F);   // must stay inside the 132pt logo column or it overlaps the barcode
                     }
                     else
                     {
@@ -2422,6 +2422,7 @@ namespace SBMS
                         bc.Code = DH.DocumentNumber;
                         bc.Font = null;
                         iTextSharp.text.Image bcImg = bc.CreateImageWithBarcode(writer.DirectContent, BaseColor.BLACK, BaseColor.BLACK);
+                        bcImg.ScaleToFit(90.0F, 24.0F);   // ~90pt is what the header row leaves beside the 18pt title text
                         rsHead.Add(new Chunk(bcImg, 0, -8, true));
                         rsHead.Add(new Chunk("   ", headfont));
                     }

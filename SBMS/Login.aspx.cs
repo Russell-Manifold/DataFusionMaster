@@ -112,10 +112,19 @@ namespace SBMS
 
                 bool isValid = true;
                 lnkSage.Visible = false;
+                lblErrDetail.Visible = false;
                 if (RetStr != "OK")
                 {
                     lblErr.Text = "Sage User Authorisation error. Unable to validate user with Sage: " + RetStr;
                     lnkSage.Visible = true;
+
+                    // Exact cause - HTTP status, response body and the full inner-exception chain.
+                    if (!string.IsNullOrEmpty(Api.LastValidationDetail))
+                    {
+                        lblErrDetail.Text = "<b>Diagnostic detail</b><br />" + Api.LastValidationDetail;
+                        lblErrDetail.Visible = true;
+                    }
+                    new ApiUrlCall().LogErrorToFile("Login validation failed. " + RetStr + " | " + Api.LastValidationDetail);
                     return;
                 }
 
@@ -946,10 +955,19 @@ namespace SBMS
                 string RetStr = await Api.ValidateUserAsync("Company", jsonString, userDets);
                 bool isValid = true;
                 lnkSage.Visible = false;
+                lblErrDetail.Visible = false;
                 if (RetStr != "OK")
                 {
                     lblErr.Text = "Sage User Authorisation error. Unable to validate user with Sage: " + RetStr;
                     lnkSage.Visible = true;
+
+                    // Exact cause - HTTP status, response body and the full inner-exception chain.
+                    if (!string.IsNullOrEmpty(Api.LastValidationDetail))
+                    {
+                        lblErrDetail.Text = "<b>Diagnostic detail</b><br />" + Api.LastValidationDetail;
+                        lblErrDetail.Visible = true;
+                    }
+                    new ApiUrlCall().LogErrorToFile("Login validation failed. " + RetStr + " | " + Api.LastValidationDetail);
                     return;
                 }
 

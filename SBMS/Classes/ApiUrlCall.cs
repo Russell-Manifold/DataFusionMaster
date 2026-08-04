@@ -21,7 +21,53 @@ using System.Web.Hosting;
 namespace SBMS.Classes
 {
     public class ApiUrlCall
-    {///
+    {
+        // ONE shared connection pool for every Sage call.
+        //
+        // Every HttpClient here is created per call and disposed. Disposing an HttpClient
+        // closes its socket, which then sits in TIME_WAIT for ~4 minutes. Under load the
+        // server ran out of ephemeral ports and Sage calls failed with
+        // SocketException 10055 (NoBufferSpaceAvailable) - seen on the login page as
+        // "Unable to connect to the remote server".
+        //
+        // The connection pool lives in the HANDLER, not the client. Sharing one static
+        // handler and constructing each HttpClient with disposeHandler:false keeps the
+        // per-call Timeout and per-call Authorization header exactly as they were, while
+        // the underlying sockets are pooled and reused instead of being burned.
+        private static readonly HttpClientHandler SharedHandler = new HttpClientHandler
+        {
+            UseCookies = false,
+            AutomaticDecompression = System.Net.DecompressionMethods.GZip | System.Net.DecompressionMethods.Deflate
+        };
+
+        static ApiUrlCall()
+        {
+            // Pooling alone is not enough. The pool is capped per endpoint, and the .NET
+            // default is far too low for a multi-tenant sync - requests queue behind each
+            // other and time out instead of running. Raise it once, process-wide.
+            ServicePointManager.DefaultConnectionLimit = 64;
+
+            // A permanently pinned socket never re-resolves DNS, so a Sage IP change would
+            // keep failing until an app-pool recycle. Force connections to be retired every
+            // 2 minutes so DNS is picked up again.
+            ServicePointManager.DnsRefreshTimeout = 120000;
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+
+            // Never let a static constructor throw - it would poison the type for the whole
+            // app pool (every later use throws TypeInitializationException, not just this bit).
+            try
+            {
+                ServicePointManager.FindServicePoint(new Uri(sageurl)).ConnectionLeaseTimeout = 120000;
+            }
+            catch { }
+        }
+
+        /// <summary>A pooled HttpClient. Safe to dispose - the shared handler survives.</summary>
+        private static HttpClient NewPooledClient()
+        {
+            return new HttpClient(SharedHandler, disposeHandler: false);
+        }
+        ///
         // In SBMSEntities.Context.cs
         // Replace this:
         // public SBMSEntities()
@@ -68,7 +114,7 @@ namespace SBMS.Classes
 
         public async Task<JObject> ApiCallAsync(string requestUrl, UserDetails userDetails)
         {
-            using (HttpClient client = new HttpClient())
+            using (HttpClient client = NewPooledClient())
             {
                 // Set Basic Authentication Header
                 client.Timeout = TimeSpan.FromSeconds(30); // Set the timeout as per your need
@@ -214,7 +260,7 @@ namespace SBMS.Classes
         //    JObject parsedJSON = new JObject();
         //    //string requestUrl = $"{sageurl}{DocType}/Save?apikey={{{APIKey}}}&CompanyID={Userdetails.CoID}";
         //    string requestUrl = sageurl + DocType+ "/Save?apikey={" + APIKey + "}&CompanyID=" + Userdetails.CoID;
-        //    using (HttpClient client = new HttpClient())
+        //    using (HttpClient client = NewPooledClient())
         //    {
         //        string combined = $"{Userdetails.LoginName}:{Userdetails.LoginPwd}";
         //        string base64Encoded = Convert.ToBase64String(Encoding.UTF8.GetBytes(combined));
@@ -303,7 +349,7 @@ namespace SBMS.Classes
         {
             JObject parsedJSON = new JObject();
             string requestUrl = sageurl+DocType+"/Save?useSystemDocumentNumber=true&apikey={"+APIKey+"}&CompanyID="+Userdetails.CoID;
-            using (HttpClient client = new HttpClient())
+            using (HttpClient client = NewPooledClient())
             {
                 client.Timeout = TimeSpan.FromSeconds(30);
                 string combined = $"{Userdetails.LoginName}:{Userdetails.LoginPwd}";
@@ -340,7 +386,7 @@ namespace SBMS.Classes
         {
             JObject parsedJSON = new JObject();
             string requestUrl = sageurl + DocType + "/Save?useSystemDocumentNumber=true&apikey={" + APIKey + "}&CompanyID=" + Userdetails.CoID;
-            using (HttpClient client = new HttpClient())
+            using (HttpClient client = NewPooledClient())
             {
                 string combined = $"{Userdetails.LoginName}:{Userdetails.LoginPwd}";
                 string base64Encoded = Convert.ToBase64String(Encoding.UTF8.GetBytes(combined));
@@ -447,9 +493,19 @@ namespace SBMS.Classes
         //    return parsedJSON;
         //}
 
+        /// <summary>
+        /// Full diagnostic detail from the last ValidateUserAsync call - HTTP status, response
+        /// body and the COMPLETE inner-exception chain. ValidateUserAsync only ever returned
+        /// ex.Message, and HttpClient buries the real cause (DNS, TLS, socket, proxy, timeout)
+        /// several levels down, so the outer message alone is usually "An error occurred while
+        /// sending the request." and tells you nothing. Empty when the call succeeded.
+        /// </summary>
+        public string LastValidationDetail { get; private set; }
+
         public async Task<string> ValidateUserAsync(string controller, string jsonStr, UserDetails userDetails)
         {
-            using (HttpClient client = new HttpClient())
+            LastValidationDetail = "";
+            using (HttpClient client = NewPooledClient())
             {
                 string requestUrl = $"{sageurl}{controller}/Get/{userDetails.CoID}?apikey={APIKey}";
 
@@ -464,23 +520,84 @@ namespace SBMS.Classes
                 {
                     HttpResponseMessage response = await client.GetAsync(requestUrl).ConfigureAwait(false);
                     string responseContent = await response.Content.ReadAsStringAsync();
+
                     if (responseContent != "null")
                     {
                         if (responseContent.ToString().ToLower().Contains("failed"))
                         {
+                            LastValidationDetail = BuildValidationDetail(requestUrl, userDetails, response, responseContent, null);
                             return responseContent.ToString();
                         }
                         else { return "OK"; }
                     }
                     else
                     {
+                        LastValidationDetail = BuildValidationDetail(requestUrl, userDetails, response, responseContent, null);
                         return $" Invalid Company ID";
                     }
                 }
                 catch (Exception ex)
                 {
+                    LastValidationDetail = BuildValidationDetail(requestUrl, userDetails, null, null, ex);
                     return $"Validate User Error: {ex.Message}";
                 }
+            }
+        }
+
+        /// <summary>
+        /// Human-readable diagnostic for a failed user validation: what was called, what came
+        /// back, and every exception in the chain down to the root cause. HTML line breaks so it
+        /// can be dropped straight into a Label. Never throws - a diagnostic must not itself fail.
+        /// </summary>
+        private static string BuildValidationDetail(string requestUrl, UserDetails userDetails,
+                                                    HttpResponseMessage response, string responseContent,
+                                                    Exception ex)
+        {
+            try
+            {
+                var sb = new StringBuilder();
+
+                // Strip the API key - this string is rendered on the login page.
+                string safeUrl = requestUrl ?? "";
+                int keyPos = safeUrl.IndexOf("apikey=", StringComparison.OrdinalIgnoreCase);
+                if (keyPos >= 0) safeUrl = safeUrl.Substring(0, keyPos) + "apikey=***";
+
+                sb.Append("<b>Request:</b> ").Append(HttpUtility.HtmlEncode(safeUrl)).Append("<br />");
+                sb.Append("<b>Company ID:</b> ").Append(userDetails?.CoID.ToString() ?? "(none)")
+                  .Append(" &nbsp; <b>Login:</b> ").Append(HttpUtility.HtmlEncode(userDetails?.LoginName ?? "(none)"))
+                  .Append("<br />");
+
+                if (response != null)
+                {
+                    sb.Append("<b>HTTP:</b> ").Append((int)response.StatusCode).Append(" ")
+                      .Append(HttpUtility.HtmlEncode(response.ReasonPhrase ?? "")).Append("<br />");
+                }
+
+                if (!string.IsNullOrEmpty(responseContent))
+                {
+                    string body = responseContent.Length > 1000 ? responseContent.Substring(0, 1000) + " ..." : responseContent;
+                    sb.Append("<b>Response:</b> ").Append(HttpUtility.HtmlEncode(body)).Append("<br />");
+                }
+
+                int level = 0;
+                for (Exception e = ex; e != null; e = e.InnerException, level++)
+                {
+                    sb.Append(level == 0 ? "<b>Exception:</b> " : "<b>&rarr; Inner (" + level + "):</b> ")
+                      .Append(HttpUtility.HtmlEncode(e.GetType().Name)).Append(" - ")
+                      .Append(HttpUtility.HtmlEncode(e.Message)).Append("<br />");
+
+                    if (e is System.Net.WebException we)
+                        sb.Append("&nbsp;&nbsp;<b>WebException status:</b> ").Append(we.Status).Append("<br />");
+                    if (e is System.Net.Sockets.SocketException se)
+                        sb.Append("&nbsp;&nbsp;<b>Socket error:</b> ").Append(se.SocketErrorCode)
+                          .Append(" (").Append(se.ErrorCode).Append(")<br />");
+                }
+
+                return sb.ToString();
+            }
+            catch (Exception diagEx)
+            {
+                return "Could not build diagnostic detail: " + HttpUtility.HtmlEncode(diagEx.Message);
             }
         }
 
@@ -494,7 +611,7 @@ namespace SBMS.Classes
             };
 
             string requestUrl = sageurl + "Company/GET?apikey={" + APIKey + "}";
-            using (HttpClient client = new HttpClient())
+            using (HttpClient client = NewPooledClient())
             {
                 // Set Basic Authentication Header
                 string combined = $"{username}:{userpwd}";
@@ -1890,7 +2007,7 @@ namespace SBMS.Classes
 
         public JObject ApiCallNA(string requestUrl, UserDetails userDetails)
         {
-            using (HttpClient client = new HttpClient())
+            using (HttpClient client = NewPooledClient())
             {
                 // Set Basic Authentication Header
                 client.Timeout = TimeSpan.FromSeconds(30); // Set the timeout as per your need
@@ -2038,7 +2155,7 @@ namespace SBMS.Classes
                 // Make POST call - also with ConfigureAwait(false)
                 string postUrl = sageurl + $"Item/Save?apikey={{{APIKey}}}&CompanyID={Userdetails.CoID}";
 
-                using (HttpClient client = new HttpClient())
+                using (HttpClient client = NewPooledClient())
                 {
                     client.Timeout = TimeSpan.FromSeconds(30);
 
@@ -2120,7 +2237,7 @@ namespace SBMS.Classes
                 do
                     {
                         string requestUrl = sageurl + "SalesOrder/GET?apikey={" + APIKey + "}&CompanyID=" + Userdetails.CoID + "&$skip=" + skipQty + FiltDate(SOrdDT.ToString()) + ")&includeDetail=true&includeCustomerDetails=true";
-                        ApiUrlCall api = new ApiUrlCall();
+                         ApiUrlCall api = new ApiUrlCall();
                     try
                     {
                         parsedJSON = await ApiCallAsync(requestUrl, Userdetails);

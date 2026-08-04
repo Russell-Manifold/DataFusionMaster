@@ -149,6 +149,9 @@ namespace SBMS
                     ItemQtyDecPlaces = Convert.ToInt16(txtDecPlaces.Text.Trim()),
                     SageConsultRNum = txtConsultRNum.Text.Trim(),
                     ProfileStatus = "Pending",
+                    // Non-nullable in the EDMX, so EF marks it Required and rejects the entity
+                    // before the INSERT is ever sent - a database DEFAULT can never fire for it.
+                    LPNPickMode = "off",
                     Active = false,
                     Created = DateTime.Now,
                     Modified = DateTime.Now,

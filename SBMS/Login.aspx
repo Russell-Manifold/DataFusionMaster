@@ -160,6 +160,10 @@
                                 <asp:LinkButton ID="lbtnlogin" runat="server" OnClick="lbtnlogin_Click" CssClass="icon fa-door-open buttonSage" >Login</asp:LinkButton><br />
                                 <asp:Label ID="lblErr" runat="server" Text="" ForeColor="Red"></asp:Label><br /><br />
                                 <a id="lnkSage" runat="server" visible="false" href="https://status.sage.com/" target="_blank" style="color:darkgreen" class="icon fa-chain-broken">Click here to check the status of Sage, <br /> This could be caused by a Sage outage.</a>
+                                <asp:Label ID="lblErrDetail" runat="server" Text="" Visible="false"
+                                    style="display:block; margin-top:1.5em; padding:.8em 1em; text-align:left;
+                                           background:#fff; border:1px solid #ccc; border-radius:.4em;
+                                           color:#333; font-size:.7em; line-height:1.5; word-break:break-word;"></asp:Label>
                             </asp:Panel>
 
                                <asp:Panel ID="PnlNewP" runat="server" Style="display: none">

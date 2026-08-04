@@ -2623,15 +2623,7 @@ namespace SBMS
                         ddStore.SelectedValue = drawStoreId.ToString();
                     }
 
-                    // Unit cost: latest ledger cost at the draw store, else item average.
-                    decimal unitCost = _db.ItemTransactions
-                        .Where(x => x.CompanyID == CoID && x.ItemID == itemId && x.ToID == drawStoreId)
-                        .OrderByDescending(x => x.TrnID)
-                        .Select(x => x.TotalUnitPriceExclInclAdd ?? 0)
-                        .FirstOrDefault();
-                    if (unitCost == 0)
-                        unitCost = _db.ItemsMasters.Where(x => x.CompanyID == CoID && x.ID == itemId)
-                                       .Select(x => x.AverageCost ?? 0).FirstOrDefault();
+                    decimal unitCost = ResolveRmUnitCost(_db, itemId, drawStoreId);
 
                     Label txtUnitCost = gvr.FindControl("txtUnitCost") as Label;
                     if (txtUnitCost != null) txtUnitCost.Text = ((double)unitCost).ToString("N2");
@@ -2651,6 +2643,39 @@ namespace SBMS
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Unit cost to show — and save — against a works order component line.
+        ///
+        /// Returns the STORE's running weighted average, which is the exact figure
+        /// DoItemAdjustment posts the draw at, so the screen always agrees with what
+        /// gets booked. The screen previously showed the unit price off the single most
+        /// recent movement (auto-fill) or the item-wide Sage average (manual store pick);
+        /// both can differ from the store average by several times over — measured up to
+        /// 7x on live data — which is what made costs look inflated on fulfilment.
+        ///
+        /// Falls back only when no store average has ever been stamped for that
+        /// item/store: latest movement price, then item average, then zero. Zero means
+        /// no cost is known, which the manufacture post already refuses to draw at.
+        /// </summary>
+        private decimal ResolveRmUnitCost(SBMSEntities _db, long itemId, long storeId)
+        {
+            decimal unitCost = StoreCosting.GetStoreAvgCost(_db, CoID, itemId, storeId);
+            if (unitCost > 0) return unitCost;
+
+            unitCost = _db.ItemTransactions
+                .Where(x => x.CompanyID == CoID && x.ItemID == itemId && x.ToID == storeId)
+                .OrderByDescending(x => x.TrnID)
+                .Select(x => x.TotalUnitPriceExclInclAdd ?? 0)
+                .FirstOrDefault();
+            if (unitCost > 0) return unitCost;
+
+            unitCost = _db.ItemsMasters
+                .Where(x => x.CompanyID == CoID && x.ID == itemId)
+                .Select(x => x.AverageCost ?? 0)
+                .FirstOrDefault();
+            return unitCost > 0 ? unitCost : 0m;
         }
 
         // Utility method to find the AccordionPane in the hierarchy
@@ -2781,17 +2806,14 @@ namespace SBMS
                     }
                     else
                     {
-                        var thisitem = _items.FirstOrDefault(x => x.ID == ItemID);
-                        if (thisitem != null)
-                        {
-                            txtUnitCost.Text = thisitem.AverageCost?.ToString("N2") ?? "0.00";
-                            WOLine.UnitCost = thisitem.AverageCost ?? 0m;
-                        }
-                        else
-                        {
-                            txtUnitCost.Text = "0.00";
-                            WOLine.UnitCost = 0;
-                        }
+                        // Cost the line at the STORE's running weighted average - the exact number
+                        // DoItemAdjustment will post the draw at. Previously this showed the item-wide
+                        // Sage average, which can differ from the store's by several times over.
+                        long unitStoreId = _db.Stores.Where(x => x.CompanyID == CoID && x.StoreCode == StoreCode)
+                                              .Select(x => (long)x.StoreID).FirstOrDefault();
+                        decimal unitCost = ResolveRmUnitCost(_db, ItemID, unitStoreId);
+                        txtUnitCost.Text = unitCost.ToString("N2");
+                        WOLine.UnitCost = unitCost;
 
                         //if (CurrentUser.CompanyUseLotNumbers == true) 
                         //{ 
