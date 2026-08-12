@@ -37,10 +37,17 @@ namespace SBMS
                 {
                     imgCoImg.ImageUrl = ResolveUrl("~/images/CoImages/0000.png");
                 }
-                
+
                 using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
                 {
-                   lblCoName.Text = _db.CompanyMasters.FirstOrDefault(x => x.SBCACoID == userDets.CoID).CompanyName.ToString();
+                    try
+                    {
+                        lblCoName.Text = _db.CompanyMasters.FirstOrDefault(x => x.SBCACoID == userDets.CoID).CompanyName.ToString();
+                    }
+                    catch (Exception ex)
+                    {
+                        lblCoName.Text = "Company Name or User Not Found";
+                    }
                 }
                 showhidebuttons();
                 if (userDets.ExpiryDate < DateTime.Now)

@@ -260,26 +260,41 @@ namespace SBMS
                 var line = db.DocLines.FirstOrDefault(l => l.LineID == lineId && l.CompanyID == CurrentUser.CoID);
                 if (line == null) return;
 
+                // Resolve the receiving store BEFORE staging anything. Without one we can stamp
+                // neither a store code nor a lot number, and a line staged with neither is
+                // unusable on the web - refuse the count rather than half-write it.
+                var recvStore = db.Stores.FirstOrDefault(s => s.CompanyID == CurrentUser.CoID
+                    && s.AllowReceiving == true && s.StoreActive == true);
+                if (recvStore == null)
+                {
+                    SetFeedback(false, "&#9888; No receiving store is configured &mdash; ask an administrator to flag a store as Allow Receiving.");
+                    return;
+                }
+
                 if (reject) line.RejectQty  = line.RejectQty + qty;
                 else        line.ReceiveQty = (line.ReceiveQty ?? 0) + qty;
                 line.ToReceive = true;
-
-                // Stamp the default receiving store on the line, as if captured on the web.
-                var recvStore = db.Stores.FirstOrDefault(s => s.CompanyID == CurrentUser.CoID
-                    && s.AllowReceiving == true && s.StoreActive == true);
-                if (recvStore != null) line.StoreCode = recvStore.StoreCode;
+                line.StoreCode = recvStore.StoreCode;
 
                 // Auto lot number — same convention as the web (ddMMyyyy + store + sequence).
                 // Generated once per line (kept on re-capture) and the LotTrackingMaster row is
                 // written here so the sequence stays unique. The web uses this lot, not a new one.
                 if (CurrentUser.CompanyUseLotNumbers == true
-                    && string.IsNullOrEmpty(line.LotNumber) && recvStore != null)
+                    && string.IsNullOrEmpty(line.LotNumber))
                 {
                     var itm = db.ItemsMasters.FirstOrDefault(x => x.CompanyID == CurrentUser.CoID && x.Code == line.ItemCode);
                     if (itm != null && itm.IsLotTracked == true)
                     {
+                        // The count-based sequence can collide when two devices capture
+                        // concurrently - bump until the number is unused (mirrors ReceiveScanM).
                         int recnum = GetLotNum(CurrentUser.CoID);
                         string lotNum = DateTime.Today.ToString("ddMMyyyy") + recvStore.StoreCode + recnum.ToString();
+                        while (db.LotTrackingMasters.Any(x =>
+                                   x.CompanyID == CurrentUser.CoID && x.LotNumber == lotNum))
+                        {
+                            recnum++;
+                            lotNum = DateTime.Today.ToString("ddMMyyyy") + recvStore.StoreCode + recnum.ToString();
+                        }
                         line.LotNumber = lotNum;
                         db.LotTrackingMasters.Add(new LotTrackingMaster
                         {

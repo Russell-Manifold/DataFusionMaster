@@ -290,6 +290,7 @@
     <Content Include="images\worksord2.png" />
     <Content Include="images\worksordsmall.png" />
     <Content Include="ItemQOHSync.aspx" />
+    <Content Include="LotBackfill.aspx" />
     <Content Include="ItemStoresLink.aspx" />
     <Content Include="ItemStkAdjustment.aspx" />
     <Content Include="documents\Privacy_Policy.pdf" />
@@ -1173,6 +1174,13 @@
     <Compile Include="ItemQOHSync.aspx.cs">
       <DependentUpon>ItemQOHSync.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="LotBackfill.aspx.cs">
+      <DependentUpon>LotBackfill.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="LotBackfill.aspx.designer.cs">
+      <DependentUpon>LotBackfill.aspx</DependentUpon>
     </Compile>
     <Compile Include="ItemQOHSync.aspx.designer.cs">
       <DependentUpon>ItemQOHSync.aspx</DependentUpon>

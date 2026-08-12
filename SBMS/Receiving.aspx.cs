@@ -643,7 +643,18 @@ namespace SBMS
             }
            
             long lineid = Convert.ToInt64(lblLineID.Text);
-            
+
+            // Lot number typed into the modal. lbtnItmC_Click seeds this with "N/A" when the
+            // line has no lot yet, so that placeholder counts as "nothing captured".
+            string capturedLot = (lblLotNum.Text ?? "").Trim();
+            if (capturedLot.Equals("N/A", StringComparison.OrdinalIgnoreCase)) capturedLot = "";
+
+            // Resolved once here and reused by the save block further down. The Lot Number panel
+            // is shown for EVERY stock item when the company uses lot numbers (lbtnItmC_Click
+            // keys it off ItemType, not IsLotTracked), so without this a lot typed against a
+            // non-tracked item would be stamped onto the line and mint a LotTrackingMaster row.
+            bool itemIsLotTracked = false;
+
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {
                 var Docline = _db.TempDocLines.Where(x => x.LineID == lineid).FirstOrDefault();
@@ -653,6 +664,29 @@ namespace SBMS
                     return;
                 }
                 long docid = Convert.ToInt64(lblDocID.Text);
+
+                if (CurrentUser.CompanyUseLotNumbers == true)
+                {
+                    // Read the flag directly - no cast inside the expression tree. IsLotTracked is
+                    // non-nullable, so FirstOrDefault yields false when the item is not found,
+                    // which is the behaviour we want anyway.
+                    long lotItemId = Docline.SelectionId;
+                    itemIsLotTracked = _db.ItemsMasters
+                        .Where(x => x.CompanyID == CurrentUser.CoID && x.ID == lotItemId)
+                        .Select(x => x.IsLotTracked).FirstOrDefault();
+                }
+
+                // A lot-tracked item must never be received without a lot number - stock that
+                // lands with a null lot cannot be picked, transferred or traced afterwards, and
+                // nothing downstream can repair it. Block the receipt instead of writing it.
+                // (Receive All auto-generates a lot for these items; this is the per-line path.)
+                if (itemIsLotTracked && QtyRec > 0 && capturedLot.Length == 0)
+                {
+                    AlertHelper.ShowSweetAlert(this,
+                        Docline.ItemCode + " is lot tracked - enter a Lot Number before receiving it. Nothing was received.",
+                        "error");
+                    return;
+                }
 
                 QtyOrd = Docline.Quantity ?? 0;
 
@@ -799,11 +833,21 @@ namespace SBMS
                 Docline.QtyLeft = QtyLeft < 0 ? 0 : QtyLeft;
                 Docline.ToReceive = true;
                 Docline.ReceiveComplete = false;
-                if (CurrentUser.CompanyUseLotNumbers == true && chkAddLotNum.Checked == true)
+                // Persist the lot number captured in the modal. This was gated on chkAddLotNum,
+                // which is only ever ticked by ProcessLotNumAdd - i.e. the "+" (fulfil from more
+                // than one lot) button. Opening a line the normal way, via the item-code link,
+                // runs lbtnItmC_Click which resets that checkbox to false, so a lot number typed
+                // on the ordinary receive path was silently dropped and lot-tracked stock could
+                // be received carrying no lot at all. Gate on the captured value instead.
+                if (itemIsLotTracked && capturedLot.Length > 0)
                 {
-                    if (lblLotNum.Enabled == true) Docline.LotNumber = lblLotNum.Text;
+                    Docline.LotNumber = capturedLot;
 
-                    if (lblLotNum.Enabled == true)
+                    // Mint the master row once only - re-saving the same line (correcting a qty
+                    // or store) must not add a second LotTrackingMaster for an existing lot.
+                    bool lotExists = _db.LotTrackingMasters
+                        .Any(l => l.CompanyID == CurrentUser.CoID && l.LotNumber == capturedLot);
+                    if (!lotExists)
                     {
                         // save new Lot Number to db
                         LotTrackingMaster LtNew = new LotTrackingMaster();
@@ -906,6 +950,42 @@ namespace SBMS
                 string warnMsg = "Invalid Receive Date, unable to continue.";
                 AlertHelper.ShowSweetAlert(this, warnMsg, "warning");
                 return;
+            }
+
+            // ---------------------------------------------------------------------
+            // Lot-number backstop.
+            //
+            // The per-line capture in lbtnReceive_Click already refuses a lot-tracked
+            // item with no lot, but that only covers lines staged by THIS build. Lines
+            // staged earlier, or by any path that bypasses that handler, can still be
+            // sitting here with a null lot. Once this method runs the stock is posted
+            // to Sage and written to ItemTransactions - untraceable and unpickable
+            // from then on, with no way to repair it after the fact. Refuse to submit.
+            // ---------------------------------------------------------------------
+            if (CurrentUser.CompanyUseLotNumbers == true)
+            {
+                using (SBMSEntities _dbLot = new SBMSEntities(Config.GetConnectionString()))
+                {
+                    var missingLot = (from dl in _dbLot.TempDocLines
+                                      join im in _dbLot.ItemsMasters
+                                           on dl.SelectionId equals im.ID
+                                      where dl.DocID == docid
+                                         && dl.ToReceive == true
+                                         && (dl.ReceiveQty ?? 0) > 0
+                                         && im.CompanyID == CurrentUser.CoID
+                                         && im.IsLotTracked == true
+                                         && (dl.LotNumber == null || dl.LotNumber.Trim() == "")
+                                      select dl.ItemCode).Distinct().ToList();
+
+                    if (missingLot.Count > 0)
+                    {
+                        AlertHelper.ShowSweetAlert(this,
+                            "These lot-tracked items have no Lot Number: " + string.Join(", ", missingLot)
+                            + ". Capture a Lot Number on each before submitting. Nothing was posted.",
+                            "error");
+                        return;
+                    }
+                }
             }
 
             // ---------------------------------------------------------------------

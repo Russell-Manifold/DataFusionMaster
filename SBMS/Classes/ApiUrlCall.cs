@@ -93,7 +93,7 @@ namespace SBMS.Classes
         static DateTime SuppInvDT = Convert.ToDateTime("01 Jan 2015"), SuppRetDT = Convert.ToDateTime("01 Jan 2015"), JrnlDT = Convert.ToDateTime("01 Jan 2015"), QuoteDT = Convert.ToDateTime("01 Jan 2015"), SOrdDT = Convert.ToDateTime("01 Jan 2015"), GLegDT = Convert.ToDateTime("01 Jan 2015");
 
        public static string sageurl = "https://accounting.sageone.co.za/api/2.0.0/";
-       public static string APIKey = "5850E392-0FE8-43B4-9EEB-18D2B28B115C";
+      public static string APIKey = "5850E392-0FE8-43B4-9EEB-18D2B28B115C";
         
       //public static string sageurl = "https://resellers.accounting.sageone.co.za/api/2.0.0/";
      //public static string APIKey = "2B7B61BA-41B8-4212-B2A2-77B8734BA688";
@@ -1581,8 +1581,11 @@ namespace SBMS.Classes
                                     thisitm.NumericUserField2 = Convert.ToDecimal(item["NumericUserField2"] ?? 0, CultureInfo.InvariantCulture);
                                     thisitm.NumericUserField3 = Convert.ToDecimal(item["NumericUserField3"] ?? 0, CultureInfo.InvariantCulture);
                                     thisitm.Physical = Convert.ToBoolean(item["Physical"].ToString() ?? "");
-                                    thisitm.IsLotTracked = false;
-                                    if (thisitm.Physical == true) {thisitm.IsLotTracked = true;}
+                                    // New items inherit the COMPANY's lot policy - the user changes it per item
+                                    // afterwards if it differs. Previously this keyed off Physical alone, which
+                                    // lot-tracked every stock item even for companies that don't use lot numbers.
+                                    // Non-physical (service) items can't carry a lot, so they stay false.
+                                    thisitm.IsLotTracked = Userdetails.CompanyUseLotNumbers && (thisitm.Physical == true);
                                     thisitm.PriceExclusive = Convert.ToDecimal(item["PriceExclusive"] ?? 0, CultureInfo.InvariantCulture);
                                     thisitm.PriceInclusive = Convert.ToDecimal(item["PriceInclusive"] ?? 0, CultureInfo.InvariantCulture);
                                     thisitm.QuantityOnHand = Convert.ToDecimal(item["QuantityOnHand"] ?? 0, CultureInfo.InvariantCulture);
@@ -1872,6 +1875,10 @@ namespace SBMS.Classes
                                 thisitm.NumericUserField2 = Convert.ToDecimal(parsedJSON["NumericUserField2"] ?? 0, CultureInfo.InvariantCulture);
                                 thisitm.NumericUserField3 = Convert.ToDecimal(parsedJSON["NumericUserField3"] ?? 0, CultureInfo.InvariantCulture);
                                 thisitm.Physical = Convert.ToBoolean(parsedJSON["Physical"].ToString() ?? "");
+                                // Match the bulk sync: a new item inherits the company's lot policy. Without
+                                // this the flag defaulted to false here, so an item first created by this
+                                // path was never lot tracked and receiving never asked for a lot number.
+                                thisitm.IsLotTracked = Userdetails.CompanyUseLotNumbers && (thisitm.Physical == true);
                                 thisitm.PriceExclusive = Convert.ToDecimal(parsedJSON["PriceExclusive"] ?? 0, CultureInfo.InvariantCulture);
                                 thisitm.PriceInclusive = Convert.ToDecimal(parsedJSON["PriceInclusive"] ?? 0, CultureInfo.InvariantCulture);
                                 thisitm.QuantityOnHand = Convert.ToDecimal(parsedJSON["QuantityOnHand"] ?? 0, CultureInfo.InvariantCulture);
@@ -1975,6 +1982,10 @@ namespace SBMS.Classes
                         thisitm.NumericUserField2 = Convert.ToDecimal(parsedJSON["NumericUserField2"] ?? 0, CultureInfo.InvariantCulture);
                         thisitm.NumericUserField3 = Convert.ToDecimal(parsedJSON["NumericUserField3"] ?? 0, CultureInfo.InvariantCulture);
                         thisitm.Physical = Convert.ToBoolean(parsedJSON["Physical"].ToString() ?? "");
+                        // Match the bulk sync: a new item inherits the company's lot policy. Without
+                        // this the flag defaulted to false here, so an item first created by this
+                        // path was never lot tracked and receiving never asked for a lot number.
+                        thisitm.IsLotTracked = Userdetails.CompanyUseLotNumbers && (thisitm.Physical == true);
                         thisitm.PriceExclusive = Convert.ToDecimal(parsedJSON["PriceExclusive"] ?? 0, CultureInfo.InvariantCulture);
                         thisitm.PriceInclusive = Convert.ToDecimal(parsedJSON["PriceInclusive"] ?? 0, CultureInfo.InvariantCulture);
                         thisitm.QuantityOnHand = Convert.ToDecimal(parsedJSON["QuantityOnHand"] ?? 0, CultureInfo.InvariantCulture);

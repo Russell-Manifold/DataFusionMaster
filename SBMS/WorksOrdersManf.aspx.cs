@@ -4668,17 +4668,24 @@ namespace SBMS
                             if (drawAvg > 0) unitcost = drawAvg;
                         }
 
-                        // GUARD A - never draw valued stock out at zero cost.
+                        // GUARD A - never draw VALUED stock out at zero cost.
                         // Removing quantity while removing NO value re-weights the remainder upwards:
                         // draw half the stock at zero and the average cost doubles, draw two thirds
                         // and it triples. Reachable whenever the store has no costed movement history
-                        // AND the works-order line carries no unit cost. An item that genuinely costs
-                        // nothing has a zero Sage average too, so this cannot fire on one of those.
-                        if (useqty < 0 && unitcost <= 0 && (itm.AverageCost ?? 0) > 0)
+                        // AND the works-order line carries no unit cost (e.g. the line was created
+                        // before the item ever had a costed receiving).
+                        //
+                        // itm.AverageCost was just refreshed from Sage above, so fall back to that
+                        // live item-wide cost instead of refusing the draw.
+                        //
+                        // A zero Sage average means the item genuinely costs nothing - consignment
+                        // stock is the normal case. Drawing that at zero cannot inflate anything
+                        // (there is no value to re-weight), so it MUST be allowed through.
+                        if (useqty < 0 && unitcost <= 0)
                         {
-                            return $"No cost is available for {itm.Code} in store {stor}. "
-                                 + "Drawing it out at zero cost would inflate the item's average cost, so nothing was posted. "
-                                 + "Set the unit cost on the works order line (or receive costed stock into that store) and try again.";
+                            decimal itemAvg = itm.AverageCost ?? 0;
+                            if (itemAvg > 0) unitcost = itemAvg;
+                            // else: genuinely free stock - fall through and post at zero.
                         }
 
                         // TESTING ONLY
