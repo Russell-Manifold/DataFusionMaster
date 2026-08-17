@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" Async="true" AutoEventWireup="true" CodeBehind="ProductionTrackingStatic.aspx.cs" Inherits="SBMS.ProductionTrackingStatic" %>
+﻿<%@ Page Language="C#" Async="true" AsyncTimeout="600" AutoEventWireup="true" CodeBehind="ProductionTrackingStatic.aspx.cs" Inherits="SBMS.ProductionTrackingStatic" %>
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">

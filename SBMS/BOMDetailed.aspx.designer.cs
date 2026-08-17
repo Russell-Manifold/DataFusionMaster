@@ -366,6 +366,11 @@ namespace SBMS
         protected global::System.Web.UI.WebControls.TextBox txtTotCost;
 
         /// <summary>
+        /// DDAddCostAcct control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.DropDownList DDAddCostAcct;
+
+        /// <summary>
         /// Pane32 control.
         /// </summary>
         /// <remarks>

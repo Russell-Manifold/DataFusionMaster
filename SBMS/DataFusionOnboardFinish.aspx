@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" Async="true" AutoEventWireup="true" CodeBehind="DataFusionOnboardFinish.aspx.cs" Inherits="SBMS.DataFusionOnboardFinish" %>
+﻿<%@ Page Language="C#" Async="true" AsyncTimeout="600" AutoEventWireup="true" CodeBehind="DataFusionOnboardFinish.aspx.cs" Inherits="SBMS.DataFusionOnboardFinish" %>
 <%@ Register Src="~/CommonScripts.ascx" TagPrefix="uc" TagName="CommonScripts" %>
 <%@ Register Assembly="AjaxControlToolkit" Namespace="AjaxControlToolkit" TagPrefix="cci" %>
 <!DOCTYPE html>

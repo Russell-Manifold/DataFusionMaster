@@ -1,4 +1,14 @@
-﻿<%@ Page Language="C#" Async="true" AutoEventWireup="true" CodeBehind="Receiving.aspx.cs" Inherits="SBMS.Receiving" %>
+﻿<%--
+    AsyncTimeout: an async page defaults to 45 SECONDS. Web.config's
+    executionTimeout does not apply to async pages - it is a separate setting.
+    Finalising a receipt makes up to 3 sequential Sage calls PER LINE
+    (LoadOneItem + two ItemAdjustments) on top of the supplier invoice, so a
+    10-line receipt is already ~30 calls. Past 45s ASP.NET aborted the request
+    mid-pipeline, after the supplier invoice had posted but before the header
+    resolved - leaving DocHeader.RecStatus stuck on 1 and the PO permanently
+    blocked from further receiving.
+--%>
+<%@ Page Language="C#" Async="true" AsyncTimeout="600" AutoEventWireup="true" CodeBehind="Receiving.aspx.cs" Inherits="SBMS.Receiving" %>
 <%@ Register Assembly="AjaxControlToolkit" Namespace="AjaxControlToolkit" TagPrefix="cci" %>
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">

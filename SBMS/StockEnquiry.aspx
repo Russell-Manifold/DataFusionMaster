@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" Async="true" AutoEventWireup="true" CodeBehind="StockEnquiry.aspx.cs" Inherits="SBMS.StockEnquiry" EnableViewState="true" %>
+﻿<%@ Page Language="C#" Async="true" AsyncTimeout="600" AutoEventWireup="true" CodeBehind="StockEnquiry.aspx.cs" Inherits="SBMS.StockEnquiry" EnableViewState="true" %>
 <%@ Register Assembly="AjaxControlToolkit" Namespace="AjaxControlToolkit" TagPrefix="cci" %>
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">

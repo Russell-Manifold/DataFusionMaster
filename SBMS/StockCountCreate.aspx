@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" Async="true" AutoEventWireup="true" CodeBehind="StockCountCreate.aspx.cs" Inherits="SBMS.StockCountCreate" %>
+﻿<%@ Page Language="C#" Async="true" AsyncTimeout="600" AutoEventWireup="true" CodeBehind="StockCountCreate.aspx.cs" Inherits="SBMS.StockCountCreate" %>
 <%@ Register Assembly="AjaxControlToolkit" Namespace="AjaxControlToolkit" TagPrefix="cci" %>
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">

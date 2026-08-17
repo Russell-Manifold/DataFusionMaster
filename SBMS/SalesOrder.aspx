@@ -1,4 +1,7 @@
-﻿<%@ Page Language="C#" Async="true" AutoEventWireup="true" CodeBehind="SalesOrder.aspx.cs" Inherits="SBMS.SalesOrder" ClientIDMode="Static" %>
+﻿<%-- AsyncTimeout: async pages default to 45 SECONDS; Web.config's executionTimeout
+     does NOT cover them. Posting an order makes per-line Sage calls, so a large order
+     can exceed 45s and be aborted part-posted. See the note on Receiving.aspx. --%>
+<%@ Page Language="C#" Async="true" AsyncTimeout="600" AutoEventWireup="true" CodeBehind="SalesOrder.aspx.cs" Inherits="SBMS.SalesOrder" ClientIDMode="Static" %>
 <%@ Register Assembly="AjaxControlToolkit" Namespace="AjaxControlToolkit" TagPrefix="cci" %>
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">

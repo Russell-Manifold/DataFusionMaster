@@ -607,6 +607,7 @@
     <Content Include="niceadmin\index.html" />
     <Content Include="OSPurchaseOrdersPartial.aspx" />
     <Content Include="Receiving.aspx" />
+    <Content Include="ReceivingRecovery.aspx" />
     <Content Include="Reporting.aspx" />
     <Content Include="PurchaseOrdersIncomplete.aspx" />
     <Content Include="DashboardSales.aspx" />
@@ -1462,6 +1463,13 @@
     </Compile>
     <Compile Include="Receiving.aspx.designer.cs">
       <DependentUpon>Receiving.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="ReceivingRecovery.aspx.cs">
+      <DependentUpon>ReceivingRecovery.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="ReceivingRecovery.aspx.designer.cs">
+      <DependentUpon>ReceivingRecovery.aspx</DependentUpon>
     </Compile>
     <Compile Include="Reporting.aspx.cs">
       <DependentUpon>Reporting.aspx</DependentUpon>

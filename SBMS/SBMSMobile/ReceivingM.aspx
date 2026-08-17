@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" Async="true" AutoEventWireup="true" CodeBehind="ReceivingM.aspx.cs"
+﻿<%@ Page Language="C#" Async="true" AsyncTimeout="600" AutoEventWireup="true" CodeBehind="ReceivingM.aspx.cs"
          Inherits="SBMS.ReceivingM" %>
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">

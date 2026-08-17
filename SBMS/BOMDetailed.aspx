@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" Async="true" AutoEventWireup="true" CodeBehind="BOMDetailed.aspx.cs" Inherits="SBMS.BOMDetailed" %>
+﻿<%@ Page Language="C#" Async="true" AsyncTimeout="600" AutoEventWireup="true" CodeBehind="BOMDetailed.aspx.cs" Inherits="SBMS.BOMDetailed" %>
 <%@ Register Assembly="AjaxControlToolkit" Namespace="AjaxControlToolkit" TagPrefix="cci" %>
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -156,7 +156,14 @@
                                     <tr>
                                         <td>Additional Costs</td>
                                         <td><asp:TextBox ID="txtTotCost" runat="server" Width="100px" ReadOnly="true" style="text-align:right"></asp:TextBox></td>
-                                    </tr>      
+                                    </tr>
+                                    <%-- Credit side of the journal raised when this BOM is manufactured.
+                                         The debit side is the account flagged "Stock Adjustment Account"
+                                         in Settings > Accounts. --%>
+                                    <tr>
+                                        <td>Post Additional Costs To&nbsp;</td>
+                                        <td><asp:DropDownList ID="DDAddCostAcct" runat="server" Width="220px"></asp:DropDownList></td>
+                                    </tr>
                                     </table>
                                 </asp:Panel><br /><br /><br />
                                 <asp:Panel ID="Pane32" runat="server">

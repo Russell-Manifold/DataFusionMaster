@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" Async="true" AutoEventWireup="true" CodeBehind="BundleDetailed.aspx.cs" Inherits="SBMS.BundleDetailed" %>
+﻿<%@ Page Language="C#" Async="true" AsyncTimeout="600" AutoEventWireup="true" CodeBehind="BundleDetailed.aspx.cs" Inherits="SBMS.BundleDetailed" %>
 <%@ Register Assembly="AjaxControlToolkit" Namespace="AjaxControlToolkit" TagPrefix="cci" %>
 
 <!DOCTYPE html>

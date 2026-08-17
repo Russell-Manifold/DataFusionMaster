@@ -43,6 +43,13 @@ namespace SBMS
                 if (!CurrentUser.UseModule2)
                 {
                     lbtnKit.Style.Add("display", "none");
+                }
+                // GL Account Access is needed by Module 2 AND by BOMs (Module 3): a BOM that
+                // carries additional costs must nominate the account they post to, and the
+                // company must flag a Stock Adjustment Account here. Hiding it from a
+                // BOM-only company left them unable to save such a BOM at all.
+                if (!CurrentUser.UseModule2 && !CurrentUser.UseModule3)
+                {
                     lbtnAccts.Style.Add("display", "none");
                 }
                 if (!CurrentUser.UseModule3)

@@ -125,10 +125,14 @@ namespace SBMS
                 if (CurrentUser.CompanyUseLotNumbers)
                 {
                     // Use SP as-is with LotNumber
+                    // ?? "" - the proc reads ItemCode/ItemDescription off the LATEST
+                    // ItemTransaction row for the item/store/lot, and those columns are
+                    // nullable. One null row crashed this whole page with a
+                    // NullReferenceException on .ToLower().
                     var query = _db.GetOpeningBalancesAllStores(CurrentUser.CoID)
                         .Where(x => x.StoreCode == storeCode &&
-                                   (x.ItemDescription.ToLower().Contains(findstr) ||
-                                    x.ItemCode.ToLower().Contains(findstr)))
+                                   ((x.ItemDescription ?? "").ToLower().Contains(findstr) ||
+                                    (x.ItemCode ?? "").ToLower().Contains(findstr)))
                         .ToList();
 
                     var Qry2 = query.OrderBy(x => x.ItemCode).ToList();
@@ -147,10 +151,11 @@ namespace SBMS
                 else
                 {
                     // Ignore LotNumber: group by Item/Store and sum QOH, pick latest price fields
+                    // Same null guard as the lot-tracked branch above.
                     var query = _db.GetOpeningBalancesAllStores(CurrentUser.CoID)
                         .Where(x => x.StoreCode == storeCode &&
-                                   (x.ItemDescription.ToLower().Contains(findstr) ||
-                                    x.ItemCode.ToLower().Contains(findstr)))
+                                   ((x.ItemDescription ?? "").ToLower().Contains(findstr) ||
+                                    (x.ItemCode ?? "").ToLower().Contains(findstr)))
                         .GroupBy(x => new { x.ItemID, x.ItemCode, x.ItemDescription, x.StoreID, x.StoreCode })
                         .Select(g =>
                         {

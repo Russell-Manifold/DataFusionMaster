@@ -256,5 +256,10 @@ namespace SBMS
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.TextBox txtTotCost;
+
+        /// <summary>
+        /// DDAddCostAcct control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.DropDownList DDAddCostAcct;
     }
 }

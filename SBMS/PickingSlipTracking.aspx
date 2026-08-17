@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" Async="true" AutoEventWireup="true" CodeBehind="PickingSlipTracking.aspx.cs" Inherits="SBMS.PickingSlipTracking" %>
+﻿<%@ Page Language="C#" Async="true" AsyncTimeout="600" AutoEventWireup="true" CodeBehind="PickingSlipTracking.aspx.cs" Inherits="SBMS.PickingSlipTracking" %>
 <%@ Register Assembly="AjaxControlToolkit" Namespace="AjaxControlToolkit" TagPrefix="cci" %>
 
 <!DOCTYPE html>

@@ -1,4 +1,4 @@
-﻿﻿<%@ Page Language="C#" Async="true" AutoEventWireup="true" CodeBehind="OSSalesOrders.aspx.cs" Inherits="SBMS.OSSalesOrders" %>
+﻿﻿<%@ Page Language="C#" Async="true" AsyncTimeout="600" AutoEventWireup="true" CodeBehind="OSSalesOrders.aspx.cs" Inherits="SBMS.OSSalesOrders" %>
 <%@ Register Src="~/CommonScripts.ascx" TagPrefix="uc" TagName="CommonScripts" %>
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">

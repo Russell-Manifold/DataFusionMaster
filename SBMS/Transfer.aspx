@@ -1,4 +1,8 @@
-﻿<%@ Page Language="C#" Async="true" AutoEventWireup="true" CodeBehind="Transfer.aspx.cs" Inherits="SBMS.Transfer" %>
+﻿<%-- AsyncTimeout: async pages default to 45 SECONDS; Web.config's executionTimeout
+     does NOT cover them. This page also loads opening balances for every store on each
+     postback, so a slow read plus a bulk transfer can exceed 45s and be aborted
+     part-posted. See the note on Receiving.aspx. --%>
+<%@ Page Language="C#" Async="true" AsyncTimeout="600" AutoEventWireup="true" CodeBehind="Transfer.aspx.cs" Inherits="SBMS.Transfer" %>
 <%@ Register Assembly="AjaxControlToolkit" Namespace="AjaxControlToolkit" TagPrefix="cci" %>
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">

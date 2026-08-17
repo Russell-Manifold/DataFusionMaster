@@ -885,6 +885,84 @@ namespace SBMS
             BindGrid();
         }
 
+        /// <summary>
+        /// Refreshes AverageCost and QuantityOnHand from Sage for a set of items in as few
+        /// calls as possible, and reports which items actually came back.
+        ///
+        /// Replaces one Item/GET per receipt line. Sage's list endpoint takes an OData filter
+        /// (already used elsewhere in this codebase as "$filter=ID eq {id}"), so several IDs
+        /// can be OR'd into one request.
+        ///
+        /// Deliberately updates ONLY the two fields the costing code reads. A wider update
+        /// would mean more parsing on a path that must not throw - LoadOneItem remains the
+        /// full refresh and is still used as the fallback.
+        ///
+        /// A caller MUST treat an ID missing from the returned set as "not refreshed" and read
+        /// it individually. If Sage rejects the filter this returns empty and every line simply
+        /// behaves as it did before.
+        /// </summary>
+        private async Task<HashSet<long>> RefreshItemsFromSageBatch(List<long> itemIds)
+        {
+            var refreshed = new HashSet<long>();
+            if (itemIds == null || itemIds.Count == 0) return refreshed;
+
+            ApiUrlCall api = new ApiUrlCall();
+            const int chunkSize = 25;   // keeps the query string well short of any URL limit
+
+            for (int i = 0; i < itemIds.Count; i += chunkSize)
+            {
+                var chunk = itemIds.Skip(i).Take(chunkSize).ToList();
+                try
+                {
+                    // Filter shape mirrors the existing working call in ApiUrlCall - values are
+                    // not escaped there either, so this stays consistent with what Sage accepts.
+                    string filter = string.Join(" or ", chunk.Select(id => "ID eq " + id));
+                    string requestUrl = ApiUrlCall.sageurl + "Item/GET?apikey={" + ApiUrlCall.APIKey + "}"
+                                      + "&CompanyID=" + CurrentUser.CoID
+                                      + "&$filter=" + filter
+                                      + "&includeAdditionalItemPrices=false&includeAttachments=false";
+
+                    JObject parsed = await api.ApiCallAsync(requestUrl, CurrentUser);
+                    JArray results = parsed?["Results"] as JArray;
+                    if (results == null) continue;   // nothing usable - callers fall back per item
+
+                    using (SBMSEntities _dbR = new SBMSEntities(Config.GetConnectionString()))
+                    {
+                        foreach (var r in results)
+                        {
+                            long id;
+                            if (!long.TryParse(Convert.ToString(r["ID"]), out id)) continue;
+
+                            var itm = _dbR.ItemsMasters.FirstOrDefault(
+                                x => x.CompanyID == CurrentUser.CoID && x.ID == id);
+                            if (itm == null) continue;   // unknown locally - leave to LoadOneItem
+
+                            decimal avg, qoh;
+                            if (decimal.TryParse(Convert.ToString(r["AverageCost"]),
+                                    NumberStyles.Any, CultureInfo.InvariantCulture, out avg))
+                                itm.AverageCost = avg;
+
+                            if (decimal.TryParse(Convert.ToString(r["QuantityOnHand"]),
+                                    NumberStyles.Any, CultureInfo.InvariantCulture, out qoh))
+                                itm.QuantityOnHand = qoh;
+
+                            refreshed.Add(id);
+                        }
+                        _dbR.SaveChanges();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Never let the optimisation break a receipt. Anything not in the returned
+                    // set is read individually further down, exactly as before.
+                    try { new ApiUrlCall().LogErrorToFile("Batch item refresh failed, falling back per item: " + ex.Message); }
+                    catch { }
+                }
+            }
+
+            return refreshed;
+        }
+
         private bool CheckLotNumberExists(string lotnumber)
         {
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
@@ -1091,6 +1169,26 @@ namespace SBMS
                         AlertHelper.ShowSweetAlert(this, message, "warning");
                         return;
                     }
+
+                    // Refresh every stock item's Sage figures in ONE call instead of one call
+                    // per line. The per-line LoadOneItem below was the single biggest source of
+                    // Sage round trips in a finalise (1 read + up to 2 adjustments per line), and
+                    // Sage wants no more than about a call a second - a 20-line receipt spent
+                    // roughly 20 seconds on reads alone.
+                    //
+                    // batchRefreshed holds only the IDs Sage actually returned. Anything missing
+                    // still falls back to its own LoadOneItem below, so a filter Sage does not
+                    // like degrades to the old behaviour rather than silently costing off stale
+                    // figures.
+                    var stockItemIds = FLines.Where(x => x.ItemType == 0)
+                                             .Select(x => x.SelectionId)
+                                             .Distinct().ToList();
+                    HashSet<long> batchRefreshed = await RefreshItemsFromSageBatch(stockItemIds);
+
+                    // Items this finalise has already sent an adjustment for. Their Sage figures
+                    // have moved since the batch read, so if the same item appears on another
+                    // line it MUST be read again individually.
+                    var itemsAdjusted = new HashSet<long>();
 
                     // Rejected qty was delivered and billed, so it counts against the PO line.
                     // Record it in the receiving history (IsReject=true) - without this row the
@@ -1428,6 +1526,17 @@ namespace SBMS
                                     ThisItemUnitNett = dlOrdQty != 0 ? ThisItemNettCost / dlOrdQty : 0;
                                 }
 
+                                // SAGE FIRST, THEN DATA FUSION.
+                                //
+                                // The local rows cannot simply be written after Sage, because the
+                                // adjustment payload quotes this line's ItemTransaction TrnID
+                                // ("ADJ Out Trans ID: ..."), so the row must exist before the Sage
+                                // call can be built. The transaction gives the same guarantee: the
+                                // local writes stay uncommitted until Sage has accepted, and are
+                                // rolled back if it refuses. Nothing durable lands in Data Fusion
+                                // ahead of Sage.
+                                using (var lineTx = _db.Database.BeginTransaction())
+                                {
                                 if (dl.ItemType == 0)
                                 {
                                     var tempLine = _db.DocLines.Where(x => x.CompanyID == CurrentUser.CoID && x.DocID == docid && x.SBCALineID == dl.SBCALineID).FirstOrDefault();
@@ -1517,10 +1626,16 @@ namespace SBMS
 
                                 if (dl.ItemType == 0)
                                 {
-                                    await api.LoadOneItem(dl.SelectionId, CurrentUser);
+                                    // Already refreshed by the batch read above unless Sage left it
+                                    // out, or we have since adjusted this item on an earlier line.
+                                    if (!batchRefreshed.Contains(dl.SelectionId) || itemsAdjusted.Contains(dl.SelectionId))
+                                        await api.LoadOneItem(dl.SelectionId, CurrentUser);
                                     var Itm = _db.ItemsMasters.Where(x => x.CompanyID == CurrentUser.CoID && x.ID == dl.SelectionId).FirstOrDefault();
                                     if (Itm.AverageCost != ThisItemUnitNett / exchRate)
                                     {
+                                        // Sage figures for this item are about to change - force a
+                                        // fresh read if it turns up on a later line of this receipt.
+                                        itemsAdjusted.Add(dl.SelectionId);
                                         #region AdjustItemOut
                                         ItemAdjustment iAdj = new ItemAdjustment();
                                         iAdj.Date = DateTime.Now;
@@ -1533,7 +1648,8 @@ namespace SBMS
                                         jsonBody = JsonConvert.SerializeObject(iAdj, Formatting.Indented);
                                         if (CurrentUser.UATMode == false)
                                         {
-                                            await SendItemAdjustment(jsonBody);
+                                            string adjOut = await SendItemAdjustment(jsonBody);
+                                            if (adjOut != "OK") { lineTx.Rollback(); HaltOnAdjustmentFailure(dl.ItemCode, adjOut); return; }
                                         }
                                         #endregion
                                         // --------------------------------------------------
@@ -1567,10 +1683,15 @@ namespace SBMS
                                         jsonBody = JsonConvert.SerializeObject(iAdj, Formatting.Indented);
                                         if (CurrentUser.UATMode == false)
                                         {
-                                            await SendItemAdjustment(jsonBody);
+                                            string adjIn = await SendItemAdjustment(jsonBody);
+                                            if (adjIn != "OK") { lineTx.Rollback(); HaltOnAdjustmentFailure(dl.ItemCode, adjIn); return; }
                                         }
                                         #endregion
                                     }
+                                }
+
+                                // Sage accepted everything for this line - now make it durable.
+                                lineTx.Commit();
                                 }
                             }
                         }
@@ -1661,6 +1782,13 @@ namespace SBMS
                                 tempLine.ReceiveTotalExcl = _recvNet + linevalAddCosts;
                                 tempLine.ExchRate = (decimal)exchRate;
                                 tempLine.localCurrLineVal = (decimal)tempLine.ReceiveTotalExcl / (decimal)exchRate;
+
+                                // SAGE FIRST, THEN DATA FUSION - same guarantee as the branch above.
+                                // Local writes stay uncommitted until Sage accepts the adjustments,
+                                // and roll back if it refuses. The SaveChanges inside also flushes
+                                // the tempLine edits made just above, so those are covered too.
+                                using (var lineTxB = _db.Database.BeginTransaction())
+                                {
                                 if (dl.ItemType == 0)
                                 {
                                     var ItmCon = _db.ItemsMasters.Where(x => x.CompanyID == CurrentUser.CoID && x.ID == dl.SelectionId).FirstOrDefault();
@@ -1728,10 +1856,15 @@ namespace SBMS
                                 {
                                     if (AddC.Count > 0)
                                     {
-                                        await api.LoadOneItem(dl.SelectionId, CurrentUser);
+                                        // Same rule as the branch above - the batch read covers this
+                                        // unless Sage omitted the item or we have already adjusted it.
+                                        if (!batchRefreshed.Contains(dl.SelectionId) || itemsAdjusted.Contains(dl.SelectionId))
+                                            await api.LoadOneItem(dl.SelectionId, CurrentUser);
                                         var Itm = _db.ItemsMasters.Where(x => x.CompanyID == CurrentUser.CoID && x.ID == dl.SelectionId).FirstOrDefault();
                                         if (Itm.AverageCost != newunitcost)
                                         {
+                                            // As above - this item's Sage figures are about to move.
+                                            itemsAdjusted.Add(dl.SelectionId);
                                             #region AdjustItemOut
                                             ItemAdjustment iAdj = new ItemAdjustment();
                                             iAdj.Date = DateTime.Now;
@@ -1746,7 +1879,8 @@ namespace SBMS
                                             iAdj.Reason = "ADJ Out Trans ID: " + itemtransnum + " - " + txtAddCostsReason.Text.ToString();
                                             iAdj.Created = DateTime.Now;
                                             jsonBody = JsonConvert.SerializeObject(iAdj, Formatting.Indented);
-                                            await SendItemAdjustment(jsonBody);
+                                            string adjOutB = await SendItemAdjustment(jsonBody);
+                                            if (adjOutB != "OK") { lineTxB.Rollback(); HaltOnAdjustmentFailure(dl.ItemCode, adjOutB); return; }
 
                                             #endregion
                                             // --------------------------------------------------
@@ -1797,11 +1931,16 @@ namespace SBMS
                                             jsonBody = JsonConvert.SerializeObject(iAdj, Formatting.Indented);
                                             if (CurrentUser.UATMode == false)
                                             {
-                                                await SendItemAdjustment(jsonBody);
+                                                string adjInB = await SendItemAdjustment(jsonBody);
+                                                if (adjInB != "OK") { lineTxB.Rollback(); HaltOnAdjustmentFailure(dl.ItemCode, adjInB); return; }
                                             }
                                         }
                                     }
                                     #endregion
+                                }
+
+                                // Sage accepted everything for this line - now make it durable.
+                                lineTxB.Commit();
                                 }
                             }
                             #endregion
@@ -1900,6 +2039,17 @@ namespace SBMS
                     if (RBpoStatus.SelectedValue.ToString() == "1") { Head.Complete = false; Head.RecStatus = 0; }   // partial -> still in progress (Started)
                     else { Head.RecStatus = 2; }   // complete: always resolve to Submitted - also clears the intermediate "finalising" marker (RecStatus 1) so a successful finalise never leaves the PO stuck
 
+                    // MUST be forced modified. The "finalising" marker (RecStatus = 1) was written
+                    // to the DATABASE by a separate context (_dbMark, above), so this context still
+                    // believes RecStatus is whatever it loaded - normally 0. On a PARTIAL receive we
+                    // set it back to 0, EF compares that against its own stale original of 0, sees no
+                    // change, and OMITS the column from the UPDATE. The database keeps 1 and every
+                    // later receive on that PO is blocked by the resubmit guard.
+                    //
+                    // A FULL receive sets 2, which differs from the stale original, so EF writes it -
+                    // which is why complete receipts were fine and only partials ever stuck.
+                    _db.Entry(Head).Property("RecStatus").IsModified = true;
+
                     // Stamp this GRN's receivings with a single BatchID so the receiving-note PDF
                     // can print just this delivery ("This Receiving Only") vs the running total.
                     // Every row received since the last finish (BatchID still null) belongs to it.
@@ -1990,13 +2140,53 @@ namespace SBMS
                 return parsedJSON.ToString();
             }
         }
+        /// <summary>
+        /// Posts an item cost adjustment to Sage and reports whether Sage ACCEPTED it.
+        /// Returns "OK", or a readable failure reason.
+        ///
+        /// This used to discard the response and always return "". A rejected adjustment -
+        /// rate limit, outage, bad payload - was therefore invisible: the receipt carried on,
+        /// the stock stayed correct locally, and only Sage's average cost was left wrong,
+        /// with nothing logged and nobody told.
+        ///
+        /// The test is exact rather than guessed. ApiUrlCall.APIPostDocumentAsync returns
+        /// Sage's own response on success, and on ANY failure returns a JObject carrying
+        /// Success = false plus StatusCode and Message. So an explicit failure is detected,
+        /// while an unrecognised success shape is still treated as success - the safe way
+        /// round, because wrongly reporting failure would block every receipt.
+        /// </summary>
         public async Task<string> SendItemAdjustment(string Item)
         {
-            string doctype = "";
-            doctype = "ItemAdjustment";
             ApiUrlCall Api = new ApiUrlCall();
-            JObject parsedJSON = await Api.APIPostDocumentAsync(doctype, Item, CurrentUser);
-            return "";
+            JObject parsedJSON = await Api.APIPostDocumentAsync("ItemAdjustment", Item, CurrentUser);
+
+            if (parsedJSON == null) return "No response from Sage.";
+
+            if (parsedJSON["Success"] != null && parsedJSON["Success"].Type == JTokenType.Boolean
+                && !parsedJSON["Success"].Value<bool>())
+            {
+                return "Sage " + Convert.ToString(parsedJSON["StatusCode"])
+                     + " - " + Convert.ToString(parsedJSON["Message"]);
+            }
+
+            return "OK";
+        }
+
+        /// <summary>
+        /// Stops the receipt when Sage refuses a cost adjustment. Shows the operator exactly
+        /// which item failed and why, and logs it. The caller MUST return immediately after
+        /// this so no further lines are written and the header is never finalised.
+        /// </summary>
+        private void HaltOnAdjustmentFailure(string itemCode, string reason)
+        {
+            string msg = "Sage did not accept the cost adjustment for " + itemCode + ".\\n\\n"
+                       + reason + "\\n\\n"
+                       + "Receiving has been stopped so Data Fusion is not updated ahead of Sage. "
+                       + "No further lines were processed and this PO has not been finalised. "
+                       + "Fix the problem in Sage and receive again.";
+            AlertHelper.ShowSweetAlert(this, msg, "error");
+            try { new ApiUrlCall().LogErrorToFile("RECEIPT HALTED - Sage rejected ItemAdjustment for " + itemCode + " - " + reason); }
+            catch { }
         }
 
          protected int GetLotNum(long CoID)

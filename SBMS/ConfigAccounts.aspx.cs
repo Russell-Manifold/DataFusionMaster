@@ -108,5 +108,44 @@ namespace SBMS
                 return;
             }
         }
+
+        /// <summary>
+        /// Marks the account Sage posts stock adjustments against - the DEBIT side of the
+        /// journal raised when a works order carries BOM additional costs.
+        ///
+        /// Manufacturing already posts item adjustments that raise stock value by the
+        /// additional cost, leaving an unexplained credit on Sage's own adjustment account.
+        /// The journal clears it: debit THIS account, credit the account chosen on the BOM.
+        ///
+        /// Only one account per company should carry this flag, so ticking one clears the rest.
+        /// </summary>
+        protected void chkADCContra_CheckedChanged(object sender, EventArgs e)
+        {
+            CheckBox chk = (CheckBox)sender;
+            GridViewRow row = (GridViewRow)chk.NamingContainer;
+            int AcctID = Convert.ToInt32(row.Cells[0].Text);
+            using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+            {
+                if (chk.Checked)
+                {
+                    // Single account only - clear any previous choice for this company.
+                    var others = _db.AccountsMasters
+                        .Where(x => x.CompanyID == CurrentUser.CoID && x.AccountAddCostsContra == true).ToList();
+                    foreach (var o in others) o.AccountAddCostsContra = false;
+                }
+
+                AccountsMaster NewAcct = _db.AccountsMasters
+                    .Where(x => x.CompanyID == CurrentUser.CoID && x.AccountID == AcctID).FirstOrDefault();
+                if (NewAcct != null) NewAcct.AccountAddCostsContra = chk.Checked;
+                _db.SaveChanges();
+            }
+
+            LoadAccts();   // rebind so the cleared flags show
+
+            string msg = "alert('" + (chk.Checked
+                ? "Saved. BOM additional costs will be journalled against this account."
+                : "Saved.") + "')";
+            ScriptManager.RegisterClientScriptBlock((sender as Control), this.GetType(), "alert", msg, true);
+        }
     }
 }

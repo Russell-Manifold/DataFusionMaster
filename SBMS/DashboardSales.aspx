@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" Async="true"  AutoEventWireup="true" CodeBehind="DashboardSales.aspx.cs" Inherits="SBMS.DashboardSales" %>
+﻿<%@ Page Language="C#" Async="true" AsyncTimeout="600"  AutoEventWireup="true" CodeBehind="DashboardSales.aspx.cs" Inherits="SBMS.DashboardSales" %>
 <%@ Register Assembly="AjaxControlToolkit" Namespace="AjaxControlToolkit" TagPrefix="cci" %>
 <%@ Register Src="~/CommonScripts.ascx" TagPrefix="uc" TagName="CommonScripts" %>
 <!DOCTYPE html>

@@ -59,11 +59,85 @@ namespace SBMS
             }
         }
 
+        /// <summary>
+        /// Refuses the save if additional costs are entered without an account to post them to,
+        /// or if the company has no Stock Adjustment Account flagged. Both are needed to
+        /// raise the journal at manufacture; without them the cost would inflate stock value in
+        /// Sage with nothing on the other side.
+        /// Returns true when it is safe to carry on saving.
+        /// </summary>
+        private bool ValidateAddCostAccount(decimal totalAddCost)
+        {
+            if (totalAddCost <= 0) return true;   // no cost, no account needed
+
+            long chosen;
+            bool hasAccount = long.TryParse(DDAddCostAcct.SelectedValue, out chosen) && chosen > 0;
+            if (!hasAccount)
+            {
+                AlertHelper.ShowSweetAlert(this,
+                    "This BOM has additional costs, so it must have an account to post them to. "
+                    + "Choose one under \"Post Additional Costs To\" before saving.", "warning");
+                return false;
+            }
+
+            using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+            {
+                long contra = _db.AccountsMasters
+                    .Where(x => x.CompanyID == CurrentUser.CoID && x.AccountAddCostsContra == true)
+                    .Select(x => x.AccountID ?? 0).FirstOrDefault();
+                if (contra == chosen)
+                {
+                    AlertHelper.ShowSweetAlert(this,
+                        "The account chosen under \"Post Additional Costs To\" is also this company's "
+                        + "Stock Adjustment Account. Debiting and crediting the same account posts nothing "
+                        + "to Sage - choose a different account.", "warning");
+                    return false;
+                }
+                if (contra <= 0)
+                {
+                    AlertHelper.ShowSweetAlert(this,
+                        "No Stock Adjustment Account has been set for this company, so additional "
+                        + "costs cannot be posted to Sage. Set one under Settings → GL Account Access, then save this BOM.",
+                        "warning");
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// Fills the account list for BOM additional costs. Uses the same GL accounts already
+        /// flagged for receiving additional costs, so there is one list to maintain, and
+        /// preserves the current selection across postbacks.
+        /// </summary>
+        private void LoadAddCostAccounts(long? selected)
+        {
+            using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+            {
+                var accts = _db.AccountsMasters
+                    .Where(x => x.CompanyID == CurrentUser.CoID && x.AccountAddCosts == true)
+                    .OrderBy(x => x.AccountName).ToList();
+
+                DDAddCostAcct.DataSource = accts;
+                DDAddCostAcct.DataTextField = "AccountName";
+                DDAddCostAcct.DataValueField = "AccountID";
+                DDAddCostAcct.DataBind();
+                DDAddCostAcct.Items.Insert(0, new ListItem("- None -", "0"));
+
+                if (selected.HasValue && selected.Value > 0)
+                {
+                    var hit = DDAddCostAcct.Items.FindByValue(selected.Value.ToString());
+                    if (hit != null) DDAddCostAcct.SelectedValue = hit.Value;
+                }
+            }
+        }
+
         protected void LoadBom()
         {
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {
                 var bomH = _db.BOMHeaders.Where(x => x.CompanyID == CurrentUser.CoID && x.BomHID == bomid).FirstOrDefault();
+                LoadAddCostAccounts(bomH.AddCostAccountID);
                 if (bomH.AddCost01 != null) txtAdd1.Text = bomH.AddCost01.ToString() ?? "";
                 if (bomH.AddCost02 != null) txtAdd2.Text = bomH.AddCost02.ToString() ?? "";
                 if (bomH.AddCost03 != null) txtAdd3.Text = bomH.AddCost03.ToString() ?? "";
@@ -343,6 +417,11 @@ namespace SBMS
             if (txtAdd2.Text.ToString().Trim().Length > 0) adc2 = Convert.ToDecimal(txtAdd2.Text, CultureInfo.InvariantCulture);
             if (txtAdd3.Text.ToString().Trim().Length > 0) adc3 = Convert.ToDecimal(txtAdd3.Text, CultureInfo.InvariantCulture);
 
+            // An additional cost has to have somewhere to post. It raises stock value in Sage
+            // and needs a matching credit, so refuse to save a cost without an account rather
+            // than let it fail later at manufacture.
+            if (!ValidateAddCostAccount(adc1 + adc2 + adc3)) return;
+
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {
                 var bomH = _db.BOMHeaders.Where(x => x.CompanyID == CurrentUser.CoID && x.BomHID == bomid).FirstOrDefault();
@@ -354,6 +433,11 @@ namespace SBMS
                 bomH.AddCost01 = adc1;
                 bomH.AddCost02 = adc2;
                 bomH.AddCost03 = adc3;
+                // Account the additional costs are credited to when this BOM is manufactured.
+                // Blank = no journal is posted, and the costs still land on the stock value.
+                long accSel;
+                bomH.AddCostAccountID = long.TryParse(DDAddCostAcct.SelectedValue, out accSel) && accSel > 0
+                                        ? (long?)accSel : null;
                 bomH.BomActive = true;
                 var BomL = _db.BOMLines.Where(x => x.BomCode == "NEW").ToList();
                 foreach (var bl in BomL)

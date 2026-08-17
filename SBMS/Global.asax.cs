@@ -37,11 +37,23 @@ namespace SBMS
         {
             Exception ex = Server.GetLastError();
 
+            // Log EVERY unhandled exception, not just 500s, and before any redirect.
+            // This was commented out, so crashes left no trace at all - a receipt that
+            // died mid-finalise (see AsyncTimeout note on Receiving.aspx) produced an
+            // empty error log and there was nothing to diagnose from.
+            try
+            {
+                if (ex != null)
+                {
+                    string url = HttpContext.Current?.Request?.RawUrl ?? "(no url)";
+                    new SBMS.Classes.ApiUrlCall().LogErrorToFile(
+                        "UNHANDLED on " + url + " - " + ex.ToString());
+                }
+            }
+            catch { }   // logging must never mask the original error
+
             if (ex is HttpException httpEx && httpEx.GetHttpCode() == 500)
             {
-                // Optional logging
-                // LogException(ex);
-
                 if (HttpContext.Current != null &&
                     (HttpContext.Current.Session == null || HttpContext.Current.Session["UserDetails"] == null))
                 {

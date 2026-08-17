@@ -61,6 +61,7 @@
           <Property Name="AddSell01" Type="decimal" Precision="18" Scale="4" />
           <Property Name="AddSell02" Type="decimal" Precision="18" Scale="4" />
           <Property Name="AddSell03" Type="decimal" Precision="18" Scale="4" />
+          <Property Name="AddCostAccountID" Type="bigint" />
           <Property Name="CompanyID" Type="bigint" />
           <Property Name="BomActive" Type="bit" Nullable="false" />
         </EntityType>
@@ -1383,6 +1384,7 @@
           <Property Name="AddSell01" Type="Decimal" Precision="18" Scale="4" />
           <Property Name="AddSell02" Type="Decimal" Precision="18" Scale="4" />
           <Property Name="AddSell03" Type="Decimal" Precision="18" Scale="4" />
+          <Property Name="AddCostAccountID" Type="Int64" />
           <Property Name="CompanyID" Type="Int64" />
           <Property Name="BomActive" Type="Boolean" Nullable="false" />
         </EntityType>
@@ -3339,6 +3341,7 @@
                 <ScalarProperty Name="AddSell01" ColumnName="AddSell01" />
                 <ScalarProperty Name="AddSell02" ColumnName="AddSell02" />
                 <ScalarProperty Name="AddSell03" ColumnName="AddSell03" />
+                <ScalarProperty Name="AddCostAccountID" ColumnName="AddCostAccountID" />
                 <ScalarProperty Name="CompanyID" ColumnName="CompanyID" />
                 <ScalarProperty Name="BomActive" ColumnName="BomActive" />
               </MappingFragment>

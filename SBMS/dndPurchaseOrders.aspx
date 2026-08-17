@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" Async="true" AutoEventWireup="true" CodeBehind="dndPurchaseOrders.aspx.cs" Inherits="SBMS.dndPurchaseOrders" %>
+﻿<%@ Page Language="C#" Async="true" AsyncTimeout="600" AutoEventWireup="true" CodeBehind="dndPurchaseOrders.aspx.cs" Inherits="SBMS.dndPurchaseOrders" %>
 <%@ Register Assembly="AjaxControlToolkit" Namespace="AjaxControlToolkit" TagPrefix="cci" %>
 
 <!DOCTYPE html>

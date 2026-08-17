@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" Async="true" AutoEventWireup="true" CodeBehind="OSPurchaseOrdersM.aspx.cs" Inherits="SBMS.OSPurchaseOrdersM" %>
+﻿<%@ Page Language="C#" Async="true" AsyncTimeout="600" AutoEventWireup="true" CodeBehind="OSPurchaseOrdersM.aspx.cs" Inherits="SBMS.OSPurchaseOrdersM" %>
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">

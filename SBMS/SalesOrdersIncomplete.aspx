@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="SalesOrdersIncomplete.aspx.cs" Inherits="SBMS.SalesOrdersIncomplete" Async="true"  %>
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="SalesOrdersIncomplete.aspx.cs" Inherits="SBMS.SalesOrdersIncomplete" Async="true" AsyncTimeout="600"  %>
 <%@ Register Assembly="AjaxControlToolkit" Namespace="AjaxControlToolkit" TagPrefix="cci" %>
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">

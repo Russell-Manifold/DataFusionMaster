@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" Async="true" AutoEventWireup="true" CodeBehind="BOMHeaders.aspx.cs" Inherits="SBMS.BOMHeaders" %>
+﻿<%@ Page Language="C#" Async="true" AsyncTimeout="600" AutoEventWireup="true" CodeBehind="BOMHeaders.aspx.cs" Inherits="SBMS.BOMHeaders" %>
 <%@ Register Assembly="AjaxControlToolkit" Namespace="AjaxControlToolkit" TagPrefix="cci" %>
 
 <!DOCTYPE html>

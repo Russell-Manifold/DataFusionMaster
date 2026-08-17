@@ -125,6 +125,7 @@ namespace SBMS
 
                chkLotTrack.Checked = (bool)Comp.UseLotTracking;
                 chkSysLot.Checked = Comp.AllowSystemLotNumbers == true;
+                ApplyLotTrackDependants();
                 chkScanCount.Checked = Comp.AllowScannerCount == true;
                 chkScanReceive.Checked = Comp.AllowScannerReceive == true;
                 chkScanPutAway.Checked = Comp.AllowScannerPutAway == true;
@@ -152,16 +153,11 @@ namespace SBMS
             bool uselotTrack = false;
             if (chkAutoManfConf.Checked && chkAutoManf.Checked)
             {
-                // Removed lot tracking 
+                // Auto Manufacture only switches lot tracking off. It used to delete every
+                // store except FG as well - Auto Manufacture now draws from whichever store
+                // is chosen on the works order, so multiple stores are supported and there
+                // is nothing to remove.
                 uselotTrack = false;
-                // remove All Stored except FG
-                    using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
-                    {
-                        var Stores = _db.Stores.Where(x => x.CompanyID == CurrentUser.CoID && x.StoreCode != "FG" && x.StoreCode != "CoR" && x.StoreCode != "CoD" && x.StoreCode.ToLower() != "scr").ToList(); 
-                        _db.Stores.RemoveRange(Stores);
-                        _db.SaveChanges();
-                       
-                    }
             } else
             {
                 uselotTrack = chkLotTrack.Checked;
@@ -349,6 +345,20 @@ namespace SBMS
             {
                 chkAutoManf.Enabled = true;
             }
+            ApplyLotTrackDependants();
+        }
+
+        // The Advanced and System-Generated options only mean anything while lot tracking
+        // is on, so switching it off clears and locks them.
+        private void ApplyLotTrackDependants()
+        {
+            if (!chkLotTrack.Checked)
+            {
+                chkLotTrackAdd.Checked = false;
+                chkSysLot.Checked = false;
+            }
+            chkLotTrackAdd.Enabled = chkLotTrack.Checked;
+            chkSysLot.Enabled = chkLotTrack.Checked;
         }
 
         protected void chkweight_CheckedChanged(object sender, EventArgs e)

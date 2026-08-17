@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" Async="true" AutoEventWireup="true" CodeBehind="WorksOrdersManfDetailed.aspx.cs" Inherits="SBMS.WorksOrdersManfDetailed" %>
+﻿<%@ Page Language="C#" Async="true" AsyncTimeout="600" AutoEventWireup="true" CodeBehind="WorksOrdersManfDetailed.aspx.cs" Inherits="SBMS.WorksOrdersManfDetailed" %>
 <%@ Register Assembly="AjaxControlToolkit" Namespace="AjaxControlToolkit" TagPrefix="cci" %>
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">

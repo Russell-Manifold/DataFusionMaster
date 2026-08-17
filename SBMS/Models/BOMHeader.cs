@@ -24,6 +24,7 @@ namespace SBMS.Models
         public Nullable<decimal> AddCost01 { get; set; }
         public Nullable<decimal> AddCost02 { get; set; }
         public Nullable<decimal> AddCost03 { get; set; }
+        public Nullable<long> AddCostAccountID { get; set; }
         public Nullable<decimal> AddSell01 { get; set; }
         public Nullable<decimal> AddSell02 { get; set; }
         public Nullable<decimal> AddSell03 { get; set; }

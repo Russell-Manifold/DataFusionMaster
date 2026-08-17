@@ -42,6 +42,8 @@ namespace SBMS
             public string  CompanyName { get; set; }
             public long    ItemID      { get; set; }
             public string  ItemCode    { get; set; }
+            public string  ItemDescription { get; set; }
+            public string  Unit        { get; set; }
             public long    StoreID     { get; set; }
             public string  StoreCode   { get; set; }
             public decimal Qty         { get; set; }
@@ -174,6 +176,13 @@ namespace SBMS
                 TransactionType           = TrnType,
                 ItemID                    = p.ItemID,
                 ItemCode                  = p.ItemCode,
+                // MUST be populated. These rows carry the highest TrnID, so
+                // GetOpeningBalancesAllStores treats them as the latest row for the
+                // item/store/lot and returns THEIR ItemDescription and Unit. Leaving
+                // them null crashed Transfer.aspx, which calls
+                // x.ItemDescription.ToLower() on the result with no null check.
+                ItemDescription           = p.ItemDescription,
+                Unit                      = p.Unit,
                 LotNumber                 = lot,
                 FromID                    = p.StoreID,
                 ToID                      = p.StoreID,
@@ -221,7 +230,7 @@ namespace SBMS
                 // to flag it - otherwise the preview would understate the work.
                 var trackedItems = db.ItemsMasters
                     .Where(i => i.CompanyID == coId && (i.IsLotTracked == true || i.Physical == true))
-                    .Select(i => new { i.ID, i.Code, i.AverageCost })
+                    .Select(i => new { i.ID, i.Code, i.Description, i.Unit, i.AverageCost })
                     .ToList()
                     .ToDictionary(i => i.ID, i => i);
 
@@ -266,8 +275,10 @@ namespace SBMS
                     {
                         CompanyID   = coId,
                         CompanyName = co.CompanyName,
-                        ItemID      = itemId,
-                        ItemCode    = itm.Code,
+                        ItemID          = itemId,
+                        ItemCode        = itm.Code,
+                        ItemDescription = itm.Description,
+                        Unit            = itm.Unit,
                         StoreID     = storeId,
                         StoreCode   = storeCode ?? ("#" + storeId),
                         Qty         = r.Qty ?? 0,

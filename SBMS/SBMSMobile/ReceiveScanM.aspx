@@ -1,4 +1,4 @@
-<%@ Page Language="C#" Async="true" AutoEventWireup="true" CodeBehind="ReceiveScanM.aspx.cs"
+<%@ Page Language="C#" Async="true" AsyncTimeout="600" AutoEventWireup="true" CodeBehind="ReceiveScanM.aspx.cs"
          Inherits="SBMS.ReceiveScanM" %>
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">

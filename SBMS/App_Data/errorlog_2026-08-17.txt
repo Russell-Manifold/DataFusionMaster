@@ -1,0 +1,3 @@
+11:51:12 - BOM ADD-COST JOURNAL FAILED - WO83 amount 15.00000000 Dr 459613 Cr 459613 - Tax Type is Required.
+12:58:34 - BOM ADD-COST JOURNAL FAILED - WO83 amount 15.00000000 Dr 459613 Cr 459615 - No zero-rated tax type found for this company
+13:06:41 - BOM ADD-COST JOURNAL FAILED - WO83 amount 15.00000000 Dr 459613 Cr 459615 - Sage did not return a journal Id: {"ID":6689762,"Date":"2026-08-17T00:00:00","Effect":1,"AccountId":459613,"Reference":"WO83","Description":"BOM additional costs - WO83","TaxTypeId":106162,"Exclusive":15.0,"Tax":0.0,"Total":15.0,"ContraAccountId":459615,"HasAttachments":false,"Editable":false,"Locked":false,"Debit":15.0,"Credit":0.0}

@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" Async="true" AutoEventWireup="true" CodeBehind="OSPickingSlipsM.aspx.cs" Inherits="SBMS.OSPickingSlipsM" %>
+﻿<%@ Page Language="C#" Async="true" AsyncTimeout="600" AutoEventWireup="true" CodeBehind="OSPickingSlipsM.aspx.cs" Inherits="SBMS.OSPickingSlipsM" %>
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">

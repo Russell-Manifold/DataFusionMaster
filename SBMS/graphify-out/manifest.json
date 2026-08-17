@@ -10,24 +10,24 @@
     "semantic_hash": "42a55d85f8b757f1c507a1b267ab3145"
   },
   "BOMCreate.aspx.cs": {
-    "mtime": 1785234168.0972958,
-    "ast_hash": "c247adbf4af07711720975d00eb2924c",
-    "semantic_hash": "c247adbf4af07711720975d00eb2924c"
+    "mtime": 1786961954.145988,
+    "ast_hash": "f28b285a3f0d5e3b0f932d57798339b5",
+    "semantic_hash": "f28b285a3f0d5e3b0f932d57798339b5"
   },
   "BOMCreate.aspx.designer.cs": {
-    "mtime": 1776662391.3668602,
-    "ast_hash": "6fa0f550151ccda49d700baa1215861b",
-    "semantic_hash": "6fa0f550151ccda49d700baa1215861b"
+    "mtime": 1786957690.5027351,
+    "ast_hash": "a8daade792cdde91cc7d2ad5c62427b9",
+    "semantic_hash": "a8daade792cdde91cc7d2ad5c62427b9"
   },
   "BOMDetailed.aspx.cs": {
-    "mtime": 1785234151.788973,
-    "ast_hash": "bbf1060a1b2d2449a0e8299cb2d69434",
-    "semantic_hash": "bbf1060a1b2d2449a0e8299cb2d69434"
+    "mtime": 1786961954.1485052,
+    "ast_hash": "70d7ab9bcb4e02f83d7281033b67f81c",
+    "semantic_hash": "70d7ab9bcb4e02f83d7281033b67f81c"
   },
   "BOMDetailed.aspx.designer.cs": {
-    "mtime": 1776930773.3775394,
-    "ast_hash": "ba11b432febb29854e32df3446a8e2dd",
-    "semantic_hash": "ba11b432febb29854e32df3446a8e2dd"
+    "mtime": 1786957717.2425272,
+    "ast_hash": "f4d826bf19c502123ed73c233c1a61d4",
+    "semantic_hash": "f4d826bf19c502123ed73c233c1a61d4"
   },
   "BOMHeaders.aspx.cs": {
     "mtime": 1775112716.5459113,
@@ -75,9 +75,9 @@
     "semantic_hash": "6ab37b81f617c9b8565fce7cafa0a504"
   },
   "Classes/ApiUrlCall.cs": {
-    "mtime": 1786518924.9329913,
-    "ast_hash": "dc9ab65558010d7633a55eb0a05578e0",
-    "semantic_hash": "dc9ab65558010d7633a55eb0a05578e0"
+    "mtime": 1786958431.7994888,
+    "ast_hash": "8bd346235bc4758002dfe32ef8f61dec",
+    "semantic_hash": "8bd346235bc4758002dfe32ef8f61dec"
   },
   "Classes/Authentication.cs": {
     "mtime": 1763625076.5760248,
@@ -215,9 +215,9 @@
     "semantic_hash": "82099f46e691d72b38e341621febcad6"
   },
   "ConfigAccounts.aspx.cs": {
-    "mtime": 1763625076.6332304,
-    "ast_hash": "45c452bf292ff78dc0005dacf5a48848",
-    "semantic_hash": "45c452bf292ff78dc0005dacf5a48848"
+    "mtime": 1786957624.3332317,
+    "ast_hash": "6124fe67ffee95efa731c2a44d0df45b",
+    "semantic_hash": "6124fe67ffee95efa731c2a44d0df45b"
   },
   "ConfigAccounts.aspx.designer.cs": {
     "mtime": 1763625076.6336865,
@@ -225,9 +225,9 @@
     "semantic_hash": "29be08dea22dab12a222ee7fa99ac7dc"
   },
   "ConfigCompany.aspx.cs": {
-    "mtime": 1785229445.2852776,
-    "ast_hash": "d6067eca3fc1618e590fc42761e6941c",
-    "semantic_hash": "d6067eca3fc1618e590fc42761e6941c"
+    "mtime": 1786974029.8181355,
+    "ast_hash": "b5a58faa39e3b70cbf3320cb3ee9a6ba",
+    "semantic_hash": "b5a58faa39e3b70cbf3320cb3ee9a6ba"
   },
   "ConfigCompany.aspx.designer.cs": {
     "mtime": 1785229445.3080955,
@@ -245,9 +245,9 @@
     "semantic_hash": "d442f8ebea662d6905533f69c1840f06"
   },
   "ConfigMaster.aspx.cs": {
-    "mtime": 1763625076.6383169,
-    "ast_hash": "97bb0b56d65bd4aa75009b2f733de3b0",
-    "semantic_hash": "97bb0b56d65bd4aa75009b2f733de3b0"
+    "mtime": 1786959131.9237063,
+    "ast_hash": "c4c501028bff7fb94bb9e1cb337b3f41",
+    "semantic_hash": "c4c501028bff7fb94bb9e1cb337b3f41"
   },
   "ConfigMaster.aspx.designer.cs": {
     "mtime": 1783516492.4876652,
@@ -355,9 +355,9 @@
     "semantic_hash": "150182f08aa60ad2527a036b0ed09404"
   },
   "Global.asax.cs": {
-    "mtime": 1763625076.787215,
-    "ast_hash": "93aca68204388917544ef423ffa8c85d",
-    "semantic_hash": "93aca68204388917544ef423ffa8c85d"
+    "mtime": 1786615218.4018135,
+    "ast_hash": "94b7e845c5da5303fcd112f4f96c3d75",
+    "semantic_hash": "94b7e845c5da5303fcd112f4f96c3d75"
   },
   "Helper.aspx.cs": {
     "mtime": 1779389257.95224,
@@ -540,9 +540,9 @@
     "semantic_hash": "f44cd80418d9c2f87e761ac0cf528a54"
   },
   "Models/BOMHeader.cs": {
-    "mtime": 1769697603.5295997,
-    "ast_hash": "ad0187a00d5515afbab269500748f2ce",
-    "semantic_hash": "ad0187a00d5515afbab269500748f2ce"
+    "mtime": 1786957567.003534,
+    "ast_hash": "c6fbe30dd49e82d87289cd80dd07f51f",
+    "semantic_hash": "c6fbe30dd49e82d87289cd80dd07f51f"
   },
   "Models/BOMLine.cs": {
     "mtime": 1776158028.4617207,
@@ -1260,9 +1260,9 @@
     "semantic_hash": "0a4553e7409853b06a6b8edd140484b7"
   },
   "Receiving.aspx.cs": {
-    "mtime": 1786518195.5749454,
-    "ast_hash": "ab8de14189efa996d068dfaba16549dd",
-    "semantic_hash": "ab8de14189efa996d068dfaba16549dd"
+    "mtime": 1786942833.2975447,
+    "ast_hash": "e671e184dc725ebefe6b38e4b53d84cc",
+    "semantic_hash": "e671e184dc725ebefe6b38e4b53d84cc"
   },
   "Receiving.aspx.designer.cs": {
     "mtime": 1784549292.3615654,
@@ -1280,9 +1280,9 @@
     "semantic_hash": "8ffefc00d3e7e5b556b87b0c7b72c143"
   },
   "SBMS.csproj": {
-    "mtime": 1786353350.9917595,
-    "ast_hash": "751e797552e6815102895f8d528e4404",
-    "semantic_hash": "751e797552e6815102895f8d528e4404"
+    "mtime": 1786616296.041016,
+    "ast_hash": "773b443d07139a55affec1bf62c41968",
+    "semantic_hash": "773b443d07139a55affec1bf62c41968"
   },
   "SBMSMobile/DashboardM.aspx.cs": {
     "mtime": 1785229445.711491,
@@ -1295,9 +1295,9 @@
     "semantic_hash": "d80fbca35c1fc71f811b4f3e4e0f9660"
   },
   "SBMSMobile/ManufactureM.aspx.cs": {
-    "mtime": 1785235714.5994487,
-    "ast_hash": "b68609456fbdd22c8fa980a9ed3357f7",
-    "semantic_hash": "b68609456fbdd22c8fa980a9ed3357f7"
+    "mtime": 1786964879.454506,
+    "ast_hash": "cefd782166a009e12ae5a4393d8f79f2",
+    "semantic_hash": "cefd782166a009e12ae5a4393d8f79f2"
   },
   "SBMSMobile/ManufactureM.aspx.designer.cs": {
     "mtime": 1785229445.7727828,
@@ -1590,9 +1590,9 @@
     "semantic_hash": "a2370ff75e7dfbc9c7298ce7bbf3e1f9"
   },
   "Transfer.aspx.cs": {
-    "mtime": 1784549292.516793,
-    "ast_hash": "c1f2b7a41126a42da888190f78fddf0d",
-    "semantic_hash": "c1f2b7a41126a42da888190f78fddf0d"
+    "mtime": 1786536673.999202,
+    "ast_hash": "09c9636ab80cf5aad00ffe7f61294265",
+    "semantic_hash": "09c9636ab80cf5aad00ffe7f61294265"
   },
   "Transfer.aspx.designer.cs": {
     "mtime": 1784549292.5177941,
@@ -1690,9 +1690,9 @@
     "semantic_hash": "56a8565f1e6e7897927dd806b180e54b"
   },
   "WorksOrdersManf.aspx.cs": {
-    "mtime": 1786517953.544383,
-    "ast_hash": "55ebe47d8f06d554f35be16aba9a0ed6",
-    "semantic_hash": "55ebe47d8f06d554f35be16aba9a0ed6"
+    "mtime": 1786974394.847826,
+    "ast_hash": "6c954a6cf493e3e8c0ce05205c951e56",
+    "semantic_hash": "6c954a6cf493e3e8c0ce05205c951e56"
   },
   "WorksOrdersManf.aspx.designer.cs": {
     "mtime": 1783516492.618472,
@@ -1965,9 +1965,9 @@
     "semantic_hash": "93a2a376923ac29c7f50edcda85ce209"
   },
   "LotBackfill.aspx.cs": {
-    "mtime": 1786435874.1313345,
-    "ast_hash": "200e07141bb5629f46ecdbf9fe12be5a",
-    "semantic_hash": "200e07141bb5629f46ecdbf9fe12be5a"
+    "mtime": 1786536572.3382316,
+    "ast_hash": "c094e73e2997433639e81ff8e15f1e7d",
+    "semantic_hash": "c094e73e2997433639e81ff8e15f1e7d"
   },
   "LotBackfill.aspx.designer.cs": {
     "mtime": 1786434846.6208003,
@@ -2003,5 +2003,1725 @@
     "mtime": 1786462364.3176963,
     "ast_hash": "feeaf3f49ea3efe56c37e4a681b06922",
     "semantic_hash": "feeaf3f49ea3efe56c37e4a681b06922"
+  },
+  "ReceivingRecovery.aspx.cs": {
+    "mtime": 1786616240.2625582,
+    "ast_hash": "5f886bf08165447156c3beff27fd4462",
+    "semantic_hash": "5f886bf08165447156c3beff27fd4462"
+  },
+  "ReceivingRecovery.aspx.designer.cs": {
+    "mtime": 1786616274.5010092,
+    "ast_hash": "1b721d804440e47f36b5088afe75ff85",
+    "semantic_hash": "1b721d804440e47f36b5088afe75ff85"
+  },
+  "SQL/Add_BOMHeader_AddCostAccountID.sql": {
+    "mtime": 1786957580.8005588,
+    "ast_hash": "f4ed2781fb536745cce6e7587156fa61",
+    "semantic_hash": "f4ed2781fb536745cce6e7587156fa61"
+  },
+  "niceadmin/assets/js/main.js": {
+    "mtime": 1763625077.6576002,
+    "ast_hash": "0f8529fbb5a18e719386839eb3b20f13",
+    "semantic_hash": "0f8529fbb5a18e719386839eb3b20f13"
+  },
+  "niceadmin/assets/vendor/apexcharts/apexcharts.amd.js": {
+    "mtime": 1763625077.6587062,
+    "ast_hash": "e747e362e8ca11f33f90f949dbe93018",
+    "semantic_hash": "e747e362e8ca11f33f90f949dbe93018"
+  },
+  "niceadmin/assets/vendor/apexcharts/apexcharts.common.js": {
+    "mtime": 1763625077.6650045,
+    "ast_hash": "441d9601c9cac40ee3b2f95ce586f0a9",
+    "semantic_hash": "441d9601c9cac40ee3b2f95ce586f0a9"
+  },
+  "niceadmin/assets/vendor/apexcharts/apexcharts.esm.js": {
+    "mtime": 1763625077.6692443,
+    "ast_hash": "05b7567c082cdbdeac7d1ec943d23773",
+    "semantic_hash": "05b7567c082cdbdeac7d1ec943d23773"
+  },
+  "niceadmin/assets/vendor/apexcharts/apexcharts.js": {
+    "mtime": 1763625077.6735356,
+    "ast_hash": "7d870688a98b40537e42ca9d51abe3f2",
+    "semantic_hash": "7d870688a98b40537e42ca9d51abe3f2"
+  },
+  "niceadmin/assets/vendor/apexcharts/apexcharts.min.js": {
+    "mtime": 1763625077.684672,
+    "ast_hash": "f4c0faa58da530b62f908f26197cf0f9",
+    "semantic_hash": "f4c0faa58da530b62f908f26197cf0f9"
+  },
+  "niceadmin/assets/vendor/apexcharts/locales/ar.json": {
+    "mtime": 1763625077.6893964,
+    "ast_hash": "1949b254a86f6262f07373bba066c319",
+    "semantic_hash": "1949b254a86f6262f07373bba066c319"
+  },
+  "niceadmin/assets/vendor/apexcharts/locales/be-cyrl.json": {
+    "mtime": 1763625077.6898646,
+    "ast_hash": "721c778adeb40c9aab07b6f5e223f79f",
+    "semantic_hash": "721c778adeb40c9aab07b6f5e223f79f"
+  },
+  "niceadmin/assets/vendor/apexcharts/locales/be-latn.json": {
+    "mtime": 1763625077.6906247,
+    "ast_hash": "a52a0e9a4f1656b955c8faa885b51c85",
+    "semantic_hash": "a52a0e9a4f1656b955c8faa885b51c85"
+  },
+  "niceadmin/assets/vendor/apexcharts/locales/ca.json": {
+    "mtime": 1763625077.6906247,
+    "ast_hash": "218948ed326a602ae91495f3e4fda6ac",
+    "semantic_hash": "218948ed326a602ae91495f3e4fda6ac"
+  },
+  "niceadmin/assets/vendor/apexcharts/locales/cs.json": {
+    "mtime": 1763625077.6918023,
+    "ast_hash": "b8913d921dcd232a1a1356ca4f7733fd",
+    "semantic_hash": "b8913d921dcd232a1a1356ca4f7733fd"
+  },
+  "niceadmin/assets/vendor/apexcharts/locales/da.json": {
+    "mtime": 1763625077.6921217,
+    "ast_hash": "e26bbe9c5ecfd5f3d9655ddc0c39f552",
+    "semantic_hash": "e26bbe9c5ecfd5f3d9655ddc0c39f552"
+  },
+  "niceadmin/assets/vendor/apexcharts/locales/de.json": {
+    "mtime": 1763625077.6926377,
+    "ast_hash": "6a36c2442796a486c379178275b7802e",
+    "semantic_hash": "6a36c2442796a486c379178275b7802e"
+  },
+  "niceadmin/assets/vendor/apexcharts/locales/el.json": {
+    "mtime": 1763625077.6928046,
+    "ast_hash": "22ef1dcc4f8563e0aacca056639c771c",
+    "semantic_hash": "22ef1dcc4f8563e0aacca056639c771c"
+  },
+  "niceadmin/assets/vendor/apexcharts/locales/en.json": {
+    "mtime": 1763625077.693369,
+    "ast_hash": "9ccecdd048661766f68dd85d1a5d818a",
+    "semantic_hash": "9ccecdd048661766f68dd85d1a5d818a"
+  },
+  "niceadmin/assets/vendor/apexcharts/locales/es.json": {
+    "mtime": 1763625077.6940465,
+    "ast_hash": "a07f235f6a0140c2e7ba11adc73e2c69",
+    "semantic_hash": "a07f235f6a0140c2e7ba11adc73e2c69"
+  },
+  "niceadmin/assets/vendor/apexcharts/locales/et.json": {
+    "mtime": 1763625077.6941738,
+    "ast_hash": "cbcb87f025c50452564b13eb1b1ed23a",
+    "semantic_hash": "cbcb87f025c50452564b13eb1b1ed23a"
+  },
+  "niceadmin/assets/vendor/apexcharts/locales/fa.json": {
+    "mtime": 1763625077.6949818,
+    "ast_hash": "d01655ddba4c5670c079a9727661d6f7",
+    "semantic_hash": "d01655ddba4c5670c079a9727661d6f7"
+  },
+  "niceadmin/assets/vendor/apexcharts/locales/fi.json": {
+    "mtime": 1763625077.695432,
+    "ast_hash": "5046ba37a3514438e6fefe4c80f4b144",
+    "semantic_hash": "5046ba37a3514438e6fefe4c80f4b144"
+  },
+  "niceadmin/assets/vendor/apexcharts/locales/fr.json": {
+    "mtime": 1763625077.695841,
+    "ast_hash": "969b96eacc0b6a5c1841f8eadc8726a4",
+    "semantic_hash": "969b96eacc0b6a5c1841f8eadc8726a4"
+  },
+  "niceadmin/assets/vendor/apexcharts/locales/he.json": {
+    "mtime": 1763625077.6961365,
+    "ast_hash": "090507154145a6e0b89e1882c614fc16",
+    "semantic_hash": "090507154145a6e0b89e1882c614fc16"
+  },
+  "niceadmin/assets/vendor/apexcharts/locales/hi.json": {
+    "mtime": 1763625077.6967657,
+    "ast_hash": "f334e6e62009e0618bd8f6a516f366da",
+    "semantic_hash": "f334e6e62009e0618bd8f6a516f366da"
+  },
+  "niceadmin/assets/vendor/apexcharts/locales/hr.json": {
+    "mtime": 1763625077.6969247,
+    "ast_hash": "dde1d0d0a318920b885180b1e172fcd4",
+    "semantic_hash": "dde1d0d0a318920b885180b1e172fcd4"
+  },
+  "niceadmin/assets/vendor/apexcharts/locales/hu.json": {
+    "mtime": 1763625077.6969247,
+    "ast_hash": "d0f5f8e96e236827294f1527d8b58869",
+    "semantic_hash": "d0f5f8e96e236827294f1527d8b58869"
+  },
+  "niceadmin/assets/vendor/apexcharts/locales/hy.json": {
+    "mtime": 1763625077.6980631,
+    "ast_hash": "7bfa89a6a2e2aab9fd024ec351b8c5c6",
+    "semantic_hash": "7bfa89a6a2e2aab9fd024ec351b8c5c6"
+  },
+  "niceadmin/assets/vendor/apexcharts/locales/id.json": {
+    "mtime": 1763625077.6985064,
+    "ast_hash": "10bbc7a65c42735ad6c7832d99bc6a9f",
+    "semantic_hash": "10bbc7a65c42735ad6c7832d99bc6a9f"
+  },
+  "niceadmin/assets/vendor/apexcharts/locales/it.json": {
+    "mtime": 1763625077.6988409,
+    "ast_hash": "ce2d3d10c95d712b29eb6a10de8157f5",
+    "semantic_hash": "ce2d3d10c95d712b29eb6a10de8157f5"
+  },
+  "niceadmin/assets/vendor/apexcharts/locales/ja.json": {
+    "mtime": 1763625077.6991367,
+    "ast_hash": "bad370d1fa2a8749527688fd6a592e0c",
+    "semantic_hash": "bad370d1fa2a8749527688fd6a592e0c"
+  },
+  "niceadmin/assets/vendor/apexcharts/locales/ka.json": {
+    "mtime": 1763625077.6991367,
+    "ast_hash": "965ff5c2119b959f1501a0bc1b9bc751",
+    "semantic_hash": "965ff5c2119b959f1501a0bc1b9bc751"
+  },
+  "niceadmin/assets/vendor/apexcharts/locales/ko.json": {
+    "mtime": 1763625077.6998494,
+    "ast_hash": "2e76f3ab7fdca9e26a43b1e58de8f76b",
+    "semantic_hash": "2e76f3ab7fdca9e26a43b1e58de8f76b"
+  },
+  "niceadmin/assets/vendor/apexcharts/locales/lt.json": {
+    "mtime": 1763625077.7004988,
+    "ast_hash": "a741b7a691f0259a43e263d514bf4ea9",
+    "semantic_hash": "a741b7a691f0259a43e263d514bf4ea9"
+  },
+  "niceadmin/assets/vendor/apexcharts/locales/lv.json": {
+    "mtime": 1763625077.7004988,
+    "ast_hash": "44996ab39dfa44e896057b92bb889725",
+    "semantic_hash": "44996ab39dfa44e896057b92bb889725"
+  },
+  "niceadmin/assets/vendor/apexcharts/locales/ms.json": {
+    "mtime": 1763625077.7015002,
+    "ast_hash": "022d79949e4dcf5d5ca776a5869ab6fd",
+    "semantic_hash": "022d79949e4dcf5d5ca776a5869ab6fd"
+  },
+  "niceadmin/assets/vendor/apexcharts/locales/nb.json": {
+    "mtime": 1763625077.7017908,
+    "ast_hash": "89b095575afea4d8be32ff474f6eed00",
+    "semantic_hash": "89b095575afea4d8be32ff474f6eed00"
+  },
+  "niceadmin/assets/vendor/apexcharts/locales/nl.json": {
+    "mtime": 1763625077.7181985,
+    "ast_hash": "d3fcc65a9212f6750ecbe62a9f31da1b",
+    "semantic_hash": "d3fcc65a9212f6750ecbe62a9f31da1b"
+  },
+  "niceadmin/assets/vendor/apexcharts/locales/pl.json": {
+    "mtime": 1763625077.7461343,
+    "ast_hash": "c55a1d0073fae83932f5fe3892bf5662",
+    "semantic_hash": "c55a1d0073fae83932f5fe3892bf5662"
+  },
+  "niceadmin/assets/vendor/apexcharts/locales/pt-br.json": {
+    "mtime": 1763625077.761222,
+    "ast_hash": "a2530e04c54a93c2ba3133350f681b6f",
+    "semantic_hash": "a2530e04c54a93c2ba3133350f681b6f"
+  },
+  "niceadmin/assets/vendor/apexcharts/locales/pt.json": {
+    "mtime": 1763625077.7616436,
+    "ast_hash": "2afba630cfe4f4128f7bebc852cdff30",
+    "semantic_hash": "2afba630cfe4f4128f7bebc852cdff30"
+  },
+  "niceadmin/assets/vendor/apexcharts/locales/rs.json": {
+    "mtime": 1763625077.7622201,
+    "ast_hash": "1efce2e15ccc3bc31adfbb9043d8a594",
+    "semantic_hash": "1efce2e15ccc3bc31adfbb9043d8a594"
+  },
+  "niceadmin/assets/vendor/apexcharts/locales/ru.json": {
+    "mtime": 1763625077.7632182,
+    "ast_hash": "0cb3593af4296f52c98c67d36f937969",
+    "semantic_hash": "0cb3593af4296f52c98c67d36f937969"
+  },
+  "niceadmin/assets/vendor/apexcharts/locales/se.json": {
+    "mtime": 1763625077.76359,
+    "ast_hash": "4a744b7d45f557453b16b18630a1e54e",
+    "semantic_hash": "4a744b7d45f557453b16b18630a1e54e"
+  },
+  "niceadmin/assets/vendor/apexcharts/locales/sk.json": {
+    "mtime": 1763625077.764578,
+    "ast_hash": "958ffc0879bdf14e6d26fdbacc8cfb47",
+    "semantic_hash": "958ffc0879bdf14e6d26fdbacc8cfb47"
+  },
+  "niceadmin/assets/vendor/apexcharts/locales/sl.json": {
+    "mtime": 1763625077.7652183,
+    "ast_hash": "323192d8be51b8b35283ecacb86d6b47",
+    "semantic_hash": "323192d8be51b8b35283ecacb86d6b47"
+  },
+  "niceadmin/assets/vendor/apexcharts/locales/sq.json": {
+    "mtime": 1763625077.7652183,
+    "ast_hash": "37f1a4442015753cecef05ebf2032a3d",
+    "semantic_hash": "37f1a4442015753cecef05ebf2032a3d"
+  },
+  "niceadmin/assets/vendor/apexcharts/locales/th.json": {
+    "mtime": 1763625077.7652183,
+    "ast_hash": "d2f1ad113a39a542142f97437ff5fcad",
+    "semantic_hash": "d2f1ad113a39a542142f97437ff5fcad"
+  },
+  "niceadmin/assets/vendor/apexcharts/locales/tr.json": {
+    "mtime": 1763625077.7665315,
+    "ast_hash": "329c3afa0f0b40fb53a4620faf121717",
+    "semantic_hash": "329c3afa0f0b40fb53a4620faf121717"
+  },
+  "niceadmin/assets/vendor/apexcharts/locales/ua.json": {
+    "mtime": 1763625077.766718,
+    "ast_hash": "74519c9a028b05aedd30c9e0774ffbd7",
+    "semantic_hash": "74519c9a028b05aedd30c9e0774ffbd7"
+  },
+  "niceadmin/assets/vendor/apexcharts/locales/vi.json": {
+    "mtime": 1763625077.767219,
+    "ast_hash": "0658aa562279a5fedbd40b9ca88cb62b",
+    "semantic_hash": "0658aa562279a5fedbd40b9ca88cb62b"
+  },
+  "niceadmin/assets/vendor/apexcharts/locales/zh-cn.json": {
+    "mtime": 1763625077.7680383,
+    "ast_hash": "23ca95fcb1a34edf7946501d1393a4dd",
+    "semantic_hash": "23ca95fcb1a34edf7946501d1393a4dd"
+  },
+  "niceadmin/assets/vendor/apexcharts/locales/zh-tw.json": {
+    "mtime": 1763625077.7684639,
+    "ast_hash": "f36b68f51b081723bc48308b770e6365",
+    "semantic_hash": "f36b68f51b081723bc48308b770e6365"
+  },
+  "niceadmin/assets/vendor/bootstrap-icons/bootstrap-icons.json": {
+    "mtime": 1763625077.770676,
+    "ast_hash": "483c22f4f5ecbe507b03d7345ac870dc",
+    "semantic_hash": "483c22f4f5ecbe507b03d7345ac870dc"
+  },
+  "niceadmin/assets/vendor/bootstrap/js/bootstrap.bundle.js": {
+    "mtime": 1763625077.930341,
+    "ast_hash": "52644fccff74e4628dca0927a252a331",
+    "semantic_hash": "52644fccff74e4628dca0927a252a331"
+  },
+  "niceadmin/assets/vendor/bootstrap/js/bootstrap.bundle.min.js": {
+    "mtime": 1763625077.9336913,
+    "ast_hash": "bd31cd6c0de0972f2e5d260a09ba121f",
+    "semantic_hash": "bd31cd6c0de0972f2e5d260a09ba121f"
+  },
+  "niceadmin/assets/vendor/bootstrap/js/bootstrap.esm.js": {
+    "mtime": 1763625077.938274,
+    "ast_hash": "b5d04182a22ae8dd176f22764006328d",
+    "semantic_hash": "b5d04182a22ae8dd176f22764006328d"
+  },
+  "niceadmin/assets/vendor/bootstrap/js/bootstrap.esm.min.js": {
+    "mtime": 1763625077.9621875,
+    "ast_hash": "19a515baeb496959205ee88676f9979c",
+    "semantic_hash": "19a515baeb496959205ee88676f9979c"
+  },
+  "niceadmin/assets/vendor/bootstrap/js/bootstrap.js": {
+    "mtime": 1763625077.9649055,
+    "ast_hash": "3bcf04ed66b298f314c5241d97868b20",
+    "semantic_hash": "3bcf04ed66b298f314c5241d97868b20"
+  },
+  "niceadmin/assets/vendor/bootstrap/js/bootstrap.min.js": {
+    "mtime": 1763625077.968122,
+    "ast_hash": "f031fc3fc2f16ebcd7ed6a997e35c10a",
+    "semantic_hash": "f031fc3fc2f16ebcd7ed6a997e35c10a"
+  },
+  "niceadmin/assets/vendor/chart.js/chart.cjs": {
+    "mtime": 1763625077.9934201,
+    "ast_hash": "75b4e2a523458e286325e1ca2b9c278b",
+    "semantic_hash": "75b4e2a523458e286325e1ca2b9c278b"
+  },
+  "niceadmin/assets/vendor/chart.js/chart.js": {
+    "mtime": 1763625078.0050201,
+    "ast_hash": "a92848550d53ef17cdd334ac89116591",
+    "semantic_hash": "a92848550d53ef17cdd334ac89116591"
+  },
+  "niceadmin/assets/vendor/chart.js/chart.umd.js": {
+    "mtime": 1763625078.0141275,
+    "ast_hash": "6afba16fb9f5f302f43a2ab3285bfe52",
+    "semantic_hash": "6afba16fb9f5f302f43a2ab3285bfe52"
+  },
+  "niceadmin/assets/vendor/chart.js/chunks/helpers.segment.cjs": {
+    "mtime": 1763625078.022145,
+    "ast_hash": "89395eb42827b14ea589c3e42b9d4333",
+    "semantic_hash": "89395eb42827b14ea589c3e42b9d4333"
+  },
+  "niceadmin/assets/vendor/chart.js/chunks/helpers.segment.js": {
+    "mtime": 1763625078.026009,
+    "ast_hash": "d3be584c218fea717905582ed44714eb",
+    "semantic_hash": "d3be584c218fea717905582ed44714eb"
+  },
+  "niceadmin/assets/vendor/chart.js/controllers/controller.bar.d.ts": {
+    "mtime": 1763625078.0292103,
+    "ast_hash": "a9c841c5bc4040b943dd9d5af1ba055a",
+    "semantic_hash": "a9c841c5bc4040b943dd9d5af1ba055a"
+  },
+  "niceadmin/assets/vendor/chart.js/controllers/controller.bubble.d.ts": {
+    "mtime": 1763625078.0466256,
+    "ast_hash": "4485c9f4cd11f03d7799cdda58d7fa7e",
+    "semantic_hash": "4485c9f4cd11f03d7799cdda58d7fa7e"
+  },
+  "niceadmin/assets/vendor/chart.js/controllers/controller.doughnut.d.ts": {
+    "mtime": 1763625078.0762348,
+    "ast_hash": "8cf298549b56d81115cf4b9d77ad78f4",
+    "semantic_hash": "8cf298549b56d81115cf4b9d77ad78f4"
+  },
+  "niceadmin/assets/vendor/chart.js/controllers/controller.line.d.ts": {
+    "mtime": 1763625078.083856,
+    "ast_hash": "4be7b5790cac13340c534a2e5b0bd3a3",
+    "semantic_hash": "4be7b5790cac13340c534a2e5b0bd3a3"
+  },
+  "niceadmin/assets/vendor/chart.js/controllers/controller.pie.d.ts": {
+    "mtime": 1763625078.083856,
+    "ast_hash": "8c9190a452f49307a36f63dffbbcd2d4",
+    "semantic_hash": "8c9190a452f49307a36f63dffbbcd2d4"
+  },
+  "niceadmin/assets/vendor/chart.js/controllers/controller.polarArea.d.ts": {
+    "mtime": 1763625078.0851917,
+    "ast_hash": "81f741fe066f51fec8f822112f363395",
+    "semantic_hash": "81f741fe066f51fec8f822112f363395"
+  },
+  "niceadmin/assets/vendor/chart.js/controllers/controller.radar.d.ts": {
+    "mtime": 1763625078.0853603,
+    "ast_hash": "73fcc217c1e148dc4bf06564c8cdc79b",
+    "semantic_hash": "73fcc217c1e148dc4bf06564c8cdc79b"
+  },
+  "niceadmin/assets/vendor/chart.js/controllers/controller.scatter.d.ts": {
+    "mtime": 1763625078.0853603,
+    "ast_hash": "88db6b33117c2675ca4a16157f4f4af2",
+    "semantic_hash": "88db6b33117c2675ca4a16157f4f4af2"
+  },
+  "niceadmin/assets/vendor/chart.js/controllers/index.d.ts": {
+    "mtime": 1763625078.0853603,
+    "ast_hash": "f7511d718d4c5dd82e29ec48a2b56ae6",
+    "semantic_hash": "f7511d718d4c5dd82e29ec48a2b56ae6"
+  },
+  "niceadmin/assets/vendor/chart.js/core/core.adapters.d.ts": {
+    "mtime": 1763625078.0871527,
+    "ast_hash": "a432c9d98a8402973b6d3eb9aa4ea342",
+    "semantic_hash": "a432c9d98a8402973b6d3eb9aa4ea342"
+  },
+  "niceadmin/assets/vendor/chart.js/core/core.animation.d.ts": {
+    "mtime": 1763625078.0871527,
+    "ast_hash": "9c82b64207630e5d50aa32e38413551e",
+    "semantic_hash": "9c82b64207630e5d50aa32e38413551e"
+  },
+  "niceadmin/assets/vendor/chart.js/core/core.animations.d.ts": {
+    "mtime": 1763625078.0882385,
+    "ast_hash": "f63ed31fe06c86dae5a3ea7b0f0df56b",
+    "semantic_hash": "f63ed31fe06c86dae5a3ea7b0f0df56b"
+  },
+  "niceadmin/assets/vendor/chart.js/core/core.animations.defaults.d.ts": {
+    "mtime": 1763625078.0886881,
+    "ast_hash": "1feb381bfe10bdf7b51f2dc98f9f9d45",
+    "semantic_hash": "1feb381bfe10bdf7b51f2dc98f9f9d45"
+  },
+  "niceadmin/assets/vendor/chart.js/core/core.animator.d.ts": {
+    "mtime": 1763625078.120533,
+    "ast_hash": "b50a216e91a57f2ad1f90ea7dacb38d9",
+    "semantic_hash": "b50a216e91a57f2ad1f90ea7dacb38d9"
+  },
+  "niceadmin/assets/vendor/chart.js/core/core.config.d.ts": {
+    "mtime": 1763625078.1227255,
+    "ast_hash": "5283a7a64d31a8d0eea4456fde400391",
+    "semantic_hash": "5283a7a64d31a8d0eea4456fde400391"
+  },
+  "niceadmin/assets/vendor/chart.js/core/core.controller.d.ts": {
+    "mtime": 1763625078.1227255,
+    "ast_hash": "0d579a475376670d23eafed758f4ec82",
+    "semantic_hash": "0d579a475376670d23eafed758f4ec82"
+  },
+  "niceadmin/assets/vendor/chart.js/core/core.datasetController.d.ts": {
+    "mtime": 1763625078.1237245,
+    "ast_hash": "3d0071183d3821c211e3b45d4f1c3072",
+    "semantic_hash": "3d0071183d3821c211e3b45d4f1c3072"
+  },
+  "niceadmin/assets/vendor/chart.js/core/core.defaults.d.ts": {
+    "mtime": 1763625078.124604,
+    "ast_hash": "cc3ae1d7a1402062133942a23b23cbd1",
+    "semantic_hash": "cc3ae1d7a1402062133942a23b23cbd1"
+  },
+  "niceadmin/assets/vendor/chart.js/core/core.element.d.ts": {
+    "mtime": 1763625078.1252725,
+    "ast_hash": "30a9813cc9a245bd9666a243817562d9",
+    "semantic_hash": "30a9813cc9a245bd9666a243817562d9"
+  },
+  "niceadmin/assets/vendor/chart.js/core/core.interaction.d.ts": {
+    "mtime": 1763625078.125691,
+    "ast_hash": "880648f20098a5300177ae351d2ecb67",
+    "semantic_hash": "880648f20098a5300177ae351d2ecb67"
+  },
+  "niceadmin/assets/vendor/chart.js/core/core.layouts.d.ts": {
+    "mtime": 1763625078.126133,
+    "ast_hash": "75d8260dc95d6d8cf3d228660bc33108",
+    "semantic_hash": "75d8260dc95d6d8cf3d228660bc33108"
+  },
+  "niceadmin/assets/vendor/chart.js/core/core.layouts.defaults.d.ts": {
+    "mtime": 1763625078.1265714,
+    "ast_hash": "d272cdcd9a9f9bb4cc915a47b97f8929",
+    "semantic_hash": "d272cdcd9a9f9bb4cc915a47b97f8929"
+  },
+  "niceadmin/assets/vendor/chart.js/core/core.plugins.d.ts": {
+    "mtime": 1763625078.1269262,
+    "ast_hash": "9ac3c902a7b53b2754049b1622bc11a8",
+    "semantic_hash": "9ac3c902a7b53b2754049b1622bc11a8"
+  },
+  "niceadmin/assets/vendor/chart.js/core/core.registry.d.ts": {
+    "mtime": 1763625078.12705,
+    "ast_hash": "164b777896ff3e41c62de50c36b688d2",
+    "semantic_hash": "164b777896ff3e41c62de50c36b688d2"
+  },
+  "niceadmin/assets/vendor/chart.js/core/core.scale.autoskip.d.ts": {
+    "mtime": 1763625078.1274319,
+    "ast_hash": "f6b0bd86a65dfd47f40d0c75e9c70e26",
+    "semantic_hash": "f6b0bd86a65dfd47f40d0c75e9c70e26"
+  },
+  "niceadmin/assets/vendor/chart.js/core/core.scale.d.ts": {
+    "mtime": 1763625078.1278732,
+    "ast_hash": "7fe14ff060f7e9d1b356e652e278b4df",
+    "semantic_hash": "7fe14ff060f7e9d1b356e652e278b4df"
+  },
+  "niceadmin/assets/vendor/chart.js/core/core.scale.defaults.d.ts": {
+    "mtime": 1763625078.128312,
+    "ast_hash": "fd9d23504d7c6d506e50dfe9495ef110",
+    "semantic_hash": "fd9d23504d7c6d506e50dfe9495ef110"
+  },
+  "niceadmin/assets/vendor/chart.js/core/core.ticks.d.ts": {
+    "mtime": 1763625078.128312,
+    "ast_hash": "09e6abad074e78a824103e24327ce930",
+    "semantic_hash": "09e6abad074e78a824103e24327ce930"
+  },
+  "niceadmin/assets/vendor/chart.js/core/core.typedRegistry.d.ts": {
+    "mtime": 1763625078.1293142,
+    "ast_hash": "1f916049bef5fb6e72f5280f699d6515",
+    "semantic_hash": "1f916049bef5fb6e72f5280f699d6515"
+  },
+  "niceadmin/assets/vendor/chart.js/core/index.d.ts": {
+    "mtime": 1763625078.1466353,
+    "ast_hash": "bc32a803caf20f304ffefc4451024e5b",
+    "semantic_hash": "bc32a803caf20f304ffefc4451024e5b"
+  },
+  "niceadmin/assets/vendor/chart.js/elements/element.arc.d.ts": {
+    "mtime": 1763625078.1515214,
+    "ast_hash": "8c9512bb98b9efbba493df6b2ac94cd9",
+    "semantic_hash": "8c9512bb98b9efbba493df6b2ac94cd9"
+  },
+  "niceadmin/assets/vendor/chart.js/elements/element.bar.d.ts": {
+    "mtime": 1763625078.1521432,
+    "ast_hash": "01593b34c96c595e4f78872e02d5aa92",
+    "semantic_hash": "01593b34c96c595e4f78872e02d5aa92"
+  },
+  "niceadmin/assets/vendor/chart.js/elements/element.line.d.ts": {
+    "mtime": 1763625078.1524014,
+    "ast_hash": "3ec2d4edad878f7d22cbf2141956a317",
+    "semantic_hash": "3ec2d4edad878f7d22cbf2141956a317"
+  },
+  "niceadmin/assets/vendor/chart.js/elements/element.point.d.ts": {
+    "mtime": 1763625078.1524014,
+    "ast_hash": "9aee628ea2318d0c35d528d71e92a5ab",
+    "semantic_hash": "9aee628ea2318d0c35d528d71e92a5ab"
+  },
+  "niceadmin/assets/vendor/chart.js/elements/index.d.ts": {
+    "mtime": 1763625078.1524014,
+    "ast_hash": "3d30b842196cc5f5e7d439a207094b7a",
+    "semantic_hash": "3d30b842196cc5f5e7d439a207094b7a"
+  },
+  "niceadmin/assets/vendor/chart.js/helpers.cjs": {
+    "mtime": 1763625078.1534016,
+    "ast_hash": "bc6a1332b81b3bc311b1b2f3780da660",
+    "semantic_hash": "bc6a1332b81b3bc311b1b2f3780da660"
+  },
+  "niceadmin/assets/vendor/chart.js/helpers.js": {
+    "mtime": 1763625078.1542306,
+    "ast_hash": "a6fd8fe1071a8a5d73847a9f47f0e384",
+    "semantic_hash": "a6fd8fe1071a8a5d73847a9f47f0e384"
+  },
+  "niceadmin/assets/vendor/chart.js/helpers/helpers.canvas.d.ts": {
+    "mtime": 1763625078.163789,
+    "ast_hash": "524a193cf48fd90b69c563a486efcbeb",
+    "semantic_hash": "524a193cf48fd90b69c563a486efcbeb"
+  },
+  "niceadmin/assets/vendor/chart.js/helpers/helpers.collection.d.ts": {
+    "mtime": 1763625078.1640055,
+    "ast_hash": "247e2e4ffd9f6b23c20c3d3e5409ee38",
+    "semantic_hash": "247e2e4ffd9f6b23c20c3d3e5409ee38"
+  },
+  "niceadmin/assets/vendor/chart.js/helpers/helpers.color.d.ts": {
+    "mtime": 1763625078.1640055,
+    "ast_hash": "7d4b81a81f3f04af09ed8534117c0ebe",
+    "semantic_hash": "7d4b81a81f3f04af09ed8534117c0ebe"
+  },
+  "niceadmin/assets/vendor/chart.js/helpers/helpers.config.d.ts": {
+    "mtime": 1763625078.164961,
+    "ast_hash": "5220acf309529abc1b4eded3b4f5f774",
+    "semantic_hash": "5220acf309529abc1b4eded3b4f5f774"
+  },
+  "niceadmin/assets/vendor/chart.js/helpers/helpers.config.types.d.ts": {
+    "mtime": 1763625078.1652236,
+    "ast_hash": "6dfb59e547a656ab0dbf4758dbd27d5c",
+    "semantic_hash": "6dfb59e547a656ab0dbf4758dbd27d5c"
+  },
+  "niceadmin/assets/vendor/chart.js/helpers/helpers.core.d.ts": {
+    "mtime": 1763625078.1663477,
+    "ast_hash": "bc4bcc80d87fdf91c77af07954143987",
+    "semantic_hash": "bc4bcc80d87fdf91c77af07954143987"
+  },
+  "niceadmin/assets/vendor/chart.js/helpers/helpers.curve.d.ts": {
+    "mtime": 1763625078.1663477,
+    "ast_hash": "d7994091e9fc808b2e7448898d6eb7d3",
+    "semantic_hash": "d7994091e9fc808b2e7448898d6eb7d3"
+  },
+  "niceadmin/assets/vendor/chart.js/helpers/helpers.dom.d.ts": {
+    "mtime": 1763625078.182541,
+    "ast_hash": "ccf5ece521c78229e136b7d97d2c7242",
+    "semantic_hash": "ccf5ece521c78229e136b7d97d2c7242"
+  },
+  "niceadmin/assets/vendor/chart.js/helpers/helpers.easing.d.ts": {
+    "mtime": 1763625078.1910243,
+    "ast_hash": "c3c40b0c75a9f3bc2cf7846b8f1eca61",
+    "semantic_hash": "c3c40b0c75a9f3bc2cf7846b8f1eca61"
+  },
+  "niceadmin/assets/vendor/chart.js/helpers/helpers.extras.d.ts": {
+    "mtime": 1763625078.2080126,
+    "ast_hash": "6e000bb6959fe8c7a70b8f3e31fcf0dd",
+    "semantic_hash": "6e000bb6959fe8c7a70b8f3e31fcf0dd"
+  },
+  "niceadmin/assets/vendor/chart.js/helpers/helpers.interpolation.d.ts": {
+    "mtime": 1763625078.2187088,
+    "ast_hash": "e6c1ca52b16df3e5b6e769c31097b229",
+    "semantic_hash": "e6c1ca52b16df3e5b6e769c31097b229"
+  },
+  "niceadmin/assets/vendor/chart.js/helpers/helpers.intl.d.ts": {
+    "mtime": 1763625078.2189655,
+    "ast_hash": "425ab6a7471b8036450cdf52ff452d9f",
+    "semantic_hash": "425ab6a7471b8036450cdf52ff452d9f"
+  },
+  "niceadmin/assets/vendor/chart.js/helpers/helpers.math.d.ts": {
+    "mtime": 1763625078.219278,
+    "ast_hash": "19eb96660d98e7ff6e442d48faccee97",
+    "semantic_hash": "19eb96660d98e7ff6e442d48faccee97"
+  },
+  "niceadmin/assets/vendor/chart.js/helpers/helpers.options.d.ts": {
+    "mtime": 1763625078.2199724,
+    "ast_hash": "904fd80b01555eb63a5d806dafc1f779",
+    "semantic_hash": "904fd80b01555eb63a5d806dafc1f779"
+  },
+  "niceadmin/assets/vendor/chart.js/helpers/helpers.rtl.d.ts": {
+    "mtime": 1763625078.220583,
+    "ast_hash": "c02ce0bf757992b3c9e3e38956b9f9a8",
+    "semantic_hash": "c02ce0bf757992b3c9e3e38956b9f9a8"
+  },
+  "niceadmin/assets/vendor/chart.js/helpers/helpers.segment.d.ts": {
+    "mtime": 1763625078.220583,
+    "ast_hash": "97b2d8c3169675b4e3a1776abbcb7c9b",
+    "semantic_hash": "97b2d8c3169675b4e3a1776abbcb7c9b"
+  },
+  "niceadmin/assets/vendor/chart.js/helpers/index.d.ts": {
+    "mtime": 1763625078.2217693,
+    "ast_hash": "1b811f8db0c6da427e6fb9b45e98ac26",
+    "semantic_hash": "1b811f8db0c6da427e6fb9b45e98ac26"
+  },
+  "niceadmin/assets/vendor/chart.js/index.d.ts": {
+    "mtime": 1763625078.2221327,
+    "ast_hash": "a41fcb3292045e1fb6bbba9eaae11dd2",
+    "semantic_hash": "a41fcb3292045e1fb6bbba9eaae11dd2"
+  },
+  "niceadmin/assets/vendor/chart.js/index.umd.d.ts": {
+    "mtime": 1763625078.222443,
+    "ast_hash": "dc156797fdc90c34ed50e7b333ebc5c2",
+    "semantic_hash": "dc156797fdc90c34ed50e7b333ebc5c2"
+  },
+  "niceadmin/assets/vendor/chart.js/platform/index.d.ts": {
+    "mtime": 1763625078.223088,
+    "ast_hash": "6a7262f3f4dc0ee749fd0843c123bf8f",
+    "semantic_hash": "6a7262f3f4dc0ee749fd0843c123bf8f"
+  },
+  "niceadmin/assets/vendor/chart.js/platform/platform.base.d.ts": {
+    "mtime": 1763625078.2237594,
+    "ast_hash": "5cdfdeb80870692fa5d8263cd92ba4c7",
+    "semantic_hash": "5cdfdeb80870692fa5d8263cd92ba4c7"
+  },
+  "niceadmin/assets/vendor/chart.js/platform/platform.basic.d.ts": {
+    "mtime": 1763625078.2239745,
+    "ast_hash": "a651989dc411a44bcd115f6da9b28b70",
+    "semantic_hash": "a651989dc411a44bcd115f6da9b28b70"
+  },
+  "niceadmin/assets/vendor/chart.js/platform/platform.dom.d.ts": {
+    "mtime": 1763625078.2239745,
+    "ast_hash": "4b1320df96edc8043913b9ac82a9bf7d",
+    "semantic_hash": "4b1320df96edc8043913b9ac82a9bf7d"
+  },
+  "niceadmin/assets/vendor/chart.js/plugins/index.d.ts": {
+    "mtime": 1763625078.2250345,
+    "ast_hash": "68798485d51dee38ade96dec092fcd2c",
+    "semantic_hash": "68798485d51dee38ade96dec092fcd2c"
+  },
+  "niceadmin/assets/vendor/chart.js/plugins/plugin.colors.d.ts": {
+    "mtime": 1763625078.2253275,
+    "ast_hash": "a14b96b0dd1b74d199169501306005ca",
+    "semantic_hash": "a14b96b0dd1b74d199169501306005ca"
+  },
+  "niceadmin/assets/vendor/chart.js/plugins/plugin.decimation.d.ts": {
+    "mtime": 1763625078.2258542,
+    "ast_hash": "d0427e4b11992e624f312424d7cdc2a3",
+    "semantic_hash": "d0427e4b11992e624f312424d7cdc2a3"
+  },
+  "niceadmin/assets/vendor/chart.js/plugins/plugin.filler/filler.drawing.d.ts": {
+    "mtime": 1763625078.2261343,
+    "ast_hash": "9c7cc2bda72e905d6a220668efb105ff",
+    "semantic_hash": "9c7cc2bda72e905d6a220668efb105ff"
+  },
+  "niceadmin/assets/vendor/chart.js/plugins/plugin.filler/filler.helper.d.ts": {
+    "mtime": 1763625078.262241,
+    "ast_hash": "d698081341b1a3a640226007d7344fe3",
+    "semantic_hash": "d698081341b1a3a640226007d7344fe3"
+  },
+  "niceadmin/assets/vendor/chart.js/plugins/plugin.filler/filler.options.d.ts": {
+    "mtime": 1763625078.2668903,
+    "ast_hash": "31ed803977b3a59c3b4760e1f6718add",
+    "semantic_hash": "31ed803977b3a59c3b4760e1f6718add"
+  },
+  "niceadmin/assets/vendor/chart.js/plugins/plugin.filler/filler.segment.d.ts": {
+    "mtime": 1763625078.2671125,
+    "ast_hash": "4f291bec751d276c3b0cf37ed2b7aa63",
+    "semantic_hash": "4f291bec751d276c3b0cf37ed2b7aa63"
+  },
+  "niceadmin/assets/vendor/chart.js/plugins/plugin.filler/filler.target.d.ts": {
+    "mtime": 1763625078.2677548,
+    "ast_hash": "db76fb820d37d7aa967eede54c1a09e8",
+    "semantic_hash": "db76fb820d37d7aa967eede54c1a09e8"
+  },
+  "niceadmin/assets/vendor/chart.js/plugins/plugin.filler/filler.target.stack.d.ts": {
+    "mtime": 1763625078.2683911,
+    "ast_hash": "071d5f985513c614b89c47b8af89609e",
+    "semantic_hash": "071d5f985513c614b89c47b8af89609e"
+  },
+  "niceadmin/assets/vendor/chart.js/plugins/plugin.filler/index.d.ts": {
+    "mtime": 1763625078.284783,
+    "ast_hash": "18e3817eb04fef1a11a511d9626ca7f9",
+    "semantic_hash": "18e3817eb04fef1a11a511d9626ca7f9"
+  },
+  "niceadmin/assets/vendor/chart.js/plugins/plugin.filler/simpleArc.d.ts": {
+    "mtime": 1763625078.284783,
+    "ast_hash": "c86664a77c4df1253157c3413986e3c9",
+    "semantic_hash": "c86664a77c4df1253157c3413986e3c9"
+  },
+  "niceadmin/assets/vendor/chart.js/plugins/plugin.legend.d.ts": {
+    "mtime": 1763625078.292011,
+    "ast_hash": "703228978f1959707215d188433feac6",
+    "semantic_hash": "703228978f1959707215d188433feac6"
+  },
+  "niceadmin/assets/vendor/chart.js/plugins/plugin.subtitle.d.ts": {
+    "mtime": 1763625078.292215,
+    "ast_hash": "07e7ed05110278c36c92dc64003a2bc2",
+    "semantic_hash": "07e7ed05110278c36c92dc64003a2bc2"
+  },
+  "niceadmin/assets/vendor/chart.js/plugins/plugin.title.d.ts": {
+    "mtime": 1763625078.2932103,
+    "ast_hash": "fa4736964df3acaf012390941a1c0cee",
+    "semantic_hash": "fa4736964df3acaf012390941a1c0cee"
+  },
+  "niceadmin/assets/vendor/chart.js/plugins/plugin.tooltip.d.ts": {
+    "mtime": 1763625078.2933865,
+    "ast_hash": "2e623da507972fbac9c90abffa070f63",
+    "semantic_hash": "2e623da507972fbac9c90abffa070f63"
+  },
+  "niceadmin/assets/vendor/chart.js/scales/index.d.ts": {
+    "mtime": 1763625078.2940385,
+    "ast_hash": "9e8bf2f6a259296b1796cf75cae18ead",
+    "semantic_hash": "9e8bf2f6a259296b1796cf75cae18ead"
+  },
+  "niceadmin/assets/vendor/chart.js/scales/scale.category.d.ts": {
+    "mtime": 1763625078.2942917,
+    "ast_hash": "cb52cdf762a50481cc43f967e0f6a1fa",
+    "semantic_hash": "cb52cdf762a50481cc43f967e0f6a1fa"
+  },
+  "niceadmin/assets/vendor/chart.js/scales/scale.linear.d.ts": {
+    "mtime": 1763625078.2947657,
+    "ast_hash": "0d1b528259dfd8128ad842dc88a9a070",
+    "semantic_hash": "0d1b528259dfd8128ad842dc88a9a070"
+  },
+  "niceadmin/assets/vendor/chart.js/scales/scale.linearbase.d.ts": {
+    "mtime": 1763625078.2947657,
+    "ast_hash": "12bcb0e6a465bf025ead5165b7724cfb",
+    "semantic_hash": "12bcb0e6a465bf025ead5165b7724cfb"
+  },
+  "niceadmin/assets/vendor/chart.js/scales/scale.logarithmic.d.ts": {
+    "mtime": 1763625078.2947657,
+    "ast_hash": "6b112335b8caa1a489c7d3add7ca96ed",
+    "semantic_hash": "6b112335b8caa1a489c7d3add7ca96ed"
+  },
+  "niceadmin/assets/vendor/chart.js/scales/scale.radialLinear.d.ts": {
+    "mtime": 1763625078.2962277,
+    "ast_hash": "1b220016501807a64e3d376bce55007f",
+    "semantic_hash": "1b220016501807a64e3d376bce55007f"
+  },
+  "niceadmin/assets/vendor/chart.js/scales/scale.time.d.ts": {
+    "mtime": 1763625078.2965584,
+    "ast_hash": "c3496709244b568371a8554b43f65d47",
+    "semantic_hash": "c3496709244b568371a8554b43f65d47"
+  },
+  "niceadmin/assets/vendor/chart.js/scales/scale.timeseries.d.ts": {
+    "mtime": 1763625078.2965584,
+    "ast_hash": "c90909eb7d8cf5d34754a0b433f30e27",
+    "semantic_hash": "c90909eb7d8cf5d34754a0b433f30e27"
+  },
+  "niceadmin/assets/vendor/chart.js/types.d.ts": {
+    "mtime": 1763625078.2976823,
+    "ast_hash": "d87a89eacda75ed896d9a9f72a806dd2",
+    "semantic_hash": "d87a89eacda75ed896d9a9f72a806dd2"
+  },
+  "niceadmin/assets/vendor/chart.js/types/animation.d.ts": {
+    "mtime": 1763625078.308113,
+    "ast_hash": "804ebecd83e486baa2fb8fa7f3b66530",
+    "semantic_hash": "804ebecd83e486baa2fb8fa7f3b66530"
+  },
+  "niceadmin/assets/vendor/chart.js/types/basic.d.ts": {
+    "mtime": 1763625078.308395,
+    "ast_hash": "4ed94f6adef92958797e1b86d9eca9c4",
+    "semantic_hash": "4ed94f6adef92958797e1b86d9eca9c4"
+  },
+  "niceadmin/assets/vendor/chart.js/types/color.d.ts": {
+    "mtime": 1763625078.308395,
+    "ast_hash": "91168215355d82ab25a7c5e4ca983973",
+    "semantic_hash": "91168215355d82ab25a7c5e4ca983973"
+  },
+  "niceadmin/assets/vendor/chart.js/types/geometric.d.ts": {
+    "mtime": 1763625078.3096163,
+    "ast_hash": "db0636cf30411f10c311859173480eae",
+    "semantic_hash": "db0636cf30411f10c311859173480eae"
+  },
+  "niceadmin/assets/vendor/chart.js/types/index.d.ts": {
+    "mtime": 1763625078.310127,
+    "ast_hash": "56de988fc30d7424e96b5ae3b6c8a2e4",
+    "semantic_hash": "56de988fc30d7424e96b5ae3b6c8a2e4"
+  },
+  "niceadmin/assets/vendor/chart.js/types/layout.d.ts": {
+    "mtime": 1763625078.3112056,
+    "ast_hash": "db12725ccb2f86c027377fd1c67d535f",
+    "semantic_hash": "db12725ccb2f86c027377fd1c67d535f"
+  },
+  "niceadmin/assets/vendor/chart.js/types/utils.d.ts": {
+    "mtime": 1763625078.3120344,
+    "ast_hash": "bf3cf3776343ee2bae6ab4867baec45a",
+    "semantic_hash": "bf3cf3776343ee2bae6ab4867baec45a"
+  },
+  "niceadmin/assets/vendor/echarts/echarts.common.js": {
+    "mtime": 1763625078.3235936,
+    "ast_hash": "e75236fd9318417341f9a268f7208028",
+    "semantic_hash": "e75236fd9318417341f9a268f7208028"
+  },
+  "niceadmin/assets/vendor/echarts/echarts.common.min.js": {
+    "mtime": 1763625078.4134617,
+    "ast_hash": "b1c8b6240d777890221df32a84ef8ba2",
+    "semantic_hash": "b1c8b6240d777890221df32a84ef8ba2"
+  },
+  "niceadmin/assets/vendor/echarts/echarts.esm.js": {
+    "mtime": 1763625078.462493,
+    "ast_hash": "a071a9b0305e0ec585e2d0c5ff18258f",
+    "semantic_hash": "a071a9b0305e0ec585e2d0c5ff18258f"
+  },
+  "niceadmin/assets/vendor/echarts/echarts.esm.min.js": {
+    "mtime": 1763625078.5152228,
+    "ast_hash": "3068bcac5a208ccaeef6802ca0a0a6f4",
+    "semantic_hash": "3068bcac5a208ccaeef6802ca0a0a6f4"
+  },
+  "niceadmin/assets/vendor/echarts/echarts.esm.min.mjs": {
+    "mtime": 1763625078.519703,
+    "ast_hash": "3068bcac5a208ccaeef6802ca0a0a6f4",
+    "semantic_hash": "3068bcac5a208ccaeef6802ca0a0a6f4"
+  },
+  "niceadmin/assets/vendor/echarts/echarts.esm.mjs": {
+    "mtime": 1763625078.5468419,
+    "ast_hash": "a72b78303b03aa84b9fcf1e2a3348339",
+    "semantic_hash": "a72b78303b03aa84b9fcf1e2a3348339"
+  },
+  "niceadmin/assets/vendor/echarts/echarts.js": {
+    "mtime": 1763625078.5814652,
+    "ast_hash": "0dea4acf500aac4bb6b3ff064e7dd450",
+    "semantic_hash": "0dea4acf500aac4bb6b3ff064e7dd450"
+  },
+  "niceadmin/assets/vendor/echarts/echarts.min.js": {
+    "mtime": 1763625078.6065521,
+    "ast_hash": "8dde887b6f6f20ebd8841a2a0a087502",
+    "semantic_hash": "8dde887b6f6f20ebd8841a2a0a087502"
+  },
+  "niceadmin/assets/vendor/echarts/echarts.simple.js": {
+    "mtime": 1763625078.6096709,
+    "ast_hash": "8402d0160b453215472d873f1a70723a",
+    "semantic_hash": "8402d0160b453215472d873f1a70723a"
+  },
+  "niceadmin/assets/vendor/echarts/echarts.simple.min.js": {
+    "mtime": 1763625078.642164,
+    "ast_hash": "3f12481ac6017c51f35acaff0ae746be",
+    "semantic_hash": "3f12481ac6017c51f35acaff0ae746be"
+  },
+  "niceadmin/assets/vendor/echarts/extension/bmap.js": {
+    "mtime": 1763625078.6431577,
+    "ast_hash": "15db6c2132ef492fc7ba467607666aa7",
+    "semantic_hash": "15db6c2132ef492fc7ba467607666aa7"
+  },
+  "niceadmin/assets/vendor/echarts/extension/bmap.min.js": {
+    "mtime": 1763625078.6441584,
+    "ast_hash": "6ca83cd760361920a04e269041e1aecf",
+    "semantic_hash": "6ca83cd760361920a04e269041e1aecf"
+  },
+  "niceadmin/assets/vendor/echarts/extension/dataTool.js": {
+    "mtime": 1763625078.644331,
+    "ast_hash": "8dc55a1d064004687fda9652ab23c131",
+    "semantic_hash": "8dc55a1d064004687fda9652ab23c131"
+  },
+  "niceadmin/assets/vendor/echarts/extension/dataTool.min.js": {
+    "mtime": 1763625078.6459007,
+    "ast_hash": "495bdb3133839f35540cc037a40063ee",
+    "semantic_hash": "495bdb3133839f35540cc037a40063ee"
+  },
+  "niceadmin/assets/vendor/echarts/package.json": {
+    "mtime": 1763625078.6461568,
+    "ast_hash": "596ebe0059926b55516a340ce0d619f2",
+    "semantic_hash": "596ebe0059926b55516a340ce0d619f2"
+  },
+  "niceadmin/assets/vendor/php-email-form/validate.js": {
+    "mtime": 1763625078.6471584,
+    "ast_hash": "e52689e17b987b2059ef3a4ae1471e25",
+    "semantic_hash": "e52689e17b987b2059ef3a4ae1471e25"
+  },
+  "niceadmin/assets/vendor/quill/quill.core.js": {
+    "mtime": 1763625078.65097,
+    "ast_hash": "48dd6c9101c4763191b6f48669cb0d64",
+    "semantic_hash": "48dd6c9101c4763191b6f48669cb0d64"
+  },
+  "niceadmin/assets/vendor/quill/quill.js": {
+    "mtime": 1763625078.658659,
+    "ast_hash": "73a7aaedcd0185e189670f135fa2cb9e",
+    "semantic_hash": "73a7aaedcd0185e189670f135fa2cb9e"
+  },
+  "niceadmin/assets/vendor/remixicon/remixicon.glyph.json": {
+    "mtime": 1763625078.703703,
+    "ast_hash": "3b6d4e9020a9c6b83d80a76570d0a069",
+    "semantic_hash": "3b6d4e9020a9c6b83d80a76570d0a069"
+  },
+  "niceadmin/assets/vendor/simple-datatables/simple-datatables.js": {
+    "mtime": 1763625078.910455,
+    "ast_hash": "7c3356d9743b73b6d395cc8fe7335cd0",
+    "semantic_hash": "7c3356d9743b73b6d395cc8fe7335cd0"
+  },
+  "niceadmin/assets/vendor/tinymce/bower.json": {
+    "mtime": 1763625078.945812,
+    "ast_hash": "b0c20aa8f4eac38a98d5d330cf098771",
+    "semantic_hash": "b0c20aa8f4eac38a98d5d330cf098771"
+  },
+  "niceadmin/assets/vendor/tinymce/composer.json": {
+    "mtime": 1763625078.9461896,
+    "ast_hash": "04ef0f20b35ea35f29258ebfb3159370",
+    "semantic_hash": "04ef0f20b35ea35f29258ebfb3159370"
+  },
+  "niceadmin/assets/vendor/tinymce/icons/default/icons.js": {
+    "mtime": 1763625078.9471908,
+    "ast_hash": "d03cd5a765b81dcccdacb1b1002d16f0",
+    "semantic_hash": "d03cd5a765b81dcccdacb1b1002d16f0"
+  },
+  "niceadmin/assets/vendor/tinymce/icons/default/icons.min.js": {
+    "mtime": 1763625078.9479153,
+    "ast_hash": "8e25fcf97770161f1e3fc95915937014",
+    "semantic_hash": "8e25fcf97770161f1e3fc95915937014"
+  },
+  "niceadmin/assets/vendor/tinymce/icons/default/index.js": {
+    "mtime": 1763625078.948739,
+    "ast_hash": "3d2ebe9a027029708c4ca0a5a5fab6ab",
+    "semantic_hash": "3d2ebe9a027029708c4ca0a5a5fab6ab"
+  },
+  "niceadmin/assets/vendor/tinymce/models/dom/index.js": {
+    "mtime": 1763625078.9502418,
+    "ast_hash": "d80178c5f8d1e635e20b1e0a17147005",
+    "semantic_hash": "d80178c5f8d1e635e20b1e0a17147005"
+  },
+  "niceadmin/assets/vendor/tinymce/models/dom/model.js": {
+    "mtime": 1763625078.9507298,
+    "ast_hash": "540b67da98b81433155697065dc931aa",
+    "semantic_hash": "540b67da98b81433155697065dc931aa"
+  },
+  "niceadmin/assets/vendor/tinymce/models/dom/model.min.js": {
+    "mtime": 1763625078.954419,
+    "ast_hash": "436bd33e547eb613caef22f0904bf1e4",
+    "semantic_hash": "436bd33e547eb613caef22f0904bf1e4"
+  },
+  "niceadmin/assets/vendor/tinymce/package.json": {
+    "mtime": 1763625078.9548037,
+    "ast_hash": "e413385d1647acde5bb357896cadb44c",
+    "semantic_hash": "e413385d1647acde5bb357896cadb44c"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/accordion/index.js": {
+    "mtime": 1763625078.9558885,
+    "ast_hash": "59f81a76d6cf09de4fb889c9b2f02588",
+    "semantic_hash": "59f81a76d6cf09de4fb889c9b2f02588"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/accordion/plugin.js": {
+    "mtime": 1763625078.956494,
+    "ast_hash": "24aa6e23585a5629147aae3e3aa53649",
+    "semantic_hash": "24aa6e23585a5629147aae3e3aa53649"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/accordion/plugin.min.js": {
+    "mtime": 1763625078.957603,
+    "ast_hash": "6cbe241fcae045cfc99bd67044131a49",
+    "semantic_hash": "6cbe241fcae045cfc99bd67044131a49"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/advlist/index.js": {
+    "mtime": 1763625078.9577465,
+    "ast_hash": "8b132093ad27d0b6764a332caaf5f913",
+    "semantic_hash": "8b132093ad27d0b6764a332caaf5f913"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/advlist/plugin.js": {
+    "mtime": 1763625078.958678,
+    "ast_hash": "e6bfcd99c5a03fa4552145636b942244",
+    "semantic_hash": "e6bfcd99c5a03fa4552145636b942244"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/advlist/plugin.min.js": {
+    "mtime": 1763625078.958678,
+    "ast_hash": "39bf17910db7ef8afde735134e77b613",
+    "semantic_hash": "39bf17910db7ef8afde735134e77b613"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/anchor/index.js": {
+    "mtime": 1763625078.959322,
+    "ast_hash": "73963f7984023f787df1cbbdf68807d2",
+    "semantic_hash": "73963f7984023f787df1cbbdf68807d2"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/anchor/plugin.js": {
+    "mtime": 1763625078.9601047,
+    "ast_hash": "415c925e7db48f757e15c5146bb258a8",
+    "semantic_hash": "415c925e7db48f757e15c5146bb258a8"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/anchor/plugin.min.js": {
+    "mtime": 1763625078.9602454,
+    "ast_hash": "abcaf49be25658ef85c7e9e48cef7e73",
+    "semantic_hash": "abcaf49be25658ef85c7e9e48cef7e73"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/autolink/index.js": {
+    "mtime": 1763625078.960746,
+    "ast_hash": "7b62ca2d8386da09282014564168599c",
+    "semantic_hash": "7b62ca2d8386da09282014564168599c"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/autolink/plugin.js": {
+    "mtime": 1763625078.960746,
+    "ast_hash": "d54622d54d9d99f6c63a693cf97d5dae",
+    "semantic_hash": "d54622d54d9d99f6c63a693cf97d5dae"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/autolink/plugin.min.js": {
+    "mtime": 1763625078.9617066,
+    "ast_hash": "35c84877bded232399b4eed1516e367d",
+    "semantic_hash": "35c84877bded232399b4eed1516e367d"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/autoresize/index.js": {
+    "mtime": 1763625078.9625401,
+    "ast_hash": "e17c5bc17678aa28afc0701dd749e109",
+    "semantic_hash": "e17c5bc17678aa28afc0701dd749e109"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/autoresize/plugin.js": {
+    "mtime": 1763625078.962658,
+    "ast_hash": "f052002ac9bcc5b4b601ca9eda2fcafb",
+    "semantic_hash": "f052002ac9bcc5b4b601ca9eda2fcafb"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/autoresize/plugin.min.js": {
+    "mtime": 1763625078.962658,
+    "ast_hash": "b7b8823aed16af84a812f8c9af317dcf",
+    "semantic_hash": "b7b8823aed16af84a812f8c9af317dcf"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/autosave/index.js": {
+    "mtime": 1763625078.9636672,
+    "ast_hash": "bed54842444944437358a7cdb9433c15",
+    "semantic_hash": "bed54842444944437358a7cdb9433c15"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/autosave/plugin.js": {
+    "mtime": 1763625078.9636672,
+    "ast_hash": "de9d1440f011d55fdf09b5705d396e6e",
+    "semantic_hash": "de9d1440f011d55fdf09b5705d396e6e"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/autosave/plugin.min.js": {
+    "mtime": 1763625078.9646719,
+    "ast_hash": "fdcc282330bc6606ba83a2bf81e739a5",
+    "semantic_hash": "fdcc282330bc6606ba83a2bf81e739a5"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/charmap/index.js": {
+    "mtime": 1763625078.9654987,
+    "ast_hash": "c732f30c5ef98e1389117761906a7906",
+    "semantic_hash": "c732f30c5ef98e1389117761906a7906"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/charmap/plugin.js": {
+    "mtime": 1763625078.965613,
+    "ast_hash": "016ec96355578898beccf0ffb225fd7b",
+    "semantic_hash": "016ec96355578898beccf0ffb225fd7b"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/charmap/plugin.min.js": {
+    "mtime": 1763625078.9666886,
+    "ast_hash": "80d217fedf1ab464ea6c9a3d6ac0617e",
+    "semantic_hash": "80d217fedf1ab464ea6c9a3d6ac0617e"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/code/index.js": {
+    "mtime": 1763625078.9669092,
+    "ast_hash": "952e74ca0da11d34eadb66b52d3746fe",
+    "semantic_hash": "952e74ca0da11d34eadb66b52d3746fe"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/code/plugin.js": {
+    "mtime": 1763625078.9677565,
+    "ast_hash": "b8ed60e65d276b432beecfa4656e8317",
+    "semantic_hash": "b8ed60e65d276b432beecfa4656e8317"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/code/plugin.min.js": {
+    "mtime": 1763625078.9682512,
+    "ast_hash": "1e841f3fef9f4584552aa5702cb02ab2",
+    "semantic_hash": "1e841f3fef9f4584552aa5702cb02ab2"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/codesample/index.js": {
+    "mtime": 1763625078.968557,
+    "ast_hash": "fc879b8102916922950b5c5d35b2114e",
+    "semantic_hash": "fc879b8102916922950b5c5d35b2114e"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/codesample/plugin.js": {
+    "mtime": 1763625078.968856,
+    "ast_hash": "803bf2a2d83da4d25d39eb345d1dc145",
+    "semantic_hash": "803bf2a2d83da4d25d39eb345d1dc145"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/codesample/plugin.min.js": {
+    "mtime": 1763625078.9706795,
+    "ast_hash": "f482aa9cba1a27ffad01bfc40a779c2d",
+    "semantic_hash": "f482aa9cba1a27ffad01bfc40a779c2d"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/directionality/index.js": {
+    "mtime": 1763625078.970937,
+    "ast_hash": "6f3faf7178e9a744247876cc90b30ae2",
+    "semantic_hash": "6f3faf7178e9a744247876cc90b30ae2"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/directionality/plugin.js": {
+    "mtime": 1763625078.9716823,
+    "ast_hash": "9d154c77d45f6dd925d42c1e9943c199",
+    "semantic_hash": "9d154c77d45f6dd925d42c1e9943c199"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/directionality/plugin.min.js": {
+    "mtime": 1763625078.9719088,
+    "ast_hash": "182bc50f33037860fc2cf80bcedcca54",
+    "semantic_hash": "182bc50f33037860fc2cf80bcedcca54"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/emoticons/index.js": {
+    "mtime": 1763625078.9726803,
+    "ast_hash": "c88afd4423afb8b69264e4164722030a",
+    "semantic_hash": "c88afd4423afb8b69264e4164722030a"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/emoticons/js/emojiimages.js": {
+    "mtime": 1763625078.9746792,
+    "ast_hash": "1ab2fd097df3919a141b411bb0b053b8",
+    "semantic_hash": "1ab2fd097df3919a141b411bb0b053b8"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/emoticons/js/emojiimages.min.js": {
+    "mtime": 1763625078.9766812,
+    "ast_hash": "0795d57b3db7eae2056abe1ddb81ebca",
+    "semantic_hash": "0795d57b3db7eae2056abe1ddb81ebca"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/emoticons/js/emojis.js": {
+    "mtime": 1763625078.9776807,
+    "ast_hash": "7fa1cc8fdcb750daad96da33821c5263",
+    "semantic_hash": "7fa1cc8fdcb750daad96da33821c5263"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/emoticons/js/emojis.min.js": {
+    "mtime": 1763625078.9796855,
+    "ast_hash": "26ab2909c8571e72e327df03c2ab50cd",
+    "semantic_hash": "26ab2909c8571e72e327df03c2ab50cd"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/emoticons/plugin.js": {
+    "mtime": 1763625078.9796855,
+    "ast_hash": "0fde8869a143873faf1244907c3d4c55",
+    "semantic_hash": "0fde8869a143873faf1244907c3d4c55"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/emoticons/plugin.min.js": {
+    "mtime": 1763625078.9809854,
+    "ast_hash": "9f34f8164a5e3f17be9cf50e8d691d5c",
+    "semantic_hash": "9f34f8164a5e3f17be9cf50e8d691d5c"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/fullscreen/index.js": {
+    "mtime": 1763625078.98141,
+    "ast_hash": "01657e91e970256f32b188fa0b4880f4",
+    "semantic_hash": "01657e91e970256f32b188fa0b4880f4"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/fullscreen/plugin.js": {
+    "mtime": 1763625078.9816928,
+    "ast_hash": "3a8cc873f985eccc0bd84276f62b25ec",
+    "semantic_hash": "3a8cc873f985eccc0bd84276f62b25ec"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/fullscreen/plugin.min.js": {
+    "mtime": 1763625078.982811,
+    "ast_hash": "82028c7840e7410c2914768264efa06e",
+    "semantic_hash": "82028c7840e7410c2914768264efa06e"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/help/index.js": {
+    "mtime": 1763625078.9835832,
+    "ast_hash": "3e5fac7228ceeaa789ff28cc6a12e6fa",
+    "semantic_hash": "3e5fac7228ceeaa789ff28cc6a12e6fa"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/help/js/i18n/keynav/ar.js": {
+    "mtime": 1763625078.9843886,
+    "ast_hash": "607300fdb3c2b347e2f6c77fb044ff72",
+    "semantic_hash": "607300fdb3c2b347e2f6c77fb044ff72"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/help/js/i18n/keynav/bg_BG.js": {
+    "mtime": 1763625078.9851673,
+    "ast_hash": "a39d247c99adba681046681b0e162798",
+    "semantic_hash": "a39d247c99adba681046681b0e162798"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/help/js/i18n/keynav/ca.js": {
+    "mtime": 1763625078.9855242,
+    "ast_hash": "0be30aab44882ac0675763d866e933d0",
+    "semantic_hash": "0be30aab44882ac0675763d866e933d0"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/help/js/i18n/keynav/cs.js": {
+    "mtime": 1763625078.9859102,
+    "ast_hash": "cb3cc115cfa3f8126284b8399794ab95",
+    "semantic_hash": "cb3cc115cfa3f8126284b8399794ab95"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/help/js/i18n/keynav/da.js": {
+    "mtime": 1763625078.9859102,
+    "ast_hash": "1ec96bc4b7417d6c716b5fd935fc1818",
+    "semantic_hash": "1ec96bc4b7417d6c716b5fd935fc1818"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/help/js/i18n/keynav/de.js": {
+    "mtime": 1763625078.9869134,
+    "ast_hash": "6a861271ef1a09596b67c1f9e8b4f678",
+    "semantic_hash": "6a861271ef1a09596b67c1f9e8b4f678"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/help/js/i18n/keynav/el.js": {
+    "mtime": 1763625078.9869134,
+    "ast_hash": "68be77cb1963a205de8de1628c2a6e09",
+    "semantic_hash": "68be77cb1963a205de8de1628c2a6e09"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/help/js/i18n/keynav/en.js": {
+    "mtime": 1763625078.9878268,
+    "ast_hash": "d10d69f17d3dd2a0ea56d9863f74ece8",
+    "semantic_hash": "d10d69f17d3dd2a0ea56d9863f74ece8"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/help/js/i18n/keynav/es.js": {
+    "mtime": 1763625078.9879901,
+    "ast_hash": "f0702afe2d7465e51ea76a1ad89035bd",
+    "semantic_hash": "f0702afe2d7465e51ea76a1ad89035bd"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/help/js/i18n/keynav/eu.js": {
+    "mtime": 1763625078.9885156,
+    "ast_hash": "6c39620ee61821a5af5bff4668b5f5d1",
+    "semantic_hash": "6c39620ee61821a5af5bff4668b5f5d1"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/help/js/i18n/keynav/fa.js": {
+    "mtime": 1763625078.9885156,
+    "ast_hash": "5783ddfbe56b405c05a2c8b98ca7f90a",
+    "semantic_hash": "5783ddfbe56b405c05a2c8b98ca7f90a"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/help/js/i18n/keynav/fi.js": {
+    "mtime": 1763625078.9894514,
+    "ast_hash": "80eceffba866fa39598e103e77bdbbbe",
+    "semantic_hash": "80eceffba866fa39598e103e77bdbbbe"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/help/js/i18n/keynav/fr_FR.js": {
+    "mtime": 1763625078.9894514,
+    "ast_hash": "b167b723597bd3d20aca9c19e82add60",
+    "semantic_hash": "b167b723597bd3d20aca9c19e82add60"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/help/js/i18n/keynav/he_IL.js": {
+    "mtime": 1763625078.9904501,
+    "ast_hash": "698c1530e663493b49f42f26dd1d5bd2",
+    "semantic_hash": "698c1530e663493b49f42f26dd1d5bd2"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/help/js/i18n/keynav/hi.js": {
+    "mtime": 1763625078.9908545,
+    "ast_hash": "9a0d6b56f6572a226e3b65973b526d3b",
+    "semantic_hash": "9a0d6b56f6572a226e3b65973b526d3b"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/help/js/i18n/keynav/hr.js": {
+    "mtime": 1763625078.9908545,
+    "ast_hash": "a5f86873cf1271457a37945769397596",
+    "semantic_hash": "a5f86873cf1271457a37945769397596"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/help/js/i18n/keynav/hu_HU.js": {
+    "mtime": 1763625078.9908545,
+    "ast_hash": "58a7d5169b15dc1a8b553e1708f1005f",
+    "semantic_hash": "58a7d5169b15dc1a8b553e1708f1005f"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/help/js/i18n/keynav/id.js": {
+    "mtime": 1763625078.9918578,
+    "ast_hash": "4ec0836cf50af1efa550c4fc96d5fef8",
+    "semantic_hash": "4ec0836cf50af1efa550c4fc96d5fef8"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/help/js/i18n/keynav/it.js": {
+    "mtime": 1763625078.9924226,
+    "ast_hash": "a835bdeccfdb296ce0b71c36d7d18d9e",
+    "semantic_hash": "a835bdeccfdb296ce0b71c36d7d18d9e"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/help/js/i18n/keynav/ja.js": {
+    "mtime": 1763625078.9924226,
+    "ast_hash": "d3d6f53b9df28c3a9fc78e0be798dfad",
+    "semantic_hash": "d3d6f53b9df28c3a9fc78e0be798dfad"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/help/js/i18n/keynav/kk.js": {
+    "mtime": 1763625078.9934247,
+    "ast_hash": "8ddfbe3569c50f72c43504386405587b",
+    "semantic_hash": "8ddfbe3569c50f72c43504386405587b"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/help/js/i18n/keynav/ko_KR.js": {
+    "mtime": 1763625078.993575,
+    "ast_hash": "daa3edd25bf6dab4ae7344fd6af5ef52",
+    "semantic_hash": "daa3edd25bf6dab4ae7344fd6af5ef52"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/help/js/i18n/keynav/ms.js": {
+    "mtime": 1763625078.994049,
+    "ast_hash": "a17d9dd1f3fcbeaaf0f5d307af5943f3",
+    "semantic_hash": "a17d9dd1f3fcbeaaf0f5d307af5943f3"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/help/js/i18n/keynav/nb_NO.js": {
+    "mtime": 1763625078.994049,
+    "ast_hash": "56834b12bff25570b7f7af29af0ad6a4",
+    "semantic_hash": "56834b12bff25570b7f7af29af0ad6a4"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/help/js/i18n/keynav/nl.js": {
+    "mtime": 1763625078.994049,
+    "ast_hash": "047754c48211daef64306e7954a4afd9",
+    "semantic_hash": "047754c48211daef64306e7954a4afd9"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/help/js/i18n/keynav/pl.js": {
+    "mtime": 1763625078.9951,
+    "ast_hash": "a969797aed65725a5b29e9e21c45ddaa",
+    "semantic_hash": "a969797aed65725a5b29e9e21c45ddaa"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/help/js/i18n/keynav/pt_BR.js": {
+    "mtime": 1763625078.9956858,
+    "ast_hash": "323b20908a34d503db3bb71de72d8b45",
+    "semantic_hash": "323b20908a34d503db3bb71de72d8b45"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/help/js/i18n/keynav/pt_PT.js": {
+    "mtime": 1763625078.9956858,
+    "ast_hash": "e67afb933a1d29a496aa6d4cb59f4393",
+    "semantic_hash": "e67afb933a1d29a496aa6d4cb59f4393"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/help/js/i18n/keynav/ro.js": {
+    "mtime": 1763625078.9956858,
+    "ast_hash": "866a9862c26d2054723d75cd77d498fb",
+    "semantic_hash": "866a9862c26d2054723d75cd77d498fb"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/help/js/i18n/keynav/ru.js": {
+    "mtime": 1763625078.9972556,
+    "ast_hash": "dc2858135507dffe4bca59a40929f70b",
+    "semantic_hash": "dc2858135507dffe4bca59a40929f70b"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/help/js/i18n/keynav/sk.js": {
+    "mtime": 1763625078.9974613,
+    "ast_hash": "3e3ea62839e5fc1d975ae3b6e5a90eaa",
+    "semantic_hash": "3e3ea62839e5fc1d975ae3b6e5a90eaa"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/help/js/i18n/keynav/sl_SI.js": {
+    "mtime": 1763625078.9974613,
+    "ast_hash": "cd68909618efe1f45a66b21f321fcbb1",
+    "semantic_hash": "cd68909618efe1f45a66b21f321fcbb1"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/help/js/i18n/keynav/sv_SE.js": {
+    "mtime": 1763625078.9984622,
+    "ast_hash": "7071e3fc9e0198a7885a987a31b3f5cd",
+    "semantic_hash": "7071e3fc9e0198a7885a987a31b3f5cd"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/help/js/i18n/keynav/th_TH.js": {
+    "mtime": 1763625078.9985783,
+    "ast_hash": "4f655326c38b0b62a6acd02d21707591",
+    "semantic_hash": "4f655326c38b0b62a6acd02d21707591"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/help/js/i18n/keynav/tr.js": {
+    "mtime": 1763625078.999161,
+    "ast_hash": "2eb1e9311fa2188f479bb0066079ed09",
+    "semantic_hash": "2eb1e9311fa2188f479bb0066079ed09"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/help/js/i18n/keynav/uk.js": {
+    "mtime": 1763625078.999161,
+    "ast_hash": "9d594b1956315eb298699d90bcf39c84",
+    "semantic_hash": "9d594b1956315eb298699d90bcf39c84"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/help/js/i18n/keynav/vi.js": {
+    "mtime": 1763625079.0001695,
+    "ast_hash": "451101bc8c5905c025cad035d5d4e6a0",
+    "semantic_hash": "451101bc8c5905c025cad035d5d4e6a0"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/help/js/i18n/keynav/zh_CN.js": {
+    "mtime": 1763625079.0003204,
+    "ast_hash": "326eef8133c64b5b752bb66184d20838",
+    "semantic_hash": "326eef8133c64b5b752bb66184d20838"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/help/js/i18n/keynav/zh_TW.js": {
+    "mtime": 1763625079.0003204,
+    "ast_hash": "c5c4862d43541e84a399178051d0484c",
+    "semantic_hash": "c5c4862d43541e84a399178051d0484c"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/help/plugin.js": {
+    "mtime": 1763625079.0016036,
+    "ast_hash": "b74068e94f40acede322cc9c56d196aa",
+    "semantic_hash": "b74068e94f40acede322cc9c56d196aa"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/help/plugin.min.js": {
+    "mtime": 1763625079.0016036,
+    "ast_hash": "fb0b4eeaa5d190286795e47aac31c31f",
+    "semantic_hash": "fb0b4eeaa5d190286795e47aac31c31f"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/image/index.js": {
+    "mtime": 1763625079.016328,
+    "ast_hash": "c8bc8605c2c17f13ee87bb9385e9d35a",
+    "semantic_hash": "c8bc8605c2c17f13ee87bb9385e9d35a"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/image/plugin.js": {
+    "mtime": 1763625079.0173264,
+    "ast_hash": "082e037691974ded055f58988a507e62",
+    "semantic_hash": "082e037691974ded055f58988a507e62"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/image/plugin.min.js": {
+    "mtime": 1763625079.0179188,
+    "ast_hash": "b13200395a720b3c4ee2d9905fddbe41",
+    "semantic_hash": "b13200395a720b3c4ee2d9905fddbe41"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/importcss/index.js": {
+    "mtime": 1763625079.018921,
+    "ast_hash": "3f127425b5d5243501a3c1a1ebd011b8",
+    "semantic_hash": "3f127425b5d5243501a3c1a1ebd011b8"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/importcss/plugin.js": {
+    "mtime": 1763625079.019048,
+    "ast_hash": "186421b0300243ae5ee021a0dea89796",
+    "semantic_hash": "186421b0300243ae5ee021a0dea89796"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/importcss/plugin.min.js": {
+    "mtime": 1763625079.019705,
+    "ast_hash": "a330c0882b38b05225ad8443bec4de51",
+    "semantic_hash": "a330c0882b38b05225ad8443bec4de51"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/insertdatetime/index.js": {
+    "mtime": 1763625079.0202787,
+    "ast_hash": "38bf7f43897dcfdecce6d3084adb4972",
+    "semantic_hash": "38bf7f43897dcfdecce6d3084adb4972"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/insertdatetime/plugin.js": {
+    "mtime": 1763625079.0204222,
+    "ast_hash": "dbe45df03ec153eb3226e7608cc2812d",
+    "semantic_hash": "dbe45df03ec153eb3226e7608cc2812d"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/insertdatetime/plugin.min.js": {
+    "mtime": 1763625079.0204222,
+    "ast_hash": "6d772d6adfc089438639923264b37590",
+    "semantic_hash": "6d772d6adfc089438639923264b37590"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/link/index.js": {
+    "mtime": 1763625079.0216663,
+    "ast_hash": "b5421b424db01dd2951113ccce4b04cb",
+    "semantic_hash": "b5421b424db01dd2951113ccce4b04cb"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/link/plugin.js": {
+    "mtime": 1763625079.022352,
+    "ast_hash": "a9237eb77f5b52ec13affba778be7ef3",
+    "semantic_hash": "a9237eb77f5b52ec13affba778be7ef3"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/link/plugin.min.js": {
+    "mtime": 1763625079.022501,
+    "ast_hash": "8c539097f54703a998ff4a8ffb9052d3",
+    "semantic_hash": "8c539097f54703a998ff4a8ffb9052d3"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/lists/index.js": {
+    "mtime": 1763625079.0234149,
+    "ast_hash": "2ae7a1f3438e804b2909c92983c2d1ec",
+    "semantic_hash": "2ae7a1f3438e804b2909c92983c2d1ec"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/lists/plugin.js": {
+    "mtime": 1763625079.0243313,
+    "ast_hash": "ae2f3ff22f9ccca2018e75804cd66b36",
+    "semantic_hash": "ae2f3ff22f9ccca2018e75804cd66b36"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/lists/plugin.min.js": {
+    "mtime": 1763625079.0243313,
+    "ast_hash": "2f61f01f4b8812d6b5098b8465546730",
+    "semantic_hash": "2f61f01f4b8812d6b5098b8465546730"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/media/index.js": {
+    "mtime": 1763625079.0254636,
+    "ast_hash": "dab2d6e6710afd6db9e558fd5294de75",
+    "semantic_hash": "dab2d6e6710afd6db9e558fd5294de75"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/media/plugin.js": {
+    "mtime": 1763625079.0255983,
+    "ast_hash": "7a7db2af6d97c21150bfe131fb9cdbe7",
+    "semantic_hash": "7a7db2af6d97c21150bfe131fb9cdbe7"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/media/plugin.min.js": {
+    "mtime": 1763625079.0266,
+    "ast_hash": "4bb59001b8d235198a4089f9620a8d4d",
+    "semantic_hash": "4bb59001b8d235198a4089f9620a8d4d"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/nonbreaking/index.js": {
+    "mtime": 1763625079.0272124,
+    "ast_hash": "223fd0faef28aadad8bbac06f9e3b46f",
+    "semantic_hash": "223fd0faef28aadad8bbac06f9e3b46f"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/nonbreaking/plugin.js": {
+    "mtime": 1763625079.027654,
+    "ast_hash": "cf9a284628321dd2b85742d2c25c77f9",
+    "semantic_hash": "cf9a284628321dd2b85742d2c25c77f9"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/nonbreaking/plugin.min.js": {
+    "mtime": 1763625079.0279436,
+    "ast_hash": "ffaed5696bf483711f341b9952f2b2b7",
+    "semantic_hash": "ffaed5696bf483711f341b9952f2b2b7"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/pagebreak/index.js": {
+    "mtime": 1763625079.0285318,
+    "ast_hash": "6e7e1ff65d3f55172270fc90ab18476f",
+    "semantic_hash": "6e7e1ff65d3f55172270fc90ab18476f"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/pagebreak/plugin.js": {
+    "mtime": 1763625079.028653,
+    "ast_hash": "fb81b3491f6313606ab1145512c5d24b",
+    "semantic_hash": "fb81b3491f6313606ab1145512c5d24b"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/pagebreak/plugin.min.js": {
+    "mtime": 1763625079.028653,
+    "ast_hash": "f8da1a7ae8c52034b402a6f5a86ca3a7",
+    "semantic_hash": "f8da1a7ae8c52034b402a6f5a86ca3a7"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/preview/index.js": {
+    "mtime": 1763625079.0298166,
+    "ast_hash": "f9d6bde31d49caacdd7fb17dfeff8cc0",
+    "semantic_hash": "f9d6bde31d49caacdd7fb17dfeff8cc0"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/preview/plugin.js": {
+    "mtime": 1763625079.0299342,
+    "ast_hash": "674331aea07dfbe7815a79eed86063fe",
+    "semantic_hash": "674331aea07dfbe7815a79eed86063fe"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/preview/plugin.min.js": {
+    "mtime": 1763625079.0299342,
+    "ast_hash": "d4618791ff7e39b37bb166dcb1a5ab99",
+    "semantic_hash": "d4618791ff7e39b37bb166dcb1a5ab99"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/quickbars/index.js": {
+    "mtime": 1763625079.031098,
+    "ast_hash": "f81530a5a0e4f5d1ccc42d0176c74eee",
+    "semantic_hash": "f81530a5a0e4f5d1ccc42d0176c74eee"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/quickbars/plugin.js": {
+    "mtime": 1763625079.0318286,
+    "ast_hash": "280649da6af8a6189a8353dac284a757",
+    "semantic_hash": "280649da6af8a6189a8353dac284a757"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/quickbars/plugin.min.js": {
+    "mtime": 1763625079.0318286,
+    "ast_hash": "250bf511fe1e3b0db4f2e5657acb33f5",
+    "semantic_hash": "250bf511fe1e3b0db4f2e5657acb33f5"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/save/index.js": {
+    "mtime": 1763625079.03283,
+    "ast_hash": "f378badde844ca1d5e8d6ac0f538ce9e",
+    "semantic_hash": "f378badde844ca1d5e8d6ac0f538ce9e"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/save/plugin.js": {
+    "mtime": 1763625079.0330887,
+    "ast_hash": "19d47dfa21ec6e8269e1216e66b573e2",
+    "semantic_hash": "19d47dfa21ec6e8269e1216e66b573e2"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/save/plugin.min.js": {
+    "mtime": 1763625079.0330887,
+    "ast_hash": "d4593c31291b46c5d5f634a1ebfaece0",
+    "semantic_hash": "d4593c31291b46c5d5f634a1ebfaece0"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/searchreplace/index.js": {
+    "mtime": 1763625079.03427,
+    "ast_hash": "a8a69324233f4bd95521c677a2f61fc3",
+    "semantic_hash": "a8a69324233f4bd95521c677a2f61fc3"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/searchreplace/plugin.js": {
+    "mtime": 1763625079.034914,
+    "ast_hash": "01a0b9f238704cd3de5e2bc5c8fa09e0",
+    "semantic_hash": "01a0b9f238704cd3de5e2bc5c8fa09e0"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/searchreplace/plugin.min.js": {
+    "mtime": 1763625079.035064,
+    "ast_hash": "1886938769a5c3aa3e3421e72de70462",
+    "semantic_hash": "1886938769a5c3aa3e3421e72de70462"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/table/index.js": {
+    "mtime": 1763625079.0359435,
+    "ast_hash": "adc68fc19ef261adb062503cd6200ba1",
+    "semantic_hash": "adc68fc19ef261adb062503cd6200ba1"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/table/plugin.js": {
+    "mtime": 1763625079.0360742,
+    "ast_hash": "2f7329a96eeeaa4703eae68df68185b9",
+    "semantic_hash": "2f7329a96eeeaa4703eae68df68185b9"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/table/plugin.min.js": {
+    "mtime": 1763625079.03786,
+    "ast_hash": "2d693979d6f29cda709e22c26fe96a03",
+    "semantic_hash": "2d693979d6f29cda709e22c26fe96a03"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/visualblocks/index.js": {
+    "mtime": 1763625079.0385478,
+    "ast_hash": "a4fe230291bdb3bed1afa385e9f0eb5a",
+    "semantic_hash": "a4fe230291bdb3bed1afa385e9f0eb5a"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/visualblocks/plugin.js": {
+    "mtime": 1763625079.0389566,
+    "ast_hash": "9a664aa12bd90b35e40ca0baa921a693",
+    "semantic_hash": "9a664aa12bd90b35e40ca0baa921a693"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/visualblocks/plugin.min.js": {
+    "mtime": 1763625079.039096,
+    "ast_hash": "013bb7e108b600d9dffbf8aa0ed7856b",
+    "semantic_hash": "013bb7e108b600d9dffbf8aa0ed7856b"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/visualchars/index.js": {
+    "mtime": 1763625079.039096,
+    "ast_hash": "4d261ef4bf37ec333eb7fefe789bcaa3",
+    "semantic_hash": "4d261ef4bf37ec333eb7fefe789bcaa3"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/visualchars/plugin.js": {
+    "mtime": 1763625079.040099,
+    "ast_hash": "64a925fbfd7e0c60ed0704e6b72847d0",
+    "semantic_hash": "64a925fbfd7e0c60ed0704e6b72847d0"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/visualchars/plugin.min.js": {
+    "mtime": 1763625079.040099,
+    "ast_hash": "aa7a48bc590acd66c7cd18ce37e021ed",
+    "semantic_hash": "aa7a48bc590acd66c7cd18ce37e021ed"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/wordcount/index.js": {
+    "mtime": 1763625079.0410974,
+    "ast_hash": "5442ab67059da7fe62983351d1698838",
+    "semantic_hash": "5442ab67059da7fe62983351d1698838"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/wordcount/plugin.js": {
+    "mtime": 1763625079.0417664,
+    "ast_hash": "f3b593e3c7747cf75d917a50cc243678",
+    "semantic_hash": "f3b593e3c7747cf75d917a50cc243678"
+  },
+  "niceadmin/assets/vendor/tinymce/plugins/wordcount/plugin.min.js": {
+    "mtime": 1763625079.0421603,
+    "ast_hash": "ffc23bc2071aa8ecce20ed4c97a995a5",
+    "semantic_hash": "ffc23bc2071aa8ecce20ed4c97a995a5"
+  },
+  "niceadmin/assets/vendor/tinymce/skins/content/dark/content.js": {
+    "mtime": 1763625079.043193,
+    "ast_hash": "38b9cd18bbec1e79964f94f79df8d322",
+    "semantic_hash": "38b9cd18bbec1e79964f94f79df8d322"
+  },
+  "niceadmin/assets/vendor/tinymce/skins/content/default/content.js": {
+    "mtime": 1763625079.044617,
+    "ast_hash": "f014cdd3dc76c820424ea0c13706b527",
+    "semantic_hash": "f014cdd3dc76c820424ea0c13706b527"
+  },
+  "niceadmin/assets/vendor/tinymce/skins/content/document/content.js": {
+    "mtime": 1763625079.0462358,
+    "ast_hash": "e133bc2114fa6bd3fb9e6404d5858e40",
+    "semantic_hash": "e133bc2114fa6bd3fb9e6404d5858e40"
+  },
+  "niceadmin/assets/vendor/tinymce/skins/content/tinymce-5-dark/content.js": {
+    "mtime": 1763625079.047307,
+    "ast_hash": "445fd0a046091300c16b598738f48267",
+    "semantic_hash": "445fd0a046091300c16b598738f48267"
+  },
+  "niceadmin/assets/vendor/tinymce/skins/content/tinymce-5/content.js": {
+    "mtime": 1763625079.048764,
+    "ast_hash": "97d1c5e4a709a49fd6f89552fc2e5f87",
+    "semantic_hash": "97d1c5e4a709a49fd6f89552fc2e5f87"
+  },
+  "niceadmin/assets/vendor/tinymce/skins/content/writer/content.js": {
+    "mtime": 1763625079.0649135,
+    "ast_hash": "f11cb3b267cb6d8ede6190a1b736e02a",
+    "semantic_hash": "f11cb3b267cb6d8ede6190a1b736e02a"
+  },
+  "niceadmin/assets/vendor/tinymce/skins/ui/oxide-dark/content.inline.js": {
+    "mtime": 1763625079.0677524,
+    "ast_hash": "b3ab10c5bcd80aa23916ec3208482067",
+    "semantic_hash": "b3ab10c5bcd80aa23916ec3208482067"
+  },
+  "niceadmin/assets/vendor/tinymce/skins/ui/oxide-dark/content.js": {
+    "mtime": 1763625079.06899,
+    "ast_hash": "5bfc1a6be101ea76e4aabafb2cd2ddcf",
+    "semantic_hash": "5bfc1a6be101ea76e4aabafb2cd2ddcf"
+  },
+  "niceadmin/assets/vendor/tinymce/skins/ui/oxide-dark/skin.js": {
+    "mtime": 1763625079.071856,
+    "ast_hash": "a580c488d16121f6464bda611d08e7c9",
+    "semantic_hash": "a580c488d16121f6464bda611d08e7c9"
+  },
+  "niceadmin/assets/vendor/tinymce/skins/ui/oxide-dark/skin.shadowdom.js": {
+    "mtime": 1763625079.0731337,
+    "ast_hash": "e96d3c218f2b79f82e2c87b6f3f818bb",
+    "semantic_hash": "e96d3c218f2b79f82e2c87b6f3f818bb"
+  },
+  "niceadmin/assets/vendor/tinymce/skins/ui/oxide/content.inline.js": {
+    "mtime": 1763625079.075972,
+    "ast_hash": "8f2059236b0776607d4699e7094cfd84",
+    "semantic_hash": "8f2059236b0776607d4699e7094cfd84"
+  },
+  "niceadmin/assets/vendor/tinymce/skins/ui/oxide/content.js": {
+    "mtime": 1763625079.076596,
+    "ast_hash": "250ffacbc57ba17e62b50e415a875d15",
+    "semantic_hash": "250ffacbc57ba17e62b50e415a875d15"
+  },
+  "niceadmin/assets/vendor/tinymce/skins/ui/oxide/skin.js": {
+    "mtime": 1763625079.0799778,
+    "ast_hash": "6cb400747880757ee051e2a734226504",
+    "semantic_hash": "6cb400747880757ee051e2a734226504"
+  },
+  "niceadmin/assets/vendor/tinymce/skins/ui/oxide/skin.shadowdom.js": {
+    "mtime": 1763625079.0814712,
+    "ast_hash": "fb3cc71941cdc2e83de399ee39abe36d",
+    "semantic_hash": "fb3cc71941cdc2e83de399ee39abe36d"
+  },
+  "niceadmin/assets/vendor/tinymce/skins/ui/tinymce-5-dark/content.inline.js": {
+    "mtime": 1763625079.083356,
+    "ast_hash": "864c3f577fae9ef84b5b380b84a8b7c5",
+    "semantic_hash": "864c3f577fae9ef84b5b380b84a8b7c5"
+  },
+  "niceadmin/assets/vendor/tinymce/skins/ui/tinymce-5-dark/content.js": {
+    "mtime": 1763625079.0842016,
+    "ast_hash": "4cac842f71fd0dc053a437f1cd82d6fd",
+    "semantic_hash": "4cac842f71fd0dc053a437f1cd82d6fd"
+  },
+  "niceadmin/assets/vendor/tinymce/skins/ui/tinymce-5-dark/skin.js": {
+    "mtime": 1763625079.0870364,
+    "ast_hash": "0b595fc7eafb925721554a340fce7320",
+    "semantic_hash": "0b595fc7eafb925721554a340fce7320"
+  },
+  "niceadmin/assets/vendor/tinymce/skins/ui/tinymce-5-dark/skin.shadowdom.js": {
+    "mtime": 1763625079.0880995,
+    "ast_hash": "eb127cec1c96aebc630b4f9f5efcbf7e",
+    "semantic_hash": "eb127cec1c96aebc630b4f9f5efcbf7e"
+  },
+  "niceadmin/assets/vendor/tinymce/skins/ui/tinymce-5/content.inline.js": {
+    "mtime": 1763625079.0904188,
+    "ast_hash": "c6a1da57f9476039d67d31b83b5d1db5",
+    "semantic_hash": "c6a1da57f9476039d67d31b83b5d1db5"
+  },
+  "niceadmin/assets/vendor/tinymce/skins/ui/tinymce-5/content.js": {
+    "mtime": 1763625079.0914018,
+    "ast_hash": "8259ff3d9afd14f0df14357001c27f4c",
+    "semantic_hash": "8259ff3d9afd14f0df14357001c27f4c"
+  },
+  "niceadmin/assets/vendor/tinymce/skins/ui/tinymce-5/skin.js": {
+    "mtime": 1763625079.0943272,
+    "ast_hash": "756bf6ceb66bc752ee5a6edd4b6fc06e",
+    "semantic_hash": "756bf6ceb66bc752ee5a6edd4b6fc06e"
+  },
+  "niceadmin/assets/vendor/tinymce/skins/ui/tinymce-5/skin.shadowdom.js": {
+    "mtime": 1763625079.0958948,
+    "ast_hash": "7d0e89599f3017f7e3941b47f71afee3",
+    "semantic_hash": "7d0e89599f3017f7e3941b47f71afee3"
+  },
+  "niceadmin/assets/vendor/tinymce/themes/silver/index.js": {
+    "mtime": 1763625079.0978928,
+    "ast_hash": "626b79695850a21dc8b7986b48b4f581",
+    "semantic_hash": "626b79695850a21dc8b7986b48b4f581"
+  },
+  "niceadmin/assets/vendor/tinymce/themes/silver/theme.js": {
+    "mtime": 1763625079.098897,
+    "ast_hash": "27b3889120e75dd6f14777533b6774e5",
+    "semantic_hash": "27b3889120e75dd6f14777533b6774e5"
+  },
+  "niceadmin/assets/vendor/tinymce/themes/silver/theme.min.js": {
+    "mtime": 1763625079.1098623,
+    "ast_hash": "8c60e168e727d308b22d1a26baa24fbb",
+    "semantic_hash": "8c60e168e727d308b22d1a26baa24fbb"
+  },
+  "niceadmin/assets/vendor/tinymce/tinymce.d.ts": {
+    "mtime": 1763625079.1144712,
+    "ast_hash": "b2cab114d37e5a0df8b0aee4c0ca1add",
+    "semantic_hash": "b2cab114d37e5a0df8b0aee4c0ca1add"
+  },
+  "niceadmin/assets/vendor/tinymce/tinymce.js": {
+    "mtime": 1763625079.1152308,
+    "ast_hash": "03220db530a046e066bebf871f3434b5",
+    "semantic_hash": "03220db530a046e066bebf871f3434b5"
+  },
+  "niceadmin/assets/vendor/tinymce/tinymce.min.js": {
+    "mtime": 1763625079.1262138,
+    "ast_hash": "4a7e9cf0dbf12b74300ae19b6d72151e",
+    "semantic_hash": "4a7e9cf0dbf12b74300ae19b6d72151e"
+  },
+  "niceadmin/forms/contact.php": {
+    "mtime": 1763625079.1303961,
+    "ast_hash": "dcb8e8138d55ede6548274211441401e",
+    "semantic_hash": "dcb8e8138d55ede6548274211441401e"
   }
 }

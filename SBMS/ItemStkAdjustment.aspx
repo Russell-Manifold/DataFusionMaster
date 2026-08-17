@@ -1,4 +1,7 @@
-﻿<%@ Page Language="C#" Async="true" AutoEventWireup="true" CodeBehind="ItemStkAdjustment.aspx.cs" Inherits="SBMS.ItemStkAdjustment" %>
+﻿<%-- AsyncTimeout: async pages default to 45 SECONDS; Web.config's executionTimeout
+     does NOT cover them. Adjustments post per item to Sage, so a bulk adjustment can
+     exceed 45s and be aborted part-posted. See the note on Receiving.aspx. --%>
+<%@ Page Language="C#" Async="true" AsyncTimeout="600" AutoEventWireup="true" CodeBehind="ItemStkAdjustment.aspx.cs" Inherits="SBMS.ItemStkAdjustment" %>
 <%@ Register Assembly="AjaxControlToolkit" Namespace="AjaxControlToolkit" TagPrefix="cci" %>
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">

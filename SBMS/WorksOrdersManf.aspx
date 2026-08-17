@@ -1,4 +1,8 @@
-﻿<%@ Page Language="C#" Async="true" AutoEventWireup="true" CodeBehind="WorksOrdersManf.aspx.cs" Inherits="SBMS.WorksOrdersManf" %>
+﻿<%-- AsyncTimeout: async pages default to 45 SECONDS and Web.config's executionTimeout
+     does NOT apply to them. This page posts a Sage adjustment per finished good and
+     per component, so a multi-component works order can exceed 45s and be aborted
+     part-posted. See the fuller note on Receiving.aspx. --%>
+<%@ Page Language="C#" Async="true" AsyncTimeout="600" AutoEventWireup="true" CodeBehind="WorksOrdersManf.aspx.cs" Inherits="SBMS.WorksOrdersManf" %>
 <%@ Register Assembly="AjaxControlToolkit" Namespace="AjaxControlToolkit" TagPrefix="cci" %>
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -142,10 +146,11 @@
                     <div class="1u 12u$(medium)">&nbsp;</div>
                     <div class="10u 12u$(medium)">
                         <hr />
-                        <h3>Works Order Details <asp:CheckBox ID="chkCompl" runat="server" Text="Complete" Enabled="false" Font-Size="Small" />
-                            <asp:Panel ID="pnlDrawFrom" runat="server" Visible="false" style="display:inline-block; margin:auto; font-size:.55em; font-weight:normal; line-height:2.0em">
-                                Auto-Manufacture draw components from:&nbsp;<asp:DropDownList ID="ddlDrawFrom" runat="server" AutoPostBack="true" OnSelectedIndexChanged="ddlDrawFrom_SelectedIndexChanged" Font-Bold="true" Width="60px" ></asp:DropDownList>
+                        <h3>
+                            <asp:Panel ID="pnlDrawFrom" runat="server" Visible="false" style="display:inline-block; margin-right:1.5em; padding:.15em .7em; font-size:.6em; font-weight:bold; line-height:2.0em; vertical-align:middle; background:#fff3cd; border:1px solid #e0a800; border-radius:.4em">
+                                Fulfil this order from:&nbsp;<asp:DropDownList ID="ddlDrawFrom" runat="server" AutoPostBack="true" OnSelectedIndexChanged="ddlDrawFrom_SelectedIndexChanged" Font-Bold="true" Width="80px" ></asp:DropDownList>
                             </asp:Panel>
+                            Works Order Details <asp:CheckBox ID="chkCompl" runat="server" Text="Complete" Enabled="false" Font-Size="Small" />
                         </h3>
                         <cci:Accordion ID="AccordionWOLines" runat="server" CssClass="accordion" 
                                 HeaderCssClass="accordionHeader" 

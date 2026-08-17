@@ -1,4 +1,4 @@
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SBMS.Classes;
 using SBMS.Models;
@@ -208,6 +208,9 @@ namespace SBMS
             }
 
             IsProcessing = true;
+            // Declared out here so the result message below the context can still read them.
+            decimal bomAddTotal = 0;
+            string journalWarning = null;   // set if Sage refuses the add-cost journal
             try
             {
                 using (SBMSEntities db = new SBMSEntities(Config.GetConnectionString()))
@@ -240,7 +243,62 @@ namespace SBMS
                     }
 
                     // Finished-good unit cost rolls up from the BOM (cost flows through).
-                    decimal fgUnitCost = rms.Sum(r => PerUnit(r) * (r.UnitCost ?? 0));
+                    //
+                    // Same precedence the DRAW uses in PostAdjustment: the draw store's running
+                    // weighted average wins, and the works-order line's snapshot is only a
+                    // fallback for a component with no costed history in that store. Rolling up
+                    // from the snapshot alone valued the finished good at what the components
+                    // cost when the works order was RAISED, not what was actually consumed - so
+                    // the same works order could cost differently on mobile and desktop.
+                    decimal fgUnitCost = 0;
+                    foreach (var r in rms)
+                    {
+                        decimal rmCost = StoreCosting.GetStoreAvgCost(db, CurrentUser.CoID, r.SelectionId, fromStoreId);
+                        if (rmCost <= 0) rmCost = r.UnitCost ?? 0;
+                        fgUnitCost += PerUnit(r) * rmCost;
+                    }
+
+                    // BOM additional costs, captured PER UNIT on the BOM header, so they add
+                    // straight onto the unit cost. Mirrors WorksOrdersManf - if that changes,
+                    // change this too or the desktop and mobile will cost differently.
+                    var bomHdrM = db.BOMHeaders.FirstOrDefault(x => x.CompanyID == CurrentUser.CoID && x.FGID == OutItemId);
+                    long jDebitAcc = 0, jCreditAcc = 0;
+                    if (bomHdrM != null)
+                    {
+                        decimal addPerUnit = (bomHdrM.AddCost01 ?? 0) + (bomHdrM.AddCost02 ?? 0) + (bomHdrM.AddCost03 ?? 0);
+                        if (addPerUnit > 0)
+                        {
+                            fgUnitCost += addPerUnit;
+                            bomAddTotal = addPerUnit * makeQty;
+                        }
+                    }
+
+                    // ACCOUNTS MUST BE CONFIGURED BEFORE ANYTHING IS POSTED.
+                    // The additional cost raises stock value in Sage and needs a matching credit.
+                    // If we cannot raise that journal, stop here - nothing posted, nothing written.
+                    if (bomAddTotal > 0 && CurrentUser.UATMode == false)
+                    {
+                        jDebitAcc = db.AccountsMasters
+                            .Where(x => x.CompanyID == CurrentUser.CoID && x.AccountAddCostsContra == true)
+                            .Select(x => x.AccountID ?? 0).FirstOrDefault();
+                        jCreditAcc = bomHdrM?.AddCostAccountID ?? 0;
+
+                        if (jDebitAcc > 0 && jDebitAcc == jCreditAcc)
+                        {
+                            SetFeedback(false, "&#9888; This BOM posts its additional costs to the same "
+                                + "account as the Stock Adjustment Account, so nothing would reach Sage. "
+                                + "Nothing was manufactured. Edit the BOM and choose a different account.");
+                            return;
+                        }
+                        if (jDebitAcc <= 0 || jCreditAcc <= 0)
+                        {
+                            SetFeedback(false, "&#9888; This BOM carries additional costs of "
+                                + bomAddTotal.ToString("N2") + ", but the accounts to post them to are not set. "
+                                + "Nothing was manufactured. Ask an administrator to set the Stock Adjustment "
+                                + "Account and the BOM's additional-costs account.");
+                            return;
+                        }
+                    }
 
                     // ── All-or-nothing: local rows in ONE transaction; Sage posts are
                     // tracked so a failure can post compensating reversals. Nothing is
@@ -262,6 +320,25 @@ namespace SBMS
                             // Produce the finished good (MANF / positive) into the target store.
                             string fres = PostAdjustment(db, OutItemId, OutCode, OutDescr, OutUnit, targetStoreId, makeQty, fgUnitCost, sagePosted);
                             if (fres != "OK") throw new ApplicationException("Manufacture failed on " + OutCode + ": " + fres);
+
+                            // Clear the additional cost off Sage's stock adjustment account:
+                            // debit it, credit the account chosen on the BOM. Deliberately NOT
+                            // thrown - the stock is correctly made and posted, and unwinding all
+                            // of that over a journal would be worse. Mirrors the desktop: warn,
+                            // log, and let it be posted by hand.
+                            if (bomAddTotal > 0 && CurrentUser.UATMode == false)
+                            {
+                                string jRes = SendAddCostJournal(jDebitAcc, jCreditAcc, bomAddTotal,
+                                    "WO" + WONum, "BOM additional costs - WO" + WONum);
+                                if (jRes != "Success")
+                                {
+                                    journalWarning = jRes;
+                                    try { new ApiUrlCall().LogErrorToFile(
+                                        "BOM ADD-COST JOURNAL FAILED (mobile) - WO" + WONum +
+                                        " amount " + bomAddTotal + " Dr " + jDebitAcc + " Cr " + jCreditAcc +
+                                        " - " + jRes); } catch { }
+                                }
+                            }
 
                             // Update the WO line: reduce the outstanding balance; close it when done.
                             var line = db.WorksOrderLines.FirstOrDefault(x => x.CompanyID == CurrentUser.CoID && x.LineID == FGLineID);
@@ -299,6 +376,19 @@ namespace SBMS
                 string toast = $"&#10003; Made {makeQty:0.##} {OutCode}";
                 bool complete = newRemaining <= 0;
                 ResetCycle();
+                if (journalWarning != null)
+                {
+                    // Stock is made and posted correctly; only the additional-costs journal failed.
+                    SetFeedback(false, "&#9888; Made " + makeQty.ToString("0.##") + " " + OutCode
+                        + ", but the additional-costs journal to Sage failed: " + journalWarning
+                        + " — it must be posted manually.");
+                    AlertHelper.ShowSweetAlert(this,
+                        "The stock was manufactured and posted, but the additional-costs journal to Sage "
+                        + "failed: " + journalWarning + "\\n\\nPost it manually: Debit the stock adjustment "
+                        + "account, Credit the BOM's additional costs account, "
+                        + bomAddTotal.ToString("N2") + ".", "warning");
+                }
+                else
                 SetFeedback(true, complete
                     ? $"&#10003; Made {makeQty:0.##} {OutCode} into {targetStore} — order complete."
                     : $"&#10003; Made {makeQty:0.##} {OutCode} into {targetStore} — {newRemaining:0.##} still outstanding. Scan the WO again for the balance.");
@@ -494,6 +584,83 @@ namespace SBMS
             catch (Exception ex)
             {
                 return "SendItemAdjustment exception: " + ex.Message;
+            }
+        }
+
+        /// <summary>
+        /// Posts the BOM additional-costs journal to Sage. Returns "Success" or the reason.
+        /// Mirrors WorksOrdersManf.SendAddCostJournal - keep the two in step.
+        ///
+        /// Producing the finished good raises stock value by the additional cost and credits
+        /// Sage's own stock adjustment account. Nothing debits it, so this journal clears it:
+        /// DEBIT the stock adjustment account, CREDIT the account chosen on the BOM.
+        /// JournalEntry/Save carries both sides in one call, so it balances by construction.
+        /// No VAT - internal absorption of cost already expensed elsewhere, not a supply.
+        /// </summary>
+        private string SendAddCostJournal(long debitAccountId, long creditAccountId,
+                                          decimal amount, string reference, string description)
+        {
+            if (amount <= 0) return "Success";
+            if (debitAccountId <= 0 || creditAccountId <= 0) return "No accounts configured";
+
+            try
+            {
+                // Sage rejects a journal with no tax type ("Tax Type is Required"). This entry
+                // carries no VAT, so use the company's zero-rated type, falling back to the
+                // default tax type on the stock adjustment account.
+                long taxTypeId = 0;
+                using (SBMSEntities dbT = new SBMSEntities(Config.GetConnectionString()))
+                {
+                    taxTypeId = dbT.TaxTypesMasters
+                        .Where(x => x.CompanyID == CurrentUser.CoID && (x.TaxPerc ?? 0) == 0
+                                    && (x.TaxTypeID ?? 0) > 0)
+                        .OrderBy(x => x.TaxTypeID)
+                        .Select(x => x.TaxTypeID ?? 0).FirstOrDefault();
+                    if (taxTypeId <= 0)
+                    {
+                        taxTypeId = dbT.AccountsMasters
+                            .Where(x => x.CompanyID == CurrentUser.CoID && x.AccountID == debitAccountId)
+                            .Select(x => x.AcctDefTaxTypeID ?? 0).FirstOrDefault();
+                    }
+                }
+                if (taxTypeId <= 0) return "No zero-rated tax type found for this company";
+
+                var journal = new
+                {
+                    Date = DateTime.Now,
+                    Effect = 1,                            // 1 = Debit (AccountId is debited)
+                    AccountId = debitAccountId,            // stock adjustment account
+                    ContraAccountId = creditAccountId,     // account chosen on the BOM
+                    TaxTypeId = taxTypeId,                 // required by Sage, zero-rated
+                    Reference = reference,
+                    Description = description,
+                    Exclusive = amount,
+                    Tax = 0m,
+                    Total = amount,
+                    Debit = amount,
+                    Credit = 0m
+                };
+
+                JObject parsed = new ApiUrlCall().APIPostDocumentNA(
+                    "JournalEntry", JsonConvert.SerializeObject(journal, Formatting.Indented), CurrentUser);
+
+                if (parsed == null) return "Null response from API";
+                if (parsed["error"] != null)
+                {
+                    JObject err = (JObject)parsed["error"];
+                    return err["message"]?.ToString()
+                        ?? err["reason"]?.ToString()
+                        ?? "Unknown API error posting journal";
+                }
+                // Sage can answer 200 with a validation payload and save nothing. A real save
+                // always comes back with the new journal Id, so treat a missing Id as a failure.
+                if (parsed["ID"] == null && parsed["Id"] == null)
+                    return "Sage did not return a journal Id: " + parsed.ToString(Formatting.None);
+                return "Success";
+            }
+            catch (Exception ex)
+            {
+                return "SendAddCostJournal exception: " + ex.Message;
             }
         }
 

@@ -156,8 +156,10 @@ namespace SBMS
         }
 
         // Populates the single "Draw from" store selector used by no-lot Auto-fill.
-        // Only shown when Auto Manufacture is enabled AND the company is not lot-tracked;
-        // defaults to the company's WIP store when one exists.
+        // Only shown when Auto Manufacture is enabled AND the company is not lot-tracked.
+        // Every active store is offered, not just WIP ones - a works order is fulfilled from
+        // wherever the components actually are. No default: the operator must pick a store,
+        // so a whole works order can never be drawn from the wrong one by accident.
         private void LoadDrawFromStores()
         {
             pnlDrawFrom.Visible = CurrentUser.UseAutoManf && !CurrentUser.CompanyUseLotNumbers;
@@ -166,7 +168,7 @@ namespace SBMS
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {
                 var stores = _db.Stores
-                    .Where(x => x.CompanyID == CoID && x.StoreActive == true && x.IsWip == true && x.StoreCode != "CoR" && x.StoreCode != "CoD")
+                    .Where(x => x.CompanyID == CoID && x.StoreActive == true && x.StoreCode != "CoR" && x.StoreCode != "CoD")
                     .OrderBy(x => x.StoreCode).ToList();
 
                 ddlDrawFrom.DataSource = stores;
@@ -174,9 +176,6 @@ namespace SBMS
                 ddlDrawFrom.DataValueField = "StoreID";
                 ddlDrawFrom.DataBind();
                 ddlDrawFrom.Items.Insert(0, new ListItem("-?-", "0"));
-
-                var wip = stores.FirstOrDefault(x => x.IsWip);
-                if (wip != null) ddlDrawFrom.SelectedValue = wip.StoreID.ToString();
             }
         }
 
@@ -305,7 +304,7 @@ namespace SBMS
             CheckBox chkC = CreateCompletionCheckbox(line, lineLocked);
             // Add header controls
             pane.HeaderContainer.Controls.Add(chkC);
-            DDHStore.Attributes.Add("style", "float:right; width:5em; text-align:center");
+            DDHStore.Attributes.Add("style", "float:right; width:5em; text-align:center; margin:0 0.5em 0 0; padding:0.15em 0.3em; font-size:0.8em; line-height:1.6em; vertical-align:middle");
             pane.HeaderContainer.Controls.Add(DDHStore);
 
             // Part Manufacture button on every open (incomplete) line. Added after the
@@ -397,7 +396,7 @@ namespace SBMS
             };
 
             chkC.CheckedChanged += chkC_CheckedChanged;
-            chkC.Attributes.Add("style", "float:right");
+            chkC.Attributes.Add("style", "float:right; margin:0 0.5em 0 0; font-size:0.8em; line-height:1.6em; vertical-align:middle");
 
             if (iscomp)
             {
@@ -418,7 +417,7 @@ namespace SBMS
                 ToolTip = "Allocate Lot Number Works Order Item",
                 CommandArgument = $"{line.LineID}|{line.SelectionId}"
             };
-            btnLotNum.Attributes.Add("style", "margin-right:0.5em");
+            btnLotNum.Attributes.Add("style", "float:right; margin:0 0.5em 0 0; padding:0.15em 0.6em; font-size:0.8em; line-height:1.6em");
             btnLotNum.Click += btnLotNum_Click;
             pane.HeaderContainer.Controls.Add(btnLotNum);
         }
@@ -2084,7 +2083,9 @@ namespace SBMS
         // companies, from the Draw-from store). Enabled by the UseAutoManf company flag.
         private void AddAutoManufactureButton(AccordionPane pane, WorksOrderLine line)
         {
-            if (!CurrentUser.UseAutoManf) return;
+            // Lot-tracked companies must allocate lots by hand - auto-manufacture has no way
+            // to choose between lots, so the button is not offered to them at all.
+            if (!CurrentUser.UseAutoManf || CurrentUser.CompanyUseLotNumbers) return;
 
             LinkButton btnAuto = new LinkButton
             {
@@ -4177,6 +4178,66 @@ namespace SBMS
                             // Prefer the server-computed material value; fall back to the JS total only if
                             // it couldn't be computed (e.g. no store history and no RM unit cost).
                             decimal fgTotCost = serverTotCost > 0 ? serverTotCost : thistotcost;
+
+                            // BOM additional costs. Captured PER UNIT on the BOM header, so they
+                            // scale with the quantity being made - which also means a part
+                            // manufacture is charged only for the units it actually produces.
+                            // The three fields are summed; the BOM screen only ever shows their
+                            // total, so they are not distinguished here.
+                            //
+                            // The ID is converted BEFORE the query - a Convert inside a LINQ
+                            // expression cannot be translated and throws at runtime.
+                            long fgItemId = Convert.ToInt64(selectionId);
+                            var bomHdr = _db.BOMHeaders.FirstOrDefault(x => x.CompanyID == CoID && x.FGID == fgItemId);
+                            decimal bomAddTotal = 0;
+                            if (bomHdr != null)
+                            {
+                                decimal bomAddPerUnit = (bomHdr.AddCost01 ?? 0) + (bomHdr.AddCost02 ?? 0) + (bomHdr.AddCost03 ?? 0);
+                                if (bomAddPerUnit > 0)
+                                {
+                                    bomAddTotal = bomAddPerUnit * itemqty;
+                                    fgTotCost += bomAddTotal;
+                                }
+                            }
+
+                            // ─────────────────────────────────────────────────────────────
+                            // ACCOUNTS MUST BE CONFIGURED BEFORE ANYTHING IS POSTED.
+                            //
+                            // An additional cost raises stock value in Sage and needs a matching
+                            // credit, or it lands as a gain from nowhere. If the accounts are not
+                            // set we cannot raise that journal - so stop HERE, before the finished
+                            // good or any component is sent, and make the user fix the setup.
+                            // Nothing is posted and nothing is written, so it is simply retried.
+                            // ─────────────────────────────────────────────────────────────
+                            long dbAcc = 0, crAcc = 0;
+                            if (bomAddTotal > 0 && CurrentUser.UATMode == false)
+                            {
+                                dbAcc = _db.AccountsMasters
+                                    .Where(x => x.CompanyID == CoID && x.AccountAddCostsContra == true)
+                                    .Select(x => x.AccountID ?? 0).FirstOrDefault();
+                                crAcc = bomHdr?.AddCostAccountID ?? 0;
+
+                                if (dbAcc > 0 && dbAcc == crAcc)
+                                {
+                                    ReleaseManfAdj(key);   // nothing posted - let it be retried once fixed
+                                    return "This BOM posts its additional costs to the same account as the "
+                                         + "Stock Adjustment Account, so the journal would post nothing to Sage. "
+                                         + "Nothing has been posted. Edit the BOM and choose a different account.";
+                                }
+                                if (dbAcc <= 0 || crAcc <= 0)
+                                {
+                                    ReleaseManfAdj(key);   // nothing posted - let it be retried once fixed
+                                    string what = dbAcc <= 0 && crAcc <= 0
+                                        ? "no Stock Adjustment Account is set (Settings → GL Account Access) and this BOM has no additional-costs account"
+                                        : dbAcc <= 0
+                                            ? "no Stock Adjustment Account is set (Settings → GL Account Access)"
+                                            : "this BOM has no additional-costs account set (edit the BOM and choose one)";
+                                    return "This BOM carries additional costs of "
+                                         + bomAddTotal.ToString("N2") + ", but " + what + ". "
+                                         + "Nothing has been posted. Set the account and manufacture again.";
+                                }
+                            }
+
                             decimal thisunitcost = fgTotCost != 0 && itemqty != 0 ? fgTotCost / itemqty : 0;
                             string RetStr = DoItemAdjustment(Convert.ToInt64(selectionId), LotNumber, store, itemqty, 0, "H", thisunitcost);
                             if (RetStr != "OK")
@@ -4184,6 +4245,30 @@ namespace SBMS
                                 ReleaseManfAdj(key);   // Sage post failed -> release so a retry can redo it
                                 string msg = $"Error 1661 performing Item Adjustmnent in Data Fusion: {RetStr}";
                                 return msg;
+                            }
+
+                            // The finished-good adjustment above raised stock value by bomAddTotal and
+                            // credited Sage's own stock adjustment account with it. Nothing has debited
+                            // that amount, so clear it. Accounts were validated before any posting, so
+                            // a failure here is Sage refusing the journal, not a setup problem.
+                            if (bomAddTotal > 0 && CurrentUser.UATMode == false)
+                            {
+                                string jRes = SendAddCostJournal(dbAcc, crAcc, bomAddTotal,
+                                    "WO" + Convert.ToInt64(lblwoid.Text),
+                                    "BOM additional costs - WO" + Convert.ToInt64(lblwoid.Text));
+                                if (jRes != "Success")
+                                {
+                                    // The stock is already valued and posted. Do NOT unwind that over
+                                    // a journal - surface it so it can be posted by hand instead.
+                                    try { new ApiUrlCall().LogErrorToFile(
+                                        "BOM ADD-COST JOURNAL FAILED - WO" + lblwoid.Text +
+                                        " amount " + bomAddTotal + " Dr " + dbAcc + " Cr " + crAcc +
+                                        " - " + jRes); } catch { }
+                                    return "The stock was manufactured and posted, but the additional-costs "
+                                         + "journal to Sage failed: " + jRes
+                                         + " — please post it manually (Debit stock adjustment, Credit "
+                                         + "the BOM's additional costs account, " + bomAddTotal.ToString("N2") + ").";
+                                }
                             }
                         }
 
@@ -4912,6 +4997,91 @@ namespace SBMS
             catch (Exception ex)
             {
                 return $"SendItemAdjustment exception: {ex.Message}";
+            }
+        }
+
+        /// <summary>
+        /// Posts the BOM additional-costs journal to Sage. Returns "Success" or the reason.
+        ///
+        /// WHY THIS EXISTS
+        /// Producing a finished item posts an ItemAdjustment that raises stock value by the
+        /// BOM's additional costs. That adjustment credits Sage's OWN stock adjustment account
+        /// and we cannot redirect it - the payload carries no account. Drawing the components
+        /// debits the same account, but only by the material value, so the additional cost is
+        /// left sitting there as an unexplained credit.
+        ///
+        /// This journal clears it:  DEBIT the stock adjustment account, CREDIT the account
+        /// chosen on the BOM. Sage's JournalEntry/Save takes both sides in one call, so the
+        /// entry balances by construction.
+        ///
+        /// No VAT - this is internal absorption of cost already expensed elsewhere (labour,
+        /// overhead), not a supply.
+        /// </summary>
+        private string SendAddCostJournal(long debitAccountId, long creditAccountId,
+                                          decimal amount, string reference, string description)
+        {
+            if (amount <= 0) return "Success";           // nothing to post
+            if (debitAccountId <= 0 || creditAccountId <= 0)
+                return "No accounts configured";          // caller decides whether that matters
+
+            try
+            {
+                // Sage rejects a journal with no tax type ("Tax Type is Required"). This entry
+                // carries no VAT, so use the company's zero-rated type, falling back to the
+                // default tax type on the stock adjustment account.
+                long taxTypeId = 0;
+                using (SBMSEntities _dbT = new SBMSEntities(Config.GetConnectionString()))
+                {
+                    taxTypeId = _dbT.TaxTypesMasters
+                        .Where(x => x.CompanyID == CurrentUser.CoID && (x.TaxPerc ?? 0) == 0
+                                    && (x.TaxTypeID ?? 0) > 0)
+                        .OrderBy(x => x.TaxTypeID)
+                        .Select(x => x.TaxTypeID ?? 0).FirstOrDefault();
+                    if (taxTypeId <= 0)
+                    {
+                        taxTypeId = _dbT.AccountsMasters
+                            .Where(x => x.CompanyID == CurrentUser.CoID && x.AccountID == debitAccountId)
+                            .Select(x => x.AcctDefTaxTypeID ?? 0).FirstOrDefault();
+                    }
+                }
+                if (taxTypeId <= 0) return "No zero-rated tax type found for this company";
+
+                var journal = new
+                {
+                    Date = DateTime.Now,
+                    Effect = 1,                            // 1 = Debit (AccountId is debited)
+                    AccountId = debitAccountId,            // stock adjustment account
+                    ContraAccountId = creditAccountId,     // account chosen on the BOM
+                    TaxTypeId = taxTypeId,                 // required by Sage, zero-rated
+                    Reference = reference,
+                    Description = description,
+                    Exclusive = amount,
+                    Tax = 0m,
+                    Total = amount,
+                    Debit = amount,
+                    Credit = 0m
+                };
+
+                string body = JsonConvert.SerializeObject(journal, Formatting.Indented);
+                JObject parsed = new ApiUrlCall().APIPostDocumentNA("JournalEntry", body, CurrentUser);
+
+                if (parsed == null) return "Null response from API";
+                if (parsed["error"] != null)
+                {
+                    JObject err = (JObject)parsed["error"];
+                    return err["message"]?.ToString()
+                        ?? err["reason"]?.ToString()
+                        ?? "Unknown API error posting journal";
+                }
+                // Sage can answer 200 with a validation payload and save nothing. A real save
+                // always comes back with the new journal Id, so treat a missing Id as a failure.
+                if (parsed["ID"] == null && parsed["Id"] == null)
+                    return "Sage did not return a journal Id: " + parsed.ToString(Formatting.None);
+                return "Success";
+            }
+            catch (Exception ex)
+            {
+                return $"SendAddCostJournal exception: {ex.Message}";
             }
         }
 

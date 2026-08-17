@@ -1,4 +1,4 @@
-<%@ Page Language="C#" Async="true" AutoEventWireup="true" CodeBehind="ConfigCompany.aspx.cs" Inherits="SBMS.ConfigCompany" %>
+﻿<%@ Page Language="C#" Async="true" AsyncTimeout="600" AutoEventWireup="true" CodeBehind="ConfigCompany.aspx.cs" Inherits="SBMS.ConfigCompany" %>
 <%@ Register Assembly="AjaxControlToolkit" Namespace="AjaxControlToolkit" TagPrefix="cci" %>
 
 <!DOCTYPE html>
@@ -273,14 +273,14 @@
                                               DisplayOnMouseOver ="true" Position="BottomRight" BalloonPopupControlID="pnlAutoManf" BalloonStyle="Rectangle"
                                                runat="server" />
                                             <asp:Panel ID="pnlAutoManf" runat="server" style="font-size:small">
-                                              Auto manufacturing is useful if you use only 1 warehouse and do not require lot tracking.  Auto Manufacture will simplify and speed up the fulfullment of works orders and adjust your stock accordingly works orders can be auto fulfileld with 1 click.
+                                              Auto Manufacture fills every component on a works order in one click and adjusts your stock accordingly. Choose the store to fulfil from on the works order itself. It cannot be used with lot tracking, because lots have to be allocated by hand.
                                            </asp:Panel>
                                     </td>
                                </tr>
                                     <tr>
                                         <td colspan="4">
                                             <div id="pnlAutoManfConfirm">
-                                                <span style="color:red">For Auto Manufacture to function, Lot Tracking will be switched off, and only 1 store will be available. </span><br />
+                                                <span style="color:red">Switching on Auto Manufacture switches Lot Tracking off.</span><br />
                                                 <asp:CheckBox ID="chkAutoManfConf" runat="server" Text="I understand, continue" style="float:right" />
                                             </div>
                                         </td>
