@@ -1,4 +1,4 @@
-using iTextSharp.text;
+﻿using iTextSharp.text;
 using iTextSharp.text.pdf;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -899,6 +899,16 @@ namespace SBMS
                 ItemTrans.Unit = line.Unit;
                 ItemTrans.FromID = toStoreId;
                 ItemTrans.ToID = fromStoreId;
+                // Same rule as the single transfer: a serial lot moves one unit at a time.
+                string serialBlockSlip = SerialGuard.CheckUnitQty(_db, CurrentUser.CoID,
+                                                                  line.ItemSelectionId ?? 0, line.ItemCode,
+                                                                  (decimal)line.TrfOutQty);
+                if (serialBlockSlip != null)
+                {
+                    AlertHelper.ShowSweetAlert(this, serialBlockSlip + " Nothing was transferred.", "error");
+                    return;
+                }
+
                 ItemTrans.Qty = line.TrfOutQty * -1;
                 trfQty = (decimal)line.TrfOutQty * -1;
                 // OUT leg (issuing store): stock leaves at the source store's running weighted

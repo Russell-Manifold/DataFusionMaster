@@ -57,6 +57,10 @@ namespace SBMS
                         foreach (var itm in itms)
                         {
                             itm.IsLotTracked = false;
+                            // Serial tracking cannot outlive lot tracking - a serial IS a lot of
+                            // quantity 1, so leaving the flag set would have items behaving as
+                            // serialised with none of the lot machinery behind them.
+                            itm.IsSerialTracked = false;
                         }
                     }
                     _db.SaveChanges();

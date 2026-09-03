@@ -82,6 +82,7 @@
                             <div class="2u 12u$(medium)" style="text-align:left; font-size:xx-small">
                                 <h3>Whats new?</h3>
                                 <ul>
+                                    <li><a href="https://mydatafusion.online/learning.aspx?id=IopFk85Yeeo" target="_blank" title="See clip"> >> 03 September 2026 - Re-Order report as a default report in Stock Control</a></li>
                                     <li><a href="https://mydatafusion.online/learning.aspx?id=IopFk85Yeeo" target="_blank" title="See clip"> >> 14 April 2026 - Converting products to different items codes or UOM's.</a></li>
                                     <li><a href="https://mydatafusion.online/learning.aspx?id=xLpoTuzEKqM" target="_blank" title="See clip"> >> Receiving goods purchased in foreign currency.</a></li>
                                     <li><a href="https://mydatafusion.online/learning.aspx?id=xLpoTuzEKqM" target="_blank" title="See clip"> >> Allocate multiple lot numbers when receiving a single item code.</a></li>

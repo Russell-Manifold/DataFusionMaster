@@ -1,0 +1,80 @@
+-- =============================================
+-- Author:		<Author,,Name>
+-- Create date: <Create Date,,>
+-- Description:	<Description,,>
+-- =============================================
+CREATE PROCEDURE [dbo].[GetItemDemmandsAll]
+	@CoID bigint
+AS
+BEGIN
+	-- SET NOCOUNT ON added to prevent extra result sets from
+	-- interfering with SELECT statements.
+	SET NOCOUNT ON;
+
+SELECT 'QOH' AS [Document], Code AS ItemCode, CategoryDescript AS Category, 'OH' AS Trn, [Description], QuantityOnHand AS Qty, '0n Hand' AS Year_Mth_Week, CAST(GETDATE() AS DATE) AS Due_Date
+FROM dbo.ItemsMaster 
+WHERE CompanyID = @CoID AND Active = 1 AND Physical = 1
+
+UNION ALL 
+
+SELECT 'REORD' AS [Document], Code AS ItemCode, CategoryDescript AS Category, 'RO' AS Trn, [Description], ReorderLevel AS Qty, 'Re-Order Level' AS Year_Mth_Week, CAST(GETDATE() AS DATE) AS Due_Date
+FROM dbo.ItemsMaster 
+WHERE CompanyID = @CoID AND Active = 1 AND Physical = 1
+
+UNION ALL
+
+SELECT fh.CustSupName AS [Document], fl.ItemCode,
+    im.CategoryDescript AS Category, 'FC' AS Trn, fl.ItemDescription AS Description, fl.Quantity AS Qty, FORMAT(fl.DueDelDate, 'yyyy-MM-dd h:mm:ss tt') AS Year_Mth_Week, fl.DueDelDate AS Due_Date
+FROM dbo.ForCastHeader fh
+INNER JOIN dbo.ForCastLines fl ON fh.ID = fl.DocID
+INNER JOIN dbo.ItemsMaster im ON fl.SelectionId = im.ID
+WHERE fl.DueDelDate IS NOT NULL 
+    AND fh.CompanyID = @CoID 
+    AND fl.Active = 1
+
+UNION ALL
+
+SELECT jcm.JCNumber AS [Document], jcl.ItemCode,
+    im.CategoryDescript AS Category, 'JC' AS Trn, jcl.ItemDescription AS Description, jcl.Quantity AS Qty, FORMAT(jcl.LinePickDate, 'yyyy-MM-dd h:mm:ss tt') AS Year_Mth_Week, jcl.LinePickDate AS Due_Date
+FROM dbo.JobCardsMaster jcm
+INNER JOIN dbo.JobCardLines jcl ON jcm.JCID = jcl.JCID
+INNER JOIN dbo.ItemsMaster im ON jcl.SelectionId = im.ID
+WHERE jcm.CustomerID = @CoID 
+    AND jcm.JCActive = 1 
+    AND jcl.Physical = 1 
+    AND jcl.ItemCode IS NOT NULL
+
+UNION ALL
+
+SELECT psm.PSIntNumber AS [Document], psl.ItemCode,
+    im.CategoryDescript AS Category, 'PS' AS Trn, psl.ItemDescription, psl.Quantity, FORMAT(dh.DueDelDate, 'yyyy-MM-dd h:mm:ss tt') AS Year_Mth_Week, psm.PSDueDate AS Due_Date
+FROM dbo.PickingSlipMaster psm
+INNER JOIN dbo.DocHeader dh ON psm.PSID = dh.LinkedPSID
+INNER JOIN dbo.PickSlipLines psl ON psm.PSID = psl.PSID
+INNER JOIN dbo.ItemsMaster im ON psl.SelectionId = im.ID
+WHERE dh.DocType = 5 
+    AND dh.CompanyID = @CoID 
+    AND psm.PSActive = 1
+
+UNION ALL
+
+SELECT dh.DocumentNumber AS [Document], dl.ItemCode,
+    im.CategoryDescript AS Category, 'PO' AS Trn, dl.ItemDescription AS Description, dl.QtyLeft AS Qty, FORMAT(dh.DueDelDate, 'yyyy-MM-dd h:mm:ss tt') AS Year_Mth_Week, dh.DueDelDate AS Due_Date
+FROM dbo.DocHeader dh
+INNER JOIN dbo.DocLines dl ON dh.DocID = dl.DocID
+INNER JOIN dbo.ItemsMaster im ON dl.SelectionId = im.ID
+WHERE dh.DocType = 1 
+    AND dh.CompanyID = @CoID 
+    AND dl.ReceiveComplete = 0
+
+UNION ALL
+
+SELECT 'PPL' + CAST(ppl.LineID AS VARCHAR(20)) AS [Document], ppl.ItemCode,
+    im.CategoryDescript AS Category, 'PP' AS Trn, ppl.ItemDescription AS Description, ppl.PlanQuantity AS Qty, FORMAT(ppl.PlanDate, 'yyyy-MM-dd h:mm:ss tt') AS Year_Mth_Week, ppl.PlanDate AS Due_Date
+FROM dbo.ProdPlanLines ppl
+INNER JOIN dbo.ItemsMaster im ON ppl.SelectionId = im.ID
+WHERE ppl.PlanQuantity > 0 
+    AND ppl.CompanyID = @CoID 
+    AND ppl.Active = 1;
+END
+

@@ -402,6 +402,18 @@ namespace SBMS
                     return;
                 }
 
+                // Component tailoring: once the operator has edited this line's components on
+                // the Edit Components screen, the standard BOM/Kit explosion below must NOT run
+                // or their work is silently wiped on the next line save. Changing the line's
+                // ITEM or TYPE does still rebuild - they have changed what is being made, so
+                // the tailored list no longer describes it - and that clears the flag.
+                long prevItemID = ThisFCLine.SelectionId;
+                int prevLineType = ThisFCLine.LineType ?? 0;
+                int newLineType = ddlt.SelectedValue != null ? Convert.ToInt16(ddlt.SelectedValue) : 0;
+                bool itemOrTypeChanged = prevItemID != ItemID || prevLineType != newLineType;
+                if (itemOrTypeChanged) ThisFCLine.RMCustomised = false;
+                bool rebuildRm = !ThisFCLine.RMCustomised;
+
                 ThisFCLine.SelectionId = ItemID;
                 ThisFCLine.LineType = (short)(ddlt.SelectedValue != null ? Convert.ToInt16(ddlt.SelectedValue) : 0);
                 ThisFCLine.CompanyID = CoID;
@@ -451,11 +463,11 @@ namespace SBMS
 
                 // Remove old RM lines
                 var Rmd = _db.WorksOrderRMLines.Where(x => x.CompanyID == CoID && x.LinkedWOLineID == rowid).ToList();
-                if (Rmd.Any())
+                if (rebuildRm && Rmd.Any())
                     _db.WorksOrderRMLines.RemoveRange(Rmd);
 
                 // Add new RM lines based on LineType
-                if (ThisFCLine.LineType == 1)
+                if (rebuildRm && ThisFCLine.LineType == 1)
                 {
                     var itm = _db.ItemsMasters.FirstOrDefault(x => x.CompanyID == CoID && x.ID == ThisFCLine.SelectionId);
                     WorksOrderRMLine RML = new WorksOrderRMLine
@@ -478,7 +490,7 @@ namespace SBMS
                     };
                     _db.WorksOrderRMLines.Add(RML);
                 }
-                if (ThisFCLine.LineType == 2)
+                if (rebuildRm && ThisFCLine.LineType == 2)
                 {
                     int bmc = _db.BOMHeaders.Where(x => x.CompanyID == CoID && x.FGID == ThisFCLine.SelectionId).Select(x => x.BomHID).FirstOrDefault();
                     var BomLines = _db.GetBOMLinesFromBomHeaderID(bmc, CoID);
@@ -518,7 +530,7 @@ namespace SBMS
                         }
                     }
                 }
-                if (ThisFCLine.LineType == 3)
+                if (rebuildRm && ThisFCLine.LineType == 3)
                 {
                     string kmc = _db.KitHeaders.Where(x => x.CompanyID == CoID && x.FGID == ThisFCLine.SelectionId).Select(x => x.KitCode).FirstOrDefault();
                     var KitLines = _db.GetKitLinesFromKitCode(kmc, CoID);
@@ -652,6 +664,10 @@ namespace SBMS
 
                 lblItem.Text = txtDescription.Text.ToString();
                 lblQty.Text = "Qty: " + ManfQty.ToString();
+                // Per-line mode: the popup is showing ONE works order line's components, so
+                // Edit Components has a line to act on.
+                lblBomLineID.Text = lineid.ToString();
+                lbtnEditComponents.Visible = true;
                 ModalPopupExtender1.Show();
             }
         }
@@ -807,6 +823,18 @@ namespace SBMS
             }
         }
 
+        protected void lbtnEditComponents_Click(object sender, EventArgs e)
+        {
+            int lineid;
+            if (!int.TryParse(lblBomLineID.Text, out lineid) || lineid <= 0)
+            {
+                AlertHelper.ShowSweetAlert(this, "Open the components for a single works order line before editing them.", "warning");
+                return;
+            }
+            Response.Redirect("~/WorksOrdersRMEdit.aspx?woid=" + woid + "&line=" + lineid, false);
+            Context.ApplicationInstance.CompleteRequest();
+        }
+
         protected void lbtnMRPThis_Click(object sender, EventArgs e)
         {
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
@@ -822,6 +850,10 @@ namespace SBMS
                 GridUseBom.DataBind();
                 lblItem.Visible = false;
                 lblQty.Visible = false;
+                // Whole-order mode: this lists every line's components together, so there is
+                // no single works order line for Edit Components to attach a new item to.
+                lblBomLineID.Text = "";
+                lbtnEditComponents.Visible = false;
                 ModalPopupExtender1.Show();
             }
         }

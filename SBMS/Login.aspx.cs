@@ -318,6 +318,7 @@ namespace SBMS
                             x.SendMessages,
                             x.UseLotTracking,
                             x.UseLotAddDetails,
+                            x.UseSerialNumbers,
                             x.AllowSystemLotNumbers,
                             x.AllowScannerCount,
                             x.AllowScannerReceive,
@@ -361,6 +362,9 @@ namespace SBMS
                         userDetails.CompanyUseLotNumbers = false;
                     }
 
+                    // Serials need the lot machinery, so the module is only live when lot
+                    // tracking is on - the company screen enforces the same pairing.
+                    userDetails.CompanyUseSerialNumbers = GenLogIn.UseSerialNumbers && userDetails.CompanyUseLotNumbers;
                     userDetails.CompanyUseLotAddDetails = GenLogIn.UseLotAddDetails;
                     userDetails.CompanyAllowSystemLotNumbers = GenLogIn.AllowSystemLotNumbers == true;
                     userDetails.AllowScannerCount = GenLogIn.AllowScannerCount == true;

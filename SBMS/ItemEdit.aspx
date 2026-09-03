@@ -75,7 +75,9 @@
                                         
                                         <tr>
                                             <td>
-                                                  <asp:Label ID="LbLIsTracked" runat="server" Text="Item is Lot Tracked"></asp:Label><asp:CheckBox ID="chkIsTracked" runat="server" text=" " Enabled="false"/>    
+                                                  <%-- Checkbox first, so these line up with the checkboxes in the rows above. --%>
+                                                  <asp:CheckBox ID="chkIsTracked" runat="server" text=" " Enabled="false" AutoPostBack="true" OnCheckedChanged="chkIsTracked_CheckedChanged"/><asp:Label ID="LbLIsTracked" runat="server" Text="Item is Lot Tracked"></asp:Label><br />
+                                                  <asp:CheckBox ID="chkIsSerial" runat="server" text=" " Enabled="false" Visible="false" ToolTip="Every unit gets its own number. Received and picked one unit at a time."/><asp:Label ID="LbLIsSerial" runat="server" Text="Serial Numbers" Visible="false"></asp:Label>    
                                             </td>
                                            <td>
                                                 <asp:CheckBox ID="chkIsFromKit" runat="server" text=" Is Made Up From A Kit " />

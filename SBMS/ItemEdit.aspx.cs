@@ -47,6 +47,16 @@ namespace SBMS
                 if (CurrentUser.CompanyUseLotNumbers == true)
                 {
                     chkIsTracked.Enabled = true;
+
+                    // Serial tracking is an option ON a lot-tracked item: each unit becomes its
+                    // own lot of quantity 1. Only offered when the company has the module and
+                    // this item is lot tracked, so it can never be set on its own.
+                    if (CurrentUser.CompanyUseSerialNumbers)
+                    {
+                        LbLIsSerial.Visible = true;
+                        chkIsSerial.Visible = true;
+                        chkIsSerial.Enabled = chkIsTracked.Checked;
+                    }
                 }
                 else
                 {
@@ -116,6 +126,8 @@ namespace SBMS
                 txtWeight.Text = Item.NettMass.ToString() ?? "";
                 txtUom.Text = Item.Unit ?? "";
                 if ((bool)Item.IsLotTracked) chkIsTracked.Checked = true;
+                chkIsSerial.Checked = Item.IsSerialTracked;
+                chkIsSerial.Enabled = CurrentUser.CompanyUseSerialNumbers && chkIsTracked.Checked;
                 if (Convert.ToDecimal(Item.ReorderLevel) < 0) txtReOrdQty.Text = (Convert.ToDecimal(Item.ReorderLevel * -1)).ToString();   
                 //txtConversion.Text = ApiUrlCall.NumberToDecimal(Item.UOMConvert.ToString() ?? "1", CurrentUser.CompanyDecPlaces);
                 if (Item.Physical != null)
@@ -292,6 +304,8 @@ namespace SBMS
                 
                 Item.ReorderLevel = MinQty;
                 Item.IsLotTracked = chkIsTracked.Checked;
+                // Never a serial item without lots behind it.
+                Item.IsSerialTracked = chkIsTracked.Checked && chkIsSerial.Checked;
                 
                 var LStores = _db.ItemStoreLinkMasters.Where(x => x.CompanyID == CurrentUser.CoID && x.ItemID == itmid).ToList();
                 _db.ItemStoreLinkMasters.RemoveRange(LStores);
@@ -471,6 +485,14 @@ namespace SBMS
             // UnlinkItemFromBom(itemId);
         }
 
+        // Serial tracking hangs off lot tracking, so it follows it on screen: untick lots
+        // and the serial option is cleared and disabled with it.
+        protected void chkIsTracked_CheckedChanged(object sender, EventArgs e)
+        {
+            if (!chkIsTracked.Checked) chkIsSerial.Checked = false;
+            chkIsSerial.Enabled = CurrentUser.CompanyUseSerialNumbers && chkIsTracked.Checked;
+        }
+
         protected void lbtnHome_Click(object sender, EventArgs e)
         {
             if (CurrentUser != null)
@@ -494,7 +516,7 @@ namespace SBMS
         private void LoadHistory()
         {
             decimal TotQty = 0, totVal = 0;
-            List<TransLine> TLL = GetTransactions();
+            List<TransLine> TLL = SerialRollup.ToBatchLevel(GetTransactions(), CurrentUser.CoID);
             if (TLL.Count > 0)
             {
                 if (ddStore.SelectedIndex != 0)
@@ -555,7 +577,7 @@ namespace SBMS
                         {
                             try
                             {
-                                if (TL.Document != null) TL.Document = _db.DocHeaders.FirstOrDefault(x => x.CompanyID == CurrentUser.CoID && x.DocID == Trn.DocumentID).DocumentNumber;
+                                TL.Document = _db.DocHeaders.FirstOrDefault(x => x.CompanyID == CurrentUser.CoID && x.DocID == Trn.DocumentID).DocumentNumber;
                             }
                             catch { }
                         }
@@ -590,7 +612,7 @@ namespace SBMS
             }
             return TLL;
         }
-        public class TransLine
+        public class TransLine : ISerialRollupRow
         {
             public string Code { get; set; }
             public string TransactionType { get; set; }

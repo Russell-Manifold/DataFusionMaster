@@ -40,5 +40,6 @@ namespace SBMS.Models
         public Nullable<int> ToStoreBy { get; set; }
         public bool IsLotTracked { get; set; }
         public Nullable<decimal> OrderedQty { get; set; }
+        public bool RMCustomised { get; set; }
     }
 }

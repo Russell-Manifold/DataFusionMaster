@@ -216,15 +216,24 @@
                     <cci:ModalPopupExtender ID="ModalPopupExtender1" runat="server" BackgroundCssClass="ModalPopupBG" CancelControlID="LbtnLotAddCancel" Drag="true" OkControlID="Button2" PopupControlID="PnlLotNumAdd" PopupDragHandleControlID="PopupHeader" TargetControlID="LinkButton1"></cci:ModalPopupExtender>
                         <asp:Panel ID="PnlLotNumAdd" runat="server" Style="display: none">
                                     <asp:LinkButton ID="LbtnLotAddCancel" runat="server" CssClass="fa fa-times" style="float:right" ToolTip="Cancel" > </asp:LinkButton>
-                                    <div class="HellowWorldPopup">
+                                    <div class="HellowWorldPopup" style="width:820px; max-width:96vw">
                                         <div id="Div44" class="PopupHeader">
                                             <br />
-                                            <h4>Fulfill Line Item With Multiple Lot Numbers</h4><asp:Label ID="lblSlipLine" runat="server" Text="Label" style="display:none"></asp:Label><asp:Label ID="itemid" runat="server" Text="Label" style="display:none"></asp:Label><br />
+                                            <h4><asp:Label ID="lblLotModalHead" runat="server" Text="Fulfill Line Item With Multiple Lot Numbers"></asp:Label></h4><asp:Label ID="lblSlipLine" runat="server" Text="Label" style="display:none"></asp:Label><asp:Label ID="itemid" runat="server" Text="Label" style="display:none"></asp:Label><br />
                                            <h5>Qty Required = <asp:Label ID="lblLineQty" runat="server" Text=""></asp:Label></h5> 
                                         </div>
                                         <div class="PopupBody" style="text-align:center">
-                                           <asp:Panel ID="Panel1" runat="server" style="margin:auto; width:400px; height:200px; overflow:auto">       
-                                               <asp:GridView ID="GridLotNums" runat="server" AutoGenerateColumns="false" CssClass="gridview" Width="100%" >
+                                           <%-- 400x200 forced the grid to scroll sideways and showed about four rows at a time.
+                                                    Wider than the grid needs, and twice the height, so a full pick is
+                                                    visible without scrolling. --%>
+                                               <asp:Panel ID="Panel1" runat="server" style="margin:auto; width:760px; max-width:100%; height:420px; overflow-y:auto; overflow-x:hidden">       
+                                               <asp:Panel ID="pnlSerialScan" runat="server" Visible="false" style="margin-bottom:.5em">
+                                                   <asp:TextBox ID="txtPickSerialScan" runat="server" ClientIDMode="Static"
+                                                        placeholder="Scan a serial to tick it" style="width:60%; text-align:center"
+                                                        autocomplete="off" autocorrect="off" autocapitalize="off"></asp:TextBox>
+                                                   <div><asp:Label ID="lblSerialNeed" runat="server" style="font-size:.85em; font-weight:600"></asp:Label></div>
+                                               </asp:Panel>
+                                               <asp:GridView ID="GridLotNums" runat="server" AutoGenerateColumns="false" CssClass="gridview" Width="100%" OnRowDataBound="GridLotNums_RowDataBound" >
                                              <HeaderStyle CssClass="gridViewHeader" />
                                              <RowStyle CssClass="gridViewRow" />
                                              <AlternatingRowStyle CssClass="gridViewAltRow" />
@@ -232,8 +241,20 @@
                                              <PagerStyle CssClass="gridViewPager" />
                                              <Columns>
                                                  <asp:BoundField HeaderText="Store" DataField="StoreCode" ReadOnly="True" />
-                                                 <asp:BoundField HeaderText="Lot Number" DataField="LotNumber" ReadOnly="True" />
-                                                  <asp:BoundField HeaderText="Q O H" DataField="QtyHandToStore" ReadOnly="True" />
+                                                 <asp:BoundField HeaderText="Lot Number" DataField="LotNumber" ReadOnly="True" ItemStyle-Wrap="false" />
+                                                  <asp:BoundField HeaderText="Q O H" DataField="QtyHandToStore" ReadOnly="True" ItemStyle-Wrap="false" ItemStyle-HorizontalAlign="Center" />
+                                                 <%-- Expiry drives the FEFO order below, so it has to be on screen. --%>
+                                                 <asp:TemplateField HeaderText="Expires" ItemStyle-HorizontalAlign="Center" ItemStyle-Wrap="false" ItemStyle-Width="8em" HeaderStyle-Wrap="false">
+                                                     <ItemTemplate>
+                                                         <asp:Label ID="lblExpires" runat="server" Text='<%# Eval("UseByDate") == null ? "" : Convert.ToDateTime(Eval("UseByDate")).ToString("dd MMM yyyy") %>'></asp:Label>
+                                                     </ItemTemplate>
+                                                 </asp:TemplateField>
+                                                 <%-- Serial items pick whole units, so a tick replaces the quantity box. --%>
+                                                 <asp:TemplateField HeaderText="Pick" ItemStyle-HorizontalAlign="Center">
+                                                     <ItemTemplate>
+                                                         <asp:CheckBox ID="chkPickSerial" runat="server" Visible="false" />
+                                                     </ItemTemplate>
+                                                 </asp:TemplateField>
                                                  <asp:TemplateField HeaderText="Use Qty">
                                                      <ItemTemplate>
                                                          <asp:TextBox ID="txtUseQty" runat="server" Width="50px" style="text-align:center"></asp:TextBox>
@@ -311,6 +332,48 @@
         }
 </script> 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        /* Scanning a serial in the picking chooser ticks its row.
+         *
+         * Done client-side: a scanner fires a full barcode plus Enter, and a postback per scan
+         * would make the operator wait between units. The grid is already on the page, so the
+         * match is just a text compare against the Lot Number column.
+         */
+        (function () {
+            "use strict";
+            function wire() {
+                var box = document.getElementById("txtPickSerialScan");
+                var grid = document.getElementById("<%= GridLotNums.ClientID %>");
+                if (!box || !grid || box.dataset.wired === "1") return;
+                box.dataset.wired = "1";
+
+                box.addEventListener("keydown", function (e) {
+                    if (e.key !== "Enter") return;
+                    e.preventDefault();                       // the scanner's Enter must not submit
+                    var wanted = (box.value || "").trim().toUpperCase();
+                    box.value = "";
+                    box.focus();
+                    if (!wanted) return;
+
+                    var rows = grid.rows, hit = false;
+                    for (var i = 1; i < rows.length; i++) {   // row 0 is the header
+                        var cells = rows[i].cells;
+                        if (cells.length < 2) continue;
+                        if ((cells[1].innerText || "").trim().toUpperCase() !== wanted) continue;
+                        var cb = rows[i].querySelector('input[type="checkbox"]');
+                        if (cb) { cb.checked = true; hit = true; rows[i].scrollIntoView({ block: "nearest" }); }
+                        break;
+                    }
+                    if (!hit) alert(wanted + " is not available to pick for this line.");
+                });
+                box.focus();
+            }
+            document.addEventListener("DOMContentLoaded", wire);
+            if (typeof Sys !== "undefined" && Sys.WebForms && Sys.WebForms.PageRequestManager) {
+                Sys.WebForms.PageRequestManager.getInstance().add_endRequest(wire);
+            }
+        })();
+    </script>
 </body>
 </html>
 

@@ -55,6 +55,10 @@ namespace SBMS
             imgbReceive.Visible = userDets.AllowScannerReceive;
             imgbRec.Visible     = userDets.AllowScannerPutAway;
 
+            // Mobile manufacture backflushes the components itself, so it is only offered to
+            // companies on Auto Manufacture, and never to lot-tracked ones.
+            imgbManufacture.Visible = userDets.UseAutoManf && !userDets.CompanyUseLotNumbers;
+
             // Manual lot numbers → scanner receiving (Count / Receive) is not allowed; the GRN must
             // be done on the web so the operator can enter the real lot. Put-away is unaffected.
             if (userDets.CompanyUseLotNumbers && !userDets.CompanyAllowSystemLotNumbers)

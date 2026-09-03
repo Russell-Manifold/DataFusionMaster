@@ -1,4 +1,4 @@
-using SBMS.Classes;
+﻿using SBMS.Classes;
 using SBMS.Models;
 using System;
 using System.Collections.Generic;
@@ -420,10 +420,45 @@ namespace SBMS
             var lines = GetLines();
             LoadLineLPNs();
             LoadLinePickedQty();
+            LoadLineSerials(lines);
             lblLineCount.Text   = lines.Count(l => l.PickComplete != true).ToString();
             lblEmpty.Visible    = lines.All(l => l.PickComplete == true);
             rptLines.DataSource = lines;
             rptLines.DataBind();
+        }
+
+        // Which items on this slip are serial tracked, and how many serials each line has
+        // scanned so far. Loaded ONCE per bind - the card binder runs per line, and a query
+        // per card on a handheld over a warehouse connection is felt immediately.
+        private HashSet<long> _serialItems = new HashSet<long>();
+        private Dictionary<int, int> _lineSerialCount = new Dictionary<int, int>();
+
+        private void LoadLineSerials(List<PickSlipLine> lines)
+        {
+            _serialItems = new HashSet<long>();
+            _lineSerialCount = new Dictionary<int, int>();
+            if (lines == null || lines.Count == 0) return;
+
+            using (SBMSEntities db = new SBMSEntities(Config.GetConnectionString()))
+            {
+                var ids = lines.Select(l => l.SelectionId).Distinct().ToList();
+                foreach (long id in db.ItemsMasters
+                             .Where(x => x.CompanyID == CurrentUser.CoID && x.IsSerialTracked && ids.Contains(x.ID))
+                             .Select(x => x.ID).ToList())
+                    _serialItems.Add(id);
+
+                if (_serialItems.Count == 0) return;   // nothing serial on this slip
+
+                foreach (var l in lines.Where(x => _serialItems.Contains(x.SelectionId)))
+                    _lineSerialCount[l.LineID] =
+                        SerialPicking.GetLineSerials(db, CurrentUser.CoID, PSID, l.LineID).Count;
+            }
+        }
+
+        /// <summary>True when this slip line is for a serial-tracked item.</summary>
+        private bool IsSerialLine(PickSlipLine line)
+        {
+            return line != null && _serialItems.Contains(line.SelectionId);
         }
 
         // Per-line bin-pick totals (raw SQL - PickSlipLinePicks is outside EF).
@@ -628,6 +663,41 @@ namespace SBMS
             var resetBtn = (LinkButton)e.Item.FindControl("lbtnResetLine");
             if (resetBtn != null) resetBtn.Visible = isPicked && !SlipComplete;
 
+            // ── Serial lines: scanned count, no lot list ──
+            // A serial is deeper than a lot, so a lot number means nothing on this card, and
+            // the quantity box means nothing either - the count IS the number of units scanned.
+            if (IsSerialLine(line))
+            {
+                int have = _lineSerialCount.ContainsKey(line.LineID) ? _lineSerialCount[line.LineID] : 0;
+                decimal need = line.Quantity ?? 0;
+
+                var ddSer = (DropDownList)e.Item.FindControl("ddLotNum");
+                if (ddSer != null) ddSer.Visible = false;
+
+                var qtySer = (TextBox)e.Item.FindControl("txtPickQty");
+                if (qtySer != null) qtySer.Visible = false;
+
+                var progSer = (Label)e.Item.FindControl("lblBinProgress");
+                if (progSer != null)
+                {
+                    progSer.Text = isPicked
+                        ? $"&#128290; {have} serial(s) picked"
+                        : $"&#128290; Serials {have}/{need:0.##} &mdash; scan each unit";
+                    progSer.Visible = true;
+                }
+
+                // Finish short with what has been scanned: the balance goes on back order,
+                // exactly as on the web.
+                var shortSer = (LinkButton)e.Item.FindControl("lbtnDoneShort");
+                if (shortSer != null)
+                    shortSer.Visible = have > 0 && !isPicked && !SlipComplete;
+
+                var pickSer = (LinkButton)e.Item.FindControl("lbtnPickLine");
+                if (pickSer != null) pickSer.Enabled = have > 0 && !isPicked && !SlipComplete;
+
+                return;   // serial card fully handled
+            }
+
             // ── Lot number dropdown ──
             var ddLot = (DropDownList)e.Item.FindControl("ddLotNum");
             if (ddLot != null)
@@ -662,6 +732,16 @@ namespace SBMS
         {
             string raw = txtBarcode.Text.Trim();
             if (string.IsNullOrEmpty(raw)) { ClearFeedback(); return; }
+
+            // A serial number identifies the unit AND the line - a serial belongs to exactly
+            // one item - so scanning the unit in your hand is the whole interaction. Tried
+            // first: a serial is a lot number, and nothing else on this page looks one up.
+            if (HandleSerialScan(raw))
+            {
+                txtBarcode.Text = string.Empty;
+                BindLines();
+                return;
+            }
 
             // Pick-by-bin takes precedence over LPN scanning (the two flows are
             // separate); in bin mode scans go to normal item matching + the bin-scan
@@ -1012,6 +1092,14 @@ namespace SBMS
         // ── Per-line Pick ──────────────────────────────────────────────────────────
         protected void lbtnPickLine_Click(object sender, EventArgs e)
         {
+            // ── Serial line: the pick quantity IS the number of units scanned, so the tick
+            //    means "book what I have". Checked before the bin branch, because a serial
+            //    line has no qty box and no bin list to read.
+            var itemS = ((LinkButton)sender).NamingContainer as RepeaterItem;
+            var hfS = (HiddenField)itemS?.FindControl("hfLineID");
+            if (int.TryParse(hfS?.Value, out int serialLineId)
+                && CommitSerialLineIfSerial(serialLineId)) return;
+
             // ── Pick-by-bin: take this qty from the selected bin; accumulate. ──
             if (PickByBin)
             {
@@ -1263,6 +1351,32 @@ namespace SBMS
                 // the flag is off so a company that never ran the PickByBin migration can
                 // still reset normally (the "off = unchanged" isolation guarantee).
                 decimal binPickedForReset = PickByBin ? BinPickedQty(db, lineId) : 0m;
+
+                // ── Serial line: it moved as one row PER UNIT and stamps no ItemTransLineID,
+                //    so the checks and the reversal below would both find nothing and leave
+                //    every unit issued. Put them all back and clear the scanned list.
+                if (SerialGuard.IsSerialItem(db, CurrentUser.CoID, line.SelectionId))
+                {
+                    int resetStoreId = db.Stores
+                        .Where(x => x.StoreCode == (line.StoreCodeFrom ?? SelectedStore) && x.CompanyID == CurrentUser.CoID)
+                        .Select(x => x.StoreID).FirstOrDefault();
+
+                    string serialRevErr = ReverseSerialMovements(db, line, resetStoreId);
+                    if (serialRevErr != null) return serialRevErr;
+
+                    SerialPicking.SetLineSerials(db, CurrentUser.CoID, PSID, lineId,
+                                                 new List<string>(), CurrentUser.RoleID);
+                    line.PickQty      = null;
+                    line.PickComplete = false;
+                    line.PickTime     = null;
+                    line.LotNumber    = null;
+                    db.SaveChanges();
+
+                    PickedLineIDs.Remove(lineId);
+                    RefreshPickStatus(PSID);
+                    return null;
+                }
+
                 if (line.PickComplete != true && (line.ItemTransLineID ?? 0) == 0 && binPickedForReset <= 0)
                     return "Line is not picked.";
 
@@ -1393,6 +1507,8 @@ namespace SBMS
             var hf = (HiddenField)item?.FindControl("hfLineID");
             if (!int.TryParse(hf?.Value, out int lineId)) return;
 
+            if (CommitSerialLineIfSerial(lineId)) return;
+
             using (SBMSEntities db = new SBMSEntities(Config.GetConnectionString()))
             {
                 // Authoritative close-off check (matches Reset / Finalise): don't touch
@@ -1450,6 +1566,16 @@ namespace SBMS
 
                 var itm = db.ItemsMasters.FirstOrDefault(x => x.CompanyID == CurrentUser.CoID && x.ID == line.SelectionId);
                 bool isPhysical = itm?.Physical == true;
+
+                // Serial capture is web-only for now. This page books one lumped movement per
+                // line, which on a serial line would be -20 against a lot holding one unit:
+                // stock corrupted and nineteen units stranded as still on hand. Refuse it
+                // rather than write it.
+                if (itm != null && itm.IsSerialTracked)
+                {
+                    return itm.Code + " is serial tracked - pick it on the web screen so each "
+                         + "unit's serial number can be recorded.";
+                }
 
                 decimal ordered   = line.Quantity ?? 0;
                 decimal already   = BinPickedQty(db, lineId);
@@ -1572,6 +1698,14 @@ namespace SBMS
                 if (line.IsLotTracked && CurrentUser.CompanyUseLotNumbers &&
                     string.IsNullOrEmpty(lotNum))
                     return $"{line.ItemCode} is Lot Tracked — select a lot number before picking.";
+
+                // Serial lines never come through here. This method books ONE movement for the
+                // whole quantity, which against a lot holding a single unit is -20 on a lot of
+                // one: stock corrupted, nineteen units stranded as on hand. They are picked by
+                // scanning each unit, which routes to TrySaveSerialPick instead.
+                if (SerialGuard.IsSerialItem(db, CurrentUser.CoID, line.SelectionId))
+                    return $"{line.ItemCode} is serial tracked — scan each unit's serial number "
+                         + "instead of entering a quantity.";
 
                 decimal priceExcl = 0m, priceInclAdd = 0m;
 
@@ -1961,6 +2095,360 @@ namespace SBMS
         }
 
         // ── Feedback helpers ───────────────────────────────────────────────────────
+
+        /// <summary>
+        /// Books a serial line at whatever has been scanned so far - a part pick. Returns true
+        /// when the line WAS a serial line and has been dealt with, so the caller stops.
+        /// Shared by the tick button and "Done short": on a serial line they mean the same
+        /// thing, because the count of units scanned is the pick quantity.
+        /// </summary>
+        private bool CommitSerialLineIfSerial(int lineId)
+        {
+            List<string> serials;
+            string itemCode;
+            using (SBMSEntities db = new SBMSEntities(Config.GetConnectionString()))
+            {
+                var line = db.PickSlipLines.FirstOrDefault(l => l.LineID == lineId && l.CompanyID == CurrentUser.CoID);
+                if (line == null) return false;
+                if (!SerialGuard.IsSerialItem(db, CurrentUser.CoID, line.SelectionId)) return false;
+
+                itemCode = line.ItemCode ?? "";
+                serials = SerialPicking.GetLineSerials(db, CurrentUser.CoID, PSID, lineId);
+            }
+
+            if (serials.Count == 0)
+            {
+                SetFeedback(false, "&#9888; Scan at least one serial number for " + HttpUtility.HtmlEncode(itemCode) + " first.");
+                BindLines();
+                return true;
+            }
+
+            string err = TrySaveSerialPick(lineId, serials, SelectedStore);
+            if (err != null) { SetFeedback(false, "&#9888; " + err); BindLines(); return true; }
+
+            PickedLineIDs.Add(lineId);
+            MatchedLineID = 0;
+            SetFeedback(true, $"&#10003; <strong>{HttpUtility.HtmlEncode(itemCode)}</strong> picked with "
+                + $"{serials.Count} serial(s). Any balance goes on back order at close-off.");
+            BindLines();
+            return true;
+        }
+
+        // ══ Serial picking ══════════════════════════════════════════════════════════
+        //
+        // A serial IS a lot holding one unit, so picking one is "choose these exact lots".
+        // On a scanner that is simply: scan the unit. The serial names the item, so the line
+        // is found for you - no selecting a line first, no reading numbers off a screen and
+        // matching them to boxes, which is what the web chooser makes you do.
+        //
+        // Scanned serials go straight into PickSlipLineSerials (the same table the web uses)
+        // rather than into ViewState, so a dropped connection or a reload loses nothing and
+        // the "already picked on another line" check works across devices.
+
+        /// <summary>
+        /// True when the scan was a serial number and this method dealt with it - including
+        /// when it was rejected. False means "not a serial", so the normal scan flow runs.
+        /// </summary>
+        private bool HandleSerialScan(string raw)
+        {
+            if (string.IsNullOrWhiteSpace(raw) || raw.Length > 50) return false;
+            string serial = raw.Trim().ToUpperInvariant();
+
+            using (SBMSEntities db = new SBMSEntities(Config.GetConnectionString()))
+            {
+                var lot = db.LotTrackingMasters.FirstOrDefault(
+                    x => x.CompanyID == CurrentUser.CoID && x.LotNumber == serial);
+                if (lot == null) return false;
+
+                long itemId = lot.ItemId ?? 0;
+                if (!SerialGuard.IsSerialItem(db, CurrentUser.CoID, itemId)) return false;
+
+                // From here the scan IS a serial: every exit returns true.
+                if (SlipComplete) { SetFeedback(false, "&#9888; This slip is closed off."); return true; }
+
+                if (string.IsNullOrEmpty(SelectedStore))
+                {
+                    LoadStoresModal();
+                    pnlStoreModal.Visible = true;
+                    return true;
+                }
+
+                // Pick-by-bin and the LPN box/unit flows book stock their own way; serials are
+                // not wired into either, so say so rather than half-handle it.
+                if (PickByBin || LPNMode == "box" || LPNMode == "unit")
+                {
+                    SetFeedback(false, "&#9888; Serial items are picked in the standard flow &mdash; "
+                        + "box labels and pick-by-bin do not carry serial numbers.");
+                    return true;
+                }
+
+                // The line this unit satisfies: first unpicked line for the item that still has
+                // room. A 50-unit order is split into lines of 20/20/10, so they fill in order.
+                var lines = db.PickSlipLines
+                    .Where(l => l.PSID == PSID && l.CompanyID == CurrentUser.CoID
+                             && l.LineType == 0 && l.SelectionId == itemId
+                             && (l.PickComplete == null || l.PickComplete == false))
+                    .OrderBy(l => l.LineID).ToList();
+                if (lines.Count == 0)
+                {
+                    SetFeedback(false, $"&#9888; <strong>{HttpUtility.HtmlEncode(serial)}</strong> is "
+                        + $"{HttpUtility.HtmlEncode(lot.ItemCode ?? "")}, which is not on this slip or is already picked.");
+                    return true;
+                }
+
+                PickSlipLine target = null;
+                List<string> already = null;
+                foreach (var l in lines)
+                {
+                    var have = SerialPicking.GetLineSerials(db, CurrentUser.CoID, l.PSID, l.LineID);
+                    if (have.Count < (l.Quantity ?? 0)) { target = l; already = have; break; }
+                }
+                if (target == null)
+                {
+                    SetFeedback(false, $"&#9888; Every line for {HttpUtility.HtmlEncode(lot.ItemCode ?? "")} "
+                        + "already has its full count of serials.");
+                    return true;
+                }
+
+                if (already.Contains(serial, StringComparer.OrdinalIgnoreCase))
+                {
+                    SetFeedback(false, $"&#9888; <strong>{HttpUtility.HtmlEncode(serial)}</strong> is already "
+                        + "scanned on this line.");
+                    return true;
+                }
+
+                // The same physical unit must never go out on two lines of one slip.
+                var elsewhere = SerialPicking.PickedElsewhere(db, CurrentUser.CoID, PSID,
+                                                              target.LineID, new List<string> { serial });
+                if (elsewhere.Count > 0)
+                {
+                    SetFeedback(false, $"&#9888; <strong>{HttpUtility.HtmlEncode(serial)}</strong> is already "
+                        + "picked on another line of this slip.");
+                    return true;
+                }
+
+                int storeId = db.Stores
+                    .Where(x => x.StoreCode == SelectedStore && x.CompanyID == CurrentUser.CoID)
+                    .Select(x => x.StoreID).FirstOrDefault();
+
+                // On hand HERE. A serial already issued nets to zero, so this also catches a
+                // unit that has left the building.
+                decimal onHand = db.ItemTransactions
+                    .Where(t => t.CompanyID == CurrentUser.CoID && t.LotNumber == serial && t.ToID == storeId)
+                    .Select(t => (decimal?)t.Qty).DefaultIfEmpty(0).Sum() ?? 0m;
+                if (onHand <= 0)
+                {
+                    SetFeedback(false, $"&#9888; <strong>{HttpUtility.HtmlEncode(serial)}</strong> is not on hand "
+                        + $"in {HttpUtility.HtmlEncode(SelectedStore)} &mdash; it may already be issued, or be in another store.");
+                    return true;
+                }
+
+                var serials = new List<string>(already) { serial };
+                SerialPicking.SetLineSerials(db, CurrentUser.CoID, PSID, target.LineID, serials, CurrentUser.RoleID);
+
+                // ── Advisories. Neither blocks: the picker may have a good reason, but must
+                //    not do it unknowingly. Same rule as the web.
+                string warn = "";
+                if (lot.UseByDate.HasValue && lot.UseByDate.Value.Date < DateTime.Today)
+                    warn = " &#9888; this unit EXPIRED " + lot.UseByDate.Value.ToString("dd MMM yyyy") + ".";
+                else
+                {
+                    // FEFO is advisory on a scanner - the picker takes what they physically
+                    // reach - but an earlier-dated unit sitting in the same store is worth saying.
+                    DateTime? mine = lot.UseByDate;
+                    var earlier = db.LotTrackingMasters
+                        .Where(x => x.CompanyID == CurrentUser.CoID && x.ItemId == itemId
+                                 && x.UseByDate.HasValue
+                                 && (!mine.HasValue || x.UseByDate.Value < mine.Value))
+                        .Select(x => new { x.LotNumber, x.UseByDate })
+                        .OrderBy(x => x.UseByDate).FirstOrDefault();
+                    if (earlier != null)
+                    {
+                        decimal earlierOnHand = db.ItemTransactions
+                            .Where(t => t.CompanyID == CurrentUser.CoID && t.LotNumber == earlier.LotNumber && t.ToID == storeId)
+                            .Select(t => (decimal?)t.Qty).DefaultIfEmpty(0).Sum() ?? 0m;
+                        if (earlierOnHand > 0)
+                            warn = " &#9888; " + HttpUtility.HtmlEncode(earlier.LotNumber) + " expires earlier ("
+                                 + earlier.UseByDate.Value.ToString("dd MMM yyyy") + ") and is still here.";
+                    }
+                }
+
+                decimal need = target.Quantity ?? 0;
+                if (serials.Count >= need)
+                {
+                    string err = TrySaveSerialPick(target.LineID, serials, SelectedStore);
+                    if (err != null) { SetFeedback(false, "&#9888; " + err); return true; }
+
+                    PickedLineIDs.Add(target.LineID);
+                    MatchedLineID = 0;
+                    SetFeedback(true, $"&#10003; <strong>{HttpUtility.HtmlEncode(target.ItemCode ?? "")}</strong> "
+                        + $"complete &mdash; {serials.Count:0.##}/{need:0.##} serials picked." + warn);
+                }
+                else
+                {
+                    MatchedLineID = target.LineID;
+                    SetFeedback(true, $"&#128290; <strong>{HttpUtility.HtmlEncode(serial)}</strong> &mdash; "
+                        + $"{serials.Count}/{need:0.##} for {HttpUtility.HtmlEncode(target.ItemCode ?? "")}. "
+                        + "Scan the next unit, or tap &#10004; to finish short." + warn);
+                }
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// Books a serial line: one movement of -1 per serial, never one lumped row.
+        /// Mirrors the web (PickingSlip.aspx.cs) exactly - including reversing what ACTUALLY
+        /// moved rather than what is currently selected, so changing the selection cannot
+        /// strand the units issued under the old one.
+        /// </summary>
+        private string TrySaveSerialPick(int lineId, List<string> serials, string storeCode)
+        {
+            using (SBMSEntities db = new SBMSEntities(Config.GetConnectionString()))
+            {
+                var line = db.PickSlipLines.FirstOrDefault(l => l.LineID == lineId && l.CompanyID == CurrentUser.CoID);
+                if (line == null) return "Line not found.";
+                if (serials == null || serials.Count == 0) return "No serials scanned for this line.";
+
+                int storeId = db.Stores
+                    .Where(x => x.StoreCode == storeCode && x.CompanyID == CurrentUser.CoID)
+                    .Select(x => x.StoreID).FirstOrDefault();
+
+                string revErr = ReverseSerialMovements(db, line, storeId);
+                if (revErr != null) return revErr;
+
+                // Outbound leaves at the pick store's running weighted average, and an OUT never
+                // revalues a store - so the average is read ONCE and stamped on every unit. Do
+                // NOT run ComputeMovement here: that is the re-blend an inbound does, and using
+                // it on the way out would drift the store average on every pick.
+                // (Same rule as the web and as the lumped mobile pick above it.)
+                decimal unitCost = StoreCosting.GetStoreAvgCost(db, CurrentUser.CoID, line.SelectionId, storeId);
+                if (unitCost == 0m)
+                {
+                    var itmCost = db.ItemsMasters.FirstOrDefault(
+                        x => x.CompanyID == CurrentUser.CoID && x.ID == line.SelectionId);
+                    if (itmCost != null) unitCost = (decimal)(itmCost.AverageCost ?? 0m);
+                }
+
+                foreach (string serial in serials)
+                {
+                    db.ItemTransactions.Add(new ItemTransaction
+                    {
+                        CompanyID                 = CurrentUser.CoID,
+                        DocumentID                = PSID,
+                        TransactionType           = "PS",
+                        ItemID                    = line.SelectionId,
+                        ItemCode                  = line.ItemCode ?? "",
+                        ItemDescription           = line.ItemDescription ?? "",
+                        Unit                      = line.Unit,
+                        FromID                    = 0,
+                        ToID                      = storeId,
+                        Qty                       = -1m,
+                        DocumentType              = 10,
+                        PriceExclusive            = unitCost,
+                        TotalUnitPriceExclInclAdd = unitCost,
+                        AdditionalCosts           = 0,
+                        TotalLineValExcl          = -unitCost,
+                        StoreAvgCost              = unitCost,
+                        TransactionDate           = DateTime.Now,
+                        ByRoleID                  = CurrentUser.RoleID,
+                        TransactionReference      = PSIntNumber,
+                        LotNumber                 = serial,
+                        ExchRate                  = 1
+                    });
+                    // Saved per unit so the next one's running-average read sees this row -
+                    // ComputeMovement queries the database and cannot see rows only Added.
+                    db.SaveChanges();
+                }
+
+                line.PickQty       = serials.Count;
+                line.PickComplete  = true;
+                line.PickTime      = DateTime.Now;
+                line.StoreCodeFrom = storeCode;
+                // The line carries its serials in the child table; LotNumber holds the first so
+                // anything still reading a single lot has something sensible to show.
+                line.LotNumber        = serials[0];
+                // No single row to point at - the line moved as many.
+                line.ItemTransLineID  = null;
+                db.SaveChanges();
+            }
+
+            RefreshPickStatus(PSID);
+            return null;
+        }
+
+        /// <summary>
+        /// Puts back every unit of this line's item still out on this slip, except the units
+        /// belonging to the slip's OTHER lines. Netted, so a unit already returned sums to zero
+        /// and is left alone - un-picking twice cannot return the same unit twice.
+        /// Returns null on success.
+        /// </summary>
+        private string ReverseSerialMovements(SBMSEntities db, PickSlipLine line, int fallbackStoreId)
+        {
+            var otherLineUnits = SerialPicking.SerialsOnOtherLines(db, CurrentUser.CoID, line.PSID, line.LineID);
+
+            long revItemId = line.SelectionId;
+            var toReverse = db.ItemTransactions
+                .Where(x => x.CompanyID == CurrentUser.CoID
+                         && x.DocumentID == line.PSID
+                         && x.ItemID == revItemId
+                         && x.TransactionType == "PS"
+                         && x.LotNumber != null && x.LotNumber != "")
+                .GroupBy(x => x.LotNumber)
+                .Select(g => new { Serial = g.Key, Net = g.Sum(x => x.Qty) ?? 0 })
+                .Where(x => x.Net < 0)
+                .Select(x => x.Serial)
+                .ToList()
+                .Where(x => !otherLineUnits.Contains(x, StringComparer.OrdinalIgnoreCase))
+                .ToList();
+
+            foreach (string serial in toReverse)
+            {
+                string thisSerial = serial;
+                var outTrn = db.ItemTransactions
+                    .Where(x => x.CompanyID == CurrentUser.CoID && x.DocumentID == line.PSID
+                             && x.ItemID == revItemId && x.LotNumber == thisSerial && x.Qty < 0)
+                    .OrderByDescending(x => x.TrnID).FirstOrDefault();
+                if (outTrn == null) continue;
+
+                int backStore = Convert.ToInt32(outTrn.ToID ?? fallbackStoreId);
+                decimal backVal;
+                decimal backAvg = StoreCosting.ComputeMovement(db, CurrentUser.CoID, revItemId, backStore,
+                                      1m, outTrn.TotalUnitPriceExclInclAdd ?? 0m, out backVal);
+                db.ItemTransactions.Add(new ItemTransaction
+                {
+                    CompanyID                 = CurrentUser.CoID,
+                    DocumentID                = outTrn.DocumentID,
+                    TransactionType           = "PS",
+                    ItemID                    = outTrn.ItemID,
+                    ItemCode                  = outTrn.ItemCode ?? "",
+                    ItemDescription           = outTrn.ItemDescription ?? "",
+                    Unit                      = outTrn.Unit,
+                    FromID                    = 0,
+                    ToID                      = backStore,
+                    Qty                       = 1m,
+                    DocumentType              = 10,
+                    PriceExclusive            = outTrn.PriceExclusive,
+                    TotalUnitPriceExclInclAdd = outTrn.TotalUnitPriceExclInclAdd,
+                    TotalLineValExcl          = outTrn.TotalUnitPriceExclInclAdd,
+                    StoreAvgCost              = backAvg,
+                    AdditionalCosts           = 0,
+                    TransactionDate           = DateTime.Now,
+                    ByRoleID                  = CurrentUser.RoleID,
+                    TransactionReference      = PSIntNumber + " Reversal",
+                    LotNumber                 = thisSerial,
+                    ExchRate                  = 1
+                });
+                db.SaveChanges();
+            }
+            return null;
+        }
+
+        /// <summary>Serials scanned so far for a line - for the card badge.</summary>
+        private int SerialCount(SBMSEntities db, int lineId)
+        {
+            return SerialPicking.GetLineSerials(db, CurrentUser.CoID, PSID, lineId).Count;
+        }
+
         private void SetFeedback(bool found, string html)
         {
             lblScanFeedback.Text     = html;

@@ -249,6 +249,11 @@ namespace SBMS
         protected global::System.Web.UI.WebControls.CheckBox chkSysLot;
 
         /// <summary>
+        /// chkSerialTrack control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.CheckBox chkSerialTrack;
+
+        /// <summary>
         /// chkScanCount control.
         /// </summary>
         /// <remarks>

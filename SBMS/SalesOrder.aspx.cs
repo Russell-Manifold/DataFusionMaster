@@ -835,12 +835,16 @@ namespace SBMS
                         PsL.LineType = Ln.LineType;
                         PsL.CompanyID = CurrentUser.CoID;
                         PsL.IsLotTracked = false;
+                        bool thisItemIsSerial = false;
                         var ThisItem = _db.ItemsMasters.Where(x => x.CompanyID == CurrentUser.CoID && x.ID == Ln.SelectionId).FirstOrDefault();
                         if (ThisItem != null)
                         {
                             PsL.IsLotTracked = ThisItem.IsLotTracked;
+                            thisItemIsSerial = ThisItem.IsSerialTracked;   // item driven, not a company setting
                         }
-                        _db.PickSlipLines.Add(PsL);
+                        // Serial items are split into lines of 20 here, so each line's serials can
+                        // be counted against its quantity on the invoice. 50 becomes 20 + 20 + 10.
+                        SerialPicking.AddPickSlipLines(_db, PsL, thisItemIsSerial);
                     }
 
                     // insert Picking Slip Transaction record
@@ -1276,22 +1280,9 @@ namespace SBMS
                             DL.Discount = (decimal)dl.Discount;
                             DL.Tax = (decimal)dl.Tax;
                             DL.Total = (decimal)dl.Total;
-                            if (dl.LotNumber != null && dl.LotNumber.ToString() != "" && dl.StoreCode != null && dl.StoreCode.ToString() != "")
-                            {
-                                DL.Comments = "Store: " + dl.StoreCode +  " - Lot # " + dl.LotNumber + " : " + dl.Comments;
-                            }
-                            else if (dl.StoreCode != null && dl.StoreCode.ToString() != "")
-                            {
-                                DL.Comments = "Store: " + dl.StoreCode+ " : " + dl.Comments;
-                            }
-                            else if (dl.LotNumber != null && dl.LotNumber.ToString() != "")
-                            {
-                                DL.Comments = "Lot # " + dl.LotNumber + " : " + dl.Comments;
-                            }
-                            else
-                            {
-                                DL.Comments = dl.Comments;
-                            }
+                            DL.Comments = DocumentLineComment(dl.Comments,
+                                                              dl.StoreCode == null ? null : dl.StoreCode.ToString(),
+                                                              dl.LotNumber == null ? null : dl.LotNumber.ToString());
 
                             if (dl.AnalysisCategoryId1 != null) DL.AnalysisCategoryId1 = (long)dl.AnalysisCategoryId1;
                             if (dl.AnalysisCategoryId2 != null) DL.AnalysisCategoryId2 = (long)dl.AnalysisCategoryId2;
@@ -1319,23 +1310,9 @@ namespace SBMS
                                 DL.Discount = (decimal)dl.Discount;
                                 DL.Tax = (decimal)dl.Tax;
                                 DL.Total = (decimal)dl.Total;
-                                DL.Comments = dl.Comments;
-                                if (dl.LotNumber != null && dl.LotNumber.ToString() != "" && dl.StoreCode != null && dl.StoreCode.ToString() != "")
-                                {
-                                    DL.Comments = "Store: " + dl.StoreCode + " - Lot # " + dl.LotNumber + " : " + dl.Comments;
-                                }
-                                else if (dl.StoreCode != null && dl.StoreCode.ToString() != "")
-                                {
-                                    DL.Comments = "Store: " + dl.StoreCode + " : " + dl.Comments;
-                                }
-                                else if (dl.LotNumber != null && dl.LotNumber.ToString() != "")
-                                {
-                                    DL.Comments = "Lot # " + dl.LotNumber + " : " + dl.Comments;
-                                }
-                                else
-                                {
-                                    DL.Comments = dl.Comments;
-                                }
+                                DL.Comments = DocumentLineComment(dl.Comments,
+                                                                  dl.StoreCode == null ? null : dl.StoreCode.ToString(),
+                                                                  dl.LotNumber == null ? null : dl.LotNumber.ToString());
                                 if (dl.AnalysisCategoryId1 != null) DL.AnalysisCategoryId1 = (long)dl.AnalysisCategoryId1;
                                 if (dl.AnalysisCategoryId2 != null) DL.AnalysisCategoryId2 = (long)dl.AnalysisCategoryId2;
                                 if (dl.AnalysisCategoryId3 != null) DL.AnalysisCategoryId3 = (long)dl.AnalysisCategoryId3;
@@ -1694,6 +1671,31 @@ namespace SBMS
             }
         }
 
+
+        /// <summary>
+        /// The comment that goes on a document line - the SAME string for Sage and for the
+        /// delivery note, so the paper the driver carries matches the invoice the customer
+        /// gets. It was written out twice here and would have been a third time for the PDF;
+        /// three copies of a five-branch ladder is three chances to drift apart.
+        ///
+        /// A serial line already carries "Serial No: a, b, c", put there at close-off, so it
+        /// must NOT also be prefixed with the first serial as a lot - that names one unit
+        /// twice and reads as if the whole line were that single lot.
+        /// </summary>
+        private static string DocumentLineComment(string comments, string storeCode, string lotNumber)
+        {
+            comments = comments ?? "";
+            bool hasStore = !string.IsNullOrWhiteSpace(storeCode);
+            bool hasLot   = !string.IsNullOrWhiteSpace(lotNumber);
+            bool serialLine = comments.StartsWith("Serial No:", StringComparison.OrdinalIgnoreCase);
+
+            if (serialLine) return hasStore ? "Store: " + storeCode + " : " + comments : comments;
+            if (hasLot && hasStore) return "Store: " + storeCode + " - Lot # " + lotNumber + " : " + comments;
+            if (hasStore) return "Store: " + storeCode + " : " + comments;
+            if (hasLot) return "Lot # " + lotNumber + " : " + comments;
+            return comments;
+        }
+
         protected void lbtnPrintDN_Click(object sender, EventArgs e)
         {
             CreatePDF();
@@ -1939,14 +1941,30 @@ namespace SBMS
                         cell4.BorderColor = new BaseColor(211, 211, 211);
                         table4.AddCell(cell4);
 
-                        cell4 = new PdfPCell(new Phrase((DL.LotNumber ?? "").ToString(), regfont));
+                        // On a serial line the lot field holds only the FIRST serial - it is kept
+                        // so anything expecting a single lot has something to show. Printing it
+                        // here put one of the serials under a "Lot Number" heading, directly above
+                        // a row that already lists them all. Each thing is stated once.
+                        bool dnSerialLine = (DL.Comments ?? "").StartsWith("Serial No:", StringComparison.OrdinalIgnoreCase);
+                        cell4 = new PdfPCell(new Phrase(dnSerialLine ? "" : (DL.LotNumber ?? "").ToString(), regfont));
                         cell4.HorizontalAlignment = 1;
                         cell4.VerticalAlignment = Element.ALIGN_MIDDLE;
                         cell4.BorderColor = new BaseColor(211, 211, 211);
                         table4.AddCell(cell4);
 
-                        cell4 = new PdfPCell(new Phrase(Convert.ToDecimal(ApiUrlCall.NumberToDecimal(DL.Quantity.ToString(), CurrentUser.CompanyDecPlaces)).ToString(), regfont));
-                        //cell4 = new PdfPCell(new Phrase((DL.Quantity ?? 0).ToString("N2"), regfont));
+                        // WHAT IS ACTUALLY GOING, not what was ordered.
+                        //
+                        // This printed DL.Quantity - the ordered qty - while the Sage invoice bills
+                        // ReceiveQty, the picked qty. On a short pick the customer signed a note for
+                        // 3 and received 2, and was invoiced for 2. The serial list is what made it
+                        // visible: three claimed, two serials listed.
+                        //
+                        // Falls back to the ordered qty when nothing is picked yet, so a note printed
+                        // before picking still shows the order rather than a column of zeros.
+                        decimal dnPicked = DL.ReceiveQty ?? 0;
+                        decimal dnQty = dnPicked > 0 ? dnPicked : (DL.Quantity ?? 0);
+                        cell4 = new PdfPCell(new Phrase(
+                            Convert.ToDecimal(ApiUrlCall.NumberToDecimal(dnQty.ToString(), CurrentUser.CompanyDecPlaces)).ToString(), regfont));
                         cell4.HorizontalAlignment = 1;
                         cell4.VerticalAlignment = Element.ALIGN_MIDDLE;
                         cell4.BorderColor = new BaseColor(211, 211, 211);
@@ -1955,6 +1973,25 @@ namespace SBMS
                         cell4 = new PdfPCell(new Phrase("", regfont));
                         cell4.BorderColor = new BaseColor(211, 211, 211);  // RGB values for light gray
                         table4.AddCell(cell4);
+
+                        // The line's comment - on a serial line that is "Serial No: a, b, c",
+                        // the units actually picked. Built by the SAME method that builds the
+                        // Sage payload, so the note the customer signs lists exactly what the
+                        // invoice will show. Spans the row rather than adding a column, so a
+                        // line with no comment costs nothing.
+                        string dnComment = DocumentLineComment(DL.Comments,
+                                                               DL.StoreCode == null ? null : DL.StoreCode.ToString(),
+                                                               DL.LotNumber == null ? null : DL.LotNumber.ToString());
+                        if (!string.IsNullOrWhiteSpace(dnComment))
+                        {
+                            cell4 = new PdfPCell(new Phrase(dnComment, regfont));
+                            cell4.Colspan = 7;
+                            cell4.HorizontalAlignment = 0;
+                            cell4.PaddingLeft = 6f;
+                            cell4.PaddingBottom = 4f;
+                            cell4.BorderColor = new BaseColor(211, 211, 211);
+                            table4.AddCell(cell4);
+                        }
 
                     }
                     doc.Add(table4);

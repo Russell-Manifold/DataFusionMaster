@@ -296,6 +296,17 @@ namespace SBMS
                 long toId = getstoreid(lblToStore.Text);
                 ItemTrans.FromID = fromId;
                 ItemTrans.ToID = toId;
+                // A serial lot holds exactly one unit. Moving that unit is ordinary; moving "5"
+                // of it would put five units on a lot that holds one, and the picking chooser -
+                // which only offers single units - would then never show it again.
+                string serialBlockTrf = SerialGuard.CheckUnitQty(_db, CurrentUser.CoID,
+                                                                 trfitem.ItemID ?? 0, trfitem.ItemCode, trfQty);
+                if (serialBlockTrf != null)
+                {
+                    AlertHelper.ShowSweetAlert(this, serialBlockTrf + " Nothing was transferred.", "error");
+                    return;
+                }
+
                 ItemTrans.Qty = trfQty;
                 ItemTrans.PriceInclusive = trfitem.PriceInclusive;
                 ItemTrans.TransactionDate = DateTime.Now;

@@ -1,4 +1,4 @@
-using iTextSharp.text;
+﻿using iTextSharp.text;
 using iTextSharp.text.pdf;
 using SBMS.Classes;
 using SBMS.Models;
@@ -170,6 +170,7 @@ namespace SBMS
 
         protected void BindGrid ()
         {
+            ApplyLotColumnVisibility();
             long PsID = Convert.ToInt64(lblPSid.Text);
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {
@@ -202,7 +203,12 @@ namespace SBMS
 
                 GridPSLines.DataSource = TempLines;
                 GridPSLines.DataBind();
-                GridPSLines.Columns[6].Visible = false;   // Pick_Qty hidden - auto-filled to full order qty (barcode column removed)
+                // Column 5 = Qty_Left, column 6 = Pick_Qty. Hiding 6 hid the wrong one: Pick_Qty
+                // is what the operator needs to see (and on a serial line it is the number of
+                // serials ticked). Worse, the column is hidden AFTER DataBind, so txtPickQty was
+                // still created but never rendered - it posted back empty, which is why
+                // Convert.ToDecimal(txtPickQty.Text) threw and why the serial count never showed.
+                GridPSLines.Columns[5].Visible = false;   // Qty_Left hidden - Pick_Qty is the one that matters here
             }
         }
 
@@ -224,6 +230,14 @@ namespace SBMS
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {
                 var NewPSLine = _db.PickSlipLines.Where(x => x.LineID == ThisLineID).FirstOrDefault();
+
+                // Resolved ONCE for this line and used throughout: four separate inline copies of
+                // this query had to be kept in step, and each was a round-trip on the same row.
+                long lineItemId = NewPSLine != null ? NewPSLine.SelectionId : 0;
+                bool lineIsSerialItem = lineItemId > 0 && _db.ItemsMasters
+                    .Where(x => x.CompanyID == CurrentUser.CoID && x.ID == lineItemId)
+                    .Select(x => x.IsSerialTracked).FirstOrDefault();
+
                 int FrmStorid = 0;
                 if (NewPSLine.LineType == 0)
                 {
@@ -233,7 +247,13 @@ namespace SBMS
                     if (chkComplete.Checked)
                     {
 
-                        if (DDlotNum.SelectedIndex > 0)
+                        // NOT on a serial line. Its lot dropdown is hidden but still bound, and
+                        // still holds the line's first picked serial - so this asked "how much of
+                        // that ONE serial is on hand?", got 1 (a serial always holds exactly one
+                        // unit, unlike a lot), compared it against a pick of 20 and refused. A
+                        // serial line has to be measured against the item's total in the store,
+                        // which is what the else branch already does.
+                        if (!lineIsSerialItem && DDlotNum.SelectedIndex > 0)
                         {
                             var ItmT = _db.ItemTransactions.Where(x => x.CompanyID == CurrentUser.CoID && x.ItemID == NewPSLine.SelectionId && x.ToID == FrmStorid && x.DocumentID != PsID && x.LotNumber == DDlotNum.SelectedValue);
                             if (ItmT.Any())
@@ -280,7 +300,11 @@ namespace SBMS
                     {
                         if (NewPSLine.IsLotTracked == true)
                         {
-                            if (DDlotNum.SelectedItem == null || DDlotNum.SelectedItem.Value.ToLower().Contains("number") || DDlotNum.Items.Count == 0)
+                            // A serial line's LotNumber holds its first picked serial, and its
+                            // dropdown is hidden but still bound - so this block, which clears
+                            // LotNumber when nothing is selected, would wipe it.
+                            if (!lineIsSerialItem
+                                && (DDlotNum.SelectedItem == null || DDlotNum.SelectedItem.Value.ToLower().Contains("number") || DDlotNum.Items.Count == 0))
                             {
                                 if (DDlotNum.SelectedItem.Value.ToLower().Contains("number"))
                                 {
@@ -314,11 +338,48 @@ namespace SBMS
 
                 NewPSLine.PickQty = pickqty;
 
+                // ── A serial line cannot be completed without its units ────────────────
+                // The lot-required guard below is skipped for serial lines (their lot box is
+                // hidden), so without this a line could be ticked Complete having never opened
+                // the chooser: the outbound then found no serials, posted one lumped movement
+                // with a null lot, and left every serial lot still showing on hand.
+                //
+                // The count must also EQUAL the quantity being picked. The outbound issues one
+                // movement per recorded serial while close-off invoices PickQty, so any
+                // difference is stock that leaves with no document behind it.
+                if (NewPSLine.PickComplete == true && lineIsSerialItem)
+                {
+                    var lineSerialsNow = SerialPicking.GetLineSerials(_db, CurrentUser.CoID,
+                                                                      NewPSLine.PSID, NewPSLine.LineID);
+                    if (lineSerialsNow.Count == 0)
+                    {
+                        chkComplete.Checked = false;
+                        AlertHelper.ShowSweetAlert(this,
+                            NewPSLine.ItemCode + " is serial tracked - use \"Select serials\" to choose "
+                            + "the units for this line before completing it. Nothing was saved.", "error");
+                        return;
+                    }
+                    if (lineSerialsNow.Count != pickqty)
+                    {
+                        chkComplete.Checked = false;
+                        AlertHelper.ShowSweetAlert(this,
+                            lineSerialsNow.Count + " serial(s) are selected for " + NewPSLine.ItemCode
+                            + " but the pick quantity is " + pickqty.ToString("0.##")
+                            + ". They must match - re-open \"Select serials\" or correct the quantity. "
+                            + "Nothing was saved.", "error");
+                        return;
+                    }
+                }
+
                 if (NewPSLine.PickComplete == true)
                 {
                     if (NewPSLine.IsLotTracked == true)
                     {
-                        if (!DDlotNum.SelectedValue.ToLower().ToString().Contains("number")) NewPSLine.LotNumber = DDlotNum.SelectedValue.ToString();
+                        // Not on a serial line: its LotNumber holds the first picked serial and
+                        // the dropdown is hidden but still bound, so this would clobber it.
+                        if (!lineIsSerialItem
+                            && !DDlotNum.SelectedValue.ToLower().ToString().Contains("number"))
+                            NewPSLine.LotNumber = DDlotNum.SelectedValue.ToString();
                     }
                     NewPSLine.PickTime = DateTime.Now;
                     NewPSLine.StoreCodeFrom = DDStore.Text;
@@ -326,7 +387,11 @@ namespace SBMS
                 {
                     if (NewPSLine.IsLotTracked == true)
                     {
-                        if (!DDlotNum.SelectedValue.ToLower().ToString().Contains("number")) NewPSLine.LotNumber = DDlotNum.SelectedValue.ToString();
+                        // Not on a serial line: its LotNumber holds the first picked serial and
+                        // the dropdown is hidden but still bound, so this would clobber it.
+                        if (!lineIsSerialItem
+                            && !DDlotNum.SelectedValue.ToLower().ToString().Contains("number"))
+                            NewPSLine.LotNumber = DDlotNum.SelectedValue.ToString();
                         _db.SaveChanges();
                     }
                     //NewPSLine.LotNumber = null;
@@ -338,6 +403,109 @@ namespace SBMS
                 {
                     #region UpdateItemTransactions - reverse transaction if there is a previous one only
                     // NEED TO REVERSE TRANSACTIONS - NOT DELETE
+                    // ── Serial lines: reverse EVERY unit, not just the first ────────────
+                    // A serial line moved out as one row per unit, but only the first row's id
+                    // is stored on the line. Reversing that alone would put one unit back and
+                    // strand the rest: stock permanently short, and those serials stuck as
+                    // issued and unpickable.
+                    //
+                    // What to reverse comes from the LEDGER, not from the line's current serial
+                    // selection: the operator may have just changed that selection, and what
+                    // has to be undone is what actually went out. Netting the movements for
+                    // this slip and item per serial means an already-reversed unit nets to zero
+                    // and is left alone - no need to track reversals separately.
+                    // ONLY for a serial line. Applying this to an ordinary lot line reversed
+                    // its -20 with a single +1 and skipped the correct full reversal below.
+                    // Resolved from the database, not from the cached _serialItems set, which
+                    // is only loaded on a non-postback and is null here.
+                    long revItemId = NewPSLine.SelectionId;
+                    var serialsToReverse = new List<string>();
+                    if (lineIsSerialItem)
+                    {
+                        // What has to be put back is what actually WENT OUT, which is not the same
+                        // as what the line currently has selected. Re-open the chooser, tick a
+                        // different set, and the units issued under the old set are still out -
+                        // scoping the reversal to the current selection left them stranded as
+                        // issued and unpickable, with the store permanently short.
+                        //
+                        // So: every unit of this item still out on this slip, MINUS the units that
+                        // belong to the slip's other lines. ItemTransaction has no line key, and
+                        // this is what stands in for one - it keeps a 20-unit split line from
+                        // reversing its neighbours' units while still catching its own strays.
+                        var otherLineUnits = SerialPicking.SerialsOnOtherLines(_db, CurrentUser.CoID,
+                                                                              NewPSLine.PSID, NewPSLine.LineID);
+
+                        // Netted, so a unit already put back sums to zero and is left alone -
+                        // un-picking twice cannot return the same unit twice.
+                        serialsToReverse = _db.ItemTransactions
+                            .Where(x => x.CompanyID == CurrentUser.CoID
+                                     && x.DocumentID == NewPSLine.PSID
+                                     && x.ItemID == revItemId
+                                     && x.TransactionType == "PS"
+                                     && x.LotNumber != null && x.LotNumber != "")
+                            .GroupBy(x => x.LotNumber)
+                            .Select(g => new { Serial = g.Key, Net = g.Sum(x => x.Qty) ?? 0 })
+                            .Where(x => x.Net < 0)
+                            .Select(x => x.Serial)
+                            .ToList()
+                            .Where(x => !otherLineUnits.Contains(x, StringComparer.OrdinalIgnoreCase))
+                            .ToList();
+                    }
+
+                    if (serialsToReverse.Count > 0)
+                    {
+                        NewPSLine.ItemTransLineID = null;
+                        foreach (string serial in serialsToReverse)
+                        {
+                            // The outbound movement for this unit on this picking slip.
+                            var outTrn = _db.ItemTransactions
+                                .Where(x => x.CompanyID == CurrentUser.CoID
+                                         && x.DocumentID == NewPSLine.PSID
+                                         && x.ItemID == NewPSLine.SelectionId
+                                         && x.LotNumber == serial
+                                         && x.Qty < 0)
+                                .OrderByDescending(x => x.TrnID).FirstOrDefault();
+                            if (outTrn == null) continue;
+
+                            decimal backVal;
+                            _db.ItemTransactions.Add(new ItemTransaction
+                            {
+                                CompanyID                 = CurrentUser.CoID,
+                                DocumentID                = outTrn.DocumentID,
+                                TransactionType           = "PS",
+                                ItemID                    = outTrn.ItemID,
+                                ItemCode                  = outTrn.ItemCode ?? "",
+                                ItemDescription           = outTrn.ItemDescription ?? "",
+                                Unit                      = outTrn.Unit,
+                                FromID                    = 0,
+                                ToID                      = outTrn.ToID ?? FrmStorid,
+                                Qty                       = 1,
+                                DocumentType              = 10,
+                                PriceExclusive            = outTrn.PriceExclusive,
+                                TotalUnitPriceExclInclAdd = outTrn.TotalUnitPriceExclInclAdd,
+                                TotalLineValExcl          = outTrn.TotalUnitPriceExclInclAdd,
+                                TransactionDate           = DateTime.Now,
+                                ByRoleID                  = CurrentUser.RoleID,
+                                AdditionalCosts           = 0,
+                                TransactionReference      = lblDocNum.Text + " Reversal",
+                                LotNumber                 = serial,
+                                ExchRate                  = 1,
+                                // Back in at its original cost, re-blending the store average.
+                                StoreAvgCost = StoreCosting.ComputeMovement(_db, CurrentUser.CoID,
+                                                   (long)outTrn.ItemID, outTrn.ToID ?? FrmStorid,
+                                                   1, outTrn.TotalUnitPriceExclInclAdd ?? 0, out backVal)
+                            });
+                            _db.SaveChanges();
+                        }
+
+                        // Deliberately NOT clearing PickSlipLineSerials here. The outbound
+                        // further down reads it to decide what to issue, and wiping it at this
+                        // point left that read empty - so every serial pick fell back to a
+                        // single lumped movement and the invoice serial note came out blank.
+                    }
+                    // NOT an else-if: a line can carry a lumped movement from before it was
+                    // serialised. Skipping this because serials were reversed would leave that
+                    // older movement standing and the stock double-deducted on the next pick.
                     if (NewPSLine.ItemTransLineID != null)
                     {
                         long TrnLineid = 0;
@@ -449,10 +617,60 @@ namespace SBMS
                             ItemTrans.LotNumber = NewPSLine.LotNumber;
                         }
                         ItemTrans.ExchRate = 1;
-                        _db.ItemTransactions.Add(ItemTrans);
-                        _db.SaveChanges();
-                        NewPSLine.ItemTransLineID = ItemTrans.TrnID;
-                        _db.SaveChanges();
+
+                        // ── Serial lines: one movement per unit ─────────────────────────────
+                        // A serial is a lot holding exactly one unit, so a single row of -20
+                        // against the first serial would take twenty off a lot that holds one
+                        // and leave the other nineteen showing as still on hand. Twenty rows of
+                        // -1 deplete each unit properly. Value is unchanged: an outbound leaves
+                        // at the store average, so twenty at that average total the same as one.
+                        var pickedSerials = SerialPicking.GetLineSerials(_db, CurrentUser.CoID,
+                                                                         NewPSLine.PSID, NewPSLine.LineID);
+                        if (pickedSerials.Count > 0)
+                        {
+                            long firstTrn = 0;
+                            foreach (string serial in pickedSerials)
+                            {
+                                ItemTransaction unitTrn = new ItemTransaction
+                                {
+                                    CompanyID                  = ItemTrans.CompanyID,
+                                    DocumentID                 = ItemTrans.DocumentID,
+                                    TransactionType            = ItemTrans.TransactionType,
+                                    ItemID                     = ItemTrans.ItemID,
+                                    ItemCode                   = ItemTrans.ItemCode,
+                                    ItemDescription            = ItemTrans.ItemDescription,
+                                    Unit                       = ItemTrans.Unit,
+                                    FromID                     = ItemTrans.FromID,
+                                    ToID                       = ItemTrans.ToID,
+                                    Qty                        = -1,
+                                    DocumentType               = ItemTrans.DocumentType,
+                                    PriceExclusive             = ItemTrans.PriceExclusive,
+                                    TotalUnitPriceExclInclAdd  = ItemTrans.TotalUnitPriceExclInclAdd,
+                                    TransactionDate            = DateTime.Now,
+                                    ByRoleID                   = ItemTrans.ByRoleID,
+                                    AdditionalCosts            = 0,
+                                    TotalLineValExcl           = ItemTrans.TotalUnitPriceExclInclAdd * -1,
+                                    StoreAvgCost               = ItemTrans.StoreAvgCost,
+                                    TransactionReference       = ItemTrans.TransactionReference,
+                                    LotNumber                  = serial,
+                                    ExchRate                   = 1
+                                };
+                                _db.ItemTransactions.Add(unitTrn);
+                                _db.SaveChanges();
+                                if (firstTrn == 0) firstTrn = unitTrn.TrnID;
+                            }
+                            // Kept for the existing reversal path; un-picking a serial line walks
+                            // the line's serials rather than this single id.
+                            NewPSLine.ItemTransLineID = firstTrn;
+                            _db.SaveChanges();
+                        }
+                        else
+                        {
+                            _db.ItemTransactions.Add(ItemTrans);
+                            _db.SaveChanges();
+                            NewPSLine.ItemTransLineID = ItemTrans.TrnID;
+                            _db.SaveChanges();
+                        }
                     }
                 }
             }
@@ -545,8 +763,75 @@ namespace SBMS
             Button25_ModalPopupExtender.Show();
         }
 
+        // Items on this slip that are serial tracked. Loaded once per bind rather than a
+        // query per row.
+        private HashSet<long> _serialItems;
+
+        private void LoadSerialItems()
+        {
+            _serialItems = new HashSet<long>();
+            using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+            {
+                foreach (long id in _db.ItemsMasters
+                                       .Where(x => x.CompanyID == CurrentUser.CoID && x.IsSerialTracked)
+                                       .Select(x => x.ID).ToList())
+                {
+                    _serialItems.Add(id);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Blanks the Lot Number heading when every line on the slip is serial tracked - a
+        /// serial is finer than a lot, so the column has nothing to say.
+        ///
+        /// The column itself STAYS. Setting Visible = false on a GridView column stops its
+        /// controls being created at all, and DDlotNum is read unguarded in nine places on
+        /// this page - the save and complete handlers would throw the moment anyone used a
+        /// serial slip. The per-row controls are hidden instead, which leaves the cell empty
+        /// and the control present.
+        /// </summary>
+        // A non-empty marker, so the blanked column can still be found next time without
+        // matching genuinely header-less columns.
+        private const string LotColumnBlanked = " ";
+
+        private void ApplyLotColumnVisibility()
+        {
+            if (_serialItems == null) LoadSerialItems();
+
+            int lotColumn = -1;
+            for (int i = 0; i < GridPSLines.Columns.Count; i++)
+            {
+                string h = GridPSLines.Columns[i].HeaderText;
+                // Matched on the real header only. A blank-header fallback also matched
+                // column 0 (the header-less SelectionID field), and a later mixed bind then
+                // wrote "Lot Number" onto that column.
+                if (string.Equals(h, "Lot Number", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(h, LotColumnBlanked, StringComparison.Ordinal))
+                {
+                    lotColumn = i;
+                    break;
+                }
+            }
+            if (lotColumn < 0) return;
+
+            bool anyLotLine = false;
+            using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+            {
+                long psid = Convert.ToInt64(lblPSid.Text);
+                foreach (long selId in _db.PickSlipLines
+                                          .Where(x => x.CompanyID == CurrentUser.CoID && x.PSID == psid)
+                                          .Select(x => x.SelectionId).ToList())
+                {
+                    if (!_serialItems.Contains(selId)) { anyLotLine = true; break; }
+                }
+            }
+            GridPSLines.Columns[lotColumn].HeaderText = anyLotLine ? "Lot Number" : LotColumnBlanked;
+        }
+
         protected void GridPSLines_RowDataBound(object sender, GridViewRowEventArgs e)
         {
+            if (_serialItems == null) LoadSerialItems();
             long PsID = Convert.ToInt64(lblPSid.Text);
             if (e.Row.RowType == DataControlRowType.DataRow)
             {
@@ -555,6 +840,58 @@ namespace SBMS
 
                 long itemID = Convert.ToInt64(e.Row.Cells[0].Text.ToString());
                 var item = (PickSlipLine)e.Row.DataItem;
+
+                // Serial lines are picked by choosing units, not by picking a lot from a list.
+                // The "+" that opens the chooser is far too subtle to be the only way in, so
+                // for these lines it becomes a labelled button and the lot dropdown - which
+                // means nothing here - is hidden.
+                if (_serialItems != null && _serialItems.Contains(itemID))
+                {
+                    // A serial is deeper than a lot, so a lot number means nothing on this line.
+                    if (ddLt != null) ddLt.Visible = false;
+                    Label lblLotHidden = (Label)e.Row.FindControl("lblLotNum");
+                    if (lblLotHidden != null) lblLotHidden.Visible = false;
+                    if (lbtnLotNumAdd != null)
+                    {
+                        // Same styling as Save Edits below the grid, so it reads as a normal
+                        // button rather than something bolted on. The column it lives in is
+                        // sized to 0em for the old "+" icon, so it must not wrap.
+                        lbtnLotNumAdd.Text = " Select serials";
+                        lbtnLotNumAdd.CssClass = "icon fa-barcode buttonSage";
+
+                        // The markup carries an INLINE style for the "+" icon this button
+                        // normally is - font-size:.8em and margin:-1em. Inline beats the class,
+                        // so buttonSage was drawn at 80% with a NEGATIVE margin: the glyph sat on
+                        // top of the text and the padding collapsed. Clear it before styling.
+                        lbtnLotNumAdd.Attributes.Remove("style");
+                        lbtnLotNumAdd.Style["white-space"] = "nowrap";
+                        lbtnLotNumAdd.Style["margin"] = "0 .4em";
+                        lbtnLotNumAdd.Style["padding"] = ".35em .8em";
+                        lbtnLotNumAdd.Style["color"] = "#fff";
+
+                        // The column is sized 0em for the icon it usually holds.
+                        if (e.Row.Cells.Count > 9)
+                        {
+                            e.Row.Cells[9].Style["white-space"] = "nowrap";
+                            e.Row.Cells[9].Style["width"] = "auto";
+                            e.Row.Cells[9].Style["text-align"] = "right";
+                        }
+                        lbtnLotNumAdd.ToolTip = "Choose the "
+                            + ApiUrlCall.NumberToDecimal((item.Quantity ?? 0).ToString(), CurrentUser.CompanyDecPlaces)
+                            + " serial number(s) for this line";
+
+                        // A line ticked Done has already issued its units, and re-opening the
+                        // chooser used to set PickComplete back to false WITHOUT reversing
+                        // anything - stock gone, nothing invoiced, balance out again on a back
+                        // order. That is blocked in lbtnLotNumAdd_Click, which SAYS so.
+                        //
+                        // Deliberately NOT disabled here: a disabled LinkButton renders as plain
+                        // text with no postback, so the button just went dead with no message and
+                        // read as broken. A refusal the operator can see beats a silent one.
+                        if (item.PickComplete == true)
+                            lbtnLotNumAdd.ToolTip = "Un-tick Done before changing the serials for this line.";
+                    }
+                }
 
                 // Read-only outstanding balance on the linked SO line (blank for lot-split lines).
                 Label lblQtyLeft = (Label)e.Row.FindControl("lblQtyLeft");
@@ -673,6 +1010,7 @@ namespace SBMS
                     chkC.Enabled = false;
                     DDStore.Enabled = false;
                     DDlotNum.Enabled = false;
+
                     lbtnLotNumAdd.Enabled = false;
                 }  
             }
@@ -750,6 +1088,20 @@ namespace SBMS
                 long FirstLineID = 0;
                 // update SO lines from Picking Slip
                 var PSLines = _db.PickSlipLines.Where(x => x.PSID == slipid).OrderBy(x=>x.LineID).ToList();
+
+                // How much of each order line is still allowed to be invoiced on this run.
+                //
+                // A serial order line is split into batches of 20 when the slip is created, and the
+                // split parts carry SBCALineID = 0 - they find their parent through FirstLineID and
+                // clamp themselves to its QtyLeft. But the parent is processed FIRST and sets its own
+                // QtyLeft to 0 on any close that is not a back order, so every later part clamped to
+                // zero: 50 units left the building and 20 were invoiced.
+                //
+                // Tracking the allowance here, seeded from the balance BEFORE the parent is touched
+                // and decremented as each part takes its share, keeps the original protection (a
+                // re-closed slip cannot re-invoice a banked quantity) without the parts fighting
+                // over a value the parent has already overwritten.
+                var lineAllowance = new Dictionary<long, decimal>();
                 
                 foreach (var PsL in PSLines)
                 {
@@ -760,6 +1112,13 @@ namespace SBMS
                     {
                         pickQty = (decimal)(PsL.PickQty ?? PsL.Quantity);
                     }
+
+                    // Serials picked against THIS line. They travel on the document line comment,
+                    // which is what reaches Sage as the invoice line's Comments - so the customer
+                    // can count the serials on a line against that line's quantity.
+                    string serialNote = "";
+                    var lineSerials = SerialPicking.GetLineSerials(_db, CurrentUser.CoID, PsL.PSID, PsL.LineID);
+                    if (lineSerials.Count > 0) serialNote = SerialPicking.SerialNote(lineSerials);
                     if (PsL.SBCALineID != 0)
                     {
                         var SOLine = _db.DocLines.Where(x => x.CompanyID == CurrentUser.CoID && x.DocID == Docid && x.SBCALineID == PsL.SBCALineID).FirstOrDefault();
@@ -769,10 +1128,20 @@ namespace SBMS
                             // QtyLeft is the running outstanding balance (mirrors the receiving flow):
                             // null on the first cycle = full ordered qty, then it counts down by what's picked.
                             decimal prevLeft = SOLine.QtyLeft ?? (decimal)SOLine.Quantity;
+
+                            // Seeded once per order line, from the balance as it stands before this
+                            // run touches it. Split parts of the same line read and decrement it.
+                            if (!lineAllowance.ContainsKey(FirstLineID)) lineAllowance[FirstLineID] = prevLeft;
+
                             // Clamp to the outstanding balance so re-closing the same slip after a back
                             // order can't re-invoice qty that was already banked in an earlier cycle.
-                            if (pickQty > prevLeft) pickQty = prevLeft;
-                            decimal outstanding = prevLeft - pickQty;
+                            if (pickQty > lineAllowance[FirstLineID]) pickQty = lineAllowance[FirstLineID];
+                            lineAllowance[FirstLineID] -= pickQty;
+
+                            // What is still owing after every part of this line has taken its share.
+                            // The parts are processed after this one, so their quantities are added
+                            // to ReceiveQty and taken off QtyLeft as they go.
+                            decimal outstanding = lineAllowance[FirstLineID];
                             if (outstanding < 0) outstanding = 0;
                             // QtyLeft = outstanding back-order qty (0 once fully picked, or when the balance is cancelled).
                             SOLine.QtyLeft = keepBackOrder ? outstanding : 0;
@@ -780,6 +1149,10 @@ namespace SBMS
                             SOLine.ReceiveComplete = (SOLine.QtyLeft == 0);
                             SOLine.StoreCode = PsL.StoreCodeFrom;
                             SOLine.LotNumber = PsL.LotNumber;
+                            if (serialNote.Length > 0)
+                            {
+                                SOLine.Comments = SerialPicking.CapComment(serialNote, PsL.Comments);
+                            }
                             SOLine.Exclusive = SOLine.UnitPriceExclusive * pickQty;
                             SOLine.Discount = (SOLine.UnitPriceExclusive * pickQty) * SOLine.DiscountPercentage;
                             // VAT is charged on the discounted-NET amount, not the gross line value.
@@ -801,7 +1174,9 @@ namespace SBMS
                         DLn.ItemDescription = PsL.ItemDescription;
                         DLn.Quantity = 0;
                         DLn.ReceiveQty = pickQty;
-                        DLn.Comments = PsL.Comments;
+                        DLn.Comments = serialNote.Length > 0
+                            ? SerialPicking.CapComment(serialNote, PsL.Comments)
+                            : PsL.Comments;
                         DLn.QtyLeft = 0;
                         DLn.ReceiveQty = pickQty;
                         DLn.ToReceive = true;
@@ -811,10 +1186,29 @@ namespace SBMS
  
                         // Get values from first line of the same item
                         var FirstSOLine = _db.DocLines.Where(x => x.CompanyID == CurrentUser.CoID && x.DocID == Docid && x.SBCALineID == FirstLineID).FirstOrDefault();
-                        // Clamp to the parent line's outstanding balance so re-closing the same slip
-                        // after a back order can't re-invoice qty already banked in an earlier cycle.
-                        decimal prevLeftSplit = FirstSOLine != null ? (FirstSOLine.QtyLeft ?? (decimal)FirstSOLine.Quantity) : pickQty;
-                        if (pickQty > prevLeftSplit) pickQty = prevLeftSplit;
+
+                        // Take this part's share out of the line's remaining allowance. Reading the
+                        // parent's QtyLeft here instead clamped every part to zero, because the
+                        // parent had already been closed off a few lines above.
+                        decimal allowLeft;
+                        if (!lineAllowance.TryGetValue(FirstLineID, out allowLeft))
+                        {
+                            allowLeft = FirstSOLine != null ? (FirstSOLine.QtyLeft ?? (decimal)FirstSOLine.Quantity) : pickQty;
+                            lineAllowance[FirstLineID] = allowLeft;
+                        }
+                        if (pickQty > allowLeft) pickQty = allowLeft;
+                        lineAllowance[FirstLineID] -= pickQty;
+
+                        // The parent carries the order line's balance, so what this part takes has
+                        // to come off it - otherwise the balance still shows units that have gone.
+                        if (FirstSOLine != null && pickQty > 0)
+                        {
+                            decimal parentLeft = FirstSOLine.QtyLeft ?? 0;
+                            parentLeft -= pickQty;
+                            FirstSOLine.QtyLeft = parentLeft < 0 ? 0 : parentLeft;
+                            FirstSOLine.ReceiveComplete = (FirstSOLine.QtyLeft == 0);
+                        }
+
                         DLn.ReceiveQty = pickQty;
                         DLn.UnitPriceExclusive = FirstSOLine.UnitPriceExclusive;
                         DLn.UnitPriceInclusive = FirstSOLine.UnitPriceInclusive;
@@ -840,14 +1234,8 @@ namespace SBMS
                         DLn.localCurrLineVal = DLn.Exclusive - DLn.Discount;
                         _db.DocLines.Add(DLn);
 
-                        // Lot-split line: draw the picked qty off the parent SO line's outstanding balance.
-                        if (FirstSOLine != null)
-                        {
-                            decimal outstandingSplit = prevLeftSplit - pickQty;
-                            if (outstandingSplit < 0) outstandingSplit = 0;
-                            FirstSOLine.QtyLeft = keepBackOrder ? outstandingSplit : 0;
-                            FirstSOLine.ReceiveComplete = (FirstSOLine.QtyLeft == 0);
-                        }
+                        // The parent's balance is decremented where this part's quantity is
+                        // decided, above - doing it again here would take the same units off twice.
                     }
                 }
                 _db.SaveChanges();
@@ -1455,7 +1843,7 @@ namespace SBMS
             decimal pickqty = 0, OrdQty = 0;
             try
             {
-                pickqty = Convert.ToDecimal(txtPickQty.Text);
+                decimal.TryParse(txtPickQty.Text, out pickqty);
             }
             catch { }
             if (chkComplete.Checked && pickqty == 0)
@@ -1595,6 +1983,27 @@ namespace SBMS
             GridViewRow row = (GridViewRow)lbtnLotNumAdd.NamingContainer;
             //// get item linked stores & populate ddPopWHses
             lblSlipLine.Text = lbtnLotNumAdd.CommandArgument;
+
+            // Belt to the disabled button above. A completed line's units are already out of
+            // stock; opening the chooser here is what silently un-completed it.
+            long openLineId = 0;
+            long.TryParse(lbtnLotNumAdd.CommandArgument, out openLineId);
+            if (openLineId > 0)
+            {
+                using (SBMSEntities _dbOpen = new SBMSEntities(Config.GetConnectionString()))
+                {
+                    bool lineDone = _dbOpen.PickSlipLines
+                        .Where(x => x.LineID == openLineId).Select(x => x.PickComplete).FirstOrDefault() == true;
+                    if (lineDone)
+                    {
+                        AlertHelper.ShowSweetAlert(this,
+                            "This line is already ticked Done and its units have been issued. "
+                            + "Un-tick Done first, then choose the serials again.", "warning");
+                        return;
+                    }
+                }
+            }
+
             lblLineQty.Text = row.Cells[4].Text.ToString();
             long ItmID = Convert.ToInt64(row.Cells[0].Text);
             loadpopLotNumbers(ItmID);  
@@ -1604,6 +2013,20 @@ namespace SBMS
         protected void LbtnLotAddOK_Click(object sender, EventArgs e)
         {
            decimal sellQty = 0; long firstrowid = 0;
+
+            // Serials are picked by ticking whole units, so a tick IS a quantity of 1. Writing it
+            // back into the same textbox means everything below - the total check and the line
+            // split - works on serials exactly as it already does on lots.
+            if (SerialPickMode)
+            {
+                foreach (GridViewRow grv in GridLotNums.Rows)
+                {
+                    CheckBox chkPick = (CheckBox)grv.FindControl("chkPickSerial");
+                    TextBox txtQ = (TextBox)grv.FindControl("txtUseQty");
+                    if (chkPick != null && txtQ != null) txtQ.Text = chkPick.Checked ? "1" : "";
+                }
+            }
+
             foreach (GridViewRow grv in GridLotNums.Rows)
             {
                 TextBox txtUseQty = (TextBox)grv.FindControl("txtUseQty");
@@ -1613,15 +2036,136 @@ namespace SBMS
                 }
             }
 
-            if (sellQty != Convert.ToDecimal(lblLineQty.Text))
+            // PART PICKS ARE ALLOWED, for lots and for serials alike.
+            //
+            // Less than the line calls for is a short pick: the shortfall goes on back order
+            // through the close-off, which works off the SALES ORDER line's outstanding
+            // balance rather than anything recorded on the slip. This modal used to demand
+            // the exact quantity, which meant a lot line could only be short picked from the
+            // grid (type a lower Pick_Qty, choose the lot, tick Done) and never once the
+            // stock had to come from more than one lot.
+            //
+            // More than the line calls for is still refused - that is stock leaving with no
+            // order behind it - and so is selecting nothing at all.
+            decimal reqLineQty = Convert.ToDecimal(lblLineQty.Text);
+            if (sellQty <= 0)
             {
-                AlertHelper.ShowSweetAlert(this, "Total qty selected does not match the required quantity.Unable to save", "error");
+                AlertHelper.ShowSweetAlert(this,
+                    SerialPickMode
+                        ? "Tick at least one serial for this line. Nothing was saved."
+                        : "Enter a quantity against at least one lot. Nothing was saved.",
+                    "error");
+                return;
+            }
+            if (sellQty > reqLineQty)
+            {
+                AlertHelper.ShowSweetAlert(this,
+                    "This line is for " + lblLineQty.Text.Trim() + " - " + sellQty.ToString("0.##")
+                    + (SerialPickMode ? " serial(s) ticked. Untick the extras." : " selected. Reduce the quantities.")
+                    + " Nothing was saved.", "error");
                 return;
             } 
+
+            // Expiry is a warning, not a block: the operator can have a good reason to ship
+            // short-dated or expired stock, but they must not be able to do it unknowingly.
+            var expiredPicked = new List<string>();
+            foreach (GridViewRow grv in GridLotNums.Rows)
+            {
+                TextBox txtQ = (TextBox)grv.FindControl("txtUseQty");
+                Label lblExp = (Label)grv.FindControl("lblExpires");
+                if (txtQ == null || lblExp == null) continue;
+                decimal q;
+                if (!decimal.TryParse(txtQ.Text, out q) || q <= 0) continue;
+                if ((lblExp.Text ?? "").IndexOf("expired", StringComparison.OrdinalIgnoreCase) >= 0)
+                    expiredPicked.Add(grv.Cells[1].Text.Trim());
+            }
 
             long LineIDD = Convert.ToInt64(lblSlipLine.Text);
             decimal UseQty = 0;
             decimal reqqty = Convert.ToDecimal(lblLineQty.Text);
+
+            // ── Serial items ────────────────────────────────────────────────────────────
+            // The line was already split to at most 20 units when the picking slip was
+            // created, so the serials are recorded AGAINST this line - it is not split
+            // again. One line, its quantity, and the units that satisfied it.
+            if (SerialPickMode)
+            {
+                // ONE pass over the grid: what was ticked, and which store each unit is in.
+                // Cells are HTML-encoded by the BoundField, so a serial containing & or < would
+                // otherwise be stored and later matched in its encoded form.
+                var picked = new List<string>();
+                var pickedStores = new List<string>();
+                foreach (GridViewRow grv in GridLotNums.Rows)
+                {
+                    if (grv.RowType != DataControlRowType.DataRow) continue;
+                    CheckBox chkPick = (CheckBox)grv.FindControl("chkPickSerial");
+                    if (chkPick == null || !chkPick.Checked) continue;
+
+                    picked.Add(Server.HtmlDecode(grv.Cells[1].Text).Trim());
+                    string st = Server.HtmlDecode(grv.Cells[0].Text).Trim();
+                    if (!pickedStores.Contains(st)) pickedStores.Add(st);
+                }
+
+                // EVERY check happens before anything is written. SetLineSerials writes with raw
+                // SQL, which commits immediately and outside the change tracker - so a guard that
+                // runs after it cannot honour its own "Nothing was saved", and the line's previous
+                // selection is destroyed by the DELETE regardless.
+                //
+                // One line issues from ONE store: ticking across two would book every unit out of
+                // whichever was found first, leaving the other store showing its unit on hand.
+                if (pickedStores.Count > 1)
+                {
+                    AlertHelper.ShowSweetAlert(this,
+                        "The serials ticked are in different stores (" + string.Join(", ", pickedStores)
+                        + "). Pick from one store per line. Nothing was saved.", "error");
+                    return;
+                }
+
+                using (SBMSEntities _dbS = new SBMSEntities(Config.GetConnectionString()))
+                {
+                    var pslS = _dbS.PickSlipLines.FirstOrDefault(x => x.LineID == LineIDD);
+                    if (pslS == null)
+                    {
+                        AlertHelper.ShowSweetAlert(this, "Picking slip line not found, please refresh.", "error");
+                        return;
+                    }
+
+                    // A serial already picked onto another line of this slip would mean the same
+                    // physical unit despatched twice. The unique index stops it at the database;
+                    // this stops it with a message the operator can act on.
+                    var already = SerialPicking.PickedElsewhere(_dbS, CurrentUser.CoID, pslS.PSID, LineIDD, picked);
+                    if (already.Count > 0)
+                    {
+                        AlertHelper.ShowSweetAlert(this,
+                            "Already picked on another line of this slip: " + string.Join(", ", already)
+                            + ". Nothing was saved.", "error");
+                        return;
+                    }
+
+                    // Everything above passed, so it is safe to write.
+                    SerialPicking.SetLineSerials(_dbS, CurrentUser.CoID, pslS.PSID, LineIDD, picked, CurrentUser.RoleID);
+
+                    if (pickedStores.Count == 1) pslS.StoreCodeFrom = pickedStores[0];
+                    pslS.PickQty       = picked.Count;
+                    pslS.PickTime      = DateTime.Now;
+                    pslS.PickComplete  = false;
+                    // The line carries its serials in the child table; LotNumber holds the first
+                    // so anything that still reads a single lot has something sensible to show.
+                    pslS.LotNumber     = picked.Count > 0 ? picked[0] : null;
+                    _dbS.SaveChanges();
+                }
+
+                BindGrid();
+                if (expiredPicked.Count > 0)
+                {
+                    AlertHelper.ShowSweetAlert(this,
+                        "Picked, but this includes stock that has already expired: "
+                        + string.Join(", ", expiredPicked)
+                        + ". Check before it is despatched.", "warning");
+                }
+                return;
+            }
+
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {
                 var Psl = _db.PickSlipLines.Where(x => x.LineID == LineIDD).FirstOrDefault();
@@ -1684,6 +2228,14 @@ namespace SBMS
                 }
                 _db.SaveChanges();
                 BindGrid();
+            }
+
+            if (expiredPicked.Count > 0)
+            {
+                AlertHelper.ShowSweetAlert(this,
+                    "Picked, but this includes stock that has already expired: "
+                    + string.Join(", ", expiredPicked)
+                    + ". Check before it is despatched.", "warning");
             }
         }
 
@@ -1922,12 +2474,164 @@ namespace SBMS
             }
         }
 
+       /// <summary>
+       /// Fills the lot/serial chooser for one picking-slip line.
+       ///
+       /// Rows come back FEFO - earliest expiry first, undated last - so the stock that has to
+       /// move first is the stock at the top of the list. Serial items pick whole units, so the
+       /// quantity box is swapped for a tick and a scan box appears above the grid.
+       /// </summary>
        private void loadpopLotNumbers(long itemid)
         {
-            
+            // Label.Text round-trips in ViewState, so without this the previous line's prompt -
+            // including its required count, or a "cannot be picked as serials" error - is still
+            // on screen for the line just opened.
+            lblSerialNeed.Text = "";
+
             var LotNums = _ActiveLotNums.Where(x => x.ItemId == itemid && x.AllowPicking == true).ToList();
-            GridLotNums.DataSource = LotNums.ToList();
+
+            // Expiry lives on LotTrackingMaster, not on the stored procedure result, so it is
+            // stitched on here for display and for the FEFO sort.
+            var expiry = new Dictionary<string, DateTime?>(StringComparer.OrdinalIgnoreCase);
+            bool isSerial = false;
+            using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+            {
+                foreach (var l in _db.LotTrackingMasters
+                                    .Where(x => x.CompanyID == CurrentUser.CoID && x.ItemId == itemid)
+                                    .Select(x => new { x.LotNumber, x.UseByDate }).ToList())
+                {
+                    if (l.LotNumber != null) expiry[l.LotNumber] = l.UseByDate;
+                }
+
+                // Item driven: an item that holds serialised stock keeps behaving like one
+                // whether or not the company-level module is currently switched on.
+                isSerial = _db.ItemsMasters
+                    .Where(x => x.CompanyID == CurrentUser.CoID && x.ID == itemid)
+                    .Select(x => x.IsSerialTracked).FirstOrDefault();
+            }
+
+            // Serial mode picks whole units, so only quantity-1 rows belong here. An item can
+            // still hold stock received BEFORE it was flagged serial - a lot of 10 under one
+            // number - and ticking that would issue ten units as though it were one.
+            if (isSerial)
+            {
+                int before = LotNums.Count;
+                LotNums = LotNums.Where(x => x.QtyHandToStore == 1).ToList();
+                if (LotNums.Count == 0 && before > 0)
+                {
+                    // Stock exists but none of it is single units - typically received before
+                    // the item was flagged serial. Silence here just looks broken.
+                    lblSerialNeed.Text = "This item has stock, but none of it is held as single "
+                        + "serialised units - it was received before serial tracking was switched on. "
+                        + "It cannot be picked as serials.";
+                }
+            }
+
+            var rows = LotNums.Select(x => new LotPickRow
+            {
+                StoreCode       = x.StoreCode,
+                LotNumber       = x.LotNumber,
+                QtyHandToStore  = x.QtyHandToStore,
+                UseByDate       = (x.LotNumber != null && expiry.ContainsKey(x.LotNumber)) ? expiry[x.LotNumber] : null
+            })
+            // FEFO: dated stock first, oldest first; undated last so it never jumps the queue.
+            .OrderBy(x => x.UseByDate.HasValue ? 0 : 1)
+            .ThenBy(x => x.UseByDate ?? DateTime.MaxValue)
+            .ThenBy(x => x.LotNumber)
+            .ToList();
+
+            SerialPickMode = isSerial;
+            pnlSerialScan.Visible = isSerial;
+            lblLotModalHead.Text = isSerial
+                ? "Select Serial Numbers For This Line"
+                : "Fulfill Line Item With Multiple Lot Numbers";
+
+            // The rows ARE serials here, so the column should say so - located by its current
+            // header rather than by index, since the two headers alternate.
+            for (int i = 0; i < GridLotNums.Columns.Count; i++)
+            {
+                string h = GridLotNums.Columns[i].HeaderText;
+                if (string.Equals(h, "Lot Number", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(h, "Serial", StringComparison.OrdinalIgnoreCase))
+                {
+                    GridLotNums.Columns[i].HeaderText = isSerial ? "Serial" : "Lot Number";
+                    break;
+                }
+            }
+            if (isSerial && lblSerialNeed.Text.Length == 0)
+            {
+                // Only when the filter above has not already explained why the list is empty.
+                lblSerialNeed.Text = "Tick up to " + lblLineQty.Text.Trim()
+                                   + " serial(s), earliest expiry first. Fewer is a part pick - "
+                                   + "the balance goes on back order.";
+
+            }
+
+            GridLotNums.DataSource = rows;
             GridLotNums.DataBind();
+        }
+
+        /// <summary>Row shown in the lot/serial chooser. Carries the expiry the proc does not return.</summary>
+        public class LotPickRow
+        {
+            public string StoreCode { get; set; }
+            public string LotNumber { get; set; }
+            public decimal QtyHandToStore { get; set; }
+            public Nullable<DateTime> UseByDate { get; set; }
+        }
+
+        // Whether the open chooser is picking serials (tick, qty always 1) or lots (type a qty).
+        private bool SerialPickMode
+        {
+            get { return ViewState["SerialPickMode"] != null && (bool)ViewState["SerialPickMode"]; }
+            set { ViewState["SerialPickMode"] = value; }
+        }
+
+        /// <summary>
+        /// Shows a tick instead of a quantity box for serials, and flags expired / short-dated
+        /// rows. Expiry is a WARNING, never a block - the operator decides.
+        /// </summary>
+        protected void GridLotNums_RowDataBound(object sender, GridViewRowEventArgs e)
+        {
+            if (e.Row.RowType != DataControlRowType.DataRow) return;
+
+            var chk = e.Row.FindControl("chkPickSerial") as CheckBox;
+            var qty = e.Row.FindControl("txtUseQty") as TextBox;
+            if (chk != null) chk.Visible = SerialPickMode;
+            if (qty != null)
+            {
+                // A serial is one unit, so the quantity is not a decision - but leaving the
+                // cell blank reads as missing. Show the 1 and lock it; the tick still drives
+                // what is picked, and OK writes that same 1 back before validating.
+                if (SerialPickMode)
+                {
+                    qty.Text = "1";
+                    qty.ReadOnly = true;
+                    qty.Width = System.Web.UI.WebControls.Unit.Pixel(34);
+                    qty.Style.Add("background", "#f2f5f7");
+                    qty.Style.Add("color", "#8a99a6");
+                }
+                else
+                {
+                    qty.ReadOnly = false;
+                }
+            }
+
+            var row = e.Row.DataItem as LotPickRow;
+            if (row == null || !row.UseByDate.HasValue) return;
+
+            DateTime due = row.UseByDate.Value.Date;
+            var lbl = e.Row.FindControl("lblExpires") as Label;
+            if (due < DateTime.Today)
+            {
+                e.Row.BackColor = System.Drawing.Color.MistyRose;
+                if (lbl != null) { lbl.ForeColor = System.Drawing.Color.Firebrick; lbl.Font.Bold = true; lbl.Text += " (expired)"; }
+            }
+            else if (due <= DateTime.Today.AddDays(30))
+            {
+                e.Row.BackColor = System.Drawing.Color.LightGoldenrodYellow;
+                if (lbl != null) { lbl.ForeColor = System.Drawing.Color.DarkGoldenrod; lbl.Font.Bold = true; }
+            }
         }
 
         protected void lbtnAutoCreate_Click(object sender, EventArgs e)
@@ -2475,12 +3179,16 @@ namespace SBMS
                         PsL.LineType = Ln.LineType;
                         PsL.CompanyID = CurrentUser.CoID;
                         PsL.IsLotTracked = false;
+                        bool thisItemIsSerial = false;
                         var ThisItem = _db.ItemsMasters.Where(x => x.CompanyID == CurrentUser.CoID && x.ID == Ln.SelectionId).FirstOrDefault();
                         if (ThisItem != null)
                         {
                             PsL.IsLotTracked = ThisItem.IsLotTracked;
+                            thisItemIsSerial = ThisItem.IsSerialTracked;   // item driven, not a company setting
                         }
-                        _db.PickSlipLines.Add(PsL);
+                        // Serial items are split into lines of 20 here, so each line's serials can
+                        // be counted against its quantity on the invoice. 50 becomes 20 + 20 + 10.
+                        SerialPicking.AddPickSlipLines(_db, PsL, thisItemIsSerial);
                     }
 
                     // insert Picking Slip Transaction record

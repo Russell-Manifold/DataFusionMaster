@@ -196,6 +196,8 @@
                                                     <div class="Controls">
                                                         <input id="Button1" type="button" class="fa fa-times-circle" value="" runat="server" style="display:none"/>
                                                         <input id="BomOK" type="button" class="buttonYellow" value="OK" runat="server" style="display:none"/>
+                                                        <asp:Label ID="lblBomLineID" runat="server" Text="" style="display:none"></asp:Label>
+                                                        <asp:LinkButton ID="lbtnEditComponents" runat="server" CssClass="buttonSage icon fa-edit" style="margin-right:2em" ToolTip="Add, remove or substitute the components for this works order line" OnClick="lbtnEditComponents_Click">&nbsp;Edit Components</asp:LinkButton>
                                                         <asp:LinkButton ID="lBtnSave" runat="server" CssClass="buttonCancel" >OK</asp:LinkButton><br />
                                                     </div>
                                                 </div>

@@ -125,6 +125,7 @@ namespace SBMS
 
                chkLotTrack.Checked = (bool)Comp.UseLotTracking;
                 chkSysLot.Checked = Comp.AllowSystemLotNumbers == true;
+                chkSerialTrack.Checked = Comp.UseSerialNumbers;
                 ApplyLotTrackDependants();
                 chkScanCount.Checked = Comp.AllowScannerCount == true;
                 chkScanReceive.Checked = Comp.AllowScannerReceive == true;
@@ -176,6 +177,10 @@ namespace SBMS
                     CurrentUser.SendMessages = Comp.SendMessages;
                     Comp.UATMode = chkUAT.Checked;
                     Comp.UseLotTracking = uselotTrack;
+                    // Serials are lots of quantity 1, so the module cannot outlive lot
+                    // tracking - switching lots off switches serials off with them.
+                    Comp.UseSerialNumbers = uselotTrack && chkSerialTrack.Checked;
+                    CurrentUser.CompanyUseSerialNumbers = Comp.UseSerialNumbers;
                     CurrentUser.CompanyUseLotNumbers = uselotTrack;
                     Comp.AllowSystemLotNumbers = chkSysLot.Checked;
                     CurrentUser.CompanyAllowSystemLotNumbers = chkSysLot.Checked;
@@ -331,6 +336,7 @@ namespace SBMS
             if (chkAutoManf.Checked)
             {
                 chkLotTrack.Checked = false;
+                ApplyLotTrackDependants();   // clears/locks Advanced + System-Generated with it
             }
         }
 
@@ -356,9 +362,11 @@ namespace SBMS
             {
                 chkLotTrackAdd.Checked = false;
                 chkSysLot.Checked = false;
+                chkSerialTrack.Checked = false;   // serials are lots of qty 1 - no lots, no serials
             }
             chkLotTrackAdd.Enabled = chkLotTrack.Checked;
             chkSysLot.Enabled = chkLotTrack.Checked;
+            chkSerialTrack.Enabled = chkLotTrack.Checked;
         }
 
         protected void chkweight_CheckedChanged(object sender, EventArgs e)

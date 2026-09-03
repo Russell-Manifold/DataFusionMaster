@@ -543,6 +543,11 @@ namespace SBMS
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblLotModalHead;
+
+        /// <summary>
+        /// lblSlipLine control.
+        /// </summary>
         protected global::System.Web.UI.WebControls.Label lblSlipLine;
 
         /// <summary>
@@ -579,6 +584,21 @@ namespace SBMS
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlSerialScan;
+
+        /// <summary>
+        /// txtPickSerialScan control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.TextBox txtPickSerialScan;
+
+        /// <summary>
+        /// lblSerialNeed control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Label lblSerialNeed;
+
+        /// <summary>
+        /// GridLotNums control.
+        /// </summary>
         protected global::System.Web.UI.WebControls.GridView GridLotNums;
 
         /// <summary>

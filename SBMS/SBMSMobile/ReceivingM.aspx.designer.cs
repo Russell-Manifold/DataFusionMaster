@@ -105,6 +105,16 @@ namespace SBMS
         protected global::System.Web.UI.WebControls.Label lblPONum;
 
         /// <summary>
+        /// pnlSourcePick control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Panel pnlSourcePick;
+
+        /// <summary>
+        /// ddlSourceStore control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.DropDownList ddlSourceStore;
+
+        /// <summary>
         /// lblLineCount control.
         /// </summary>
         /// <remarks>

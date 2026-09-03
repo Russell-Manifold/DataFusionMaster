@@ -1,4 +1,4 @@
-using SBMS.Classes;
+﻿using SBMS.Classes;
 using SBMS.Models;
 using System;
 using System.Collections.Generic;
@@ -401,6 +401,16 @@ namespace SBMS
                 if (MoveQty > (row.QOH ?? 0))
                 {
                     SetFeedback(false, $"&#9888; Only {(row.QOH ?? 0):0.##} left in {SrcCode} now.");
+                    Step = 2; InConfirmed = false; RenderStep(); return;
+                }
+
+                // A serial lot holds exactly one unit, so it moves one at a time. Moving "5"
+                // of it would put five units on a lot that holds one.
+                string serialStop = SerialGuard.CheckUnitQty(db, CurrentUser.CoID, ItemId,
+                                                             ItemCode, MoveQty);
+                if (serialStop != null)
+                {
+                    SetFeedback(false, "&#9888; " + serialStop);
                     Step = 2; InConfirmed = false; RenderStep(); return;
                 }
 

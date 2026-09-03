@@ -29,6 +29,9 @@ namespace SBMS
             if (!IsPostBack)
             {
                 if (CurrentUser.UsePickSlipTracking != true) ibtnPickTrack.Style.Add("display", "none");
+                // Traceability and Expiry are built on lot numbers - no lots, nothing to show.
+                lbtnTrace.Visible = CurrentUser.CompanyUseLotNumbers;
+                lbtnExpiry.Visible = CurrentUser.CompanyUseLotNumbers;
                 lblUsername.Text = $":.. {CurrentUser.UserName} ..:";
                 string imgname = CurrentUser.CoID + ".png";
                 string imgPath = $"~/images/CoImages/{imgname}";
@@ -85,6 +88,23 @@ namespace SBMS
             {
                 Response.Redirect("~/Dashboard.aspx", true);
             }
+        }
+
+        // Both screens are built on lot numbers, so they are only of use to a company that
+        // tracks them. Serial items are lot tracked too, so this covers them as well.
+        protected void lbtnTrace_Click(object sender, EventArgs e)
+        {
+            Response.Redirect("~/Traceability.aspx?user=" + CurrentUser.UserGuiD, false);
+        }
+
+        protected void lbtnExpiry_Click(object sender, EventArgs e)
+        {
+            Response.Redirect("~/ExpiryControl.aspx?user=" + CurrentUser.UserGuiD, false);
+        }
+
+        protected void lbtnReOrder_Click(object sender, EventArgs e)
+        {
+            Response.Redirect("~/ReOrderReport.aspx?user=" + CurrentUser.UserGuiD, false);
         }
 
         protected void lbtnLogOut_Click(object sender, EventArgs e)

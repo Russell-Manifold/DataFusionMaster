@@ -137,6 +137,16 @@ namespace SBMS
         {
             string sortDirection = "ASC";
 
+            // Seeded so the FIRST click on the WO number flips to descending instead of
+            // re-applying the order the grid already loaded in. LoadWOs() applies no ORDER BY
+            // when it is called with no sort, so the list arrives in WO-number order; without
+            // this seed the first click set "ASC" and nothing appeared to happen.
+            if (ViewState["SortExpression"] == null)
+            {
+                ViewState["SortExpression"] = "WONum";
+                ViewState["SortDirection"] = "ASC";
+            }
+
             if (ViewState["SortExpression"] as string == e.SortExpression)
             {
                 // toggle

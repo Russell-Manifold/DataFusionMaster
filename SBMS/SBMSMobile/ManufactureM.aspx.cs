@@ -43,6 +43,13 @@ namespace SBMS
 
         private bool LotBlocked { get { return CurrentUser != null && CurrentUser.CompanyUseLotNumbers; } }
 
+        // This page IS auto-manufacture: it decides the component draws itself. A company
+        // with Auto Manufacture switched off has said components are allocated by hand, so
+        // the page is closed to them here exactly as it is hidden on the desktop screen.
+        private bool AutoManfOff { get { return CurrentUser != null && !CurrentUser.UseAutoManf; } }
+
+        private bool PageBlocked { get { return LotBlocked || AutoManfOff; } }
+
         protected void Page_Load(object sender, EventArgs e)
         {
             if (CurrentUser == null)
@@ -68,7 +75,7 @@ namespace SBMS
             if (!IsPostBack)
             {
                 Session["ManfSession"] = new List<ManfDone>();
-                if (!LotBlocked) { LoadStores(ddlStore); LoadStores(ddlToStore); }
+                if (!PageBlocked) { LoadStores(ddlStore); LoadStores(ddlToStore); }
                 ResetCycle();
                 RenderForm();
                 BindDone();
@@ -97,7 +104,7 @@ namespace SBMS
         {
             string raw = (txtScan.Text ?? "").Trim();
             txtScan.Text = string.Empty;
-            if (string.IsNullOrEmpty(raw) || LotBlocked) return;
+            if (string.IsNullOrEmpty(raw) || PageBlocked) return;
             HandleWOScan(raw);
         }
 
@@ -179,7 +186,7 @@ namespace SBMS
                 SetFeedback(false, "&#9888; Already processed &mdash; that manufacture ran once.");
                 return;
             }
-            if (IsProcessing || LotBlocked) return;
+            if (IsProcessing || PageBlocked) return;
             if (!WOLoaded) { SetFeedback(false, "&#9888; Scan a Works Order first."); return; }
             if (string.IsNullOrEmpty(fromStore)) { SetFeedback(false, "&#9888; Select the From store."); return; }
             if (!decimal.TryParse((txtQty.Text ?? "").Trim(), NumberStyles.Any, CultureInfo.InvariantCulture, out decimal makeQty) || makeQty <= 0)
@@ -210,6 +217,7 @@ namespace SBMS
             IsProcessing = true;
             // Declared out here so the result message below the context can still read them.
             decimal bomAddTotal = 0;
+            long jDebitAcc = 0, jCreditAcc = 0;
             string journalWarning = null;   // set if Sage refuses the add-cost journal
             try
             {
@@ -261,8 +269,14 @@ namespace SBMS
                     // BOM additional costs, captured PER UNIT on the BOM header, so they add
                     // straight onto the unit cost. Mirrors WorksOrdersManf - if that changes,
                     // change this too or the desktop and mobile will cost differently.
-                    var bomHdrM = db.BOMHeaders.FirstOrDefault(x => x.CompanyID == CurrentUser.CoID && x.FGID == OutItemId);
-                    long jDebitAcc = 0, jCreditAcc = 0;
+                    // Prefer the active BOM, fall back to an inactive one - deactivating a BOM
+                    // must not quietly drop the additional costs. Same rule as the desktop.
+                    var bomHdrM = db.BOMHeaders
+                        .Where(x => x.CompanyID == CurrentUser.CoID && x.FGID == OutItemId && x.BomActive)
+                        .OrderBy(x => x.BomHID).FirstOrDefault()
+                        ?? db.BOMHeaders
+                        .Where(x => x.CompanyID == CurrentUser.CoID && x.FGID == OutItemId)
+                        .OrderBy(x => x.BomHID).FirstOrDefault();
                     if (bomHdrM != null)
                     {
                         decimal addPerUnit = (bomHdrM.AddCost01 ?? 0) + (bomHdrM.AddCost02 ?? 0) + (bomHdrM.AddCost03 ?? 0);
@@ -321,25 +335,6 @@ namespace SBMS
                             string fres = PostAdjustment(db, OutItemId, OutCode, OutDescr, OutUnit, targetStoreId, makeQty, fgUnitCost, sagePosted);
                             if (fres != "OK") throw new ApplicationException("Manufacture failed on " + OutCode + ": " + fres);
 
-                            // Clear the additional cost off Sage's stock adjustment account:
-                            // debit it, credit the account chosen on the BOM. Deliberately NOT
-                            // thrown - the stock is correctly made and posted, and unwinding all
-                            // of that over a journal would be worse. Mirrors the desktop: warn,
-                            // log, and let it be posted by hand.
-                            if (bomAddTotal > 0 && CurrentUser.UATMode == false)
-                            {
-                                string jRes = SendAddCostJournal(jDebitAcc, jCreditAcc, bomAddTotal,
-                                    "WO" + WONum, "BOM additional costs - WO" + WONum);
-                                if (jRes != "Success")
-                                {
-                                    journalWarning = jRes;
-                                    try { new ApiUrlCall().LogErrorToFile(
-                                        "BOM ADD-COST JOURNAL FAILED (mobile) - WO" + WONum +
-                                        " amount " + bomAddTotal + " Dr " + jDebitAcc + " Cr " + jCreditAcc +
-                                        " - " + jRes); } catch { }
-                                }
-                            }
-
                             // Update the WO line: reduce the outstanding balance; close it when done.
                             var line = db.WorksOrderLines.FirstOrDefault(x => x.CompanyID == CurrentUser.CoID && x.LineID == FGLineID);
                             if (line != null)
@@ -369,6 +364,19 @@ namespace SBMS
                             return;
                         }
                     }
+                }
+
+                // Clear the additional cost off Sage's stock adjustment account: debit it,
+                // credit the account chosen on the BOM. Posted AFTER the commit on purpose -
+                // inside the transaction it held write locks open across an HTTP round-trip to
+                // Sage. It is deliberately not fatal either: the stock is correctly made and
+                // posted, and unwinding all of that over a journal would be worse. Mirrors the
+                // desktop - warn, record, and let it be posted by hand.
+                if (bomAddTotal > 0 && CurrentUser.UATMode == false && jDebitAcc > 0 && jCreditAcc > 0)
+                {
+                    string jRes = AddCostJournal.Post(CurrentUser, jDebitAcc, jCreditAcc, bomAddTotal,
+                        "WO" + WONum, "BOM additional costs - WO" + WONum);
+                    if (jRes != AddCostJournal.Ok) journalWarning = jRes;
                 }
 
                 RecordDone(OutCode, makeQty, targetStore);
@@ -518,6 +526,17 @@ namespace SBMS
                     });
                 }
 
+                // Serial items are refused on works orders, on mobile exactly as on the web
+                // (WorksOrdersManf). A manufactured unit has no serial number - nothing here
+                // can capture one - and a DRAW of several units against a serial component
+                // would move stock off a lot that holds one.
+                if (SerialGuard.IsSerialItem(db, CurrentUser.CoID, itmid))
+                {
+                    return code + " is serial tracked. Serial items cannot be manufactured or "
+                         + "drawn into a works order - a manufactured unit has no serial number "
+                         + "and no expiry. Nothing was posted.";
+                }
+
                 // Stamp the store's running average after this movement: a DRAW leaves it
                 // unchanged (unitcost already IS the store average); MANF re-blends it.
                 // Computed BEFORE the Add so the new row is not yet in the ledger.
@@ -587,84 +606,7 @@ namespace SBMS
             }
         }
 
-        /// <summary>
-        /// Posts the BOM additional-costs journal to Sage. Returns "Success" or the reason.
-        /// Mirrors WorksOrdersManf.SendAddCostJournal - keep the two in step.
-        ///
-        /// Producing the finished good raises stock value by the additional cost and credits
-        /// Sage's own stock adjustment account. Nothing debits it, so this journal clears it:
-        /// DEBIT the stock adjustment account, CREDIT the account chosen on the BOM.
-        /// JournalEntry/Save carries both sides in one call, so it balances by construction.
-        /// No VAT - internal absorption of cost already expensed elsewhere, not a supply.
-        /// </summary>
-        private string SendAddCostJournal(long debitAccountId, long creditAccountId,
-                                          decimal amount, string reference, string description)
-        {
-            if (amount <= 0) return "Success";
-            if (debitAccountId <= 0 || creditAccountId <= 0) return "No accounts configured";
-
-            try
-            {
-                // Sage rejects a journal with no tax type ("Tax Type is Required"). This entry
-                // carries no VAT, so use the company's zero-rated type, falling back to the
-                // default tax type on the stock adjustment account.
-                long taxTypeId = 0;
-                using (SBMSEntities dbT = new SBMSEntities(Config.GetConnectionString()))
-                {
-                    taxTypeId = dbT.TaxTypesMasters
-                        .Where(x => x.CompanyID == CurrentUser.CoID && (x.TaxPerc ?? 0) == 0
-                                    && (x.TaxTypeID ?? 0) > 0)
-                        .OrderBy(x => x.TaxTypeID)
-                        .Select(x => x.TaxTypeID ?? 0).FirstOrDefault();
-                    if (taxTypeId <= 0)
-                    {
-                        taxTypeId = dbT.AccountsMasters
-                            .Where(x => x.CompanyID == CurrentUser.CoID && x.AccountID == debitAccountId)
-                            .Select(x => x.AcctDefTaxTypeID ?? 0).FirstOrDefault();
-                    }
-                }
-                if (taxTypeId <= 0) return "No zero-rated tax type found for this company";
-
-                var journal = new
-                {
-                    Date = DateTime.Now,
-                    Effect = 1,                            // 1 = Debit (AccountId is debited)
-                    AccountId = debitAccountId,            // stock adjustment account
-                    ContraAccountId = creditAccountId,     // account chosen on the BOM
-                    TaxTypeId = taxTypeId,                 // required by Sage, zero-rated
-                    Reference = reference,
-                    Description = description,
-                    Exclusive = amount,
-                    Tax = 0m,
-                    Total = amount,
-                    Debit = amount,
-                    Credit = 0m
-                };
-
-                JObject parsed = new ApiUrlCall().APIPostDocumentNA(
-                    "JournalEntry", JsonConvert.SerializeObject(journal, Formatting.Indented), CurrentUser);
-
-                if (parsed == null) return "Null response from API";
-                if (parsed["error"] != null)
-                {
-                    JObject err = (JObject)parsed["error"];
-                    return err["message"]?.ToString()
-                        ?? err["reason"]?.ToString()
-                        ?? "Unknown API error posting journal";
-                }
-                // Sage can answer 200 with a validation payload and save nothing. A real save
-                // always comes back with the new journal Id, so treat a missing Id as a failure.
-                if (parsed["ID"] == null && parsed["Id"] == null)
-                    return "Sage did not return a journal Id: " + parsed.ToString(Formatting.None);
-                return "Success";
-            }
-            catch (Exception ex)
-            {
-                return "SendAddCostJournal exception: " + ex.Message;
-            }
-        }
-
-        private static decimal PerUnit(WorksOrderRMLine r)
+private static decimal PerUnit(WorksOrderRMLine r)
         {
             decimal fgQty = r.LinkedFGQty ?? 0;
             decimal q = r.Quantity ?? 0;
@@ -674,14 +616,16 @@ namespace SBMS
         // ── Render ──
         private void RenderForm()
         {
-            if (LotBlocked)
+            if (PageBlocked)
             {
                 pnlScan.Visible = false;
                 pnlWO.Visible = false;
                 pnlMake.Visible = false;
                 lbtnRestart.Visible = false;
                 lblPrompt.Text = "";
-                SetFeedback(false, "&#9888; This company uses lot numbers. Please use the full Works Order Manufacture screen.");
+                SetFeedback(false, LotBlocked
+                    ? "&#9888; This company uses lot numbers. Please use the full Works Order Manufacture screen."
+                    : "&#9888; Auto Manufacture is not enabled for this company. Please use the full Works Order Manufacture screen.");
                 return;
             }
 
@@ -720,7 +664,7 @@ namespace SBMS
         {
             string raw = (txtScan.Text ?? "").Trim();
             txtScan.Text = string.Empty;
-            if (string.IsNullOrEmpty(raw) || LotBlocked) return;
+            if (string.IsNullOrEmpty(raw) || PageBlocked) return;
             HandleWOScan(raw);
         }
 

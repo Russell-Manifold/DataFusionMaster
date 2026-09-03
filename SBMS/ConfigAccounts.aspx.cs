@@ -79,10 +79,14 @@ namespace SBMS
         {
             CheckBox chk = (CheckBox)sender;
             GridViewRow row = (GridViewRow)chk.NamingContainer;
-            int AcctID = Convert.ToInt32(row.Cells[0].Text);
+            // AccountID is a long in the model and comes from the grid key: Convert.ToInt32
+            // would overflow on a large Sage id, and Cells[0].Text breaks the moment that
+            // column is reformatted, hidden or paged.
+            long AcctID = Convert.ToInt64(GridAccounts.DataKeys[row.RowIndex].Value);
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {
                 AccountsMaster NewAcct = _db.AccountsMasters.Where(x => x.CompanyID == CurrentUser.CoID && x.AccountID == AcctID).FirstOrDefault();
+                if (NewAcct == null) { LoadAccts(); return; }
                 NewAcct.JCUse = chk.Checked;
                 _db.SaveChanges();
                 
@@ -96,10 +100,14 @@ namespace SBMS
         {
             CheckBox chk = (CheckBox)sender;
             GridViewRow row = (GridViewRow)chk.NamingContainer;
-            int AcctID = Convert.ToInt32(row.Cells[0].Text);
+            // AccountID is a long in the model and comes from the grid key: Convert.ToInt32
+            // would overflow on a large Sage id, and Cells[0].Text breaks the moment that
+            // column is reformatted, hidden or paged.
+            long AcctID = Convert.ToInt64(GridAccounts.DataKeys[row.RowIndex].Value);
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {
                 AccountsMaster NewAcct = _db.AccountsMasters.Where(x => x.CompanyID == CurrentUser.CoID && x.AccountID == AcctID).FirstOrDefault();
+                if (NewAcct == null) { LoadAccts(); return; }
                 NewAcct.AccountAddCosts = chk.Checked;
                 _db.SaveChanges();
 
@@ -123,20 +131,31 @@ namespace SBMS
         {
             CheckBox chk = (CheckBox)sender;
             GridViewRow row = (GridViewRow)chk.NamingContainer;
-            int AcctID = Convert.ToInt32(row.Cells[0].Text);
+            // AccountID is a long in the model and comes from the grid key: Convert.ToInt32
+            // would overflow on a large Sage id, and Cells[0].Text breaks the moment that
+            // column is reformatted, hidden or paged.
+            long AcctID = Convert.ToInt64(GridAccounts.DataKeys[row.RowIndex].Value);
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {
+                // Find the row FIRST. Clearing the old flag before knowing the new one exists
+                // left the company with no Stock Adjustment Account at all, under a message
+                // saying it had saved.
+                AccountsMaster NewAcct = _db.AccountsMasters
+                    .Where(x => x.CompanyID == CurrentUser.CoID && x.AccountID == AcctID).FirstOrDefault();
+                if (NewAcct == null) { LoadAccts(); return; }
+
                 if (chk.Checked)
                 {
-                    // Single account only - clear any previous choice for this company.
+                    // Single account only - clear any previous choice for this company. Saved on
+                    // its own so the database only ever sees one account flagged at a time; the
+                    // unique index would otherwise reject an unlucky statement order.
                     var others = _db.AccountsMasters
                         .Where(x => x.CompanyID == CurrentUser.CoID && x.AccountAddCostsContra == true).ToList();
                     foreach (var o in others) o.AccountAddCostsContra = false;
+                    if (others.Count > 0) _db.SaveChanges();
                 }
 
-                AccountsMaster NewAcct = _db.AccountsMasters
-                    .Where(x => x.CompanyID == CurrentUser.CoID && x.AccountID == AcctID).FirstOrDefault();
-                if (NewAcct != null) NewAcct.AccountAddCostsContra = chk.Checked;
+                NewAcct.AccountAddCostsContra = chk.Checked;
                 _db.SaveChanges();
             }
 

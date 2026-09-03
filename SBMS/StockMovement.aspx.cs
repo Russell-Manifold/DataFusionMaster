@@ -174,19 +174,9 @@ namespace SBMS
                 return;
             }
             decimal TotQty = 0, totVal = 0;
-            List<TransLine> TLL = GetTransactions();
-            if (ddLotNum.Items.Count > 0 && ddLotNum.SelectedIndex > 0)
-            {
-                string lotN = ddLotNum.Text;
-                TLL = TLL.Where(x=>x.LotNumber == lotN).ToList();
-            }
+            List<TransLine> TLL = FilteredTransactions();
             if (TLL.Count > 0)
             {
-                if (ddStore.SelectedIndex > 0)
-                {
-                    string storeCde = ddStore.SelectedItem.Text;
-                    TLL = TLL.Where(x => x.Store == storeCde).ToList();
-                }
                 foreach (var Trn in TLL)
                 {
                     Trn.Qty = Convert.ToDecimal(ApiUrlCall.NumberToDecimal(Trn.Qty.ToString(), CurrentUser.CompanyDecPlaces));
@@ -216,8 +206,36 @@ namespace SBMS
             {
                 return;
             }
-            DataTable planLinesDataTable = DataTableHelper.ConvertToDataTable(GetTransactions());
+            // Same rows the grid is showing: raw GetTransactions() ignored both the screen
+            // filters and the serial roll-up, so the spreadsheet came back with a different
+            // row count and a different total from the screen it was exported from.
+            DataTable planLinesDataTable = DataTableHelper.ConvertToDataTable(FilteredTransactions());
             ExcelHelper.ExportToExcel(planLinesDataTable, "Item_Lot_Movement", "Item_Lot_Movement");
+        }
+
+        /// <summary>
+        /// The rows the screen is actually showing: the lot and store filters applied, then
+        /// serials rolled up to their batch. Both the grid and the Excel export go through
+        /// here, so the two can no longer disagree.
+        ///
+        /// Filter BEFORE the roll-up - it rewrites LotNumber to the parent batch, so filtering
+        /// afterwards compares a serial against a batch and always comes back empty.
+        /// </summary>
+        private List<TransLine> FilteredTransactions()
+        {
+            List<TransLine> rows = GetTransactions();
+
+            if (ddLotNum.Items.Count > 0 && ddLotNum.SelectedIndex > 0)
+            {
+                string lotN = ddLotNum.Text;
+                rows = rows.Where(x => x.LotNumber == lotN).ToList();
+            }
+            if (ddStore.SelectedIndex > 0)
+            {
+                string storeCde = ddStore.SelectedItem.Text;
+                rows = rows.Where(x => x.Store == storeCde).ToList();
+            }
+            return SerialRollup.ToBatchLevel(rows, CurrentUser.CoID);
         }
 
         public List<TransLine> GetTransactions()
@@ -295,7 +313,7 @@ namespace SBMS
             }
             return TLL;
         }
-        public class TransLine
+        public class TransLine : ISerialRollupRow
         {
             public string Code { get; set; }
             public string TransactionType { get; set; }

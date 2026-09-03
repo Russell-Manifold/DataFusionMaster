@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Web;
 
@@ -9,6 +9,13 @@ namespace SBMS.Classes
     // so stylesheet/script links never need a manual version bump.
     public static class Ver
     {
+        /// <summary>Same token, for script tags - so a deployed JS change actually reaches
+        /// the browser instead of the cached copy being kept.</summary>
+        public static string Js(string virtualPath)
+        {
+            return Css(virtualPath);
+        }
+
         public static string Css(string virtualPath)
         {
             try

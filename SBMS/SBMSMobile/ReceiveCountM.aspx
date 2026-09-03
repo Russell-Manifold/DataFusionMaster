@@ -63,6 +63,15 @@
                 <span class="mob-doc-meta-item">Due: <asp:Label ID="lblDueDate" runat="server" /></span>
                 <span class="mob-doc-badge"><asp:Label ID="lblLineCount" runat="server" /> line(s)</span>
             </div>
+            <%-- Shown only when the company receives into more than one store. Everything
+                 counted here is staged against the store chosen at the time. --%>
+            <asp:Panel ID="pnlRecvPick" runat="server" Visible="false" CssClass="mob-doc-meta">
+                <span class="mob-doc-badge" style="padding:.2em .5em">
+                    Receiving into&nbsp;<asp:DropDownList ID="ddlRecvStore" runat="server" AutoPostBack="true"
+                        OnSelectedIndexChanged="ddlRecvStore_SelectedIndexChanged"
+                        style="font-size:16px;height:2.3em;border:1px solid #ccc;border-radius:.45em;" />
+                </span>
+            </asp:Panel>
         </div>
 
         <asp:Panel ID="pnlScanBar" runat="server">

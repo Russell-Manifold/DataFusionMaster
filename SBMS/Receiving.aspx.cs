@@ -205,6 +205,27 @@ namespace SBMS
 
         protected void lbtnRecAll_Click(object sender, EventArgs e)
         {
+            // Serial items need a serial per unit and an expiry, neither of which this path
+            // can capture. Left alone it minted one lot of qty N - stock the serial picker
+            // then filters out as non-single-unit, so it could never be picked at all.
+            using (SBMSEntities _dbSer = new SBMSEntities(Config.GetConnectionString()))
+            {
+                long recAllDoc = Convert.ToInt64(lblDocID.Text);
+                bool hasSerial = (from d in _dbSer.TempDocLines
+                                  join i in _dbSer.ItemsMasters on d.SelectionId equals i.ID
+                                  where d.DocID == recAllDoc && i.CompanyID == CurrentUser.CoID
+                                        && i.IsSerialTracked
+                                  select d.LineID).Any();
+                if (hasSerial)
+                {
+                    AlertHelper.ShowSweetAlert(this,
+                        "This order contains serial-tracked items. They must be received line by "
+                        + "line so each unit's serial number and expiry can be captured. Nothing "
+                        + "was received.", "warning");
+                    return;
+                }
+            }
+
             docid = Convert.ToInt64(lblDocID.Text);
 
             // validate store selection up-front so we never write "-Select-" as a StoreCode
@@ -654,6 +675,29 @@ namespace SBMS
             // keys it off ItemType, not IsLotTracked), so without this a lot typed against a
             // non-tracked item would be stamped onto the line and mint a LotTrackingMaster row.
             bool itemIsLotTracked = false;
+            bool itemIsSerialTracked = false;
+
+            // Captured client-side by serialCapture.js as SERIAL~DATE|SERIAL~DATE|...
+            // The date travels WITH the unit, so one receipt can hold stock expiring on
+            // different days - a batch is not forced to share one expiry.
+            var capturedUnits = (hfSerials.Value ?? "")
+                .Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(pair =>
+                {
+                    int at = pair.IndexOf('~');
+                    string ser = (at < 0 ? pair : pair.Substring(0, at)).Trim().ToUpperInvariant();
+                    string dtx = at < 0 ? "" : pair.Substring(at + 1).Trim();
+                    DateTime dt;
+                    return new
+                    {
+                        Serial = ser,
+                        UseBy = DateTime.TryParse(dtx, out dt) ? (DateTime?)dt : null
+                    };
+                })
+                .Where(x => x.Serial.Length > 0)
+                .ToList();
+
+            string[] capturedSerials = capturedUnits.Select(x => x.Serial).ToArray();
 
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {
@@ -674,13 +718,131 @@ namespace SBMS
                     itemIsLotTracked = _db.ItemsMasters
                         .Where(x => x.CompanyID == CurrentUser.CoID && x.ID == lotItemId)
                         .Select(x => x.IsLotTracked).FirstOrDefault();
+
+                }
+
+                // Serial tracking is a property of the ITEM, not of the company - so this is read
+                // OUTSIDE the company lot-tracking test above. Inside it, switching the company
+                // module off made every serial item quietly receive as an ordinary lumped line
+                // while its existing stock was still held as one lot per unit: an on-hand figure
+                // that could never be reconciled.
+                long serialItemId = Docline.SelectionId;
+                itemIsSerialTracked = _db.ItemsMasters
+                    .Where(x => x.CompanyID == CurrentUser.CoID && x.ID == serialItemId)
+                    .Select(x => x.IsSerialTracked).FirstOrDefault();
+
+                // ── Serial items: one captured serial per unit received ──────────────
+                // Every serial becomes its own receiving line of quantity 1, reusing the
+                // existing "fulfil this line from more than one lot" split. That is what
+                // makes a serial real stock: its own ledger row, pickable and traceable,
+                // with no second tracking dimension anywhere downstream.
+                // Gated on the ITEM, not on the quantity. Hanging every check off QtyRec > 0 meant
+                // a line saved with a zero quantity but serials scanned skipped all of them: the
+                // serials were recorded, lots were minted, and the submit loop then posted one
+                // free unit per serial at zero value.
+                if (itemIsSerialTracked)
+                {
+                    if (QtyRec <= 0 && capturedSerials.Length > 0)
+                    {
+                        AlertHelper.ShowSweetAlert(this,
+                            capturedSerials.Length + " serial(s) were captured but the received "
+                            + "quantity is " + QtyRec.ToString("0.##") + ". Enter the quantity, or "
+                            + "clear the serials. Nothing was received.", "error");
+                        return;
+                    }
+
+                    // One serial is one unit, so a part-unit receipt cannot be serialised. Left
+                    // unchecked, (int)QtyRec truncated 10.5 to 10 and the ledger moved half a
+                    // unit less than the document and the supplier invoice.
+                    if (QtyRec != decimal.Truncate(QtyRec))
+                    {
+                        AlertHelper.ShowSweetAlert(this,
+                            Docline.ItemCode + " is serial tracked, so it can only be received in "
+                            + "whole units - " + QtyRec.ToString("0.##") + " was entered. Nothing "
+                            + "was received.", "error");
+                        return;
+                    }
+                }
+
+                if (itemIsSerialTracked && QtyRec > 0)
+                {
+                    // UOM conversion and serials are incompatible: receiving 2 of a 12-pack is
+                    // 24 physical units, but only 2 serials get captured. Rather than guess
+                    // which number is right, refuse it - the item setup is the thing to fix.
+                    var convItem = _db.ItemsMasters.FirstOrDefault(
+                        x => x.CompanyID == CurrentUser.CoID && x.ID == Docline.SelectionId);
+                    if (convItem != null && convItem.UOMConvert != 1 && convItem.UOMConvert != 0)
+                    {
+                        AlertHelper.ShowSweetAlert(this,
+                            Docline.ItemCode + " has a UOM conversion of " + convItem.UOMConvert
+                            + ", which cannot be combined with serial tracking - one serial has to be "
+                            + "one unit. Nothing was received.", "error");
+                        return;
+                    }
+
+                    if (Docline.RejectQty > 0)
+                    {
+                        AlertHelper.ShowSweetAlert(this,
+                            Docline.ItemCode + " is serial tracked, so a rejected quantity cannot be "
+                            + "recorded here - the individual units coming back have to be identified. "
+                            + "Receive only the units you are accepting. Nothing was received.", "warning");
+                        return;
+                    }
+
+                    if (capturedSerials.Length != (int)QtyRec)
+                    {
+                        AlertHelper.ShowSweetAlert(this,
+                            Docline.ItemCode + " is serial tracked. " + capturedSerials.Length
+                            + " serial(s) captured for a quantity of " + QtyRec.ToString("0.##")
+                            + " - they must match. Nothing was received.", "error");
+                        return;
+                    }
+                    if (capturedSerials.Distinct().Count() != capturedSerials.Length)
+                    {
+                        AlertHelper.ShowSweetAlert(this,
+                            "The same serial number was captured twice. Nothing was received.", "error");
+                        return;
+                    }
+                    // Expiry is mandatory on serialised stock: the whole point of tracking a
+                    // unit is knowing what it is and when it runs out, and a unit received
+                    // without a date can never be caught by FEFO or the expiry report. The
+                    // capture screen enforces this too; this is the backstop.
+                    if (capturedUnits.Any(x => !x.UseBy.HasValue))
+                    {
+                        AlertHelper.ShowSweetAlert(this,
+                            "Every serial needs a Use By Date. Nothing was received.", "error");
+                        return;
+                    }
+
+                    // A serial is a lot number, so it has to be unique for the company - a
+                    // duplicate would merge two physical units into one traceable identity.
+                    // Serials already recorded against THIS line are its own from an earlier
+                    // save - correcting a quantity or store must not be treated as a duplicate.
+                    // The lot path below has the same allowance via its lotExists check.
+                    var ownSerials = SerialPicking.GetDocLineSerials(_db, CurrentUser.CoID,
+                                                                     Docline.DocID, Docline.SBCALineID)
+                                                  .Select(x => x.Serial).ToList();
+
+                    var clash = _db.LotTrackingMasters
+                        .Where(x => x.CompanyID == CurrentUser.CoID
+                                 && capturedSerials.Contains(x.LotNumber)
+                                 && !ownSerials.Contains(x.LotNumber))
+                        .Select(x => x.LotNumber).FirstOrDefault();
+                    if (clash != null)
+                    {
+                        AlertHelper.ShowSweetAlert(this,
+                            "Serial " + clash + " is already in the system. Nothing was received.", "error");
+                        return;
+                    }
                 }
 
                 // A lot-tracked item must never be received without a lot number - stock that
                 // lands with a null lot cannot be picked, transferred or traced afterwards, and
                 // nothing downstream can repair it. Block the receipt instead of writing it.
                 // (Receive All auto-generates a lot for these items; this is the per-line path.)
-                if (itemIsLotTracked && QtyRec > 0 && capturedLot.Length == 0)
+                // Serial items carry their identity in the serials themselves; the lot box is
+                // the OPTIONAL supplier batch, so it must not be demanded here.
+                if (itemIsLotTracked && !itemIsSerialTracked && QtyRec > 0 && capturedLot.Length == 0)
                 {
                     AlertHelper.ShowSweetAlert(this,
                         Docline.ItemCode + " is lot tracked - enter a Lot Number before receiving it. Nothing was received.",
@@ -752,6 +914,27 @@ namespace SBMS
                     }
                 }
                 
+                // The "+" split creates a second receiving line carrying the SAME SBCALineID, which
+                // is the key DocLineSerials is stored under - so one split line's serials would
+                // DELETE the other's, and at posting both lines would read the same set and each
+                // write a full set of movements.
+                //
+                // The message must NOT say "save this batch, then re-open for the next one".
+                // Re-opening clears the serial box but restores the previous quantity, so saving
+                // the second batch leaves the first batch's serials absent from the captured set
+                // and the cleanup below deletes their lots - 20 units received, 10 recorded, no
+                // warning. Every serial for the line goes in ONE capture.
+                if (chkAddLotNum.Checked == true && itemIsSerialTracked)
+                {
+                    AlertHelper.ShowSweetAlert(this,
+                        Docline.ItemCode + " is serial tracked, so it does not use the multi-lot "
+                        + "split. Scan every serial for this line in one go - units from different "
+                        + "supplier batches can go in together, because each one carries its own "
+                        + "Use By date. Saving a second batch separately REPLACES the first. "
+                        + "Nothing was received.", "warning");
+                    return;
+                }
+
                 if (chkAddLotNum.Checked == true)
                 {
                     
@@ -839,7 +1022,89 @@ namespace SBMS
                 // runs lbtnItmC_Click which resets that checkbox to false, so a lot number typed
                 // on the ordinary receive path was silently dropped and lot-tracked stock could
                 // be received carrying no lot at all. Gate on the captured value instead.
-                if (itemIsLotTracked && capturedLot.Length > 0)
+                if (itemIsSerialTracked)
+                {
+                    // The LINE stays whole: 10 units is one receiving line and one supplier
+                    // invoice line of 10, so what reaches Sage matches the supplier's paperwork.
+                    // It used to be split into one line per unit, which put ten lines of 1 on
+                    // the invoice. The stock ledger still moves each unit on its own, because a
+                    // serial IS a lot of quantity 1 - DocLineSerials is what says which units
+                    // this line accounts for.
+                    // Guarded: the count/date validation above only runs when QtyRec > 0, so a
+                    // blank or zero quantity box reaches here with nothing captured.
+                    if (capturedSerials.Length == 0)
+                    {
+                        AlertHelper.ShowSweetAlert(this,
+                            Docline.ItemCode + " is serial tracked - capture a serial for each unit "
+                            + "before saving. Nothing was received.", "error");
+                        return;
+                    }
+                    Docline.LotNumber = capturedLot.Length > 0 ? capturedLot : capturedSerials[0];
+                    Docline.Comments = SerialPicking.CapComment(
+                        SerialPicking.SerialNote(capturedSerials), Docline.Comments);
+
+                    // What this line held BEFORE this save - read first, because the write below
+                    // replaces the rows and the orphan cleanup further down needs the old list.
+                    var priorSerials = SerialPicking.GetDocLineSerials(_db, CurrentUser.CoID,
+                                                                       Docline.DocID, Docline.SBCALineID)
+                                                    .Select(x => x.Serial).ToList();
+
+                    SerialPicking.SetDocLineSerials(_db, CurrentUser.CoID, Docline.DocID, Docline.SBCALineID,
+                        capturedUnits.Select(u => new SerialPicking.ReceivedUnit
+                        {
+                            Serial = u.Serial,
+                            UseByDate = u.UseBy
+                        }), CurrentUser.RoleID);
+
+                    string batch = capturedLot;   // optional supplier batch these serials belong to
+
+                    // A unit dropped from the line on a re-save would otherwise keep its
+                    // LotTrackingMaster row, which the clash check above then treats as a
+                    // foreign duplicate - permanently blocking that serial from ever being
+                    // received again. Only safe while it has no stock movements behind it.
+                    foreach (string gone in priorSerials.Where(x => !capturedSerials.Contains(x)))
+                    {
+                        string dropped = gone;
+                        bool hasMovements = _db.ItemTransactions.Any(
+                            x => x.CompanyID == CurrentUser.CoID && x.LotNumber == dropped);
+                        if (hasMovements) continue;
+
+                        var orphan = _db.LotTrackingMasters.FirstOrDefault(
+                            x => x.CompanyID == CurrentUser.CoID && x.LotNumber == dropped);
+                        if (orphan != null) _db.LotTrackingMasters.Remove(orphan);
+                    }
+
+                    foreach (var unit in capturedUnits)
+                    {
+                        // Already minted on an earlier save of this line - update it rather
+                        // than adding a second row for the same physical unit.
+                        var existingLot = _db.LotTrackingMasters.FirstOrDefault(
+                            x => x.CompanyID == CurrentUser.CoID && x.LotNumber == unit.Serial);
+                        if (existingLot != null)
+                        {
+                            existingLot.ParentLotNumber = batch.Length > 0 ? batch : null;
+                            existingLot.UseByDate = unit.UseBy;
+                            existingLot.ItemCode = Docline.ItemCode;
+                            existingLot.ItemId = Docline.SelectionId;
+                            continue;
+                        }
+
+                        _db.LotTrackingMasters.Add(new LotTrackingMaster
+                        {
+                            LotNumber       = unit.Serial,
+                            ParentLotNumber = batch.Length > 0 ? batch : null,
+                            CreatedDate     = DateTime.Now,
+                            CompanyID       = CurrentUser.CoID,
+                            ItemCode        = Docline.ItemCode,
+                            ItemId          = Docline.SelectionId,
+                            LotActive       = true,
+                            LotQuantity     = 1,
+                            UseByDate       = unit.UseBy,         // this unit's own expiry
+                            LotUserDefined  = txtLotNote.Text.Trim().Length > 0 ? txtLotNote.Text.Trim() : null
+                        });
+                    }
+                }
+                else if (itemIsLotTracked && capturedLot.Length > 0)
                 {
                     Docline.LotNumber = capturedLot;
 
@@ -869,12 +1134,12 @@ namespace SBMS
                         {
                             LtNew.LotUserDefined = txtLotNote.Text.ToString().Trim();
                         }
-                        try
-                        {
-                            DateTime ubDate = Convert.ToDateTime(txtRecDate.Text);
-                            LtNew.UseByDate = ubDate;
-                        }
-                        catch { }
+
+                        // Use By Date comes from the Use By box, not the receiving date. This
+                        // read txtRecDate, so every lot expired on the day it arrived and the
+                        // date the operator typed was silently discarded.
+                        DateTime ubDate;
+                        if (DateTime.TryParse(txtUseBy.Text, out ubDate)) LtNew.UseByDate = ubDate;
 
                         _db.LotTrackingMasters.Add(LtNew);
                     }
@@ -1286,15 +1551,26 @@ namespace SBMS
                             DL.Total = (decimal)dl.Total;
                             DL.ExchRate = (decimal)exchRate;
                             DL.localCurrLineVal = (DL.Quantity * DL.UnitPriceExclusive) / exchRate;
-                            if (dl.LotNumber != null && dl.LotNumber.ToString() != "" && dl.StoreCode != null && dl.StoreCode.ToString() != "")
+                            // A serial line already carries "Serial No: a, b, c" in its comment,
+                            // so naming the lot as well would repeat one of the units.
+                            // A serial line already carries "Serial No: a, b, c" in its comment, so
+                            // naming the lot as well would repeat one of the units. Everything else
+                            // keeps the wording it has always had, including the " - " between the
+                            // store and the lot: collapsing this into one concatenation changed the
+                            // separator on every ordinary supplier invoice line.
+                            bool serialLine = (dl.Comments ?? "").StartsWith("Serial No:", StringComparison.OrdinalIgnoreCase);
+                            bool hasStore = dl.StoreCode != null && dl.StoreCode.ToString() != "";
+                            bool hasLot = !serialLine && dl.LotNumber != null && dl.LotNumber.ToString() != "";
+
+                            if (hasStore && hasLot)
                             {
                                 DL.Comments = "Store: " + dl.StoreCode + " - Lot # " + dl.LotNumber + " : " + dl.Comments;
                             }
-                            else if (dl.StoreCode != null && dl.StoreCode.ToString() != "")
+                            else if (hasStore)
                             {
                                 DL.Comments = "Store: " + dl.StoreCode + " : " + dl.Comments;
                             }
-                            else if (dl.LotNumber != null && dl.LotNumber.ToString() != "")
+                            else if (hasLot)
                             {
                                 DL.Comments = "Lot # " + dl.LotNumber + " : " + dl.Comments;
                             }
@@ -1593,7 +1869,82 @@ namespace SBMS
                                     // Inbound re-blends the receiving store's running weighted average.
                                     decimal recVal;
                                     ItemTrans.StoreAvgCost = StoreCosting.ComputeMovement(_db, CurrentUser.CoID, (long)dl.SelectionId, (long)ItemTrans.ToID, (decimal)ItemTrans.Qty, (decimal)ItemTrans.TotalLineValExcl, out recVal);
-                                    _db.ItemTransactions.Add(ItemTrans);
+
+                                    // ── Serial lines: one movement per unit ─────────────────
+                                    // The receiving line and the supplier invoice stay at the
+                                    // full quantity, but a serial is a lot holding ONE unit. A
+                                    // single row of +10 against one serial would put ten on a lot
+                                    // that holds one and leave the other nine with no stock at
+                                    // all - unpickable and untraceable. Value is unchanged: the
+                                    // same total is spread as one row per unit.
+                                    var recvUnits = SerialPicking.GetDocLineSerials(_db, CurrentUser.CoID, dl.DocID, dl.SBCALineID);
+                                    if (recvUnits.Count > 0)
+                                    {
+                                        // One serial = one unit, whatever the UOM conversion. Dividing the
+                                        // converted quantity would give each serial ConvRate units and break
+                                        // the invariant the whole design rests on.
+                                        decimal perUnitQty = 1;
+                                        decimal perUnitVal = (decimal)ItemTrans.TotalLineValExcl / recvUnits.Count;
+
+                                        foreach (var unit in recvUnits)
+                                        {
+                                            decimal unitVal;
+                                            _db.ItemTransactions.Add(new ItemTransaction
+                                            {
+                                                CompanyID                 = ItemTrans.CompanyID,
+                                                DocumentID                = ItemTrans.DocumentID,
+                                                TransactionType           = ItemTrans.TransactionType,
+                                                ItemID                    = ItemTrans.ItemID,
+                                                ItemCode                  = ItemTrans.ItemCode,
+                                                ItemDescription           = ItemTrans.ItemDescription,
+                                                Unit                      = ItemTrans.Unit,
+                                                FromID                    = ItemTrans.FromID,
+                                                ToID                      = ItemTrans.ToID,
+                                                Qty                       = perUnitQty,
+                                                PriceExclusive            = ItemTrans.PriceExclusive,
+                                                AdditionalCosts           = ItemTrans.AdditionalCosts,
+                                                TotalUnitPriceExclInclAdd = ItemTrans.TotalUnitPriceExclInclAdd,
+                                                TotalLineValExcl          = perUnitVal,
+                                                DocumentType              = ItemTrans.DocumentType,
+                                                TransactionReference      = ItemTrans.TransactionReference,
+                                                TransactionDate           = DateTime.Now,
+                                                ByRoleID                  = ItemTrans.ByRoleID,
+                                                ExchRate                  = ItemTrans.ExchRate,
+                                                LotNumber                 = unit.Serial,
+                                                StoreAvgCost = StoreCosting.ComputeMovement(_db, CurrentUser.CoID,
+                                                                   (long)dl.SelectionId, (long)ItemTrans.ToID,
+                                                                   perUnitQty, perUnitVal, out unitVal)
+                                            });
+                                            // Saved per unit so the next one's running-average read
+                                            // sees this row. ComputeMovement queries the database and
+                                            // cannot see rows that are only Added to the context, so
+                                            // without this every unit blended against the same
+                                            // pre-receipt state and the store average came out as if
+                                            // a single unit had arrived. The reject loop below does
+                                            // the same, for the same reason.
+                                            _db.SaveChanges();
+                                        }
+                                    }
+                                    else
+                                    {
+                                        _db.ItemTransactions.Add(ItemTrans);
+                                    }
+
+                                    // Serial lots are priced individually. The lookup below keys on
+                                    // dl.LotNumber, which on a serial line is the supplier BATCH (or
+                                    // the first serial) - so without this not one of the units was
+                                    // ever given a cost, breaking the write-once lot cost rule.
+                                    if (recvUnits.Count > 0)
+                                    {
+                                        foreach (var unit in recvUnits)
+                                        {
+                                            string unitSerial = unit.Serial;
+                                            var unitLot = _db.LotTrackingMasters.FirstOrDefault(
+                                                x => x.CompanyID == CurrentUser.CoID && x.LotNumber == unitSerial);
+                                            if (unitLot != null && unitLot.LotTotUnitPrice == 0)
+                                                unitLot.LotTotUnitPrice = (decimal)ItemTrans.TotalUnitPriceExclInclAdd;
+                                        }
+                                    }
 
                                     if (dl.LotNumber != null)
                                     {
@@ -1821,7 +2172,78 @@ namespace SBMS
                                     // Inbound (landed cost incl add-costs) re-blends the receiving store's running average.
                                     decimal recVal2;
                                     ItemTrans.StoreAvgCost = StoreCosting.ComputeMovement(_db, CurrentUser.CoID, (long)dl.SelectionId, (long)ItemTrans.ToID, (decimal)ItemTrans.Qty, (decimal)ItemTrans.TotalLineValExcl, out recVal2);
-                                    _db.ItemTransactions.Add(ItemTrans);
+
+                                    // Serial lines: one movement per unit. Same rule as the
+                                    // add-costs branch above - receiving has two posting paths
+                                    // and a plain receipt comes through this one.
+                                    var recvUnits2 = SerialPicking.GetDocLineSerials(_db, CurrentUser.CoID, dl.DocID, dl.SBCALineID);
+                                    if (recvUnits2.Count > 0)
+                                    {
+                                        // One serial = one unit, whatever the UOM conversion. Dividing the
+                                        // converted quantity would give each serial ConvRate units and break
+                                        // the invariant the whole design rests on.
+                                        decimal perUnitQty2 = 1;
+                                        decimal perUnitVal2 = (decimal)ItemTrans.TotalLineValExcl / recvUnits2.Count;
+
+                                        foreach (var unit in recvUnits2)
+                                        {
+                                            decimal unitVal2;
+                                            _db.ItemTransactions.Add(new ItemTransaction
+                                            {
+                                                CompanyID                 = ItemTrans.CompanyID,
+                                                DocumentID                = ItemTrans.DocumentID,
+                                                TransactionType           = ItemTrans.TransactionType,
+                                                ItemID                    = ItemTrans.ItemID,
+                                                ItemCode                  = ItemTrans.ItemCode,
+                                                ItemDescription           = ItemTrans.ItemDescription,
+                                                Unit                      = ItemTrans.Unit,
+                                                FromID                    = ItemTrans.FromID,
+                                                ToID                      = ItemTrans.ToID,
+                                                Qty                       = perUnitQty2,
+                                                PriceExclusive            = ItemTrans.PriceExclusive,
+                                                AdditionalCosts           = ItemTrans.AdditionalCosts,
+                                                TotalUnitPriceExclInclAdd = ItemTrans.TotalUnitPriceExclInclAdd,
+                                                TotalLineValExcl          = perUnitVal2,
+                                                DocumentType              = ItemTrans.DocumentType,
+                                                TransactionReference      = ItemTrans.TransactionReference,
+                                                TransactionDate           = DateTime.Now,
+                                                ByRoleID                  = ItemTrans.ByRoleID,
+                                                ExchRate                  = ItemTrans.ExchRate,
+                                                LotNumber                 = unit.Serial,
+                                                StoreAvgCost = StoreCosting.ComputeMovement(_db, CurrentUser.CoID,
+                                                                   (long)dl.SelectionId, (long)ItemTrans.ToID,
+                                                                   perUnitQty2, perUnitVal2, out unitVal2)
+                                            });
+                                            // Saved per unit so the next one's running-average read
+                                            // sees this row. ComputeMovement queries the database and
+                                            // cannot see rows that are only Added to the context, so
+                                            // without this every unit blended against the same
+                                            // pre-receipt state and the store average came out as if
+                                            // a single unit had arrived. The reject loop below does
+                                            // the same, for the same reason.
+                                            _db.SaveChanges();
+                                        }
+                                    }
+                                    else
+                                    {
+                                        _db.ItemTransactions.Add(ItemTrans);
+                                    }
+
+                                    // Serial lots are priced individually. The lookup below keys on
+                                    // dl.LotNumber, which on a serial line is the supplier BATCH (or
+                                    // the first serial) - so without this not one of the units was
+                                    // ever given a cost, breaking the write-once lot cost rule.
+                                    if (recvUnits2.Count > 0)
+                                    {
+                                        foreach (var unit in recvUnits2)
+                                        {
+                                            string unitSerial = unit.Serial;
+                                            var unitLot = _db.LotTrackingMasters.FirstOrDefault(
+                                                x => x.CompanyID == CurrentUser.CoID && x.LotNumber == unitSerial);
+                                            if (unitLot != null && unitLot.LotTotUnitPrice == 0)
+                                                unitLot.LotTotUnitPrice = (decimal)ItemTrans.TotalUnitPriceExclInclAdd;
+                                        }
+                                    }
 
                                     if (dl.LotNumber != null)
                                     {
@@ -2358,7 +2780,15 @@ namespace SBMS
                 }
                 PnlLotTracking.Style.Add("display", "none");
                 PnlLotAdditions.Style.Add("display", "none");
-               
+                PnlSerialCapture.Style.Add("display", "none");
+                PnlUseBy.Style.Add("display", "none");
+                hfSerials.Value = string.Empty;   // never carry one line's serials onto the next
+                txtSerialScan.Text = string.Empty;
+                txtUseBy.Text = string.Empty;     // ...nor one line's expiry date
+                lblLotNumH.Text = "Lot Number";
+                lblLotAddHead.Text = "Optional Additional Lot Information";
+                Label4.Text = "Use By Date";
+
                 if (CurrentUser.CompanyUseLotNumbers == true)
                 {
                     if (Docline.ItemType != 1)
@@ -2373,12 +2803,35 @@ namespace SBMS
                         {
                             PnlLotTracking.Style.Add("display", "inline-block");
                             PnlLotTracking.Style.Add("width", "100%");
+                            // Expiry belongs to any lot-tracked item, not just serialised ones.
+                            PnlUseBy.Style.Add("display", "inline-block");
+                            PnlUseBy.Style.Add("width", "100%");
                         }
 
                         if (CurrentUser.CompanyUseLotAddDetails == true)
                         {
                             PnlLotAdditions.Style.Add("display", "inline-block");
                             PnlLotAdditions.Style.Add("width", "100%");
+                        }
+
+                        // Serial item: the box above becomes the OPTIONAL supplier batch and the
+                        // units are captured one per scan below. The Use By date applies to the
+                        // whole capture, so the additional-details panel is opened with it.
+                        if (Itm)
+                        {
+                            bool isSerial = _db.ItemsMasters
+                                .Where(x => x.CompanyID == CurrentUser.CoID && x.ID == Docline.SelectionId)
+                                .Select(x => x.IsSerialTracked).FirstOrDefault();
+                            if (isSerial)
+                            {
+                                PnlSerialCapture.Style.Add("display", "inline-block");
+                                PnlSerialCapture.Style.Add("width", "100%");
+                                PnlLotAdditions.Style.Add("display", "inline-block");
+                                PnlLotAdditions.Style.Add("width", "100%");
+                                lblLotNumH.Text = "Supplier Batch / Lot Number (optional)";
+                                Label4.Text = "Use By Date (required)";
+                                if (lblLotNum.Text == "N/A") lblLotNum.Text = "";
+                            }
                         }
                     }
                     catch { DDStore.Enabled=false; }

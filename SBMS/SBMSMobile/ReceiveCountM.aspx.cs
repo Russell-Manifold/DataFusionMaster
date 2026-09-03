@@ -1,4 +1,4 @@
-using SBMS.Classes;
+﻿using SBMS.Classes;
 using SBMS.Models;
 using System;
 using System.Collections.Generic;
@@ -41,6 +41,61 @@ namespace SBMS
 
         // ── Lifecycle ─────────────────────────────────────────────────────────
 
+        /// <summary>
+        /// Fills the "receiving into" list. A company may flag as many receiving stores as it
+        /// likes, so the operator has to say which warehouse the goods are landing in; the
+        /// picker only appears when there is more than one to choose from.
+        /// </summary>
+        private void LoadRecvStores()
+        {
+            using (SBMSEntities db = new SBMSEntities(Config.GetConnectionString()))
+            {
+                var stores = db.Stores.Where(x => x.CompanyID == CurrentUser.CoID
+                                               && x.AllowReceiving == true
+                                               && x.StoreActive == true)
+                                      .OrderBy(x => x.StoreCode).ToList();
+                ddlRecvStore.Items.Clear();
+                foreach (var st in stores)
+                {
+                    string text = string.IsNullOrEmpty(st.StoreDescript)
+                        ? st.StoreCode : st.StoreCode + " - " + st.StoreDescript;
+                    ddlRecvStore.Items.Add(new ListItem(text, st.StoreID.ToString()));
+                }
+                pnlRecvPick.Visible = stores.Count > 1;
+            }
+        }
+
+        /// <summary>
+        /// The store the operator picked, else the first by code. Never an arbitrary row -
+        /// a bare FirstOrDefault silently chose a warehouse once a company could flag more
+        /// than one for receiving, and every counted line would be staged against it.
+        /// </summary>
+        private Store SelectedRecvStore(SBMSEntities db)
+        {
+            var stores = db.Stores.Where(x => x.CompanyID == CurrentUser.CoID
+                                           && x.AllowReceiving == true
+                                           && x.StoreActive == true)
+                                  .OrderBy(x => x.StoreCode).ToList();
+            if (stores.Count == 0) return null;
+
+            long chosen;
+            if (long.TryParse(ddlRecvStore.SelectedValue, out chosen) && chosen > 0)
+            {
+                var hit = stores.FirstOrDefault(x => x.StoreID == chosen);
+                if (hit != null) return hit;
+            }
+            return stores[0];
+        }
+
+        // Changing warehouse only affects what is counted from here on; anything already
+        // staged keeps the store it was captured against.
+        protected void ddlRecvStore_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            SetFeedback(true, "&#10003; Receiving into <strong>"
+                + (ddlRecvStore.SelectedItem != null ? ddlRecvStore.SelectedItem.Text : "")
+                + "</strong>. Lines already counted keep the store they were captured against.");
+        }
+
         protected void Page_Load(object sender, EventArgs e)
         {
             if (CurrentUser == null)
@@ -70,6 +125,9 @@ namespace SBMS
                 Context.ApplicationInstance.CompleteRequest();
                 return;
             }
+
+            // Bound once so the operator's choice survives postbacks.
+            if (!IsPostBack) LoadRecvStores();
 
             if (!IsPostBack)
             {
@@ -263,11 +321,23 @@ namespace SBMS
                 // Resolve the receiving store BEFORE staging anything. Without one we can stamp
                 // neither a store code nor a lot number, and a line staged with neither is
                 // unusable on the web - refuse the count rather than half-write it.
-                var recvStore = db.Stores.FirstOrDefault(s => s.CompanyID == CurrentUser.CoID
-                    && s.AllowReceiving == true && s.StoreActive == true);
+                var recvStore = SelectedRecvStore(db);
                 if (recvStore == null)
                 {
                     SetFeedback(false, "&#9888; No receiving store is configured &mdash; ask an administrator to flag a store as Allow Receiving.");
+                    return;
+                }
+
+                // A serial item cannot be counted in here. This page mints ONE lot for the
+                // whole quantity with no expiry, and captures no serial numbers - so the web
+                // Submit later finds no serials and posts a single lumped movement against a
+                // lot that is supposed to hold one unit. The stock then exists, is valued, and
+                // can never be picked (the chooser only offers single units) or traced.
+                if (SerialGuard.IsSerialItem(db, CurrentUser.CoID, line.SelectionId))
+                {
+                    SetFeedback(false, "&#9888; " + line.ItemCode + " is serial tracked &mdash; "
+                        + "receive it on the web screen so each unit&#39;s serial number and "
+                        + "expiry date are captured. Nothing was counted.");
                     return;
                 }
 

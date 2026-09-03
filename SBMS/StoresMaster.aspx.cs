@@ -171,13 +171,13 @@ namespace SBMS
             string stCode = row.Cells[0].Text.ToString();
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {
-                if (chk.Checked)
-                {
-                    // Single receiving store per company - clear it off every other store.
-                    foreach (var st in _db.Stores.Where(x => x.CompanyID == CurrentUser.CoID && x.AllowReceiving && x.StoreCode != stCode))
-                        st.AllowReceiving = false;
-                }
+                // A company may receive into as many stores as it likes - the web Receiving
+                // screen has always offered them as a dropdown. This briefly cleared the flag
+                // off every other store (added with the scanner work, so mobile could assume a
+                // single holding store); that broke multi-warehouse customers, who could only
+                // ever have one warehouse ticked at a time.
                 Store NewSt = _db.Stores.Where(x => x.CompanyID == CurrentUser.CoID && x.StoreCode == stCode).FirstOrDefault();
+                if (NewSt == null) { LoadStores(); return; }
                 NewSt.AllowReceiving = chk.Checked;
                 _db.SaveChanges();
                 LoadStores();

@@ -82,6 +82,10 @@
                                     <h4 style="text-align:center">Analysis</h4>
                                     <asp:LinkButton ID="lbtnStockMove" runat="server" OnClick="lbtnStockMove_Click" CssClass="button buttonLarge" ToolTip="View and logs of items and lot number transactions." >Stock/Lot Movement</asp:LinkButton><br /><br />
                                     <asp:LinkButton ID="lbtnSOH" runat="server" OnClick="lbtnSOH_Click" CssClass="button buttonLarge" ToolTip="View stock balances by store"  >Stock/Lot Balances</asp:LinkButton><br /><br />
+                                    <asp:LinkButton ID="lbtnReOrder" runat="server" OnClick="lbtnReOrder_Click" CssClass="button buttonLarge" ToolTip="What to buy: on hand, on order, committed and recommended order quantity per item." >Re-Order Report</asp:LinkButton><br /><br />
+                                    <%-- Lot / serial screens. Hidden unless the company tracks lots. --%>
+                                    <asp:LinkButton ID="lbtnTrace" runat="server" OnClick="lbtnTrace_Click" CssClass="button buttonLarge" ToolTip="Search a serial or batch: where it came from, where it went, and who has it." >Traceability &amp; Recall</asp:LinkButton><br /><br />
+                                    <asp:LinkButton ID="lbtnExpiry" runat="server" OnClick="lbtnExpiry_Click" CssClass="button buttonLarge" ToolTip="Expired and short-dated stock still on hand." >Expiry Control</asp:LinkButton><br /><br />
                                      <asp:LinkButton ID="lbtnPickGP" runat="server" OnClick="lbtnPickGP_Click" CssClass="button buttonLarge" ToolTip="Analyse picking slips and view GP per each one"  >Picking Slip GP Analysis</asp:LinkButton><br /><br />
                                      <asp:LinkButton ID="lbtnItemGP" runat="server" OnClick="lbtnItemGP_Click" CssClass="button buttonLarge" ToolTip="Analyse item sale and view GP per item"  >Item Sales GP Analysis</asp:LinkButton><br /><br />
                                

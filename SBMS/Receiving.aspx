@@ -327,7 +327,7 @@
             <asp:LinkButton ID="LinkButton2" runat="server" style="display:none">LinkButton</asp:LinkButton>
            <cci:ModalPopupExtender ID="ModalPopupExtender1" runat="server" BackgroundCssClass="ModalPopupBG" CancelControlID="lbtnCancelP" Drag="true" OkControlID="lbtnReceiveA" PopupControlID="PnlReceive" PopupDragHandleControlID="PopupHeader" TargetControlID="LinkButton2"></cci:ModalPopupExtender>                           
             <asp:Panel ID="PnlReceive" runat="server" Style="display: none" DefaultButton="lbtnReceive">        
-                                    <div class="HellowWorldPopup" style="text-align:center; font-size:.8em">
+                                    <div class="HellowWorldPopup rec-modal" style="text-align:center">
                                          <asp:LinkButton ID="lbtnCancelP" runat="server" CssClass="fa fa-times" style="float:right" ToolTip="Cancel" OnClick="lbtnCancelP_Click" > </asp:LinkButton>
                                         <div id="Div5" class="PopupHeader">
                                             <h3>Update Line Item Receiving</h3>
@@ -361,54 +361,88 @@
                                                     <td><asp:DropDownList ID="DDStoreEdit" runat="server" AutoPostBack="true" OnSelectedIndexChanged="DDStoreEdit_SelectedIndexChanged" style="width:10em; text-align:center" TabIndex="1"></asp:DropDownList></td>
                                                 </tr>
                                                </table> 
-                                                  <asp:Panel ID="PnlLotTracking" runat="server" style="text-align:center">
-                                                <table style="margin:auto;"">
+                                                  <asp:Panel ID="PnlLotTracking" runat="server" CssClass="rec-panel" style="text-align:center">
+                                                <table style="width:100%">
                                                       <tr>
                                                     <td><asp:Label ID="lblLotNumH" runat="server" Text="Lot Number"></asp:Label></td>
                                                 </tr>
                                                 <tr>
-                                                    <td><asp:TextBox ID="lblLotNum" runat="server" style="width:80%; margin-left:10%; margin-right:10%; text-align:center" OnTextChanged="lblLotNum_TextChanged" MaxLength="50" onkeyup="countCharacters(this)" onblur="convertToUpper(this)"></asp:TextBox><br />
+                                                    <td><asp:TextBox ID="lblLotNum" runat="server" CssClass="rec-input" OnTextChanged="lblLotNum_TextChanged" MaxLength="50" onkeyup="countCharacters(this)" onblur="convertToUpper(this)"></asp:TextBox><br />
                                                         <cci:FilteredTextBoxExtender ID="FilteredTextBoxExtender3" runat="server" TargetControlID="lblLotNum" FilterType="Numbers, UppercaseLetters, LowercaseLetters, Custom" ValidChars=".-/\:*" />
                                                         <asp:HiddenField ID="hfOriginalLotNumber" runat="server" /></td>
                                                         </tr>
                                                         <tr>
                                                             <td>
-                                                        <span style="font-size:.8em">(Max 50 Characters:  <asp:Label ID="lblCharacterCount" runat="server" Text="Remaining: 50"></asp:Label> )</span><br />
-                                                        <span style="font-size:.8em">(Limited to:- Numbers, UppercaseLetters and ONLY these special characters  - / \ : * )</span>
+                                                        <div class="rec-hint"><asp:Label ID="lblCharacterCount" runat="server" Text="Remaining: 50"></asp:Label> of 50 characters
+                                                            &mdash; letters, numbers and - / \ : * only</div>
                                                     </td>
                                                 </tr>
                                                 <tr>
                                                     <td><hr /></td>
                                                 </tr>
                                                </table>
-                                                        <asp:Panel ID="PnlLotAdditions" runat="server">
-                                                    <table style="width:90%; margin:auto; background-color:#DCDCDC">
-                                                    <tr>
-                                                    <td colspan="3"><h4>Optional Additional Lot Information</h4></td>
-                                                </tr>
-                                                 <tr>
-                                                     <td colspan="3"><h4><asp:Label ID="Label4" runat="server" Text="Use By Date"></asp:Label> </h4></td>
-                                                 </tr>
-                                                 <tr>
-                                                     <td colspan="3"><asp:TextBox ID="txtUseBy" runat="server" style="width:10em; text-align:center"></asp:TextBox><br />
-                                                        <cci:CalendarExtender ID="CalendarExtender2" runat="server" Enabled="True" TargetControlID="txtUseBy" Format="dd MMM yyyy"></cci:CalendarExtender>
-                                                     </td>
-                                                 </tr> 
-                                                <tr>
-                                                     <td colspan="3"><h4><asp:Label ID="Label2" runat="server" Text="Lot User Defined Note"></asp:Label> </h4></td>
-                                                 </tr>
-                                                 <tr>
-                                                     <td colspan="3"><asp:TextBox ID="txtLotNote" runat="server" style="text-align:center" width="95%" MaxLength="250"></asp:TextBox><br />
-                                                         <asp:HiddenField ID="HiddenField1" runat="server" /><span style="font-size:.8em">(Max 250 Characters)</span>
-                                                     </td>
-                                                 </tr>
-                                                <tr>
-                                                    <td colspan="3"><asp:TextBox ID="txtNumPieces" runat="server" style="width:10em; text-align:center; margin-bottom:1em; display:none"></asp:TextBox><br />
-                                                        <cci:FilteredTextBoxExtender ID="FilteredTextBoxExtender2" runat="server" TargetControlID="txtNumPieces" FilterType="Custom, Numbers" ValidChars="." />
-                                                    </td>
-                                                </tr>
-                                               </table>
-                                             </asp:Panel>
+                                                <%-- Serial capture. Only shown for serial-tracked items; the lot box above
+                                                     then holds the supplier BATCH that these serials belong to. --%>
+                                                <%-- Use By applies to lot items AND serial items, so it lives outside the
+                                                     serial panel. For serials the date is captured WITH each unit: change it
+                                                     part-way and units scanned after it take the new date, so one receipt can
+                                                     hold stock expiring on different days. --%>
+                                                <asp:Panel ID="PnlUseBy" runat="server" CssClass="rec-panel" style="display:none">
+                                                    <table style="width:100%">
+                                                        <tr>
+                                                            <td class="rec-field"><asp:Label ID="Label4" runat="server" Text="Use By Date"></asp:Label><br />
+                                                                <asp:TextBox ID="txtUseBy" runat="server" ClientIDMode="Static" CssClass="rec-input"></asp:TextBox>
+                                                                <cci:CalendarExtender ID="CalendarExtender2" runat="server" Enabled="True" TargetControlID="txtUseBy" Format="dd MMM yyyy"></cci:CalendarExtender>
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </asp:Panel>
+                                                <asp:Panel ID="PnlSerialCapture" runat="server" CssClass="rec-panel" style="display:none">
+                                                    <table style="width:100%">
+                                                        <tr>
+                                                            <td><div class="rec-panel-head">Serial Numbers</div></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="rec-field">
+                                                                <asp:TextBox ID="txtSerialScan" runat="server" ClientIDMode="Static" CssClass="rec-input"
+                                                                     placeholder="Scan or type a serial, then Enter" MaxLength="50"
+                                                                     autocomplete="off" autocorrect="off" autocapitalize="off"></asp:TextBox>
+                                                                <asp:HiddenField ID="hfSerials" runat="server" ClientIDMode="Static" />
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><span id="serialCount" class="serial-count">0 captured</span>
+                                                                &nbsp;<button type="button" id="btnSerialClear" class="button2" style="font-size:.75em">Clear all</button></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><ul id="serialList" class="serial-list"></ul></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><div class="rec-hint">One serial per unit. The line cannot be saved until
+                                                                the count matches the quantity received.</div></td>
+                                                        </tr>
+                                                    </table>
+                                                    <hr />
+                                                </asp:Panel>
+                                                        <asp:Panel ID="PnlLotAdditions" runat="server" CssClass="rec-panel">
+                                                            <table style="width:100%">
+                                                                <tr>
+                                                                    <td><div class="rec-panel-head"><asp:Label ID="lblLotAddHead" runat="server" Text="Optional Additional Lot Information"></asp:Label></div></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td class="rec-field"><asp:Label ID="Label2" runat="server" Text="Lot User Defined Note"></asp:Label><br />
+                                                                        <asp:TextBox ID="txtLotNote" runat="server" CssClass="rec-input" MaxLength="250"></asp:TextBox>
+                                                                        <asp:HiddenField ID="HiddenField1" runat="server" />
+                                                                        <div class="rec-hint">Max 250 characters</div>
+                                                                    </td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td style="padding:0"><asp:TextBox ID="txtNumPieces" runat="server" style="width:10em; text-align:center; display:none"></asp:TextBox>
+                                                                        <cci:FilteredTextBoxExtender ID="FilteredTextBoxExtender2" runat="server" TargetControlID="txtNumPieces" FilterType="Custom, Numbers" ValidChars="." />
+                                                                    </td>
+                                                                </tr>
+                                                            </table>
+                                                        </asp:Panel>
                                                       </asp:Panel>
                                               <%--<table style="width:100%">
                                                 <tr>
@@ -533,6 +567,39 @@
             textBox.value = textBox.value.toUpperCase();
         }
     </script>
+    <style>
+        /* The receive-line modal only. .HellowWorldPopup is shared by every popup in the
+           app - widening or resizing it there would move all of them - so the width and
+           font size live here, on a class only this modal carries.
+           Was font-size:.8em inline (about 11px); .95em is roughly two points larger. */
+        .rec-modal { width:640px; max-width:95vw; margin:auto; font-size:.95em; }
+
+        /* Panels inside the receive-line modal - one look for both. */
+        .rec-panel      { margin:0 0 .9em; padding:1em 1.4em; background:#f4f7f9;
+                          border:1px solid #cfd8df; border-radius:.4em; }
+        .rec-panel-head { font-weight:700; color:#4282C1; margin-bottom:.6em; }
+        .rec-field      { padding:.35em 0; }
+        /* The panels supply the padding; inputs simply fill the space inside them, so every
+           box in the modal is the same width whatever container it happens to sit in. */
+        .rec-input      { width:300px; max-width:100%; box-sizing:border-box; text-align:center; }
+        .rec-hint       { font-size:.8em; color:#7a8b98; margin-top:.15em; }
+        /* Same width as the inputs above it, so the panel reads as one column. */
+        .serial-list { list-style:none; width:300px; max-width:100%; margin:.3em auto; padding:0;
+                       max-height:11em; overflow-y:auto;
+                       text-align:left; border:1px solid #cfd8df; border-radius:.3em; background:#fff; }
+        .serial-row  { display:flex; align-items:center; gap:.4em; padding:.25em .5em;
+                       border-bottom:1px solid #eef2f5; font-size:.9em; }
+        .serial-row:last-child { border-bottom:none; }
+        .serial-idx  { min-width:2em; color:#8a99a6; text-align:right; }
+        .serial-val  { flex:1; font-weight:600; }
+        .serial-exp  { color:#5a6b78; white-space:nowrap; text-align:right; font-size:.9em; }
+        .serial-del  { border:none; background:none; color:#c0392b; font-size:1.1em;
+                       cursor:pointer; line-height:1; }
+        .serial-count      { font-size:.85em; font-weight:600; color:#5a6b78; }
+        .serial-count.ok   { color:#1e8449; }
+        .serial-count.warn { color:#c0392b; }
+    </style>
+    <script src="<%= ResolveUrl("~/scripts/serialCapture.js") %><%= SBMS.Classes.Ver.Js("~/scripts/serialCapture.js") %>"></script>
     
 </body>
 </html>

@@ -1,0 +1,37 @@
+# Keep the knowledge graph about SBMS, not about the things SBMS ships with.
+#
+# Without this the graph was ~37,000 nodes of which the overwhelming majority
+# were minified vendor JavaScript. Clustering followed the bulk, so every
+# "god node" and every suggested question came back about echarts and jQuery
+# internals instead of picking, receiving or serial tracking.
+
+# ── Third-party front-end (admin theme, chart and editor bundles) ──
+niceadmin/
+lib/
+prologue/
+assets/
+js/
+content/
+fonts/
+pivot/
+
+# ── Build output and packages ──
+bin/
+obj/
+packages/
+.vs/
+
+# ── Generated and runtime artefacts, not source ──
+PDFs/
+App_Data/
+inputcsv/
+workbooks/
+documents/
+images/
+
+# ── graphify's own output ──
+graphify-out/
+
+# jQuery lives in scripts/ alongside our own serialCapture.js, so exclude the
+# library by name rather than the whole folder.
+scripts/jquery-*.js

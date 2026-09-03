@@ -23,7 +23,7 @@
                         <asp:LinkButton ID="lbtnLogOut" runat="server" class="buttonTransparent icon fa-eject" Style="float: right" ToolTip="Log Out" OnClick="lbtnLogOut_Click">&nbsp;</asp:LinkButton>
                         <br />
                         <h2 style="padding-top: 0; line-height: 1em">GL Account Access</h2>
-                        <p style="margin-top:.3em; color:#666">Choose which GL accounts may be used, and where.
+                        <p style="margin-top:.3em; color:#666; text-align:center">Choose which GL accounts may be used, and where.
                             Only <b>one</b> account can be the Stock Adjustment Account.</p>
                     </div>
                     <div class="2u 12u$(medium)">
@@ -32,7 +32,7 @@
                 <div class="row 150%">
                     <div class="3u 12u$(medium)" style="text-align: center">&nbsp;</div>
                     <div class="6u 12u$(medium)" style="text-align: center">
-                        <asp:GridView ID="GridAccounts" runat="server" AutoGenerateColumns="false" CssClass="gridview" >
+                        <asp:GridView ID="GridAccounts" runat="server" AutoGenerateColumns="false" CssClass="gridview" DataKeyNames="AccountID" >
                             <HeaderStyle CssClass="gridViewHeader" />
                             <FooterStyle CssClass="gridViewHeader" />
                             <RowStyle CssClass="gridViewRow" />

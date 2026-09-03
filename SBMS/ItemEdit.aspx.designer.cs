@@ -222,6 +222,16 @@ namespace SBMS
         protected global::System.Web.UI.WebControls.CheckBox chkIsTracked;
 
         /// <summary>
+        /// LbLIsSerial control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Label LbLIsSerial;
+
+        /// <summary>
+        /// chkIsSerial control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.CheckBox chkIsSerial;
+
+        /// <summary>
         /// chkIsFromKit control.
         /// </summary>
         /// <remarks>

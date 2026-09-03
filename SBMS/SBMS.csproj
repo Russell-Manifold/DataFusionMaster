@@ -232,6 +232,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="ExpiryControl.aspx" />
+    <Content Include="Traceability.aspx" />
     <Content Include="assets\css\images\overlay.png" />
     <Content Include="assets\js\buttonDisable.js" />
     <Content Include="SBMSMobile\css\mobile-ui.css" />
@@ -860,6 +862,7 @@
     </None>
     <Content Include="ConfigRoles.aspx" />
     <Content Include="scripts\itemSearch.js" />
+    <Content Include="scripts\serialCapture.js" />
     <Content Include="scripts\notifications.js" />
     <Content Include="scripts\PickSlipRefresh.js" />
     <Content Include="scripts\sendKeepAlive.js" />
@@ -872,6 +875,8 @@
     <Content Include="WorksOrdersManfDetailed.aspx" />
     <Content Include="WorksOrdersManf.aspx" />
     <Content Include="WorksOrdersDetailed.aspx" />
+    <Content Include="WorksOrdersRMEdit.aspx" />
+    <Content Include="ReOrderReport.aspx" />
     <Content Include="ForeCastDetailed.aspx" />
     <Content Include="WorksOrdersHeaders.aspx" />
     <Content Include="ForeCastHeaders.aspx" />
@@ -1076,6 +1081,25 @@
     <Compile Include="Classes\CellParse.cs" />
     <Compile Include="Classes\MobileBasePage.cs">
       <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Classes\AddCostJournal.cs" />
+    <Compile Include="Classes\BomAddCostAccounts.cs" />
+    <Compile Include="Classes\SerialGuard.cs" />
+    <Compile Include="Classes\SerialPicking.cs" />
+    <Compile Include="Classes\SerialRollup.cs" />
+    <Compile Include="ExpiryControl.aspx.cs">
+      <DependentUpon>ExpiryControl.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="ExpiryControl.aspx.designer.cs">
+      <DependentUpon>ExpiryControl.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Traceability.aspx.cs">
+      <DependentUpon>Traceability.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Traceability.aspx.designer.cs">
+      <DependentUpon>Traceability.aspx</DependentUpon>
     </Compile>
     <Compile Include="Classes\StoreCosting.cs" />
     <Compile Include="Classes\Authentication.cs" />
@@ -1806,6 +1830,20 @@
     </Compile>
     <Compile Include="WorksOrdersDetailed.aspx.designer.cs">
       <DependentUpon>WorksOrdersDetailed.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="WorksOrdersRMEdit.aspx.cs">
+      <DependentUpon>WorksOrdersRMEdit.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="WorksOrdersRMEdit.aspx.designer.cs">
+      <DependentUpon>WorksOrdersRMEdit.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="ReOrderReport.aspx.cs">
+      <DependentUpon>ReOrderReport.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="ReOrderReport.aspx.designer.cs">
+      <DependentUpon>ReOrderReport.aspx</DependentUpon>
     </Compile>
     <Compile Include="ForeCastDetailed.aspx.cs">
       <DependentUpon>ForeCastDetailed.aspx</DependentUpon>

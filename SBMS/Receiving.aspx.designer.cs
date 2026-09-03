@@ -852,6 +852,31 @@ namespace SBMS
         protected global::System.Web.UI.WebControls.Panel PnlLotAdditions;
 
         /// <summary>
+        /// lblLotAddHead control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Label lblLotAddHead;
+
+        /// <summary>
+        /// PnlSerialCapture control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Panel PnlUseBy;
+
+        /// <summary>
+        /// PnlSerialCapture control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Panel PnlSerialCapture;
+
+        /// <summary>
+        /// txtSerialScan control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.TextBox txtSerialScan;
+
+        /// <summary>
+        /// hfSerials control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.HiddenField hfSerials;
+
+        /// <summary>
         /// Label4 control.
         /// </summary>
         /// <remarks>
@@ -890,10 +915,6 @@ namespace SBMS
         /// <summary>
         /// txtLotNote control.
         /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
         protected global::System.Web.UI.WebControls.TextBox txtLotNote;
 
         /// <summary>

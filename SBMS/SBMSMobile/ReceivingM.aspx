@@ -84,6 +84,14 @@
             <div class="mob-doc-header-main">
                 <span class="mob-doc-num"><svg class="mob-ico" aria-hidden="true"><use href="#i-package"/></svg> From: <asp:Label ID="lblPONum" runat="server" /></span>
             </div>
+            <%-- Shown only when the company receives into more than one store. --%>
+            <asp:Panel ID="pnlSourcePick" runat="server" Visible="false" CssClass="mob-doc-meta">
+                <span class="mob-doc-badge" style="padding:.2em .5em">
+                    Put away from&nbsp;<asp:DropDownList ID="ddlSourceStore" runat="server" AutoPostBack="true"
+                        OnSelectedIndexChanged="ddlSourceStore_SelectedIndexChanged"
+                        style="font-size:16px;height:2.3em;border:1px solid #ccc;border-radius:.45em;" />
+                </span>
+            </asp:Panel>
             <div class="mob-doc-meta">
                 <span class="mob-doc-badge"><asp:Label ID="lblLineCount" runat="server" /> line(s) in holding</span>
             </div>

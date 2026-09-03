@@ -168,7 +168,21 @@ namespace SBMS
         protected void myDataGrid_Sorting(object sender, GridViewSortEventArgs e)
         {
             string sortExpression = e.SortExpression;
-            string sortDirection = ViewState["SortDirection"] as string == "ASC" ? "DESC" : "ASC";
+
+            // ONE click must change the order.
+            //
+            // ViewState["SortDirection"] is empty until a header is clicked, so the old test
+            // (null == "ASC") was false on the first click and set "ASC" - the same order the
+            // grid already loaded in. Nothing moved, and it took a second click to see anything.
+            // Default to the direction BindData actually used, so the first click flips it.
+            //
+            // Clicking a DIFFERENT column starts that column ascending rather than inheriting
+            // the previous column's direction, which is what every other grid does.
+            string prevExpression = ViewState["SortExpression"] as string ?? "CreatedDate";
+            string prevDirection  = ViewState["SortDirection"] as string ?? "ASC";
+            string sortDirection  = sortExpression == prevExpression
+                                  ? (prevDirection == "ASC" ? "DESC" : "ASC")
+                                  : "ASC";
 
             ViewState["SortExpression"] = sortExpression;
             ViewState["SortDirection"] = sortDirection;
@@ -195,7 +209,21 @@ namespace SBMS
         protected void GridPOs_Sorting(object sender, GridViewSortEventArgs e)
         {
             string sortExpression = e.SortExpression;
-            string sortDirection = ViewState["SortDirection"] as string == "ASC" ? "DESC" : "ASC";
+
+            // ONE click must change the order.
+            //
+            // ViewState["SortDirection"] is empty until a header is clicked, so the old test
+            // (null == "ASC") was false on the first click and set "ASC" - the same order the
+            // grid already loaded in. Nothing moved, and it took a second click to see anything.
+            // Default to the direction BindData actually used, so the first click flips it.
+            //
+            // Clicking a DIFFERENT column starts that column ascending rather than inheriting
+            // the previous column's direction, which is what every other grid does.
+            string prevExpression = ViewState["SortExpression"] as string ?? "CreatedDate";
+            string prevDirection  = ViewState["SortDirection"] as string ?? "ASC";
+            string sortDirection  = sortExpression == prevExpression
+                                  ? (prevDirection == "ASC" ? "DESC" : "ASC")
+                                  : "ASC";
 
             ViewState["SortExpression"] = sortExpression;
             ViewState["SortDirection"] = sortDirection;

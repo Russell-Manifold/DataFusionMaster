@@ -316,6 +316,18 @@ namespace SBMS
                 ItemTrans.ToID = storeid;
                 decimal signedQty = Convert.ToDecimal(txtAdjQty.Text);
                 if (DDInOut.SelectedIndex == 2) signedQty = signedQty * -1;
+
+                // A serial is a lot holding one unit. An adjustment of 5 against one serial would
+                // put five units on a lot that holds one, and the picking chooser - which only
+                // offers single units - would then never show it again.
+                string serialBlock = SerialGuard.CheckUnitQty(_db, CurrentUser.CoID,
+                                                              Convert.ToInt64(itm.ID), itm.Code, signedQty);
+                if (serialBlock != null)
+                {
+                    AlertHelper.ShowSweetAlert(this, serialBlock + " Nothing was adjusted.", "error");
+                    return;
+                }
+
                 ItemTrans.Qty = signedQty;
                 ItemTrans.DocumentType = 1;
                 ItemTrans.TransactionDate = DateTime.Now;
@@ -590,6 +602,21 @@ namespace SBMS
                 return;
             }
             
+            // A serial number is captured at receiving, with its expiry, one per physical unit.
+            // A lot minted here would have neither and could never be picked.
+            using (SBMSEntities _dbSer = new SBMSEntities(Config.GetConnectionString()))
+            {
+                long newLotItemId = 0;
+                long.TryParse(DDItemList.SelectedValue, out newLotItemId);
+                string serialStop = SerialGuard.CheckCanCreateStock(_dbSer, CurrentUser.CoID,
+                                                                    newLotItemId, DDItemList.SelectedItem != null ? DDItemList.SelectedItem.Text : null);
+                if (serialStop != null)
+                {
+                    AlertHelper.ShowSweetAlert(this, serialStop, "warning");
+                    return;
+                }
+            }
+
             if (DDItemList.SelectedIndex == -1)
             {
                 string message = "Please select an Item before creating a new lot number";

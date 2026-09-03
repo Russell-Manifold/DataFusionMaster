@@ -1,4 +1,4 @@
-using SBMS.Classes;
+﻿using SBMS.Classes;
 using SBMS.Models;
 using System;
 using System.Collections.Generic;
@@ -147,6 +147,22 @@ namespace SBMS
                     long gitId = GitStoreId(db);
                     var lines = db.ItemTransferLines.Where(x => x.TrfID == TrfID && x.CompanyID == CurrentUser.CoID && (x.TrfOutQty ?? 0) > 0).ToList();
 
+                    // A serial lot holds exactly one unit, so it moves one at a time.
+                    // Checked for EVERY line before anything moves: MoveStock returns void
+                    // and runs in the loop below, so refusing in there would quietly skip a
+                    // line and send the rest - a half transfer nobody was told about.
+                    foreach (var chk in lines)
+                    {
+                        string stop = SerialGuard.CheckUnitQty(db, CurrentUser.CoID,
+                                                               chk.ItemSelectionId ?? 0,
+                                                               chk.ItemCode, chk.TrfOutQty ?? 0);
+                        if (stop != null)
+                        {
+                            SetFeedback(false, "&#9888; " + stop + " Nothing was sent.");
+                            BindLines(); RenderMode(); return;
+                        }
+                    }
+
                     // All-or-nothing: a failure mid-loop must not leave some lines in
                     // GIT while the header stays open (a resend would then move the
                     // earlier lines twice). Store moves are local-only, so a plain DB
@@ -215,6 +231,16 @@ namespace SBMS
                     if (recvQty > remaining)
                     {
                         SetFeedback(false, $"&#9888; Only {remaining:0.##} of {line.ItemCode} still in transit.");
+                        BindLines(); RenderMode(); return;
+                    }
+
+                    // Same one-unit rule on the way in.
+                    string serialStop = SerialGuard.CheckUnitQty(db, CurrentUser.CoID,
+                                                                 line.ItemSelectionId ?? 0,
+                                                                 line.ItemCode, recvQty);
+                    if (serialStop != null)
+                    {
+                        SetFeedback(false, "&#9888; " + serialStop + " Nothing was received.");
                         BindLines(); RenderMode(); return;
                     }
 

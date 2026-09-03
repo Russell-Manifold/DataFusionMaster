@@ -1,4 +1,4 @@
-using SBMS.Classes;
+﻿using SBMS.Classes;
 using SBMS.Models;
 using System;
 using System.Collections.Generic;
@@ -78,6 +78,9 @@ namespace SBMS
             // Barcode-off companies put away by tapping the card (qty prefilled to QOH); hide the scan bar.
             pnlScanBar.Visible = CurrentUser.MobileModule == true;
 
+            // Bind the store list once, so the operator's choice survives postbacks.
+            if (!IsPostBack) LoadSourceStores();
+
             // Resolve the holding store on every load so the put-away handlers have it.
             if (!ResolveSourceStore())
             {
@@ -97,19 +100,64 @@ namespace SBMS
             }
         }
 
+        /// <summary>
+        /// Fills the "put away from" list. A company may flag as many receiving stores as it
+        /// likes, so the operator has to be able to say which one they are standing at; the
+        /// picker only appears when there is genuinely a choice to make.
+        /// </summary>
+        private void LoadSourceStores()
+        {
+            using (SBMSEntities db = new SBMSEntities(Config.GetConnectionString()))
+            {
+                var stores = db.Stores.Where(x => x.CompanyID == CurrentUser.CoID
+                                               && x.AllowReceiving == true
+                                               && x.StoreActive == true)
+                                      .OrderBy(x => x.StoreCode).ToList();
+                ddlSourceStore.Items.Clear();
+                foreach (var st in stores)
+                {
+                    string text = string.IsNullOrEmpty(st.StoreDescript)
+                        ? st.StoreCode : st.StoreCode + " - " + st.StoreDescript;
+                    ddlSourceStore.Items.Add(new ListItem(text, st.StoreID.ToString()));
+                }
+                pnlSourcePick.Visible = stores.Count > 1;
+            }
+        }
+
         private bool ResolveSourceStore()
         {
             using (SBMSEntities db = new SBMSEntities(Config.GetConnectionString()))
             {
-                var s = db.Stores.FirstOrDefault(x => x.CompanyID == CurrentUser.CoID
-                                                   && x.AllowReceiving == true
-                                                   && x.StoreActive == true);
-                if (s == null) return false;
+                var stores = db.Stores.Where(x => x.CompanyID == CurrentUser.CoID
+                                               && x.AllowReceiving == true
+                                               && x.StoreActive == true)
+                                      .OrderBy(x => x.StoreCode).ToList();
+                if (stores.Count == 0) return false;
+
+                // Whatever the operator picked, else the first by code - never an arbitrary
+                // row, which is what a bare FirstOrDefault gave once more than one store
+                // could be flagged for receiving.
+                Store s = null;
+                long chosen;
+                if (long.TryParse(ddlSourceStore.SelectedValue, out chosen) && chosen > 0)
+                    s = stores.FirstOrDefault(x => x.StoreID == chosen);
+                if (s == null) s = stores[0];
+
                 SourceStoreCode      = s.StoreCode;
                 SourceStoreID        = s.StoreID;
                 ViewState["SrcName"] = s.StoreDescript;
                 return true;
             }
+        }
+
+        // Switching store starts a clean put-away against the new holding location.
+        protected void ddlSourceStore_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (!ResolveSourceStore()) return;
+            lblPONum.Text = SourceStoreCode + " - " + (ViewState["SrcName"] as string ?? "");
+            txtBarcode.Text = string.Empty;
+            SetFeedback(true, "&#10003; Putting away from <strong>" + SourceStoreCode + "</strong>.");
+            BindLines();
         }
 
         // ── Data ──────────────────────────────────────────────────────────────
@@ -293,6 +341,16 @@ namespace SBMS
                 if (qty > (row.QOH ?? 0))
                 {
                     SetFeedback(false, $"&#9888; Only {(row.QOH ?? 0):0.##} in holding for that lot.");
+                    return;
+                }
+
+                // A serial lot holds exactly one unit, so it puts away one at a time. Any
+                // other quantity would put several units on a lot that holds one.
+                string serialStop = SerialGuard.CheckUnitQty(db, CurrentUser.CoID, itemId,
+                                                             MatchedItemCode, qty);
+                if (serialStop != null)
+                {
+                    SetFeedback(false, "&#9888; " + serialStop);
                     return;
                 }
 

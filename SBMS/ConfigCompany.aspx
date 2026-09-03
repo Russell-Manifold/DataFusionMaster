@@ -195,6 +195,12 @@
                                         <div class="cfg-help">On = the app auto-creates lot numbers (scanners can receive). Off = users enter their own lot numbers (receiving is web-only).</div>
                                     </td>
                                 </tr>
+                                <tr>
+                                    <td class="cfg-lbl">Serial Number Tracking</td>
+                                    <td><asp:CheckBox ID="chkSerialTrack" runat="server" />
+                                        <div class="cfg-help">Track every unit individually. Serials are held as lots of quantity 1, so a supplier batch still groups them. Needs Lot Tracking switched on.</div>
+                                    </td>
+                                </tr>
                                 <tr><td colspan="2" class="cfg-sec" style="padding-top:1rem">Pack Sizes</td></tr>
                                 <tr>
                                     <td class="cfg-lbl">Use Pack Sizes</td>

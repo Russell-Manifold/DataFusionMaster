@@ -34,6 +34,9 @@ namespace SBMS.Classes
         public bool SendMessages { get; set; }
         public bool CanEditLotNumbers { get; set; }
         public bool CompanyUseLotNumbers { get; set; }
+        // Serial numbers ride on the lot plumbing: a serial item is lot tracked, with
+        // one lot per unit. This flag only says the company has the module switched on.
+        public bool CompanyUseSerialNumbers { get; set; }
         public bool CompanyUseLotAddDetails { get; set; }
         public bool CompanyAllowSystemLotNumbers { get; set; }
         public bool AllowScannerCount { get; set; }

@@ -1,4 +1,4 @@
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SBMS.Classes;
 using SBMS.Models;
@@ -306,6 +306,17 @@ namespace SBMS
                 // per capture), so only the new qty is subtracted from it.
                 decimal alreadyStaged = line.ToReceive == true ? (line.ReceiveQty ?? 0m) : 0m;
                 decimal totalStaged   = alreadyStaged + qty;
+
+                // Same rule as ReceiveCountM: no serial numbers and no expiry can be captured
+                // here, so a serial line staged from the scanner posts as one lumped movement
+                // on the web and the units become unpickable and untraceable.
+                if (SerialGuard.IsSerialItem(db, CurrentUser.CoID, line.SelectionId))
+                {
+                    SetFeedback(false, "&#9888; " + line.ItemCode + " is serial tracked &mdash; "
+                        + "receive it on the web screen so each unit&#39;s serial number and "
+                        + "expiry date are captured. Nothing was received.");
+                    return;
+                }
 
                 line.ReceiveQty = totalStaged;
                 line.StoreCode  = loc.StoreCode;
