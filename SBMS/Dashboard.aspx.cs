@@ -1,8 +1,10 @@
 ﻿using DocumentFormat.OpenXml.Math;
 using DocumentFormat.OpenXml.Spreadsheet;
+using Newtonsoft.Json;
 using SBMS.Classes;
 using SBMS.Models;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
@@ -95,6 +97,121 @@ namespace SBMS
                 DDProgBoard.Items.Remove("Production");
                 PnlProduction.Style.Add("display", "none");
             }
+        }
+
+        /// <summary>
+        /// Mini dashboard (KPI tiles + charts). Added for the UI refresh: READ-ONLY
+        /// aggregate queries — no writes, no Sage API calls, and no existing page
+        /// behaviour is altered. Hooked in via OnLoadComplete so Page_Load is untouched.
+        /// </summary>
+        protected override void OnLoadComplete(EventArgs e)
+        {
+            base.OnLoadComplete(e);
+
+            if (IsPostBack || userDets == null) return;
+            if (userDets.ExpiryDate <= DateTime.Now) return;
+
+            LoadDashboardMetrics();
+        }
+
+        private void LoadDashboardMetrics()
+        {
+            // Tile visibility mirrors the module/permission flags already used by showhidebuttons().
+            bool showSales = userDets.CanViewPickSlips == true;
+            bool showWorksOrders = userDets.UseModule3 == true;
+
+            if (!showSales)
+            {
+                lnkKpiSO.Style.Add("display", "none");
+                divCharts.Style.Add("display", "none");
+            }
+            if (!showWorksOrders) lnkKpiWO.Style.Add("display", "none");
+
+            long coId = userDets.CoID;
+            // 12 whole months, starting at the first of the month 11 months back.
+            DateTime fromDate = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1).AddMonths(-11);
+
+            List<string> monthLabels = new List<string>();
+            List<decimal> salesSeries = new List<decimal>();
+            List<decimal> gpSeries = new List<decimal>();
+            List<string> custLabels = new List<string>();
+            List<decimal> custSeries = new List<decimal>();
+
+            using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+            {
+                // "Open" definitions deliberately match each screen's own filter so the
+                // tile totals agree with what the user sees when they click through:
+                //   POs -> OSPurchaseOrders.aspx   SOs -> OSSalesOrders.aspx
+                lblKpiPO.Text = _db.DocHeaders
+                    .Count(x => x.CompanyID == coId && x.DocType == 1
+                             && x.Complete == false && x.Status != "Cancelled")
+                    .ToString();
+
+                if (showSales)
+                {
+                    lblKpiSO.Text = _db.DocHeaders
+                        .Count(x => x.CompanyID == coId && x.DocType == 5 && x.Active == true)
+                        .ToString();
+                }
+
+                if (showWorksOrders)
+                {
+                    lblKpiWO.Text = _db.WorksOrderHeaders
+                        .Count(x => x.CompanyID == coId && x.Active == true)
+                        .ToString();
+                }
+
+                if (showSales)
+                {
+                    var monthly = _db.DocHeaders
+                        .Where(x => x.CompanyID == coId && x.DocType == 5 && x.DocDate >= fromDate)
+                        .GroupBy(x => new { Year = x.DocDate.Value.Year, Month = x.DocDate.Value.Month })
+                        .Select(g => new
+                        {
+                            g.Key.Year,
+                            g.Key.Month,
+                            Sales = g.Sum(x => x.Total),
+                            GP = g.Sum(x => x.DocGP)
+                        })
+                        .ToList();
+
+                    for (int i = 0; i < 12; i++)
+                    {
+                        DateTime m = fromDate.AddMonths(i);
+                        var hit = monthly.FirstOrDefault(x => x.Year == m.Year && x.Month == m.Month);
+                        monthLabels.Add(m.ToString("MMM yy"));
+                        salesSeries.Add(hit == null ? 0m : decimal.Round(hit.Sales ?? 0m, 2));
+                        gpSeries.Add(hit == null ? 0m : decimal.Round(hit.GP ?? 0m, 2));
+                    }
+
+                    var topCust = _db.DocHeaders
+                        .Where(x => x.CompanyID == coId && x.DocType == 5
+                                 && x.DocDate >= fromDate && x.CustSupName != null)
+                        .GroupBy(x => x.CustSupName)
+                        .Select(g => new { Name = g.Key, Sales = g.Sum(x => x.Total) })
+                        .OrderByDescending(x => x.Sales)
+                        .Take(5)
+                        .ToList();
+
+                    foreach (var c in topCust)
+                    {
+                        custLabels.Add(c.Name);
+                        custSeries.Add(decimal.Round(c.Sales ?? 0m, 2));
+                    }
+                }
+            }
+
+            string json = JsonConvert.SerializeObject(new
+            {
+                months = monthLabels,
+                sales = salesSeries,
+                gp = gpSeries,
+                custLabels = custLabels,
+                custSales = custSeries
+            });
+
+            ClientScript.RegisterStartupScript(GetType(), "dfChartData",
+                "window.dfChartData = " + json + ";", true);
         }
 
         protected void lbtnLogOut_Click(object sender, EventArgs e)

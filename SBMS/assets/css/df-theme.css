@@ -1,0 +1,1250 @@
+/*
+    Data Fusion — modern theme layer.
+    Additive on top of main.css / prologue main.css: tokens, light/dark mode,
+    a sidebar+topbar shell (used by pages built with the new df-shell markup),
+    and re-colored overrides for the existing Prologue sidebar template and
+    shared components (buttons, gridviews, form fields) so older pages pick up
+    the same look/dark-mode without a markup rewrite.
+*/
+
+:root {
+    --df-primary: #1E40AF;
+    --df-primary-hover: #1E3A8A;
+    --df-on-primary: #FFFFFF;
+    --df-accent: #D97706;
+
+    --df-bg: #F8FAFC;
+    --df-surface: #FFFFFF;
+    --df-surface-alt: #F1F5F9;
+    --df-border: #E2E8F0;
+
+    --df-text: #1E293B;
+    --df-text-muted: #64748B;
+
+    --df-success: #16A34A;
+    --df-warning: #B45309;
+    --df-warning-bg: #FFFBEB;
+    --df-warning-border: #FDE68A;
+    --df-info: #0369A1;
+    --df-info-bg: #EFF6FF;
+    --df-info-border: #BFDBFE;
+    --df-danger: #DC2626;
+
+    --df-radius: 10px;
+    --df-radius-sm: 6px;
+    --df-shadow: 0 1px 2px rgba(15, 23, 42, .06), 0 1px 3px rgba(15, 23, 42, .08);
+    --df-shadow-lg: 0 4px 6px rgba(15, 23, 42, .05), 0 10px 15px rgba(15, 23, 42, .08);
+
+    --df-sidebar-w: 264px;
+    --df-sidebar-w-collapsed: 76px;
+    --df-topbar-h: 52px;
+    --df-transition: 180ms ease;
+}
+
+:root[data-theme="dark"] {
+    --df-primary: #3B82F6;
+    --df-primary-hover: #60A5FA;
+    --df-on-primary: #0B1220;
+    --df-accent: #F59E0B;
+
+    --df-bg: #0F172A;
+    --df-surface: #111827;
+    --df-surface-alt: #1E293B;
+    --df-border: #263449;
+
+    --df-text: #E2E8F0;
+    --df-text-muted: #94A3B8;
+
+    --df-success: #4ADE80;
+    --df-warning: #FBBF24;
+    --df-warning-bg: #2A2110;
+    --df-warning-border: #4A3B14;
+    --df-info: #7DD3FC;
+    --df-info-bg: #0B2436;
+    --df-info-border: #164E63;
+    --df-danger: #F87171;
+
+    --df-shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 1px 3px rgba(0, 0, 0, .5);
+    --df-shadow-lg: 0 4px 6px rgba(0, 0, 0, .3), 0 10px 20px rgba(0, 0, 0, .4);
+}
+
+/* ============ Base ============ */
+
+body {
+    background-color: var(--df-bg);
+    color: var(--df-text);
+    transition: background-color var(--df-transition), color var(--df-transition);
+}
+
+.df-shell, .df-shell * {
+    box-sizing: border-box;
+}
+
+/* ============ Shell layout (new df-shell pages, e.g. Dashboard) ============ */
+
+.df-shell {
+    display: flex;
+    min-height: 100vh;
+    align-items: stretch;
+}
+
+.df-sidebar {
+    width: var(--df-sidebar-w);
+    flex-shrink: 0;
+    background: var(--df-surface);
+    border-right: 1px solid var(--df-border);
+    display: flex;
+    flex-direction: column;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    transition: width var(--df-transition);
+    overflow: hidden;
+}
+
+.df-shell.df-collapsed .df-sidebar {
+    width: var(--df-sidebar-w-collapsed);
+}
+
+.df-shell.df-collapsed .df-nav-text,
+.df-shell.df-collapsed .df-nav-heading,
+.df-shell.df-collapsed .df-brand-text {
+    display: none;
+}
+
+.df-sidebar-brand {
+    height: var(--df-topbar-h);
+    display: flex;
+    align-items: center;
+    padding: 0 1rem;
+    border-bottom: 1px solid var(--df-border);
+    flex-shrink: 0;
+}
+
+.df-brand-logo {
+    max-height: 32px;
+    width: auto;
+    display: block;
+}
+
+.df-nav {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    padding: .75rem .5rem;
+}
+
+.df-nav-group + .df-nav-group {
+    margin-top: 1.25rem;
+}
+
+.df-nav-heading {
+    font-size: .68rem;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--df-text-muted);
+    padding: 0 .6rem;
+    margin-bottom: .4rem;
+    white-space: nowrap;
+}
+
+.df-nav-link {
+    display: flex;
+    align-items: center;
+    gap: .65rem;
+    padding: .55rem .6rem;
+    border-radius: var(--df-radius-sm);
+    color: var(--df-text);
+    font-size: .85rem;
+    font-weight: 500;
+    white-space: nowrap;
+    border: none;
+    background: transparent;
+    width: 100%;
+    text-align: left;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.df-nav-link:hover, .df-nav-link:focus-visible {
+    background: var(--df-surface-alt);
+}
+
+.df-nav-link:focus-visible {
+    outline: 2px solid var(--df-primary);
+    outline-offset: -2px;
+}
+
+.df-nav-icon {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+    flex-shrink: 0;
+    border-radius: 4px;
+}
+
+.df-nav-icon-font {
+    width: 22px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.df-sidebar-footer {
+    border-top: 1px solid var(--df-border);
+    padding: .5rem;
+    flex-shrink: 0;
+}
+
+.df-main {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.df-topbar {
+    height: var(--df-topbar-h);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    padding: 0 1rem;
+    background: var(--df-surface);
+    border-bottom: 1px solid var(--df-border);
+    position: sticky;
+    top: 0;
+    z-index: 20;
+}
+
+.df-topbar-title {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.15;
+}
+
+.df-h1 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin: 0;
+    color: var(--df-text);
+}
+
+.df-topbar-sub {
+    font-size: .7rem;
+    font-weight: 400;
+    color: var(--df-text-muted);
+}
+
+.df-topbar-co {
+    font-size: .72rem;
+    color: var(--df-text-muted);
+}
+
+.df-topbar-spacer {
+    flex: 1 1 auto;
+}
+
+.df-user {
+    font-size: .8rem;
+    color: var(--df-text-muted);
+    white-space: nowrap;
+}
+
+.df-co-logo {
+    max-height: 32px;
+    width: auto;
+    border-radius: 4px;
+}
+
+.df-icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .4rem;
+    height: 36px;
+    min-width: 36px;
+    padding: 0 .55rem;
+    border-radius: var(--df-radius-sm);
+    border: 1px solid var(--df-border);
+    background: var(--df-surface);
+    color: var(--df-text);
+    cursor: pointer;
+    font-size: .8rem;
+    flex-shrink: 0;
+}
+
+.df-icon-btn:hover, .df-icon-btn:focus-visible {
+    background: var(--df-surface-alt);
+}
+
+.df-icon-btn:focus-visible {
+    outline: 2px solid var(--df-primary);
+    outline-offset: 1px;
+}
+
+.df-content {
+    flex: 1 1 auto;
+    /* header real estate is at a premium on gridview screens — keep this tight */
+    padding: .6rem .9rem 1rem .9rem;
+    max-width: 1400px;
+    width: 100%;
+    /* centre the column once the viewport is wider than max-width, otherwise
+       wide screens leave a large dead gap on the right */
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.df-card {
+    background: var(--df-surface);
+    border: 1px solid var(--df-border);
+    border-radius: var(--df-radius);
+    box-shadow: var(--df-shadow);
+    padding: .8rem 1rem;
+    margin-bottom: .7rem;
+}
+
+.df-welcome h2 {
+    margin: 0 0 .35rem 0;
+    font-size: 1.15rem;
+    color: var(--df-text);
+    /* legacy main.css underlines and centres all h2 — undo that here */
+    text-decoration: none;
+    text-align: left;
+    line-height: 1.3;
+    letter-spacing: 0;
+}
+
+.df-muted {
+    color: var(--df-text-muted);
+    font-size: .85rem;
+    margin: 0;
+}
+
+.df-label {
+    display: block;
+    font-size: .72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    color: var(--df-text-muted);
+    margin-bottom: .35rem;
+}
+
+.df-select {
+    border: 1px solid var(--df-border);
+    border-radius: var(--df-radius-sm);
+    background: var(--df-surface);
+    color: var(--df-text);
+    padding: .45rem .6rem;
+    font-size: .85rem;
+    min-width: 220px;
+}
+
+.df-select:focus-visible {
+    outline: 2px solid var(--df-primary);
+    outline-offset: 1px;
+}
+
+.df-banner {
+    border-radius: var(--df-radius);
+    padding: .75rem 1rem;
+    font-size: .82rem;
+    margin-bottom: 1rem;
+    border: 1px solid transparent;
+    line-height: 1.5;
+}
+
+.df-banner-info {
+    background: var(--df-info-bg);
+    border-color: var(--df-info-border);
+    color: var(--df-info);
+}
+
+.df-banner-warning {
+    background: var(--df-warning-bg);
+    border-color: var(--df-warning-border);
+    color: var(--df-warning);
+}
+
+.df-loading-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, .55);
+    z-index: 9999999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.df-loading-box {
+    background: var(--df-surface);
+    border-radius: var(--df-radius);
+    padding: 1rem;
+    box-shadow: var(--df-shadow-lg);
+}
+
+.df-loading-spinner {
+    border-radius: var(--df-radius-sm);
+    display: block;
+}
+
+@media (max-width: 900px) {
+    .df-sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        z-index: 30;
+        box-shadow: var(--df-shadow-lg);
+    }
+
+    .df-shell.df-collapsed .df-sidebar {
+        width: var(--df-sidebar-w);
+        transform: translateX(-100%);
+    }
+
+    .df-shell.df-collapsed .df-nav-text,
+    .df-shell.df-collapsed .df-nav-heading,
+    .df-shell.df-collapsed .df-brand-text {
+        display: block;
+    }
+
+    .df-main {
+        width: 100%;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .df-sidebar, .df-shell * {
+        transition: none !important;
+    }
+}
+
+/* ============ Existing (pre-df-shell) buttons, refreshed in place ============ */
+
+.button, .buttonC, .buttonM {
+    background: var(--df-surface);
+    color: var(--df-text);
+    border: 1px solid var(--df-border);
+    border-radius: var(--df-radius-sm);
+    transition: background-color var(--df-transition), border-color var(--df-transition), box-shadow var(--df-transition);
+}
+
+.button:hover, .buttonC:hover, .button:focus-visible, .buttonC:focus-visible {
+    background: var(--df-surface-alt);
+}
+
+.button.big {
+    background: var(--df-surface);
+    border: 1px solid var(--df-border);
+    border-radius: var(--df-radius);
+    box-shadow: var(--df-shadow);
+    transition: box-shadow var(--df-transition), transform var(--df-transition);
+}
+
+.button.big:hover {
+    box-shadow: var(--df-shadow-lg);
+    transform: translateY(-1px);
+}
+
+.button.special {
+    background: var(--df-primary);
+    color: #fff;
+    border-color: var(--df-primary);
+}
+
+.button.special:hover {
+    background: var(--df-primary-hover);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .button, .buttonC, .button.big {
+        transition: none !important;
+    }
+    .button.big:hover {
+        transform: none;
+    }
+}
+
+/* ============ Form fields ============ */
+
+input[type="text"], input[type="password"], input[type="number"], input[type="date"],
+textarea, select {
+    background: var(--df-surface);
+    color: var(--df-text);
+    border: 1px solid var(--df-border);
+    border-radius: var(--df-radius-sm);
+}
+
+input[readonly], input[disabled] {
+    background: var(--df-surface-alt);
+    color: var(--df-text-muted);
+}
+
+/* ============ GridView tables (used across most working screens) ============ */
+
+.gridview {
+    color: var(--df-text);
+}
+
+.gridViewHeader {
+    background-color: var(--df-surface-alt);
+    color: var(--df-text);
+    border-color: var(--df-border);
+}
+
+/* The legacy .gridViewHeader rule forces text-align:left, which beats the
+   align attribute GridView emits for HeaderStyle-HorizontalAlign. Centre by
+   default, but let a column that declares its own alignment win. */
+.gridview th {
+    text-align: center;
+}
+
+.gridview th[align="left"] {
+    text-align: left;
+}
+
+.gridview th[align="right"],
+.gridview th[style*="right"] {
+    text-align: right;
+}
+
+.gridViewRow, .gridViewAltRow {
+    color: var(--df-text);
+    border-bottom-color: var(--df-border);
+}
+
+.gridViewAltRow {
+    background-color: var(--df-surface-alt);
+}
+
+.gridview tr.gridViewRow:hover td, .gridview tr.gridViewAltRow:hover td {
+    background-color: var(--df-surface-alt);
+    filter: brightness(0.96);
+}
+
+.gridview td a {
+    color: var(--df-primary);
+}
+
+/* Legacy main.css sets an explicit colour on <i> in its reset, so glyphs inside
+   our buttons/links come out dark instead of matching their container (most
+   visible as a near-black icon on the solid blue Login button). */
+.df-btn .icon,
+.df-btn-block .icon,
+.df-icon-btn .icon,
+.df-nav-link .icon,
+.df-kpi-icon .icon {
+    color: inherit;
+}
+
+/* Legacy .icon also carries asymmetric padding (.6em left / .2em right), which
+   stacks on top of the flex gap and throws the icon+label off centre by a
+   different amount per glyph. Zero it and let flex own the spacing. */
+.df-btn .icon,
+.df-btn-block .icon,
+.df-icon-btn .icon,
+.df-action .icon,
+.df-nav-link .icon,
+.df-page-icon {
+    padding-left: 0;
+    padding-right: 0;
+    line-height: 1;
+}
+
+/* ============ Auth / login screen ============ */
+
+.df-auth {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--df-bg);
+}
+
+.df-auth-bar {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    padding: .9rem 1.1rem;
+}
+
+.df-auth-bar-spacer {
+    flex: 1 1 auto;
+}
+
+.df-auth-body {
+    flex: 1 1 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem 1.1rem 2.5rem 1.1rem;
+}
+
+.df-auth-card {
+    width: 100%;
+    max-width: 400px;
+    background: var(--df-surface);
+    border: 1px solid var(--df-border);
+    border-radius: var(--df-radius);
+    box-shadow: var(--df-shadow-lg);
+    padding: 1.8rem 1.6rem;
+    text-align: left;
+}
+
+.df-auth-brand {
+    text-align: center;
+    margin-bottom: 1.4rem;
+}
+
+.df-auth-logo {
+    max-height: 46px;
+    width: auto;
+    margin-bottom: .9rem;
+}
+
+.df-auth-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--df-text);
+    margin: 0;
+    /* legacy main.css underlines and centres h2 */
+    text-decoration: none;
+    line-height: 1.3;
+    letter-spacing: 0;
+}
+
+.df-auth-sub {
+    display: block;
+    font-size: .74rem;
+    font-weight: 400;
+    color: var(--df-text-muted);
+    margin-top: .2rem;
+}
+
+.df-field {
+    margin-bottom: .9rem;
+}
+
+.df-field .df-label {
+    margin-bottom: .3rem;
+}
+
+/* ASP.NET TextBox renders a bare <input>, so width is set here rather than inline */
+.df-input-full {
+    display: block;
+    width: 100%;
+    border: 1px solid var(--df-border);
+    border-radius: var(--df-radius-sm);
+    background: var(--df-surface);
+    color: var(--df-text);
+    padding: .55rem .7rem;
+    font-size: .9rem;
+    height: 40px;
+}
+
+.df-input-full:focus-visible {
+    outline: 2px solid var(--df-primary);
+    outline-offset: 1px;
+}
+
+.df-check-row {
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+    margin: .1rem 0 1.1rem 0;
+    color: var(--df-text);
+    font-size: .85rem;
+}
+
+/* main.css parks the native checkbox behind its label (z-index:-1, negative
+   margin, 2em dark block) and relies on an "input + label:before" box to draw
+   the control — but those :before rules are empty, so nothing renders at all.
+   Restore a real native checkbox inside our rows. */
+.df-check-row input[type="checkbox"],
+.df-filter-check input[type="checkbox"] {
+    -webkit-appearance: checkbox;
+    appearance: checkbox;
+    position: static;
+    z-index: auto;
+    opacity: 1;
+    width: 16px;
+    height: 16px;
+    min-width: 16px;
+    margin: 0 .45rem 0 0;
+    padding: 0;
+    font-size: 1em;
+    background: none;
+    outline: none;
+    accent-color: var(--df-primary);
+}
+
+.df-check-row input[type="checkbox"] + label,
+.df-filter-check input[type="checkbox"] + label {
+    padding-left: 0;
+    padding-right: 0;
+    font-weight: 400;
+    font-size: .85rem;
+    color: var(--df-text);
+    cursor: pointer;
+    border: 0;
+}
+
+.df-check-row input[type="checkbox"] + label:before,
+.df-filter-check input[type="checkbox"] + label:before {
+    display: none;
+    content: none;
+}
+
+.df-btn-block {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .45rem;
+    width: 100%;
+    height: 42px;
+    border-radius: var(--df-radius-sm);
+    border: 1px solid var(--df-primary);
+    background: var(--df-primary);
+    color: var(--df-on-primary);
+    font-size: .92rem;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.df-btn-block:hover, .df-btn-block:focus-visible {
+    background: var(--df-primary-hover);
+    border-color: var(--df-primary-hover);
+    color: var(--df-on-primary);
+    text-decoration: none;
+}
+
+.df-btn-block:focus-visible {
+    outline: 2px solid var(--df-primary);
+    outline-offset: 2px;
+}
+
+.df-auth-msg {
+    display: block;
+    margin-top: .9rem;
+    font-size: .82rem;
+    line-height: 1.45;
+}
+
+.df-auth-msg:empty {
+    display: none;
+}
+
+.df-auth-alt {
+    margin-top: 1.1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--df-border);
+    text-align: center;
+    font-size: .82rem;
+    color: var(--df-text-muted);
+}
+
+.df-auth-footer {
+    text-align: center;
+    padding: 0 1.1rem 1.6rem 1.1rem;
+    font-size: .72rem;
+    color: var(--df-text-muted);
+}
+
+.df-policy-links {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 .6rem 0;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: .4rem .9rem;
+}
+
+.df-policy-links a, .df-auth-footer a {
+    color: var(--df-text-muted);
+    text-decoration: none;
+}
+
+.df-policy-links a:hover, .df-auth-footer a:hover {
+    color: var(--df-primary);
+    text-decoration: underline;
+}
+
+/* Onboarding / info panels shown inline on the login page */
+.df-auth-wide {
+    max-width: 640px;
+}
+
+.df-auth-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 1rem 0;
+    text-align: left;
+    font-size: .82rem;
+    line-height: 1.6;
+    color: var(--df-text);
+}
+
+.df-auth-list li {
+    padding-left: 0;
+}
+
+/* ============ Module accent ============ */
+/* Each screen sets one class on <body> (e.g. "df-page df-mod-sales"), which
+   drives --df-module. Per the "don't convey meaning by colour alone" rule, the
+   colour never carries the distinction on its own — the active nav item also
+   gets a left bar + heavier weight, and the page title carries the module icon.
+   Light values are >=4.5:1 on white; dark values are the lifted equivalents.
+   (Plain #16A34A green is only ~3.4:1 on white, hence #15803D here.) */
+
+body {
+    --df-module: var(--df-primary);
+}
+
+body.df-mod-purchases { --df-module: #1E40AF; }
+body.df-mod-sales     { --df-module: #15803D; }
+body.df-mod-works     { --df-module: #B45309; }
+body.df-mod-stock     { --df-module: #0F766E; }
+body.df-mod-planning  { --df-module: #4338CA; }
+
+html[data-theme="dark"] body.df-mod-purchases { --df-module: #3B82F6; }
+html[data-theme="dark"] body.df-mod-sales     { --df-module: #4ADE80; }
+html[data-theme="dark"] body.df-mod-works     { --df-module: #F59E0B; }
+html[data-theme="dark"] body.df-mod-stock     { --df-module: #2DD4BF; }
+html[data-theme="dark"] body.df-mod-planning  { --df-module: #818CF8; }
+
+/* Module strip along the bottom of the topbar. */
+.df-topbar {
+    border-bottom: 2px solid var(--df-module);
+}
+
+/* Active sidebar item: colour + inset bar + weight (not colour alone). */
+.df-nav-link-active {
+    background: var(--df-surface-alt);
+    color: var(--df-module);
+    font-weight: 600;
+    box-shadow: inset 3px 0 0 var(--df-module);
+}
+
+.df-nav-link-active:hover, .df-nav-link-active:focus-visible {
+    background: var(--df-surface-alt);
+    color: var(--df-module);
+}
+
+.df-nav-link-active .df-nav-icon-font {
+    color: var(--df-module);
+}
+
+/* Module icon beside the page heading. */
+.df-page-icon {
+    color: var(--df-module);
+    margin-right: .45rem;
+}
+
+/* ============ Page-level reset for df-shell pages ============ */
+/* The legacy themes (root main.css / prologue main.css) put margins, fixed
+   offsets and background images on body — neutralise those on shell pages. */
+
+body.df-page {
+    margin: 0;
+    padding: 0;
+    background: var(--df-bg);
+    background-image: none;
+}
+
+/* ============ Mini dashboard: KPI tiles + charts ============ */
+
+.df-kpi-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: .7rem;
+    margin-bottom: .7rem;
+}
+
+/* Tiles are LinkButtons (they navigate to the matching screen), so the legacy
+   anchor styling has to be neutralised here. */
+.df-kpi {
+    display: flex;
+    align-items: center;
+    gap: .9rem;
+    background: var(--df-surface);
+    border: 1px solid var(--df-border);
+    border-radius: var(--df-radius);
+    box-shadow: var(--df-shadow);
+    padding: .8rem .95rem;
+    color: var(--df-text);
+    text-decoration: none;
+    cursor: pointer;
+    transition: box-shadow var(--df-transition), border-color var(--df-transition), transform var(--df-transition);
+}
+
+.df-kpi:hover, .df-kpi:focus-visible {
+    color: var(--df-text);
+    text-decoration: none;
+    border-color: var(--df-primary);
+    box-shadow: var(--df-shadow-lg);
+    transform: translateY(-1px);
+}
+
+.df-kpi:focus-visible {
+    outline: 2px solid var(--df-primary);
+    outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .df-kpi { transition: none; }
+    .df-kpi:hover, .df-kpi:focus-visible { transform: none; }
+}
+
+.df-kpi-icon {
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--df-radius-sm);
+    font-size: 1.1rem;
+}
+
+.df-kpi-icon-po { background: rgba(30, 64, 175, .12); color: var(--df-primary); }
+.df-kpi-icon-so { background: rgba(22, 163, 74, .14); color: var(--df-success); }
+.df-kpi-icon-wo { background: rgba(217, 119, 6, .14); color: var(--df-accent); }
+
+.df-kpi-body {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.df-kpi-value {
+    font-size: 1.7rem;
+    font-weight: 700;
+    line-height: 1.1;
+    color: var(--df-text);
+    /* keep digits from shifting width as counts change */
+    font-variant-numeric: tabular-nums;
+}
+
+.df-kpi-label {
+    font-size: .75rem;
+    font-weight: 500;
+    color: var(--df-text-muted);
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    margin-top: .15rem;
+}
+
+.df-card-title {
+    font-size: .95rem;
+    font-weight: 700;
+    color: var(--df-text);
+    margin: 0 0 .75rem 0;
+    /* legacy main.css centres and resizes h3 — undo that here */
+    text-align: left;
+    text-decoration: none;
+    line-height: 1.3;
+}
+
+.df-card-sub {
+    font-size: .72rem;
+    font-weight: 400;
+    color: var(--df-text-muted);
+    text-transform: none;
+    letter-spacing: 0;
+}
+
+.df-chart {
+    min-height: 300px;
+    width: 100%;
+}
+
+.df-chart-sm {
+    min-height: 260px;
+}
+
+/* ============ Content: page heading + toolbar ============ */
+
+.df-page-head {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    flex-wrap: wrap;
+    margin-bottom: .55rem;
+}
+
+.df-page-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--df-text);
+    /* pushes any action buttons in the head row over to the right */
+    margin: 0 auto 0 0;
+    /* legacy main.css underlines/centres h2 — undo that here */
+    text-decoration: none;
+    text-align: left;
+    line-height: 1.3;
+    letter-spacing: 0;
+}
+
+.df-count {
+    color: var(--df-text-muted);
+    font-weight: 500;
+    font-size: .9rem;
+}
+
+/* ============ Buttons (new markup) ============ */
+
+.df-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .4rem;
+    height: 36px;
+    padding: 0 .8rem;
+    border-radius: var(--df-radius-sm);
+    border: 1px solid var(--df-border);
+    background: var(--df-surface);
+    color: var(--df-text);
+    font-size: .82rem;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background-color var(--df-transition), border-color var(--df-transition);
+}
+
+.df-btn:hover, .df-btn:focus-visible {
+    background: var(--df-surface-alt);
+    color: var(--df-text);
+}
+
+.df-btn:focus-visible {
+    outline: 2px solid var(--df-primary);
+    outline-offset: 1px;
+}
+
+.df-btn-primary {
+    background: var(--df-primary);
+    border-color: var(--df-primary);
+    color: var(--df-on-primary);
+}
+
+.df-btn-primary:hover, .df-btn-primary:focus-visible {
+    background: var(--df-primary-hover);
+    border-color: var(--df-primary-hover);
+    color: var(--df-on-primary);
+}
+
+/* ============ Filter bar ============ */
+
+.df-filters {
+    display: flex;
+    align-items: flex-end;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.df-filter {
+    display: flex;
+    flex-direction: column;
+}
+
+.df-filter-check {
+    margin-left: auto;
+    flex-direction: row;
+    align-items: center;
+    gap: .4rem;
+    padding-bottom: .4rem;
+    color: var(--df-text);
+}
+
+.df-filter-check input[type="checkbox"] {
+    width: auto;
+    margin-right: .35rem;
+}
+
+.df-input-group {
+    display: flex;
+    align-items: stretch;
+    gap: .4rem;
+}
+
+.df-input {
+    border: 1px solid var(--df-border);
+    border-radius: var(--df-radius-sm);
+    background: var(--df-surface);
+    color: var(--df-text);
+    padding: .45rem .6rem;
+    font-size: .85rem;
+    min-width: 220px;
+    height: 36px;
+}
+
+.df-input:focus-visible {
+    outline: 2px solid var(--df-primary);
+    outline-offset: 1px;
+}
+
+/* narrower variant for filter bars carrying several dropdowns */
+.df-select-sm {
+    min-width: 130px;
+}
+
+/* ============ Document detail screens ============ */
+
+.df-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .4rem;
+}
+
+.df-detail-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.df-detail-table td {
+    padding: .28rem .4rem;
+    vertical-align: middle;
+    color: var(--df-text);
+    font-size: .82rem;
+    border: 0;
+}
+
+/* label cells are the odd-numbered ones in this layout */
+.df-detail-table input[type="text"],
+.df-detail-table textarea {
+    width: 100%;
+}
+
+.df-split {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: .7rem;
+    align-items: start;
+}
+
+.df-totals-table {
+    width: 100%;
+    font-size: .82rem;
+    border-collapse: collapse;
+}
+
+.df-totals-table td {
+    padding: .3rem .4rem;
+    border: 0;
+    color: var(--df-text);
+}
+
+.df-totals-table td + td {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+.df-totals-row-strong td {
+    font-weight: 700;
+    border-top: 1px solid var(--df-border);
+}
+
+.df-btn-danger {
+    color: var(--df-danger);
+    border-color: var(--df-border);
+}
+
+.df-btn-danger:hover, .df-btn-danger:focus-visible {
+    color: var(--df-danger);
+    border-color: var(--df-danger);
+    background: var(--df-surface-alt);
+}
+
+/* ============ Hub / launcher screens (grouped action cards) ============ */
+
+.df-card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: .7rem;
+    align-items: start;
+}
+
+.df-card-grid .df-card {
+    margin-bottom: 0;
+}
+
+.df-action-list {
+    display: flex;
+    flex-direction: column;
+    gap: .4rem;
+}
+
+/* Full-width, left-aligned action row — LinkButtons render as <a>, so the
+   legacy anchor colour/underline has to be neutralised here. */
+.df-action {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    width: 100%;
+    min-height: 40px;
+    padding: .5rem .7rem;
+    border: 1px solid var(--df-border);
+    border-radius: var(--df-radius-sm);
+    background: var(--df-surface);
+    color: var(--df-text);
+    font-size: .85rem;
+    font-weight: 500;
+    text-align: left;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color var(--df-transition), border-color var(--df-transition);
+}
+
+.df-action:hover, .df-action:focus-visible {
+    background: var(--df-surface-alt);
+    border-color: var(--df-module);
+    color: var(--df-text);
+    text-decoration: none;
+}
+
+.df-action:focus-visible {
+    outline: 2px solid var(--df-module);
+    outline-offset: 1px;
+}
+
+.df-action .icon {
+    color: var(--df-module);
+    width: 20px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .df-action { transition: none; }
+}
+
+/* ============ Table card ============ */
+
+.df-table-card {
+    padding: 0;
+    overflow: hidden;
+}
+
+.df-table-wrap {
+    overflow-x: auto;
+    width: 100%;
+}
+
+.df-table-wrap .gridview {
+    width: 100%;
+    margin: 0;
+}
+
+.df-link-strong {
+    color: var(--df-primary) !important;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.df-link-danger {
+    color: var(--df-danger) !important;
+    font-size: .85em;
+}

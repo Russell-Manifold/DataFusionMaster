@@ -9,7 +9,8 @@ namespace SBMS.Classes
             //string sqlInstance = $"MANIFOLDSERVER\\SQL2022";
             string dbName = ApiUrlCall.dbName;
         #if DEBUG
-            sqlInstance = $"MANIFOLDSERVER\\SQL2022";
+            //sqlInstance = $"MANIFOLDSERVER\\SQL2022";
+            sqlInstance = $"RUSSELL-DELL\\DELLSQL";
             #endif
 
             string dbUser = Environment.GetEnvironmentVariable("DB_USER") ?? $"sa";

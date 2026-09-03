@@ -2306,15 +2306,34 @@ hr {
 
 input[type="checkbox"],
 input[type="radio"] {
+	/* Previously this parked the real control behind its label (z-index:-1,
+	   negative margin, 2em dark block) and delegated the visible box to
+	   "input + label:before" — but those :before rules were empty, so no
+	   checkbox rendered anywhere on this stylesheet. Native controls instead. */
 	display: inline-block;
-	margin-right: -1.4em;
+	position: static;
+	z-index: auto;
 	opacity: 1;
-	width: 1em;
-	z-index: -1;
-	outline: 1px solid transparent;
-	background: #3d4449;
-	font-size: 2em;
+	width: 16px;
+	height: 16px;
+	min-width: 16px;
+	margin: 0 0.45em 0 0;
 	padding: 0;
+	font-size: 1em;
+	background: none;
+	outline: none;
+	vertical-align: middle;
+	accent-color: #3d4449;
+}
+
+input[type="checkbox"] {
+	-webkit-appearance: checkbox;
+	appearance: checkbox;
+}
+
+input[type="radio"] {
+	-webkit-appearance: radio;
+	appearance: radio;
 }
 
 	input[type="checkbox"] + label,
@@ -2324,43 +2343,17 @@ input[type="radio"] {
 		display: inline-block;
 		font-size: 1em;
 		font-weight: 600;
-		padding-left: 2.4em;
+		padding-left: 0;
 		padding-right: 0.75em;
 		position: relative;
 		border: 1px solid transparent;
+		vertical-align: middle;
 	}
 
-		input[type="checkbox"] + label:before,
-		input[type="radio"] + label:before {
-			-moz-osx-font-smoothing: grayscale;
-			-webkit-font-smoothing: antialiased;
-			font-family: FontAwesome;
-			font-style: normal;
-			font-weight: normal;
-			text-transform: none !important;
-		}
-
-			input[type="checkbox"] + label:before,
-			input[type="radio"] + label:before {
-			}
-
-		input[type="checkbox"]:checked + label:before,
-		input[type="radio"]:checked + label:before {
-            }
-		
-
-		input[type="checkbox"]:focus + label:before,
-		input[type="radio"]:focus + label:before {
-			border-color: #3d4449;
-			box-shadow: 0 0 0 1px #3d4449;
-		}
-
-	input[type="checkbox"] + label:before {
-		border-radius: .375em;
-	}
-
-	input[type="radio"] + label:before {
-		border-radius: 100%;
+	input[type="checkbox"]:focus,
+	input[type="radio"]:focus {
+		outline: 2px solid #3d4449;
+		outline-offset: 1px;
 	}
 
 	::-webkit-input-placeholder {

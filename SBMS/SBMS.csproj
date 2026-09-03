@@ -233,6 +233,9 @@
   <ItemGroup>
     <Content Include="assets\css\images\overlay.png" />
     <Content Include="assets\js\buttonDisable.js" />
+    <Content Include="assets\css\df-theme.css" />
+    <Content Include="assets\js\df-ui.js" />
+    <Content Include="assets\js\df-dashboard-charts.js" />
     <Content Include="CommonScripts.ascx" />
     <Content Include="ConfigAccounts.aspx" />
     <Content Include="ConfigProcesses.aspx" />
