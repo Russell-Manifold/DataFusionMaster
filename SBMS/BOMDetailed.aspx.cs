@@ -366,6 +366,14 @@ namespace SBMS
                 NewBH.AddCost02 = bomH.AddCost02;
                 NewBH.AddCost03 = bomH.AddCost03;
                 NewBH.AddCostAccountID = bomH.AddCostAccountID;   // carry the account onto the copy
+                NewBH.FGID = bomH.FGID;                           // the finished good - "no FG selected" was this missing
+                NewBH.FGCode = bomH.FGCode;
+                NewBH.FGDescript = bomH.FGDescript;
+                NewBH.BomDescript = bomH.BomDescript;
+                NewBH.StoreCode = bomH.StoreCode;
+                NewBH.AddSell01 = bomH.AddSell01;
+                NewBH.AddSell02 = bomH.AddSell02;
+                NewBH.AddSell03 = bomH.AddSell03;
                 NewBH.CompanyID = CurrentUser.CoID;
                 NewBH.BOMCode = "NEW";
                 NewBH.BomActive = true;
@@ -382,6 +390,11 @@ namespace SBMS
                     NewBL.ItemCode = bl.ItemCode;
                     NewBL.RMQty = bl.RMQty;
                     NewBL.CompanyID = CurrentUser.CoID;
+                    // Link the line to the NEW header. BOMCreate finds lines by header ID
+                    // (GetBOMLinesFromBomHeaderID), and without this every copied line was
+                    // written with no header - present in the table, found by nothing, so
+                    // Copy BOM opened an empty BOM.
+                    NewBL.BomHID = (int)newbhid;
                     _db.BOMLines.Add(NewBL);
                 }
                 _db.SaveChanges();

@@ -335,7 +335,7 @@
                                         <div class="PopupBody">
                                             <asp:UpdatePanel ID="UpdatePanel1" runat="server">
                                               <ContentTemplate>       
-                                            <table style="margin:auto; text-align:left">
+                                            <table class="rec-frame">
                                                 <tr>
                                                     <td style="vertical-align:top"><asp:Label ID="lblItemdescr" runat="server" Text=""></asp:Label>
                                                         <asp:Label ID="lblLineID" runat="server" Text="" style="display:none"></asp:Label>
@@ -344,96 +344,88 @@
                                                 </tr>
                                                  <tr><td colspan="2"><hr /></td></tr>
                                                 <tr>
-                                                     <td>Ordered Qty</td>
+                                                     <td class="rec-lbl">Ordered Qty</td>
                                                     <td><asp:textbox id="txtordqty" runat="server" readonly="true" Enabled="false" style="width:6em; text-align:center" ClientIDMode="Static" Text="" onblur="startCalc()" TabIndex="99"></asp:textbox></td>  <%--onblur="startCalc()"--%>   
                                                  </tr> 
                                                 <tr>
-                                                    <td>Received Qty</td>
+                                                    <td class="rec-lbl">Received Qty</td>
+                                                    <%-- Variation sits ON this row: it is calculated from the two quantities
+                                                         above it, cannot be typed into, and does not deserve a row of its own. --%>
                                                     <td><asp:textbox id="txtQtyReceive" runat="server" style="width:6em; text-align:center" Text="" onblur="startCalc()" ClientIDMode="Static"  TabIndex="0"></asp:textbox><%--onblur="startCalc()"--%>
-                                                            <cci:FilteredTextBoxExtender ID="ftbe" runat="server" TargetControlID="txtQtyReceive" FilterType="Custom, Numbers" ValidChars="." /></td>
-                                                </tr>
-                                                <tr>
-                                                    <td>Variation</td>
-                                                    <td> <asp:textbox id="txtBalQty" runat="server" style="width:6em; text-align:center; color:red" Text="" onblur="startCalc()" ClientIDMode="Static" ReadOnly="true"></asp:textbox></td><%--onblur="startCalc()"--%>
+                                                            <cci:FilteredTextBoxExtender ID="ftbe" runat="server" TargetControlID="txtQtyReceive" FilterType="Custom, Numbers" ValidChars="." />
+                                                            <span style="margin-left:1em; color:#7a8b98">Variation</span>
+                                                            <asp:textbox id="txtBalQty" runat="server" style="width:5em; text-align:center; color:red; border:none; background:transparent; font-weight:600" Text="" ClientIDMode="Static" ReadOnly="true" TabIndex="-1"></asp:textbox></td>
                                                 </tr>
                                                  <tr>
-                                                    <td>Into Store</td>
+                                                    <td class="rec-lbl">Into Store</td>
                                                     <td><asp:DropDownList ID="DDStoreEdit" runat="server" AutoPostBack="true" OnSelectedIndexChanged="DDStoreEdit_SelectedIndexChanged" style="width:10em; text-align:center" TabIndex="1"></asp:DropDownList></td>
                                                 </tr>
                                                </table> 
-                                                  <asp:Panel ID="PnlLotTracking" runat="server" CssClass="rec-panel" style="text-align:center">
-                                                <table style="width:100%">
-                                                      <tr>
-                                                    <td><asp:Label ID="lblLotNumH" runat="server" Text="Lot Number"></asp:Label></td>
-                                                </tr>
-                                                <tr>
-                                                    <td><asp:TextBox ID="lblLotNum" runat="server" CssClass="rec-input" OnTextChanged="lblLotNum_TextChanged" MaxLength="50" onkeyup="countCharacters(this)" onblur="convertToUpper(this)"></asp:TextBox><br />
-                                                        <cci:FilteredTextBoxExtender ID="FilteredTextBoxExtender3" runat="server" TargetControlID="lblLotNum" FilterType="Numbers, UppercaseLetters, LowercaseLetters, Custom" ValidChars=".-/\:*" />
-                                                        <asp:HiddenField ID="hfOriginalLotNumber" runat="server" /></td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td>
-                                                        <div class="rec-hint"><asp:Label ID="lblCharacterCount" runat="server" Text="Remaining: 50"></asp:Label> of 50 characters
-                                                            &mdash; letters, numbers and - / \ : * only</div>
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td><hr /></td>
-                                                </tr>
+                                                  <asp:Panel ID="PnlLotTracking" runat="server" CssClass="rec-panel">
+                                                <table class="rec-frame">
+                                                    <tr>
+                                                        <td class="rec-lbl"><asp:Label ID="lblLotNumH" runat="server" Text="Lot Number"></asp:Label></td>
+                                                        <td class="rec-val"><asp:TextBox ID="lblLotNum" runat="server" CssClass="rec-input" OnTextChanged="lblLotNum_TextChanged" MaxLength="50" onkeyup="countCharacters(this)" onblur="convertToUpper(this)"></asp:TextBox>
+                                                            <cci:FilteredTextBoxExtender ID="FilteredTextBoxExtender3" runat="server" TargetControlID="lblLotNum" FilterType="Numbers, UppercaseLetters, LowercaseLetters, Custom" ValidChars=".-/\:*" />
+                                                            <asp:HiddenField ID="hfOriginalLotNumber" runat="server" />
+                                                            <div class="rec-hint"><asp:Label ID="lblCharacterCount" runat="server" Text="Remaining: 50"></asp:Label> of 50 &mdash; letters, numbers and - / \ : * only</div>
+                                                        </td>
+                                                    </tr>
                                                </table>
                                                 <%-- Serial capture. Only shown for serial-tracked items; the lot box above
                                                      then holds the supplier BATCH that these serials belong to. --%>
-                                                <%-- Use By applies to lot items AND serial items, so it lives outside the
-                                                     serial panel. For serials the date is captured WITH each unit: change it
-                                                     part-way and units scanned after it take the new date, so one receipt can
-                                                     hold stock expiring on different days. --%>
+                                                <%-- Use By is LOT driven: one date, every serial in the lot takes it. --%>
                                                 <asp:Panel ID="PnlUseBy" runat="server" CssClass="rec-panel" style="display:none">
-                                                    <table style="width:100%">
+                                                    <table class="rec-frame">
                                                         <tr>
-                                                            <td class="rec-field"><asp:Label ID="Label4" runat="server" Text="Use By Date"></asp:Label><br />
+                                                            <td class="rec-lbl"><asp:Label ID="Label4" runat="server" Text="Use By Date"></asp:Label></td>
+                                                            <td class="rec-val">
                                                                 <asp:TextBox ID="txtUseBy" runat="server" ClientIDMode="Static" CssClass="rec-input"></asp:TextBox>
                                                                 <cci:CalendarExtender ID="CalendarExtender2" runat="server" Enabled="True" TargetControlID="txtUseBy" Format="dd MMM yyyy"></cci:CalendarExtender>
                                                             </td>
                                                         </tr>
                                                     </table>
                                                 </asp:Panel>
+                                                <%-- Two columns. LEFT: the count and the captured list. RIGHT: the ways to
+                                                     capture - scan, or import a file. --%>
                                                 <asp:Panel ID="PnlSerialCapture" runat="server" CssClass="rec-panel" style="display:none">
-                                                    <table style="width:100%">
+                                                    <table class="rec-frame">
                                                         <tr>
-                                                            <td><div class="rec-panel-head">Serial Numbers</div></td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td class="rec-field">
+                                                            <td class="rec-lbl"><span class="rec-panel-head">Serial Numbers</span></td>
+                                                            <td class="rec-val">
                                                                 <asp:TextBox ID="txtSerialScan" runat="server" ClientIDMode="Static" CssClass="rec-input"
-                                                                     placeholder="Scan or type a serial, then Enter" MaxLength="50"
+                                                                     placeholder="Scan/Type Serial : Enter" MaxLength="50"
                                                                      autocomplete="off" autocorrect="off" autocapitalize="off"></asp:TextBox>
                                                                 <asp:HiddenField ID="hfSerials" runat="server" ClientIDMode="Static" />
                                                             </td>
                                                         </tr>
                                                         <tr>
-                                                            <td><span id="serialCount" class="serial-count">0 captured</span>
-                                                                &nbsp;<button type="button" id="btnSerialClear" class="button2" style="font-size:.75em">Clear all</button></td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td><ul id="serialList" class="serial-list"></ul></td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td><div class="rec-hint">One serial per unit. The line cannot be saved until
-                                                                the count matches the quantity received.</div></td>
+                                                            <td class="rec-lbl">
+                                                                <span id="serialCount" class="serial-count">0 captured</span>
+                                                                &nbsp;<button type="button" id="btnSerialClear" class="button2" style="font-size:.75em">Clear</button>
+                                                                <ul id="serialList" class="serial-list"></ul>
+                                                            </td>
+                                                            <td class="rec-val">
+                                                                <div class="rec-import">
+                                                                    <div class="rec-hint"  style="padding-bottom:2em">Or import .csv / .xlsx &mdash; columns <b>Lot Number</b>, <b>Serial</b>. One lot per file.</div>
+                                                                    <asp:FileUpload ID="fuSerials" runat="server" />
+                                                                    <asp:LinkButton ID="lbtnImportSerials" runat="server" CssClass="buttonSage icon fa-upload"
+                                                                        OnClick="lbtnImportSerials_Click"> Import</asp:LinkButton>
+                                                                </div>
+                                                                <div class="rec-hint" style="margin-top:.5em">One serial per unit. The line cannot be saved until the count matches the quantity received.</div>
+                                                            </td>
                                                         </tr>
                                                     </table>
-                                                    <hr />
                                                 </asp:Panel>
                                                         <asp:Panel ID="PnlLotAdditions" runat="server" CssClass="rec-panel">
                                                             <table style="width:100%">
                                                                 <tr>
-                                                                    <td><div class="rec-panel-head"><asp:Label ID="lblLotAddHead" runat="server" Text="Optional Additional Lot Information"></asp:Label></div></td>
-                                                                </tr>
-                                                                <tr>
-                                                                    <td class="rec-field"><asp:Label ID="Label2" runat="server" Text="Lot User Defined Note"></asp:Label><br />
-                                                                        <asp:TextBox ID="txtLotNote" runat="server" CssClass="rec-input" MaxLength="250"></asp:TextBox>
+                                                                    <td class="rec-field" style="text-align:center">
+                                                                        <asp:Label ID="lblLotAddHead" runat="server" Text="Lot Note (optional)" CssClass="rec-panel-head"></asp:Label>
+                                                                        <asp:Label ID="Label2" runat="server" Text="" Visible="false"></asp:Label>
+                                                                        <asp:TextBox ID="txtLotNote" runat="server" CssClass="rec-input" MaxLength="250"
+                                                                            placeholder="Max 250 characters"></asp:TextBox>
                                                                         <asp:HiddenField ID="HiddenField1" runat="server" />
-                                                                        <div class="rec-hint">Max 250 characters</div>
                                                                     </td>
                                                                 </tr>
                                                                 <tr>
@@ -483,6 +475,9 @@
                     <%-- Print does CreatePDF then Response.Redirect to the viewer; a full postback
                          keeps the redirect from being swallowed by the partial postback. --%>
                     <asp:PostBackTrigger ControlID="lbtnPrintRN" />
+                    <%-- A FileUpload posts nothing on an async postback, so the import must be a
+                         full postback. The handler re-shows the modal afterwards. --%>
+                    <asp:PostBackTrigger ControlID="lbtnImportSerials" />
                 </Triggers>
             </asp:UpdatePanel>
 
@@ -531,6 +526,11 @@
                 var RQty = document.getElementById("txtQtyReceive").value;
                 var RecQty = parseFloat(RQty.replace(/[\s,]/g, ""));  // remove spaces and commas
 
+                // Blank boxes parse to NaN, and "Variation NaN" was showing on screen the
+                // moment the quantity was cleared. Treat missing as zero.
+                if (isNaN(OrdQty)) OrdQty = 0;
+                if (isNaN(RecQty)) RecQty = 0;
+
                 var TotS = OrdQty - RecQty;
                 document.getElementById("txtBalQty").value = TotS;
 
@@ -574,18 +574,47 @@
            Was font-size:.8em inline (about 11px); .95em is roughly two points larger. */
         .rec-modal { width:640px; max-width:95vw; margin:auto; font-size:.95em; }
 
+        /* The body scrolls, the modal does not grow past the window. Without this the
+           panels simply stacked and a serial line ran off the bottom of the screen. */
+        .rec-modal .PopupBody { max-height:74vh; overflow-y:auto; overflow-x:hidden; padding-right:.35em; }
+
+        /* The shared .Controls style is padding:2em + margin:2em - about 130px of empty
+           space above Save Line on its own. Scoped down here, not changed globally. */
+        .rec-modal .Controls { padding:.5em; margin:.4em 0 0; min-height:0; }
+
+        /* The header block and the quantity table are tighter too - default cell padding
+           on six rows is most of the space above the first panel. */
+        .rec-modal .PopupHeader h3 { margin:.2em 0; }
+        .rec-modal table td { padding:.1em .3em; }
+
         /* Panels inside the receive-line modal - one look for both. */
-        .rec-panel      { margin:0 0 .9em; padding:1em 1.4em; background:#f4f7f9;
+        .rec-panel      { margin:0 0 .45em; padding:.5em .8em; background:#f4f7f9;
                           border:1px solid #cfd8df; border-radius:.4em; }
-        .rec-panel-head { font-weight:700; color:#4282C1; margin-bottom:.6em; }
-        .rec-field      { padding:.35em 0; }
+        .rec-panel-head { font-weight:700; color:#4282C1; margin-bottom:.25em; }
+        .rec-field      { padding:.15em 0; }
+        /* Label left, input right on one line - stacked they cost twice the height for
+           the same information. The label column is fixed so the three panels line up. */
+        .rec-lbl        { width:11em; min-width:11em; text-align:left; font-weight:600; padding-right:.6em; white-space:nowrap; vertical-align:top; }
+        .rec-val        { text-align:left; vertical-align:top; }
+        /* Every table in the modal shares the same frame, so the input column starts at the
+           same x in all of them. */
+        .rec-frame      { margin:auto; text-align:left; width:400px; border-collapse:collapse; }
+        .rec-frame td   { padding:.15em .3em; }
+        /* The plain quantity boxes at the top are unstyled inputs; give them the same look. */
+        .rec-frame input[type=text], .rec-frame select { height:1.9em; }
+
         /* The panels supply the padding; inputs simply fill the space inside them, so every
            box in the modal is the same width whatever container it happens to sit in. */
-        .rec-input      { width:300px; max-width:100%; box-sizing:border-box; text-align:center; }
-        .rec-hint       { font-size:.8em; color:#7a8b98; margin-top:.15em; }
+        .rec-input      { width:14em; box-sizing:border-box; text-align:left; padding-left:.4em; }
+        /* Import block - a plain stacked column. It was a flex row with flex:1/min-width:0 on
+           the file input, which inside a narrow cell shrank it to nothing: "the upload has gone". */
+        .rec-import          { border-top:1px solid #dfe6eb; margin-top:.5em; padding-top:.45em; }
+        .rec-import input[type=file] { display:block; width:100%; max-width:100%; box-sizing:border-box; font-size:.85em; }
+        .rec-import .buttonSage      { display:block; width:fit-content; margin-left:auto; margin-top:.35em; padding:.3em .7em; color:#fff; white-space:nowrap; }
+        .rec-hint       { font-size:.8em; color:#7a8b98; margin-top:.1em; line-height:1.25; }
         /* Same width as the inputs above it, so the panel reads as one column. */
-        .serial-list { list-style:none; width:300px; max-width:100%; margin:.3em auto; padding:0;
-                       max-height:11em; overflow-y:auto;
+        .serial-list { list-style:none; width:100%; max-width:100%; margin:.3em 0 0; padding:0;
+                       max-height:7.5em; overflow-y:auto;
                        text-align:left; border:1px solid #cfd8df; border-radius:.3em; background:#fff; }
         .serial-row  { display:flex; align-items:center; gap:.4em; padding:.25em .5em;
                        border-bottom:1px solid #eef2f5; font-size:.9em; }

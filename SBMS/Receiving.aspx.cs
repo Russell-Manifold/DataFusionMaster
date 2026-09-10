@@ -203,6 +203,215 @@ namespace SBMS
             }
         }
 
+
+        /// <summary>
+        /// Import a file of serial numbers for the line being received.
+        ///
+        /// Deliberately the DUMBEST thing that works: the file is parsed into the SAME
+        /// SERIAL~DATE list the scanner builds, and nothing downstream changes. Every rule
+        /// that already guards a scanned capture - the count must equal the quantity, no
+        /// duplicates, an expiry per unit - guards an imported one too, because it IS one.
+        ///
+        /// SERIALS BELONG TO A LOT: one lot number per file. A unit's supplier batch is
+        /// stored per lot record, but the capture applies ONE batch to the whole line, so a
+        /// file carrying two lot numbers is refused rather than silently filed under the
+        /// first. Receive one batch, import its serials, receive the next.
+        /// </summary>
+        protected void lbtnImportSerials_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (!fuSerials.HasFile)
+                {
+                    SetImportMsg("Choose a .csv or .xlsx file first.", false);
+                    return;
+                }
+
+                string ext = System.IO.Path.GetExtension(fuSerials.FileName ?? "").ToLowerInvariant();
+                List<string[]> rows;
+                if (ext == ".xlsx" || ext == ".xlsm")
+                    rows = ReadSerialRowsExcel(fuSerials.FileBytes);
+                else if (ext == ".csv" || ext == ".txt")
+                    rows = ReadSerialRowsCsv(fuSerials.FileBytes);
+                else
+                {
+                    SetImportMsg("Unsupported file type " + ext + ". Use .csv or .xlsx.", false);
+                    return;
+                }
+
+                // Expiry travels with every unit and is mandatory, so there is nothing to
+                // stamp the imported units with until the date is filled in.
+                DateTime useBy;
+                if (!DateTime.TryParse((txtUseBy.Text ?? "").Trim(), out useBy))
+                {
+                    SetImportMsg("Enter the Use By date first - it is applied to every imported unit.", false);
+                    return;
+                }
+
+                var lots = new List<string>();
+                var serials = new List<string>();
+                var badChars = new List<string>();
+
+                foreach (string[] r in rows)
+                {
+                    string lot = r.Length > 0 ? (r[0] ?? "").Trim() : "";
+                    string ser = r.Length > 1 ? (r[1] ?? "").Trim() : "";
+
+                    // A single-column file is a list of serials for the batch already typed above.
+                    if (r.Length == 1) { ser = lot; lot = ""; }
+                    if (ser.Length == 0) continue;
+
+                    ser = ser.ToUpperInvariant();
+
+                    // ~ and | are the separators the capture list is encoded with. A serial
+                    // containing either would split into two units and the count would never
+                    // reconcile - refuse it by name rather than corrupt the list.
+                    if (ser.IndexOf('~') >= 0 || ser.IndexOf('|') >= 0) { badChars.Add(ser); continue; }
+
+                    if (lot.Length > 0 && !lots.Contains(lot, StringComparer.OrdinalIgnoreCase))
+                        lots.Add(lot);
+                    if (!serials.Contains(ser, StringComparer.OrdinalIgnoreCase))
+                        serials.Add(ser);
+                }
+
+                if (badChars.Count > 0)
+                {
+                    SetImportMsg(badChars.Count + " serial(s) contain ~ or | and cannot be imported (e.g. "
+                        + Server.HtmlEncode(badChars[0]) + "). Nothing was imported.", false);
+                    return;
+                }
+                if (serials.Count == 0)
+                {
+                    SetImportMsg("No serial numbers found in that file. Expected two columns: Lot Number, Serial.", false);
+                    return;
+                }
+                if (lots.Count > 1)
+                {
+                    SetImportMsg("This file contains " + lots.Count + " different lot numbers ("
+                        + Server.HtmlEncode(string.Join(", ", lots.Take(3)))
+                        + (lots.Count > 3 ? ", ..." : "")
+                        + "). Serial numbers are imported one lot at a time. Nothing was imported.", false);
+                    return;
+                }
+
+                // Merge with anything already scanned; a serial captured twice is one unit.
+                var existing = (hfSerials.Value ?? "")
+                    .Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries)
+                    .ToList();
+                var have = new HashSet<string>(
+                    existing.Select(x => { int at = x.IndexOf('~'); return (at < 0 ? x : x.Substring(0, at)).Trim().ToUpperInvariant(); }),
+                    StringComparer.OrdinalIgnoreCase);
+
+                int added = 0, skipped = 0;
+                string stamp = useBy.ToString("dd MMM yyyy");
+                foreach (string ser in serials)
+                {
+                    if (have.Contains(ser)) { skipped++; continue; }
+                    existing.Add(ser + "~" + stamp);
+                    have.Add(ser);
+                    added++;
+                }
+                hfSerials.Value = string.Join("|", existing);
+
+                // The file's lot number IS the supplier batch these units belong to.
+                if (lots.Count == 1) lblLotNum.Text = lots[0];
+
+                // THE IMPORT IS THE COUNT.
+                //
+                // One serial is one unit, so the number of units received is not a separate
+                // fact to be typed and reconciled - it IS how many serials were imported.
+                // Deriving it means the save-time "1001 captured for a quantity of 1000"
+                // mismatch cannot arise from an import at all. Kept in step with what
+                // startCalc() does on the client: variation = ordered - received, and the
+                // lot quantity follows the received quantity.
+                int totalUnits = existing.Count;
+                decimal orderedQty = 0;
+                decimal.TryParse((txtordqty.Text ?? "").Replace(",", "").Replace(" ", "").Trim(),
+                                 out orderedQty);
+
+                txtQtyReceive.Text = totalUnits.ToString();
+                txtNumPieces.Text  = totalUnits.ToString();
+                txtBalQty.Text     = (orderedQty - totalUnits).ToString("0.##");
+
+                string msg = added + " serial(s) imported";
+                if (lots.Count == 1) msg += " under lot " + Server.HtmlEncode(lots[0]);
+                if (skipped > 0) msg += " (" + skipped + " already captured, skipped)";
+                msg += ". Received Qty set to " + totalUnits + ".";
+
+                // Over-receipt is allowed here exactly as it is when the quantity is typed by
+                // hand - but it must not slip past unnoticed on a file of several hundred.
+                if (orderedQty > 0 && totalUnits > orderedQty)
+                {
+                    SetImportMsg(msg + " NOTE: that is MORE than the " + orderedQty.ToString("0.##")
+                        + " on order for this line - check the file before saving.", false);
+                    return;
+                }
+                SetImportMsg(msg, true);
+            }
+            catch (Exception ex)
+            {
+                SetImportMsg("Could not read that file: " + ex.Message, false);
+            }
+            finally
+            {
+                // Full postback (the FileUpload needs one), so the modal must be put back.
+                ModalPopupExtender1.Show();
+            }
+        }
+
+        private void SetImportMsg(string msg, bool ok)
+        {
+            AlertHelper.ShowSweetAlert(this, msg, ok ? "success" : "warning");
+        }
+
+        /// <summary>Rows from a CSV: comma, semicolon or tab, quotes stripped, header skipped.</summary>
+        private List<string[]> ReadSerialRowsCsv(byte[] bytes)
+        {
+            var rows = new List<string[]>();
+            string text = System.Text.Encoding.UTF8.GetString(bytes);
+            foreach (string raw in text.Split(new[] { "\r\n", "\n", "\r" }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                string line = raw.Trim();
+                if (line.Length == 0) continue;
+
+                char sep = line.IndexOf(',') >= 0 ? ',' : (line.IndexOf(';') >= 0 ? ';' : '\t');
+                var cells = line.Split(sep).Select(c => c.Trim().Trim('"')).ToArray();
+
+                // Header row: a line whose cells are the column names, not data.
+                if (rows.Count == 0 && cells.Any(c => c.Equals("serial", StringComparison.OrdinalIgnoreCase)
+                                                   || c.Equals("serial no", StringComparison.OrdinalIgnoreCase)
+                                                   || c.Equals("serial number", StringComparison.OrdinalIgnoreCase)))
+                    continue;
+
+                rows.Add(cells);
+            }
+            return rows;
+        }
+
+        /// <summary>Rows from the first worksheet of an .xlsx (ClosedXML is already referenced).</summary>
+        private List<string[]> ReadSerialRowsExcel(byte[] bytes)
+        {
+            var rows = new List<string[]>();
+            using (var ms = new System.IO.MemoryStream(bytes))
+            using (var wb = new ClosedXML.Excel.XLWorkbook(ms))
+            {
+                var ws = wb.Worksheet(1);
+                foreach (var row in ws.RowsUsed())
+                {
+                    var cells = row.Cells(1, 2).Select(c => (c.GetString() ?? "").Trim()).ToArray();
+                    if (cells.All(c => c.Length == 0)) continue;
+
+                    if (rows.Count == 0 && cells.Any(c => c.Equals("serial", StringComparison.OrdinalIgnoreCase)
+                                                       || c.Equals("serial no", StringComparison.OrdinalIgnoreCase)
+                                                       || c.Equals("serial number", StringComparison.OrdinalIgnoreCase)))
+                        continue;
+
+                    rows.Add(cells);
+                }
+            }
+            return rows;
+        }
+
         protected void lbtnRecAll_Click(object sender, EventArgs e)
         {
             // Serial items need a serial per unit and an expiry, neither of which this path
@@ -678,20 +887,25 @@ namespace SBMS
             bool itemIsSerialTracked = false;
 
             // Captured client-side by serialCapture.js as SERIAL~DATE|SERIAL~DATE|...
-            // The date travels WITH the unit, so one receipt can hold stock expiring on
-            // different days - a batch is not forced to share one expiry.
+            //
+            // EXPIRY IS LOT DRIVEN, NOT SERIAL DRIVEN. One date is captured for the lot and
+            // every serial in it inherits that date; the serial number is identity and
+            // traceability only. So the date on the box is the single source of truth here -
+            // the per-unit date in the encoding is ignored, and cannot drift from it however
+            // the list was built (scanned, imported, or left over from an earlier edit).
+            DateTime lineUseBy;
+            bool haveLineUseBy = DateTime.TryParse((txtUseBy.Text ?? "").Trim(), out lineUseBy);
+
             var capturedUnits = (hfSerials.Value ?? "")
                 .Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries)
                 .Select(pair =>
                 {
                     int at = pair.IndexOf('~');
                     string ser = (at < 0 ? pair : pair.Substring(0, at)).Trim().ToUpperInvariant();
-                    string dtx = at < 0 ? "" : pair.Substring(at + 1).Trim();
-                    DateTime dt;
                     return new
                     {
                         Serial = ser,
-                        UseBy = DateTime.TryParse(dtx, out dt) ? (DateTime?)dt : null
+                        UseBy = haveLineUseBy ? (DateTime?)lineUseBy : null
                     };
                 })
                 .Where(x => x.Serial.Length > 0)
@@ -805,12 +1019,13 @@ namespace SBMS
                     }
                     // Expiry is mandatory on serialised stock: the whole point of tracking a
                     // unit is knowing what it is and when it runs out, and a unit received
-                    // without a date can never be caught by FEFO or the expiry report. The
-                    // capture screen enforces this too; this is the backstop.
-                    if (capturedUnits.Any(x => !x.UseBy.HasValue))
+                    // without a date can never be caught by FEFO or the expiry report. One
+                    // date covers the lot, so this is now a single check on the box.
+                    if (!haveLineUseBy)
                     {
                         AlertHelper.ShowSweetAlert(this,
-                            "Every serial needs a Use By Date. Nothing was received.", "error");
+                            "Enter the Use By Date for this lot - every serial in it takes that date. "
+                            + "Nothing was received.", "error");
                         return;
                     }
 
@@ -2808,11 +3023,11 @@ namespace SBMS
                             PnlUseBy.Style.Add("width", "100%");
                         }
 
-                        if (CurrentUser.CompanyUseLotAddDetails == true)
-                        {
-                            PnlLotAdditions.Style.Add("display", "inline-block");
-                            PnlLotAdditions.Style.Add("width", "100%");
-                        }
+                        // "Additional Lot Information" is retired - nobody used the note. The
+                        // panel is left in the page and simply never shown: txtNumPieces sits
+                        // inside it and carries the lot quantity, and a control that does not
+                        // render does not post back, so removing it would drop LotQty to 1.
+                        // if (CurrentUser.CompanyUseLotAddDetails == true) { ...show it... }
 
                         // Serial item: the box above becomes the OPTIONAL supplier batch and the
                         // units are captured one per scan below. The Use By date applies to the
@@ -2826,10 +3041,9 @@ namespace SBMS
                             {
                                 PnlSerialCapture.Style.Add("display", "inline-block");
                                 PnlSerialCapture.Style.Add("width", "100%");
-                                PnlLotAdditions.Style.Add("display", "inline-block");
-                                PnlLotAdditions.Style.Add("width", "100%");
-                                lblLotNumH.Text = "Supplier Batch / Lot Number (optional)";
-                                Label4.Text = "Use By Date (required)";
+                                // Additional Lot Information stays hidden here too - see above.
+                                lblLotNumH.Text = "Batch/Lot Number";
+                                Label4.Text = "Use By Date *";
                                 if (lblLotNum.Text == "N/A") lblLotNum.Text = "";
                             }
                         }

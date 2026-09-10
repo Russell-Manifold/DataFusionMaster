@@ -843,38 +843,13 @@ namespace SBMS
         protected global::System.Web.UI.WebControls.Label lblCharacterCount;
 
         /// <summary>
-        /// PnlLotAdditions control.
+        /// PnlUseBy control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Panel PnlLotAdditions;
-
-        /// <summary>
-        /// lblLotAddHead control.
-        /// </summary>
-        protected global::System.Web.UI.WebControls.Label lblLotAddHead;
-
-        /// <summary>
-        /// PnlSerialCapture control.
-        /// </summary>
         protected global::System.Web.UI.WebControls.Panel PnlUseBy;
-
-        /// <summary>
-        /// PnlSerialCapture control.
-        /// </summary>
-        protected global::System.Web.UI.WebControls.Panel PnlSerialCapture;
-
-        /// <summary>
-        /// txtSerialScan control.
-        /// </summary>
-        protected global::System.Web.UI.WebControls.TextBox txtSerialScan;
-
-        /// <summary>
-        /// hfSerials control.
-        /// </summary>
-        protected global::System.Web.UI.WebControls.HiddenField hfSerials;
 
         /// <summary>
         /// Label4 control.
@@ -904,6 +879,69 @@ namespace SBMS
         protected global::AjaxControlToolkit.CalendarExtender CalendarExtender2;
 
         /// <summary>
+        /// PnlSerialCapture control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel PnlSerialCapture;
+
+        /// <summary>
+        /// txtSerialScan control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtSerialScan;
+
+        /// <summary>
+        /// hfSerials control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hfSerials;
+
+        /// <summary>
+        /// fuSerials control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.FileUpload fuSerials;
+
+        /// <summary>
+        /// lbtnImportSerials control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton lbtnImportSerials;
+
+        /// <summary>
+        /// PnlLotAdditions control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel PnlLotAdditions;
+
+        /// <summary>
+        /// lblLotAddHead control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblLotAddHead;
+
+        /// <summary>
         /// Label2 control.
         /// </summary>
         /// <remarks>
@@ -915,6 +953,10 @@ namespace SBMS
         /// <summary>
         /// txtLotNote control.
         /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::System.Web.UI.WebControls.TextBox txtLotNote;
 
         /// <summary>

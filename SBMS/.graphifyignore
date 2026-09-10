@@ -35,3 +35,7 @@ graphify-out/
 # jQuery lives in scripts/ alongside our own serialCapture.js, so exclude the
 # library by name rather than the whole folder.
 scripts/jquery-*.js
+
+# Scratch SQL dumps and PWA icons - not knowledge, and they showed as "changed" on every update.
+SQL/_tmp/
+SBMSMobile/icons/

@@ -2245,10 +2245,11 @@ namespace SBMS
                 if (batchQty >= origQty)
                 {
                     // Full remaining or over-supply: keep it as one line, just rescale.
-                    decimal factor = batchQty / origQty;
+                    // Multiply first, divide once - a ratio rounds before it multiplies
+                    // (400/1200 x 1200 = 399.9999). This form gives 400 exactly.
                     foreach (var rm in rms)
                     {
-                        rm.Quantity = (rm.Quantity ?? 0) * factor;
+                        rm.Quantity = (rm.Quantity ?? 0) * batchQty / origQty;
                         rm.LinkedFGQty = batchQty;
                         rm.UseQty = 0; rm.ScrapQty = 0; rm.RejectQty = 0;
                         rm.PickComplete = false;
@@ -2268,8 +2269,8 @@ namespace SBMS
                 }
 
                 decimal balance = origQty - batchQty;
-                decimal factorBatch = batchQty / origQty;
-                decimal factorBal = balance / origQty;
+                // No ratios here either - see the note above. Each quantity is scaled as
+                // (original x part / original) so the arithmetic is exact.
 
                 // New balance line (clone of the open finished-good line).
                 var balLine = new WorksOrderLine
@@ -2290,7 +2291,13 @@ namespace SBMS
                     // The RM lines below are cloned from this line, tailored quantities and all,
                     // so the balance line inherits "components edited" too - otherwise the next
                     // line save on the balance re-explodes it from the BOM and loses the split.
-                    RMCustomised = line.RMCustomised
+                    RMCustomised = line.RMCustomised,
+                    // THE STORE MUST COME ACROSS TOO. Without it the balance line's pane opened on
+                    // "-Store-", the store lookup in DoItemAdjustment returned 0, and the finished
+                    // goods were written to ToID = 0 - a store that does not exist. Sage still got
+                    // the adjustment (it has no stores), so Sage showed the stock and Data Fusion
+                    // did not: "the part manufacture quantity did not go into stock".
+                    ToStoreID = line.ToStoreID
                 };
                 _db.WorksOrderLines.Add(balLine);
                 _db.SaveChanges(); // assigns balLine.LineID
@@ -2315,7 +2322,7 @@ namespace SBMS
                         LinkedFGCode = rm.LinkedFGCode,
                         LinkedFGQty = balance,
                         LinkedWOLineID = balLine.LineID,
-                        Quantity = (rm.Quantity ?? 0) * factorBal,
+                        Quantity = (rm.Quantity ?? 0) * balance / origQty,
                         UseQty = 0,
                         ScrapQty = 0,
                         RejectQty = 0,
@@ -2323,7 +2330,7 @@ namespace SBMS
                     };
                     _db.WorksOrderRMLines.Add(rmBal);
 
-                    rm.Quantity = (rm.Quantity ?? 0) * factorBatch;
+                    rm.Quantity = (rm.Quantity ?? 0) * batchQty / origQty;
                     rm.LinkedFGQty = batchQty;
                     rm.UseQty = 0; rm.ScrapQty = 0; rm.RejectQty = 0;
                     rm.PickComplete = false;
@@ -4819,6 +4826,16 @@ namespace SBMS
                     if (stor != "")
                     {
                         long store1 = _db.Stores.Where(x => x.StoreCode == stor && x.CompanyID == CurrentUser.CoID).Select(x => x.StoreID).FirstOrDefault();
+
+                        // A store code that does not resolve ("-Store-" from an unselected
+                        // dropdown, or a renamed store) came back as 0 and the movement was
+                        // written to a store that does not exist - invisible everywhere, while
+                        // Sage was still told about it. Stop here, before Sage is touched.
+                        if (store1 == 0)
+                        {
+                            return "No store is selected for this line (\"" + stor + "\"). Choose the "
+                                 + "store the finished goods go into and manufacture again. Nothing was posted.";
+                        }
 
                         // Call API FIRST before any local DB saves
                         ApiUrlCall api = new ApiUrlCall();

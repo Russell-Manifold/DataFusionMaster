@@ -392,6 +392,32 @@ namespace SBMS
                 }
                 catch { }
 
+                // ── Housekeeping: PDFs\ was growing without limit ────────────────────
+                // Every PDF is deleted and rewritten on each Print click and the viewer is
+                // redirected to it in the same request - nothing ever reads one back later,
+                // so they are disposable. Each login clears files older than an hour in THIS
+                // user's own PDFs\<UserGuiD> folder. A user who never returns leaves nothing
+                // behind, because nothing is written until they print. The hour is the safety:
+                // a file someone printed seconds ago is never touched. Folders are left;
+                // they cost nothing and are recreated on demand. Never allowed to break login.
+                try
+                {
+                    string pdfRoot = Server.MapPath("~/PDFs/" + userDetails.UserGuiD.ToString());
+                    if (System.IO.Directory.Exists(pdfRoot))
+                    {
+                        DateTime cutoff = DateTime.Now.AddHours(-1);
+                        foreach (string f in System.IO.Directory.EnumerateFiles(pdfRoot, "*.*", System.IO.SearchOption.AllDirectories))
+                        {
+                            try
+                            {
+                                if (System.IO.File.GetLastWriteTime(f) < cutoff) System.IO.File.Delete(f);
+                            }
+                            catch { }   // in use or locked - leave it for the next login
+                        }
+                    }
+                }
+                catch { }
+
                 Session["UserDetails"] = userDetails;
                 Session["UserID"] = userDetails.UserGuiD;
                 Session["RoleID"] = userDetails.RoleID;
