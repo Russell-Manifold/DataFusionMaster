@@ -20,13 +20,6 @@ namespace SBMS
 
         long woid = 0;
 
-        private UserDetails CurrentUser
-        {
-            get
-            {
-                return Session["UserDetails"] as UserDetails;
-            }
-        }
         protected void Page_Load(object sender, EventArgs e)
         {
             UserDetails userDetails = CurrentUser;

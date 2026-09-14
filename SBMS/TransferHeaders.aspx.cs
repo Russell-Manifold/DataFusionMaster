@@ -12,13 +12,6 @@ namespace SBMS
     public partial class TransferHeaders : BasePage
     {
         long CoID;
-        private UserDetails CurrentUser
-        {
-            get
-            {
-                return Session["UserDetails"] as UserDetails;
-            }
-        }
         protected void Page_Load(object sender, EventArgs e)
         {
             UserDetails userDetails = CurrentUser;

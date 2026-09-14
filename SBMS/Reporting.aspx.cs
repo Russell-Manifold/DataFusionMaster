@@ -6,14 +6,7 @@ namespace SBMS
 {
     public partial class Reporting : BasePage
     {
-        long Coid;
-        private UserDetails CurrentUser
-        {
-            get
-            {
-                return Session["UserDetails"] as UserDetails;
-            }
-        }
+        //long Coid;
         protected void Page_Load(object sender, EventArgs e)
         {
             //if (CurrentUser == null)

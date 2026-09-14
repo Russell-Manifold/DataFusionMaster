@@ -56,7 +56,7 @@ namespace SBMS
                         return currentUser.SendMessages ? notifications : new List<Notification>();
                     }
                 }
-                catch (Exception ex)
+                catch 
                 {
                     return new List<Notification>();
                 }

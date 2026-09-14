@@ -56,6 +56,7 @@ namespace SBMS.Classes
         public bool MobileModule { get; set; }
         public bool AutoUpdateSageSOs { get; set; }
         public bool AutoGenTaxInvoice { get; set; }
+        public bool AllowRecPriceEdit { get; set; }
         public string LoggedInSessionID { get; set; }
         public bool UsePacks { get; set; }
         public DateTime ExpiryDate { get; set; }

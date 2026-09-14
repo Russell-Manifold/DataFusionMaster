@@ -17,13 +17,6 @@ namespace SBMS
 {
     public partial class ItemsHeaders : BasePage
     {
-        private UserDetails CurrentUser
-        {
-            get
-            {
-                return Session["UserDetails"] as UserDetails;
-            }
-        }
         protected async void Page_Load(object sender, EventArgs e)
         {
             if (CurrentUser == null)

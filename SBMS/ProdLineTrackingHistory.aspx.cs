@@ -14,13 +14,6 @@ namespace SBMS
     {
         long CoID;
         long lineid = 0;
-        private UserDetails CurrentUser
-        {
-            get
-            {
-                return Session["UserDetails"] as UserDetails;
-            }
-        }
         protected void Page_Load(object sender, EventArgs e)
         {
             if (CurrentUser == null)

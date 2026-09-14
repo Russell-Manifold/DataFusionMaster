@@ -15,14 +15,6 @@ namespace SBMS
     public partial class StockCountVariances : BasePage
     {
         int countid;
-        private UserDetails CurrentUser
-        {
-            get
-            {
-                return Session["UserDetails"] as UserDetails;
-            }
-        }
-
         protected void Page_Load(object sender, EventArgs e)
         {
             if (CurrentUser == null)
@@ -32,11 +24,6 @@ namespace SBMS
             }
 
             countid = Convert.ToInt32(Request.QueryString["id"].ToString());
-            if (countid== null)
-            {
-                Response.Redirect("~/Login.aspx", false); Context.ApplicationInstance.CompleteRequest();
-                return;
-            }
 
             if (!IsPostBack)
             {

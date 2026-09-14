@@ -25,14 +25,6 @@ namespace SBMS
         long docid = 0;
         string docguid;
 
-        private UserDetails CurrentUser
-        {
-            get
-            {
-                return Session["UserDetails"] as UserDetails;
-            }
-        }
-
         protected async void Page_Load(object sender, EventArgs e)
         {
             // Always restore docguid from QueryString or ViewState
@@ -75,7 +67,7 @@ namespace SBMS
                 imgCoImg.ImageUrl = File.Exists(Server.MapPath(imgPath)) ? ResolveUrl(imgPath) : ResolveUrl("~/images/CoImages/0000.png");
 
                 // Load the order
-                LoadOrder();
+                await LoadOrder();
 
                 if (AutoUpdate)
                 {
@@ -162,7 +154,7 @@ namespace SBMS
         //    }
         //}
 
-        private void LoadOrder()
+        private async Task LoadOrder()
         {
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {
@@ -318,7 +310,9 @@ namespace SBMS
                         }
                     }
                     ApiUrlCall api = new ApiUrlCall();
-                    api.LoadSOLines(docid, CurrentUser);
+                    // Awaited: the grid below binds from the DB, so the Sage pull must have
+                    // FINISHED first. Un-awaited, this raced LoadLines() and swallowed errors.
+                    await api.LoadSOLines(docid, CurrentUser);
                     LoadLines();
                 }
             }
@@ -809,7 +803,7 @@ namespace SBMS
                     {
                         _db.SaveChanges();
                     }
-                    catch (Exception ex) { }
+                    catch { }
 
 
                     // get DocLines and add them to the Jobcard
@@ -1048,9 +1042,7 @@ namespace SBMS
                 {
                     _db.SaveChanges();
                 }
-                catch (Exception ex)
-                {
-                }
+                catch { }
                 Response.Redirect("~/JobCard.aspx?docid=" + docguid.ToString());
             }
         }
@@ -2046,7 +2038,7 @@ namespace SBMS
                 _db.SaveChanges();
             }
             await ApiUrlCall.GetOneSalesOrder(CurrentUser,  docid);
-            LoadOrder();
+            await LoadOrder();
             string message = "Sales Order reloaded successfully.";
             AlertHelper.ShowSweetAlert(this, message, "success");
         }

@@ -21,13 +21,6 @@ namespace SBMS
 
         private List<ItemsMaster> _items;
         long bomid = 0;
-        private UserDetails CurrentUser
-        {
-            get
-            {
-                return Session["UserDetails"] as UserDetails;
-            }
-        }
         protected void Page_Load(object sender, EventArgs e)
         {
             bomid = Convert.ToInt64(Request.QueryString["bomid"].ToString());

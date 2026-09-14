@@ -116,10 +116,31 @@
                                       </td>
                              </tr>
                              <tr>
+                                    <td></td><td></td>
+                                        <td>Allow purchase price to be changed on receiving</td>
+                                      <td>
+                                          <asp:CheckBox ID="chkRecPriceEdit" runat="server" />
+                                          <cci:BalloonPopupExtender ID="BalloonPopupExtenderRecPrice" TargetControlID="chkRecPriceEdit" UseShadow="true"
+                                                DisplayOnMouseOver ="true" Position="BottomRight" BalloonPopupControlID="pnlPopRecPrice" BalloonStyle="Rectangle"
+                                                 runat="server" />
+                                              <asp:Panel ID="pnlPopRecPrice" runat="server" style="font-size:small">
+                                                 When the delivery arrives at a different price to the purchase order, the price can be corrected on the receiving line.
+                                                 The receipt, the lot cost, the store average and the Sage supplier invoice all use the corrected price.
+                                                 The purchase order in Sage is not changed, and neither is the item's own price.
+                                             </asp:Panel>
+                                      </td>
+                             </tr>
+                             <tr>
                                     <td>Use Produce Weights (for deliveries, shipping etc)</td>
                                      <td><asp:CheckBox ID="chkweight" runat="server" /></td>
+                                    <td></td>
+                                   <td></td>
+                             </tr>
+                             <tr>
                                     <td>Sage field name used for Unit weight</td>
                                    <td><asp:TextBox ID="txtSageWght" runat="server" placeholder="eg: NumericUserField1"></asp:TextBox></td>
+                                    <td></td>
+                                   <td></td>
                              </tr>
                                <tr><td colspan="4"><hr /></td></tr>
                                <tr><td colspan="4" class="cfg-sec">Modules</td></tr>
@@ -141,8 +162,8 @@
                                 </tr>
                                <tr>
                                    <td>Mobile Module Active</td>
-                                   <td colspan="3"><asp:CheckBox ID="chkMobileModule" runat="server"/>
-                                       <span style="font-size:small;color:#666;">&nbsp;&nbsp;Grants the Mobile Picking tab &amp; the scanner (mobile) app for this company.</span></td>
+                                   <td><asp:CheckBox ID="chkMobileModule" runat="server"/></td>
+                                   <td colspan="2"> <span style="font-size:small;color:#666;">(Grants the Mobile Picking tab &amp; the scanner (mobile) app for this company.)</span></td>
                                </tr>
                                <tr><td colspan="4"><hr /></td></tr>
                                 <tr>

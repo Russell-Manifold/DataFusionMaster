@@ -19,13 +19,6 @@ namespace SBMS
     {
         long Coid;
         private List<ItemsMaster> _items;
-        private UserDetails CurrentUser
-        {
-            get
-            {
-                return Session["UserDetails"] as UserDetails;
-            }
-        }
         protected void Page_Load(object sender, EventArgs e)
         {
             if (CurrentUser == null)

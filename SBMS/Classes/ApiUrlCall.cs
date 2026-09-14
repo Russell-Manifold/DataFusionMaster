@@ -342,7 +342,7 @@ namespace SBMS.Classes
                     ["Message"] = ex.Message
                 };
             }
-            return parsedJSON;
+            //return parsedJSON;
         }
 
         public async Task<JObject> APIUpdateSalesOrderAsync(string DocType, string JsonStr, UserDetails Userdetails)
@@ -1558,7 +1558,7 @@ namespace SBMS.Classes
                                     {
                                         itm.GPPercentage = Math.Round((decimal)(((itm.PriceExclusive - itm.AverageCost) / itm.PriceExclusive) * 100),2);
                                     }
-                                    catch( Exception ex)
+                                    catch
                                     { itm.GPPercentage = 0; }
 
                                     _db.Entry(itm).State = System.Data.Entity.EntityState.Modified;
@@ -1803,7 +1803,7 @@ namespace SBMS.Classes
                                 {
                                     _db.SaveChanges();
                                 }
-                                catch (Exception ex) { }
+                                catch { }
                             }
                         }
                     }
@@ -2091,7 +2091,7 @@ namespace SBMS.Classes
                 {
                     parsedJSON["error"] = new JObject
                     {
-                        ["statusCode"] = response.StatusCode != null ? (int)response.StatusCode : 0,
+                        ["statusCode"] = (int)response.StatusCode,
                         ["reason"] = response.StatusDescription ?? "Unknown error",
                         ["message"] = response.Content ?? "No content returned"
                     };
@@ -2809,7 +2809,7 @@ namespace SBMS.Classes
             DateTime thisdt = Convert.ToDateTime(DateTime.Today.AddMonths(-1), CultureInfo.InvariantCulture), duedt = Convert.ToDateTime(DateTime.Today.AddMonths(-1), CultureInfo.InvariantCulture); ;
             double skipQty = 0;
            
-            DateTime frmdt = DateTime.Now; double transactVal = 0;
+            DateTime frmdt = DateTime.Now;             
             DataSet MyDS = new DataSet();
             MyDS = GetSQLDataFromString("Select TOP (1) CustAdjUpdate FROM DIUpdateLog WHERE CompanyID = " + Userdetails.CoID + " AND ProfileID = '" + Userdetails.UserGuiD + "'");
               
@@ -2995,7 +2995,7 @@ namespace SBMS.Classes
             Calendar calendar = cultureInfo.Calendar;
             int weekNumr = 0;
 
-            DateTime stdate, thisdt = Convert.ToDateTime("01 Jan 2000"), duedt = Convert.ToDateTime("01 Jan 2000");
+            DateTime thisdt = Convert.ToDateTime("01 Jan 2000"), duedt = Convert.ToDateTime("01 Jan 2000");
             cTripleDES des = new cTripleDES(key, iv);
 
             double skipQty = 0; int i = 0; float TotQty = 0; int RetQty = 0; int isinvfromquote = 0;
@@ -3375,7 +3375,7 @@ namespace SBMS.Classes
             Calendar calendar = cultureInfo.Calendar;
             int weekNumr = 0;
             
-            DateTime stdate;
+            //DateTime stdate;
             
             cTripleDES des = new cTripleDES(key, iv);
             double skipQty = 0; int i = 0; float TotQty = 0; int RetQty = 0;
@@ -3488,7 +3488,6 @@ namespace SBMS.Classes
                                         string Analis1 = string.Empty;
                                         if (item.ToString().Contains("AnalysisCategoryId1"))
                                         {
-                                            if (obj.AnalysisCategoryId1 != null)
                                             {
                                                 Analis1 = obj.AnalysisCategoryId1.ToString();
                                             }
@@ -3496,7 +3495,6 @@ namespace SBMS.Classes
                                         string Analis2 = string.Empty;
                                         if (item.ToString().Contains("AnalysisCategoryId2"))
                                         {
-                                            if (obj.AnalysisCategoryId2 != null)
                                             {
                                                 Analis2 = obj.AnalysisCategoryId2.ToString();
                                             }
@@ -3504,7 +3502,6 @@ namespace SBMS.Classes
                                         string Analis3 = string.Empty;
                                         if (item.ToString().Contains("AnalysisCategoryId3"))
                                         {
-                                            if (obj.AnalysisCategoryId3 != null)
                                             {
                                                 Analis3 = obj.AnalysisCategoryId3.ToString();
                                             }
@@ -4096,7 +4093,6 @@ namespace SBMS.Classes
                                         string Analis1 = string.Empty;
                                         if (item.ToString().Contains("AnalysisCategoryId1"))
                                         {
-                                            if (obj.AnalysisCategoryId1 != null)
                                             {
                                                 Analis1 = obj.AnalysisCategoryId1.ToString();
                                             }
@@ -4104,7 +4100,6 @@ namespace SBMS.Classes
                                         string Analis2 = string.Empty;
                                         if (item.ToString().Contains("AnalysisCategoryId2"))
                                         {
-                                            if (obj.AnalysisCategoryId2 != null)
                                             {
                                                 Analis2 = obj.AnalysisCategoryId2.ToString();
                                             }
@@ -4112,7 +4107,6 @@ namespace SBMS.Classes
                                         string Analis3 = string.Empty;
                                         if (item.ToString().Contains("AnalysisCategoryId3"))
                                         {
-                                            if (obj.AnalysisCategoryId3 != null)
                                             {
                                                 Analis3 = obj.AnalysisCategoryId3.ToString();
                                             }
@@ -4285,7 +4279,6 @@ namespace SBMS.Classes
 
         public static async Task GetOneSalesOrder(UserDetails Userdetails, long DocID)
         {
-            double skipQty = 0; float TotQty = 0; int RetQty = 0;
             DataSet ds = new DataSet();
             DateTime LastCallDt = DateTime.Now;
             string SalesRep = string.Empty; string Ref = string.Empty;

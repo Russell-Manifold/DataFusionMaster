@@ -172,7 +172,7 @@ namespace SBMS
 
         public bool UserLogin(string username, string pwd)
         {
-            bool rolecaneditlots = false;
+            
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {
                 // Get all active user records for this email
@@ -331,6 +331,7 @@ namespace SBMS
                             x.MobileModule,
                             x.AutoUpdateSageSOs,
                             x.AutoGenTaxInvoice,
+                            x.AllowRecPriceEdit,
                             x.UsePacks,
                             x.UseEndDate,
                             x.ShowManfCosts,
@@ -348,6 +349,7 @@ namespace SBMS
                     userDetails.MobileModule = GenLogIn.MobileModule;
                     userDetails.AutoUpdateSageSOs = (bool)GenLogIn.AutoUpdateSageSOs;
                     userDetails.AutoGenTaxInvoice = (bool)GenLogIn.AutoGenTaxInvoice;
+                    userDetails.AllowRecPriceEdit = GenLogIn.AllowRecPriceEdit;
                     userDetails.UseAutoManf = GenLogIn.UseAutoManf;
                     userDetails.UsePacks = GenLogIn.UsePacks;
                     userDetails.ExpiryDate = GenLogIn.UseEndDate != null ? (DateTime)GenLogIn.UseEndDate : DateTime.MaxValue;

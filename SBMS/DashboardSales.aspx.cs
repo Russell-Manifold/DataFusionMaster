@@ -17,15 +17,7 @@ namespace SBMS
         string userid = "";
         byte[] key = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24 };
         byte[] iv = { 8, 7, 6, 5, 4, 3, 2, 1 };
-        Boolean errfirstuser = false;
-
-        private UserDetails CurrentUser
-        {
-            get
-            {
-                return Session["UserDetails"] as UserDetails;
-            }
-        }
+        //Boolean errfirstuser = false;
 
         protected override void Render(System.Web.UI.HtmlTextWriter writer)
         {
@@ -42,9 +34,9 @@ namespace SBMS
             base.Render(writer);
         }
 
-        protected void Page_Load(object sender, EventArgs e)
+        protected async void Page_Load(object sender, EventArgs e)
         {
-            int dashid = 0;
+            //int dashid = 0;
             userid = Request.QueryString["user"].ToString();
             if (CurrentUser == null)
             {
@@ -74,7 +66,7 @@ namespace SBMS
 
                     if (Cache[cacheKey] == null)
                     {
-                        LoadInvoices();
+                        await LoadInvoices();
                         // If not, fetch data and cache it
                         List<DashSalesModel> dashSales = GetDashSalesData();
                         LoadCharts(dashSales);

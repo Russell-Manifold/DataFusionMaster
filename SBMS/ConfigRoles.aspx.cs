@@ -10,14 +10,6 @@ namespace SBMS
 {
     public partial class ConfigRoles : BasePage
     {
-        private UserDetails CurrentUser
-        {
-            get
-            {
-                return Session["UserDetails"] as UserDetails;
-            }
-        }
-
         protected override void Render(System.Web.UI.HtmlTextWriter writer)
         {
             if (GridRoles.Rows.Count > 0)

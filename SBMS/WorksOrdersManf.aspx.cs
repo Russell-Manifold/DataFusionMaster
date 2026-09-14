@@ -31,13 +31,6 @@ namespace SBMS
 
         long woid = 0;
 
-        private UserDetails CurrentUser
-        {
-            get
-            {
-                return Session["UserDetails"] as UserDetails;
-            }
-        }
         private HashSet<string> SentKeys
         {
             get

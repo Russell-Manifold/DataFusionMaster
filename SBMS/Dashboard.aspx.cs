@@ -44,7 +44,7 @@ namespace SBMS
                     {
                         lblCoName.Text = _db.CompanyMasters.FirstOrDefault(x => x.SBCACoID == userDets.CoID).CompanyName.ToString();
                     }
-                    catch (Exception ex)
+                    catch
                     {
                         lblCoName.Text = "Company Name or User Not Found";
                     }

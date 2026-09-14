@@ -762,6 +762,21 @@ namespace SBMS
         protected global::System.Web.UI.WebControls.TextBox txtQtyReceive;
 
         /// <summary>
+        /// trRecPrice control.
+        /// </summary>
+        protected global::System.Web.UI.HtmlControls.HtmlTableRow trRecPrice;
+
+        /// <summary>
+        /// txtRecPrice control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.TextBox txtRecPrice;
+
+        /// <summary>
+        /// lblOrdPrice control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Label lblOrdPrice;
+
+        /// <summary>
         /// ftbe control.
         /// </summary>
         /// <remarks>

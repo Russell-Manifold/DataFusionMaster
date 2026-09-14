@@ -24,14 +24,6 @@ namespace SBMS
         private List<GetActiveLotNumbersLinkedToStores_Result> _ActiveLotNums;
         private List<AccountsMaster> _accounts;
         private List<BundlesHeader> _bundles;
-        private UserDetails CurrentUser
-        {
-            get
-            {
-                return Session["UserDetails"] as UserDetails;
-            }
-        }
-
         protected void Page_Load(object sender, EventArgs e)
         {
             if (CurrentUser == null)

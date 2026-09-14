@@ -16,14 +16,6 @@ namespace SBMS
         private List<ItemsMaster> _items;
         long fcid = 0;
 
-        private UserDetails CurrentUser
-        {
-            get
-            {
-                return Session["UserDetails"] as UserDetails;
-            }
-        }
-
         protected void Page_Load(object sender, EventArgs e)
         {
             fcid = Convert.ToInt64(Request.QueryString["fcid"].ToString());

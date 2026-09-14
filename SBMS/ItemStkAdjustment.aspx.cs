@@ -16,14 +16,6 @@ namespace SBMS
 {
     public partial class ItemStkAdjustment : BasePage
     {
-        private UserDetails CurrentUser
-        {
-            get
-            {
-                return Session["UserDetails"] as UserDetails;
-            }
-        }
-
         protected void Page_Load(object sender, EventArgs e)
         {
             if (CurrentUser == null)
@@ -200,7 +192,7 @@ namespace SBMS
             {
                 ThisAvCost = Convert.ToDecimal(txtAvCost.Text);
             }
-            catch (Exception ex)
+            catch 
             {
                 message = "Invalid Average Cost - Please enter a valid value: \" + ex.Message";
                 AlertHelper.ShowSweetAlert(this, message, "error");
@@ -644,10 +636,7 @@ namespace SBMS
                 try
                 {
                     _db.SaveChanges();
-                } catch (Exception ex)
-                {
-                    string str = "";
-                }
+                } catch { }
              
                 var LotNums = _db.LotTrackingMasters.Where(x => x.CompanyID == CurrentUser.CoID && x.ItemId == LtNew.ItemId && x.LotActive == true).GroupBy(x => x.LotNumber).Select(g => g.Key).ToList();
                 DDLotNum.DataSource = LotNums;

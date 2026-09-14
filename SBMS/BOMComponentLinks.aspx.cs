@@ -13,7 +13,6 @@ namespace SBMS
     public partial class BOMComponentLinks : BasePage
     {
         long itmid;
-        private UserDetails CurrentUser => Session["UserDetails"] as UserDetails;
 
         public class BOMLink
         {

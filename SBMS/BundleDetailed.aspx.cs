@@ -13,16 +13,8 @@ namespace SBMS
     public partial class BundleDetailed : BasePage
     {
         long CoID;
-        private List<ItemsMaster> _items;
+        //private List<ItemsMaster> _items;
         string bundcode;
-        private UserDetails CurrentUser
-        {
-            get
-            {
-                return Session["UserDetails"] as UserDetails;
-            }
-        }
-
         protected void Page_Load(object sender, EventArgs e)
         {
             if (CurrentUser == null)

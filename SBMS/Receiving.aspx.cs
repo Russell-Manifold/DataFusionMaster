@@ -31,14 +31,6 @@ namespace SBMS
         private string LotNumCheck = "";
         decimal addcosts = 0;
         decimal recqty = 0; 
-        private UserDetails CurrentUser
-        {
-            get
-            {
-                return Session["UserDetails"] as UserDetails;
-            }
-        }
-
         protected override void Render(System.Web.UI.HtmlTextWriter writer)
         {
             if (GridPOLines.Rows.Count > 0)
@@ -874,6 +866,30 @@ namespace SBMS
            
             long lineid = Convert.ToInt64(lblLineID.Text);
 
+            // ── Received Price ─────────────────────────────────────────────────────
+            // Parsed here with the quantity so a bad entry stops the save before anything
+            // is written. Applied to the line further down, in the same place the quantity
+            // is - see "RECEIVED PRICE APPLIED" below.
+            decimal? recPrice = null;
+            if (trRecPrice.Visible)
+            {
+                // The box already blocks a comma at the keystroke (FilteredTextBoxExtender:
+                // digits and "." only). This is the belt for a PASTED value: a comma is
+                // REFUSED, never stripped - "12,50" stripped would have saved as 1250.
+                // NumberStyles is narrowed too, so a thousands separator cannot slip
+                // through TryParse either.
+                string rp = (txtRecPrice.Text ?? "").Replace(" ", "").Replace("\u00A0", "");
+                decimal rpVal;
+                if (rp.Length == 0 || rp.Contains(",")
+                    || !decimal.TryParse(rp, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out rpVal)
+                    || rpVal < 0)
+                {
+                    AlertHelper.ShowSweetAlert(this, "Received Price must use a decimal point, e.g. 12.50 - no commas. Nothing was received.", "error");
+                    return;
+                }
+                recPrice = rpVal;
+            }
+
             // Lot number typed into the modal. lbtnItmC_Click seeds this with "N/A" when the
             // line has no lot yet, so that placeholder counts as "nothing captured".
             string capturedLot = (lblLotNum.Text ?? "").Trim();
@@ -1227,6 +1243,24 @@ namespace SBMS
                     return;
                 }
                 if(DDStore.Enabled == true) Docline.StoreCode = DDStoreEdit.SelectedValue.ToString();
+                // ── RECEIVED PRICE APPLIED ─────────────────────────────────────────
+                // One figure drives everything downstream: the ledger row, the store
+                // average, the lot cost and the Sage supplier-invoice line all read this
+                // line's price and Exclusive. Rebuilding ALL the totals here - not just
+                // the unit price - is what keeps them in step; a unit price changed on
+                // its own would send Sage the new figure while the ledger used the old.
+                if (recPrice.HasValue)
+                {
+                    decimal ordQty  = Docline.Quantity ?? 0;
+                    decimal taxPct  = Docline.TaxPercentage ?? 0;
+                    decimal disc    = Docline.Discount ?? 0;
+                    Docline.UnitPriceExclusive = recPrice.Value;
+                    Docline.UnitPriceInclusive = recPrice.Value * (1 + taxPct);
+                    Docline.Exclusive = recPrice.Value * ordQty;
+                    Docline.Tax   = (Docline.Exclusive - disc) * taxPct;
+                    Docline.Total = Docline.Exclusive - disc + Docline.Tax;
+                }
+
                 Docline.ReceiveQty = QtyRec;
                 Docline.QtyLeft = QtyLeft < 0 ? 0 : QtyLeft;
                 Docline.ToReceive = true;
@@ -2967,6 +3001,19 @@ namespace SBMS
                 txtordqty.Text = ApiUrlCall.NumberToDecimal((Docline.QtyLeft ?? Docline.Quantity ?? 0).ToString(), CurrentUser.CompanyDecPlaces).ToString();
                 txtQtyReceive.Text = ApiUrlCall.NumberToDecimal((Docline.ReceiveQty ?? 0).ToString(), CurrentUser.CompanyDecPlaces).ToString();
                 lblItemdescr.Text = Docline.ItemDescription ?? string.Empty;
+
+                // Received Price - company switch only, stock lines only. The box starts at the
+                // line's CURRENT price (the PO's, or a correction already made on this line)
+                // and the PO's price is shown beside it so the variance is on screen.
+                trRecPrice.Visible = CurrentUser.AllowRecPriceEdit && (Docline.ItemType ?? 0) == 0;
+                if (trRecPrice.Visible)
+                {
+                    txtRecPrice.Text = (Docline.UnitPriceExclusive ?? 0).ToString("0.####", CultureInfo.InvariantCulture);
+                    decimal poPrice = _db.DocLines
+                        .Where(x => x.CompanyID == CurrentUser.CoID && x.DocID == Docline.DocID && x.SBCALineID == Docline.SBCALineID)
+                        .Select(x => x.UnitPriceExclusive).FirstOrDefault() ?? 0;
+                    lblOrdPrice.Text = poPrice.ToString("N2");
+                }
                 txtNumPieces.Text = txtQtyReceive.Text;
                 chkEdit.Checked = (Boolean)Docline.ReceiveComplete;
                 if (Docline.StoreCode != null)

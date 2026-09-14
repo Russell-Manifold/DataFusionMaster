@@ -8,14 +8,6 @@ namespace SBMS
 {
     public partial class ConfigCompany : BasePage
     {
-        private UserDetails CurrentUser
-        {
-            get
-            {
-                return Session["UserDetails"] as UserDetails;
-            }
-        }
-
         protected async void Page_Load(object sender, EventArgs e)
         {
             if (CurrentUser == null)
@@ -120,6 +112,7 @@ namespace SBMS
                 catch { chkPickByBin.Checked = false; }
                chkPSAuto.Checked = (bool)Comp.AutoUpdateSageSOs;
                chkTaxInvAuto.Checked = (bool)Comp.AutoGenTaxInvoice;
+               chkRecPriceEdit.Checked = Comp.AllowRecPriceEdit;
                chkUsePacks.Checked = (bool)Comp.UsePacks;
                 chkManfCosts.Checked = (bool)Comp.ShowManfCosts;
 
@@ -211,6 +204,8 @@ namespace SBMS
                     Comp.AutoUpdateSageSOs = chkPSAuto.Checked;
                     CurrentUser.AutoUpdateSageSOs = Comp.AutoUpdateSageSOs;
                     Comp.AutoGenTaxInvoice = chkTaxInvAuto.Checked;
+                    Comp.AllowRecPriceEdit = chkRecPriceEdit.Checked;
+                    CurrentUser.AllowRecPriceEdit = Comp.AllowRecPriceEdit;
                     CurrentUser.AutoGenTaxInvoice = Comp.AutoGenTaxInvoice;
                     Comp.UsePacks = chkUsePacks.Checked;
                     CurrentUser.UsePacks = Comp.UsePacks;
@@ -371,7 +366,7 @@ namespace SBMS
 
         protected void chkweight_CheckedChanged(object sender, EventArgs e)
         {
-            if (chkweight.Checked = false) txtSageWght.Text = null;
+            if (chkweight.Checked == false) txtSageWght.Text = null;
         }
     }
 }

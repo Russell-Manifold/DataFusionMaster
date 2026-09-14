@@ -23,13 +23,6 @@ namespace SBMS
         private List<GetActiveLotNumbersLinkedToStores_Result> _ActiveLotNums;
         // SBCALineID -> outstanding SO-line balance (QtyLeft ?? Quantity), for the read-only Qty_Left grid column.
         private Dictionary<long, decimal> _qtyLeftMap;
-        private UserDetails CurrentUser
-        {
-            get
-            {
-                return Session["UserDetails"] as UserDetails;
-            }
-        }
         protected void Page_Load(object sender, EventArgs e)
         {
             docguid = Request.QueryString["docid"];
@@ -216,7 +209,7 @@ namespace SBMS
         {
             long PsID = Convert.ToInt64(lblPSid.Text);
             long DocID = Convert.ToInt64(lblDocID.Text);
-            decimal qoh = 0, PickQty = 0;
+            decimal qoh = 0;
             decimal PriceExcl = 0, priceInclAdd = 0;
             LinkButton lbtnLineSave = (LinkButton)sender;
             GridViewRow row = (GridViewRow)lbtnLineSave.NamingContainer;
@@ -918,7 +911,6 @@ namespace SBMS
                         {
                             //var ItmT = _db.ItemTransactions.Where(x => x.CompanyID == CurrentUser.CoID && x.ItemID == st.ItemID && x.ToID == st.StoreID && x.DocumentID != PsID).OrderByDescending(x => x.TrnID).FirstOrDefault();
                             var ItmT = _db.ItemTransactions.Where(it => it.CompanyID == CurrentUser.CoID && it.ItemID == st.ItemID && it.ToID == (int)st.StoreID).Select(it => (decimal?)it.Qty).DefaultIfEmpty(0).Sum() ?? 0;
-                            if (ItmT != null)
                             {
                                 StItem.QOH = Convert.ToDecimal(ApiUrlCall.NumberToDecimal(ItmT.ToString(), CurrentUser.CompanyDecPlaces));
                                 if (StItem.QOH != 0)
@@ -2012,7 +2004,7 @@ namespace SBMS
 
         protected void LbtnLotAddOK_Click(object sender, EventArgs e)
         {
-           decimal sellQty = 0; long firstrowid = 0;
+           decimal sellQty = 0;
 
             // Serials are picked by ticking whole units, so a tick IS a quantity of 1. Writing it
             // back into the same textbox means everything below - the total check and the line
@@ -2808,7 +2800,7 @@ namespace SBMS
                 {
                     _db.SaveChanges();
                 }
-                catch (Exception ex)
+                catch 
                 {
                 }
                 Response.Redirect("~/JobCard.aspx?docid=" + docguid.ToString());
@@ -3152,7 +3144,7 @@ namespace SBMS
                     {
                         _db.SaveChanges();
                     }
-                    catch (Exception ex) { }
+                    catch { }
 
 
                     // get DocLines and add them to the Jobcard

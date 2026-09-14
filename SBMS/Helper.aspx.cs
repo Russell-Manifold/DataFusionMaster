@@ -1,4 +1,4 @@
-using SBMS.Classes;
+﻿using SBMS.Classes;
 using SBMS.Models;
 using System;
 using System.Linq;
@@ -9,11 +9,6 @@ namespace SBMS
 {
     public partial class Helper : BasePage
     {
-        private UserDetails CurrentUser
-        {
-            get { return Session["UserDetails"] as UserDetails; }
-        }
-
         private HelpService _helpService;
         private HelpService HelpSvc => _helpService ?? (_helpService = new HelpService());
 

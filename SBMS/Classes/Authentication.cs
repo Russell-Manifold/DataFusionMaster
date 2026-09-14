@@ -9,7 +9,7 @@ namespace SBMS.Classes
         //public static PastelPartnerSDK SDK = new PastelPartnerSDK();
         //public static PastelInventoryJnl InventSDK = new PastelInventoryJnl();
         //private string Serno = "DK198110007";
-        private string Authcde = "5635796";
+        //private string Authcde = "5635796";
         ////////////////////////////////////////////////////////
         ///AUTHENTICATION
         public string GetAuthData()

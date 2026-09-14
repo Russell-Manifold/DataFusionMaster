@@ -34,6 +34,7 @@ namespace SBMS.Models
         public bool SendMessages { get; set; }
         public bool UseLotTracking { get; set; }
         public bool UseSerialNumbers { get; set; }
+        public bool AllowRecPriceEdit { get; set; }
         public bool UseLotAddDetails { get; set; }
         public int ItemQtyDecPlaces { get; set; }
         public string SageConsultRNum { get; set; }

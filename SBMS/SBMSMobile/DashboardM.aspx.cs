@@ -8,7 +8,7 @@ namespace SBMS
     public partial class DashboardM : System.Web.UI.Page
     {
         UserDetails userDets;
-        Guid userGuid;
+        //Guid userGuid;
         protected void Page_Load(object sender, EventArgs e)
         {
             userDets = Session["UserDetails"] as UserDetails;

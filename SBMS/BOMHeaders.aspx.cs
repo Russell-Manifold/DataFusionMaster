@@ -8,13 +8,6 @@ namespace SBMS
 {
     public partial class BOMHeaders : BasePage
     {
-        private UserDetails CurrentUser
-        {
-            get
-            {
-                return Session["UserDetails"] as UserDetails;
-            }
-        }
         protected void Page_Load(object sender, EventArgs e)
         {
             if (CurrentUser == null) Response.Redirect("~/Login.aspx", false); Context.ApplicationInstance.CompleteRequest();
@@ -47,14 +40,6 @@ namespace SBMS
                 {
                     if (BOMs.Count > 0)
                     {
-                        foreach (var item in BOMs)
-                        {
-                            if (item.BomActive == null)
-                            {
-                                item.BomActive = true;
-                            }
-                        }
-
                         GridBOM.DataSource = BOMs;
                         GridBOM.DataBind();
                     }

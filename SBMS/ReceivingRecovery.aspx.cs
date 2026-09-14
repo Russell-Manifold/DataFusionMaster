@@ -1,4 +1,4 @@
-using SBMS.Classes;
+﻿using SBMS.Classes;
 using SBMS.Models;
 using System;
 using System.Collections.Generic;
@@ -24,11 +24,6 @@ namespace SBMS
     // before the PO is released.
     public partial class ReceivingRecovery : BasePage
     {
-        private UserDetails CurrentUser
-        {
-            get { return Session["UserDetails"] as UserDetails; }
-        }
-
         protected void Page_Load(object sender, EventArgs e)
         {
             if (CurrentUser == null)

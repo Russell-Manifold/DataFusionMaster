@@ -16,14 +16,6 @@ namespace SBMS
     public partial class StockCounts : BasePage
     {
 
-        private UserDetails CurrentUser
-        {
-            get
-            {
-                return Session["UserDetails"] as UserDetails;
-            }
-        }
-
         protected void Page_Load(object sender, EventArgs e)
         {
             if (CurrentUser == null)

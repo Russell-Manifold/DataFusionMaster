@@ -20,13 +20,6 @@ namespace SBMS
         private List<ItemsMaster> _items;
         long kitid = 0;
         string kitCode = "";
-        private UserDetails CurrentUser
-        {
-            get
-            {
-                return Session["UserDetails"] as UserDetails;
-            }
-        }
         protected void Page_Load(object sender, EventArgs e)
         {
             if (CurrentUser == null)

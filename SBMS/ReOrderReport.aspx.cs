@@ -22,11 +22,6 @@ namespace SBMS
     /// </summary>
     public partial class ReOrderReport : BasePage
     {
-        private UserDetails CurrentUser
-        {
-            get { return Session["UserDetails"] as UserDetails; }
-        }
-
         /// <summary>Shape of one row of dbo.GetReOrderReport. Names must match the proc's columns.</summary>
         public class ReOrderRow
         {

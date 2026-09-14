@@ -14,13 +14,6 @@ namespace SBMS
     public partial class ItemQOHSync : BasePage
     {
         int lotno = 0;
-        private UserDetails CurrentUser
-        {
-            get
-            {
-                return Session["UserDetails"] as UserDetails;
-            }
-        }
         protected async void Page_Load(object sender, EventArgs e)
         {
             if (CurrentUser == null)
@@ -359,7 +352,7 @@ namespace SBMS
                            batchcnt = batchcnt + 200;
                             _db.SaveChanges();
                         }
-                        catch (Exception ex) { }
+                        catch { }
                     }
                 }
                 try
@@ -367,7 +360,7 @@ namespace SBMS
                     _db.SaveChanges();
                     Reccount++;
                 }
-                catch (Exception ex) { }
+                catch { }
                 LoadItems();
                 ShowMessage(sender, EventArgs.Empty, Reccount -1 + " Items successfuilly updated.");
             }
@@ -494,12 +487,8 @@ namespace SBMS
                         {
                             _db.SaveChanges();
                             i++;
-                            if (i == 1597) 
-                            { string str = ""; }
                         }
-                        catch (Exception ex)
-                        {
-                        }
+                        catch { }
                     }
                 }
             }

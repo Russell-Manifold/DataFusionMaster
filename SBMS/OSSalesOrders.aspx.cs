@@ -15,13 +15,6 @@ namespace SBMS
 {
     public partial class OSSalesOrders : BasePage
     {
-        private UserDetails CurrentUser
-        {
-            get
-            {
-                return Session["UserDetails"] as UserDetails;
-            }
-        }
         protected void Page_Load(object sender, EventArgs e)
         {
             if (CurrentUser == null)

@@ -1,4 +1,4 @@
-using DocumentFormat.OpenXml.Math;
+﻿using DocumentFormat.OpenXml.Math;
 using DocumentFormat.OpenXml.Wordprocessing;
 using iTextSharp.text;
 using iTextSharp.text.pdf;
@@ -15,13 +15,6 @@ namespace SBMS
     {
         long woid = 0;
         string wonum;
-        private UserDetails CurrentUser
-        {
-            get
-            {
-                return Session["UserDetails"] as UserDetails;
-            }
-        }
         protected void Page_Load(object sender, EventArgs e)
         {
             UserDetails userDetails = CurrentUser;
@@ -312,9 +305,9 @@ namespace SBMS
                             try { rmQuantity = !string.IsNullOrEmpty(rmL.Quantity?.ToString()) ? Convert.ToDecimal(rmL.Quantity) : 0; } catch { rmQuantity = 0; }
                             rmQuantity = ApiUrlCall.NumberToDecimal(rmQuantity, CurrentUser?.CompanyDecPlaces ?? 0);
                             decimal useQty = 0;
-                            try { useQty = rmL.UseQty != null ? ApiUrlCall.NumberToDecimal(Convert.ToDecimal(rmL.UseQty), CurrentUser?.CompanyDecPlaces ?? 0) : 0; } catch { useQty = 0; }
+                            try { useQty = ApiUrlCall.NumberToDecimal(Convert.ToDecimal(rmL.UseQty), CurrentUser?.CompanyDecPlaces ?? 0); } catch { useQty = 0; }
                             decimal scrapQty = 0;
-                            try { scrapQty = rmL.ScrapQty != null ? ApiUrlCall.NumberToDecimal(Convert.ToDecimal(rmL.ScrapQty), CurrentUser?.CompanyDecPlaces ?? 0) : 0; } catch { scrapQty = 0; }
+                            try { scrapQty = ApiUrlCall.NumberToDecimal(Convert.ToDecimal(rmL.ScrapQty), CurrentUser?.CompanyDecPlaces ?? 0); } catch { scrapQty = 0; }
                             cell4 = new PdfPCell(new Phrase(" ", regfont ?? FontFactory.GetFont(FontFactory.HELVETICA, 9)));
                             cell4.BorderColor = new BaseColor(211, 211, 211);
                             cell4.FixedHeight = 22f;

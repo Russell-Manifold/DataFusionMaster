@@ -9,14 +9,6 @@ namespace SBMS
 {
     public partial class ConfigProcesses : BasePage
     {
-        private UserDetails CurrentUser
-        {
-            get
-            {
-                return Session["UserDetails"] as UserDetails;
-            }
-        }
-
         protected override void Render(System.Web.UI.HtmlTextWriter writer)
         {
             if (GridPickProc.Rows.Count > 0)

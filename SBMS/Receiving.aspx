@@ -356,6 +356,15 @@
                                                             <span style="margin-left:1em; color:#7a8b98">Variation</span>
                                                             <asp:textbox id="txtBalQty" runat="server" style="width:5em; text-align:center; color:red; border:none; background:transparent; font-weight:600" Text="" ClientIDMode="Static" ReadOnly="true" TabIndex="-1"></asp:textbox></td>
                                                 </tr>
+                                                 <%-- Only rendered when the company switch is on (lbtnItmC_Click). The PO's
+                                                      price sits beside the box so a change is never silent. --%>
+                                                 <tr id="trRecPrice" runat="server" visible="false">
+                                                    <td class="rec-lbl">Received Price</td>
+                                                    <td><asp:textbox id="txtRecPrice" runat="server" style="width:6em; text-align:center" Text="" ClientIDMode="Static" TabIndex="0"></asp:textbox>
+                                                            <cci:FilteredTextBoxExtender ID="ftbeRecPrice" runat="server" TargetControlID="txtRecPrice" FilterType="Custom, Numbers" ValidChars="." />
+                                                            <span style="margin-left:1em; color:#7a8b98">Order Price</span>
+                                                            <asp:Label ID="lblOrdPrice" runat="server" style="font-weight:600"></asp:Label></td>
+                                                </tr>
                                                  <tr>
                                                     <td class="rec-lbl">Into Store</td>
                                                     <td><asp:DropDownList ID="DDStoreEdit" runat="server" AutoPostBack="true" OnSelectedIndexChanged="DDStoreEdit_SelectedIndexChanged" style="width:10em; text-align:center" TabIndex="1"></asp:DropDownList></td>
