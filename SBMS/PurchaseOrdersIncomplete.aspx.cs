@@ -323,10 +323,8 @@ namespace SBMS
                 var cell1 = worksheet.Cell(rowNumber, columnNumber1);
                 var cell2 = worksheet.Cell(rowNumber, columnNumber2);
 
-                cell1.DataType = XLDataType.Number;
                 cell1.Style.NumberFormat.Format = "0.00"; // Set the desired number format for column 12
 
-                cell2.DataType = XLDataType.Number;
                 cell2.Style.NumberFormat.Format = "0.00"; // Set the desired number format for column 13
             }
 

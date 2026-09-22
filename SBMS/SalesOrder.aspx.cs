@@ -2216,8 +2216,10 @@ namespace SBMS
                 if (soJson != null && soJson.Count > 0)
                 {       
                     // 2) Post updated Sales Order back to Sage
-                    // Disabled: re-posts the SO unchanged (it was fetched from Sage in step 1), so it's a redundant API call. Restore if needed.
-                    //string soResponse = await SendSalesOrder(soJson.ToString());
+                    // DO NOT REMOVE: this is what sets the SO to "Invoiced" in Sage. GetOneSOFull (step 1)
+                    // stamps StatusId = 4 on the fetched copy; this post is the only place that status is
+                    // sent to Sage. Without it every invoiced SO stays "Pending" in Sage.
+                    string soResponse = await SendSalesOrder(soJson.ToString());
 
                     // 3) Convert to Tax Invoice JSON
                     JObject taxInvoiceJson = ConvertSOtoTaxInvoice(soJson);
