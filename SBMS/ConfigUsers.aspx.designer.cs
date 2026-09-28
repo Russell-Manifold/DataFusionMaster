@@ -213,6 +213,33 @@ namespace SBMS
         protected global::System.Web.UI.WebControls.CheckBox chkIsActive;
 
         /// <summary>
+        /// chkGenericLogin control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.CheckBox chkGenericLogin;
+
+        /// <summary>
+        /// DDSageAuth control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.DropDownList DDSageAuth;
+
+        /// <summary>
+        /// trSageLogin control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlTableRow trSageLogin;
+
+        /// <summary>
         /// btnCancel5 control.
         /// </summary>
         /// <remarks>

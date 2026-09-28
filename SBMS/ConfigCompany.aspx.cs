@@ -76,8 +76,9 @@ namespace SBMS
                 var Comp = _db.CompanyMasters.FirstOrDefault(x => x.SBCACoID == CurrentUser.CoID);
                if (Comp.CompanyName!= null) lblCoName.Text = Comp.CompanyName ?? "";
                if(Comp.SBCACoID != null)   lblCoID.Text = Comp.SBCACoID.ToString();
-               //if (Comp.CoGenericLoginEmail != null) lblGenEmail.Text = Comp.CoGenericLoginEmail ?? "";
-              // if (Comp.CoGenericLoginPwd != null) lblGenPwd.Text = Comp.CoGenericLoginPwd ?? "";
+               txtGenEmail.Text = Comp.CoGenericLoginEmail ?? "";
+               // Password is never shown; the box stays blank and blank-on-save means "keep it".
+               lblGenPwdSaved.Text = string.IsNullOrEmpty(Comp.CoGenericLoginPwd) ? "" : " (saved)";
                if (Comp.Contact!= null) txtContPerson.Text = Comp.Contact ?? "";
                if (Comp.Contactemail != null) txtContemail.Text = Comp.Contactemail ?? "";
                chkNotifs.Checked = (bool)Comp.SendMessages;
@@ -162,8 +163,11 @@ namespace SBMS
                 var Comp = _db.CompanyMasters.FirstOrDefault(x => x.SBCACoID == CurrentUser.CoID);
                 {
                     Comp.CompanyName = lblCoName.Text;
-                    //Comp.CoGenericLoginEmail = lblGenEmail.Text.ToString();
-                    //Comp.CoGenericLoginPwd = lblGenPwd.Text.ToString();
+                    // Generic Sage login (Basic auth) for users flagged "Use Generic Login".
+                    // Same TripleDES key/iv as onboarding uses for SBCApwd; Login decrypts it.
+                    Comp.CoGenericLoginEmail = txtGenEmail.Text.Trim();
+                    if (txtGenPwd.Text.Length > 0)
+                        Comp.CoGenericLoginPwd = new cTripleDES(Login.key, Login.iv).Encrypt(txtGenPwd.Text);
                     Comp.Contact = txtContPerson.Text.ToString();
                     Comp.Contactemail = txtContemail.Text.ToString();
                     Comp.SendMessages = chkNotifs.Checked;

@@ -157,8 +157,7 @@
                                 Username: <br /><asp:TextBox ID="txtUsername" runat="server" CssClass="login-input" placeholder="Sage Login Username"></asp:TextBox><br />
                                 Password: <br /><asp:TextBox ID="txtPwd" runat="server" CssClass="login-input" TextMode="Password" placeholder="Sage Password"></asp:TextBox><br />
                                 <br /><asp:CheckBox ID="chkRememberMe" runat="server" Text="Keep me logged in today" /><br/>
-                                <asp:LinkButton ID="lbtnlogin" runat="server" OnClick="lbtnlogin_Click" CssClass="icon fa-door-open buttonSage" >Login</asp:LinkButton><br />
-                                <asp:Label ID="lblErr" runat="server" Text="" ForeColor="Red"></asp:Label><br /><br />
+                                <asp:LinkButton ID="lbtnlogin" runat="server" OnClick="lbtnlogin_Click" CssClass="icon fa-door-open buttonSage" >Login</asp:LinkButton><br />                                <asp:Label ID="lblErr" runat="server" Text="" ForeColor="Red"></asp:Label><br /><br />
                                 <a id="lnkSage" runat="server" visible="false" href="https://status.sage.com/" target="_blank" style="color:darkgreen" class="icon fa-chain-broken">Click here to check the status of Sage, <br /> This could be caused by a Sage outage.</a>
                                 <asp:Label ID="lblErrDetail" runat="server" Text="" Visible="false"
                                     style="display:block; margin-top:1.5em; padding:.8em 1em; text-align:left;

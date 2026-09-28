@@ -88,6 +88,8 @@ namespace SBMS
                 catch { }
                 chkIsActive.Checked = Convert.ToBoolean(selectedUser.Active);
                 chkSuperUser.Checked = Convert.ToBoolean(selectedUser.IsSuperUser);
+                DDSageAuth.SelectedValue = selectedUser.UseSageOAuth ? "1" : "0";
+                chkGenericLogin.Checked = selectedUser.UseGenericLogin;
                 Button25_ModalPopupExtender.Show();
             }
         }
@@ -136,6 +138,8 @@ namespace SBMS
             DDRole.SelectedIndex = 0;
             chkSuperUser.Checked = false;
             chkIsActive.Checked = false;
+            DDSageAuth.SelectedIndex = 0;
+            chkGenericLogin.Checked = false;
         }
 
         protected void btnSaveConfirm_Click(object sender, EventArgs e)
@@ -170,6 +174,29 @@ namespace SBMS
                     return;
                 }
 
+                // Generic login: not for super users, and it forces Basic auth on the company's
+                // generic Sage account, so the per-user OAuth choice is cleared.
+                bool useGeneric = chkGenericLogin.Checked;
+                if (useGeneric && chkSuperUser.Checked)
+                {
+                    string message = "alert('" + "A Super User cannot use the Generic Login." + "')";
+                    ScriptManager.RegisterClientScriptBlock((sender as Control), this.GetType(), "alert", message, true);
+                    return;
+                }
+                bool useOAuth = !useGeneric && DDSageAuth.SelectedValue == "1";
+                // The password is the generic user's only credential: a new generic user must
+                // have one, and an existing user switched to generic must have one on file.
+                if (useGeneric && txtPwd1.Text.Length == 0)
+                {
+                    bool hasPwd = userid > 0 && _db.UsersMasters.Any(x => x.ID == userid && x.CompanyID == CurrentUser.CoID && x.userpwd != null && x.userpwd != "");
+                    if (!hasPwd)
+                    {
+                        string message = "alert('" + "A Generic Login user must have a password." + "')";
+                        ScriptManager.RegisterClientScriptBlock((sender as Control), this.GetType(), "alert", message, true);
+                        return;
+                    }
+                }
+
                 if (userid > 0)
                 {
                        
@@ -180,7 +207,12 @@ namespace SBMS
                     User.RoleId = Convert.ToInt32(DDRole.SelectedItem.Value.ToString());
                     User.Active = chkIsActive.Checked;
                     User.IsSuperUser = chkSuperUser.Checked;
-                    
+                    User.UseSageOAuth = useOAuth;
+                    User.UseGenericLogin = useGeneric;
+                    // Password is only changed when one is typed (left blank = keep the current one).
+                    if (txtPwd1.Text.Length > 0)
+                        User.userpwd = LocalPassword.Hash(txtPwd1.Text, (Guid)User.UserGUID);
+
                 }
                 else
                 {
@@ -188,11 +220,13 @@ namespace SBMS
                     UsersMaster NewUser = new UsersMaster();
                     NewUser.FirstName = txtUsername.Text.Replace("'", "''");
                     NewUser.Useremail = txtemail.Text.ToString();
-                    NewUser.userpwd = txtPwd1.Text.ToString();
                     NewUser.IsSuperUser = chkSuperUser.Checked;
                     NewUser.Active = chkIsActive.Checked;
+                    NewUser.UseSageOAuth = useOAuth;
+                    NewUser.UseGenericLogin = useGeneric;
                     NewUser.RoleId = Convert.ToInt32(DDRole.SelectedItem.Value.ToString());
                     NewUser.UserGUID =Guid.NewGuid();
+                    NewUser.userpwd = LocalPassword.Hash(txtPwd1.Text, (Guid)NewUser.UserGUID);
                     NewUser.CompanyID = CurrentUser.CoID;
                     _db.UsersMasters.Add(NewUser);
                 }
@@ -206,6 +240,8 @@ namespace SBMS
                     DDRole.SelectedIndex = 0;
                     chkSuperUser.Checked = false;
                     chkIsActive.Checked = false;
+                    DDSageAuth.SelectedIndex = 0;
+                    chkGenericLogin.Checked = false;
                     LoadUsers();
                     string message = "alert('" + "Successfully Saved" + "')";
                     ScriptManager.RegisterClientScriptBlock((sender as Control), this.GetType(), "alert", message, true);

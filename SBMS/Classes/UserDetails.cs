@@ -6,6 +6,9 @@ namespace SBMS.Classes
     {
         public string UserName { get; set; }
         public bool UseGenericLogin { get; set; }
+        /// <summary>The person's own email. Same as LoginName except for generic-login users,
+        /// where LoginName is the company's shared Sage account. Use this for audit/notes.</summary>
+        public string UserEmail { get; set; }
         public string LoginName { get; set; }
         public string LoginPwd { get; set; }
         public string LoginEncrypted { get; set; }
@@ -64,5 +67,8 @@ namespace SBMS.Classes
         public bool ShowManfCosts { get; set; }
 
         public string SageWeightField { get; set; }
+
+        // Set only for "Login with Sage Account" (Sage ID OAuth); null = Basic auth login.
+        public SageOAuthToken SageToken { get; set; }
     }
 } 

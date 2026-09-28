@@ -92,6 +92,15 @@
                                      </asp:DropDownList></td>
                               </tr>
                                <tr><td colspan="4"><hr /></td></tr>
+                               <tr><td colspan="4" class="cfg-sec">Generic Sage Login</td></tr>
+                               <tr>
+                                   <td>Generic Sage user (email)</td>
+                                   <td><asp:TextBox ID="txtGenEmail" runat="server" ToolTip="One Sage user, Basic auth, used for every Sage call made by users flagged 'Use Generic Login' (Configuration -> Users)."></asp:TextBox></td>
+                                   <td>Generic Sage password</td>
+                                   <td><asp:TextBox ID="txtGenPwd" runat="server" TextMode="Password" ToolTip="Stored encrypted. Leave blank to keep the saved password."></asp:TextBox>
+                                       <asp:Label ID="lblGenPwdSaved" runat="server" Text="" style="font-size:.85em; color:#777"></asp:Label></td>
+                               </tr>
+                               <tr><td colspan="4"><hr /></td></tr>
                                <tr><td colspan="4" class="cfg-sec">Sage Integration</td></tr>
                                   <tr>
                                    <td>Auto Update Sage on Picking Complete</td>

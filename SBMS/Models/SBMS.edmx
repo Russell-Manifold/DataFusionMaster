@@ -61,9 +61,9 @@
           <Property Name="AddSell01" Type="decimal" Precision="18" Scale="4" />
           <Property Name="AddSell02" Type="decimal" Precision="18" Scale="4" />
           <Property Name="AddSell03" Type="decimal" Precision="18" Scale="4" />
-          <Property Name="AddCostAccountID" Type="bigint" />
           <Property Name="CompanyID" Type="bigint" />
           <Property Name="BomActive" Type="bit" Nullable="false" />
+          <Property Name="AddCostAccountID" Type="bigint" />
         </EntityType>
         <EntityType Name="BOMLines">
           <Key>
@@ -77,7 +77,7 @@
           <Property Name="RMQty" Type="decimal" Precision="18" Scale="6" />
           <Property Name="CompanyID" Type="bigint" />
           <Property Name="BomHID" Type="int" />
-          <Property Name="BomUnit" Type="varchar" MaxLength="20" />
+          <Property Name="BomUnit" Type="varchar" MaxLength="50" />
         </EntityType>
         <EntityType Name="BundlesHeader">
           <Key>
@@ -131,8 +131,6 @@
           <Property Name="UATMode" Type="bit" Nullable="false" />
           <Property Name="SendMessages" Type="bit" Nullable="false" />
           <Property Name="UseLotTracking" Type="bit" Nullable="false" />
-          <Property Name="UseSerialNumbers" Type="bit" Nullable="false" />
-          <Property Name="AllowRecPriceEdit" Type="bit" Nullable="false" />
           <Property Name="UseLotAddDetails" Type="bit" Nullable="false" />
           <Property Name="ItemQtyDecPlaces" Type="int" Nullable="false" />
           <Property Name="SageConsultRNum" Type="varchar" MaxLength="50" />
@@ -159,6 +157,8 @@
           <Property Name="BinDelimiter" Type="varchar" MaxLength="3" />
           <Property Name="MobileModule" Type="bit" Nullable="false" />
           <Property Name="LPNPickMode" Type="varchar" MaxLength="10" Nullable="false" />
+          <Property Name="UseSerialNumbers" Type="bit" Nullable="false" />
+          <Property Name="AllowRecPriceEdit" Type="bit" Nullable="false" />
         </EntityType>
         <EntityType Name="DelivMethods">
           <Key>
@@ -254,7 +254,7 @@
           <Property Name="LineType" Type="int" />
           <Property Name="Quantity" Type="decimal" Precision="18" Scale="4" />
           <Property Name="UnitPriceExclusive" Type="decimal" Precision="18" Scale="4" />
-          <Property Name="Unit" Type="varchar" MaxLength="20" />
+          <Property Name="Unit" Type="varchar" MaxLength="50" />
           <Property Name="UnitPriceInclusive" Type="decimal" Precision="18" Scale="4" />
           <Property Name="TaxPercentage" Type="decimal" Precision="18" Scale="4" />
           <Property Name="DiscountPercentage" Type="decimal" Precision="18" Scale="4" />
@@ -382,7 +382,7 @@
           <Property Name="LastCost" Type="decimal" Precision="18" Scale="4" />
           <Property Name="AverageCost" Type="decimal" Precision="18" Scale="4" />
           <Property Name="QuantityOnHand" Type="decimal" Precision="18" Scale="4" />
-          <Property Name="Unit" Type="varchar" MaxLength="20" />
+          <Property Name="Unit" Type="varchar" MaxLength="50" />
           <Property Name="TextUserField1" Type="varchar" MaxLength="100" />
           <Property Name="TextUserField2" Type="varchar" MaxLength="100" />
           <Property Name="TextUserField3" Type="varchar" MaxLength="100" />
@@ -410,8 +410,8 @@
           <Property Name="ReorderLevel" Type="decimal" Precision="10" Scale="0" Nullable="false" />
           <Property Name="MinReOrderQty" Type="decimal" Precision="10" Scale="0" Nullable="false" />
           <Property Name="IsLotTracked" Type="bit" Nullable="false" />
-          <Property Name="IsSerialTracked" Type="bit" Nullable="false" />
           <Property Name="UOMConvert" Type="decimal" Precision="10" Scale="4" Nullable="false" />
+          <Property Name="IsSerialTracked" Type="bit" Nullable="false" />
         </EntityType>
         <EntityType Name="ItemsReorderLevels">
           <Key>
@@ -455,7 +455,7 @@
           <Property Name="Barcode" Type="varchar" MaxLength="50" />
           <Property Name="LotNumberID" Type="bigint" />
           <Property Name="LotNumber" Type="varchar" MaxLength="50" />
-          <Property Name="Unit" Type="varchar" MaxLength="20" />
+          <Property Name="Unit" Type="varchar" MaxLength="50" />
           <Property Name="FromID" Type="bigint" />
           <Property Name="ToID" Type="bigint" />
           <Property Name="Qty" Type="decimal" Precision="18" Scale="4" />
@@ -528,7 +528,7 @@
           <Property Name="LineType" Type="int" />
           <Property Name="Quantity" Type="decimal" Precision="18" Scale="4" />
           <Property Name="UnitPriceExclusive" Type="decimal" Precision="18" Scale="4" />
-          <Property Name="Unit" Type="varchar" MaxLength="20" />
+          <Property Name="Unit" Type="varchar" MaxLength="50" />
           <Property Name="UnitPriceInclusive" Type="decimal" Precision="18" Scale="4" />
           <Property Name="TaxPercentage" Type="decimal" Precision="18" Scale="4" />
           <Property Name="DiscountPercentage" Type="decimal" Precision="18" Scale="4" />
@@ -718,7 +718,7 @@
           <Property Name="LotNumber" Type="varchar" MaxLength="100" />
           <Property Name="LineType" Type="int" />
           <Property Name="Quantity" Type="decimal" Precision="18" Scale="4" />
-          <Property Name="Unit" Type="varchar" MaxLength="20" />
+          <Property Name="Unit" Type="varchar" MaxLength="50" />
           <Property Name="Comments" Type="varchar" MaxLength="400" />
           <Property Name="StoreCodeFrom" Type="varchar" MaxLength="10" />
           <Property Name="PickBy" Type="int" />
@@ -959,7 +959,7 @@
           <Property Name="LineType" Type="int" />
           <Property Name="Quantity" Type="decimal" Precision="18" Scale="4" />
           <Property Name="UnitPriceExclusive" Type="decimal" Precision="18" Scale="4" />
-          <Property Name="Unit" Type="varchar" MaxLength="20" />
+          <Property Name="Unit" Type="varchar" MaxLength="50" />
           <Property Name="UnitPriceInclusive" Type="decimal" Precision="18" Scale="4" />
           <Property Name="TaxPercentage" Type="decimal" Precision="6" Scale="4" />
           <Property Name="DiscountPercentage" Type="decimal" Precision="18" Scale="4" />
@@ -1007,6 +1007,8 @@
           <Property Name="LastActivity" Type="datetime" />
           <Property Name="UserGUID" Type="uniqueidentifier" />
           <Property Name="LoggedInSessionID" Type="varchar" MaxLength="50" />
+          <Property Name="UseSageOAuth" Type="bit" Nullable="false" />
+          <Property Name="UseGenericLogin" Type="bit" Nullable="false" />
         </EntityType>
         <EntityType Name="WorksOrderHeader">
           <Key>
@@ -1074,7 +1076,7 @@
           <Property Name="LineType" Type="int" />
           <Property Name="Quantity" Type="decimal" Precision="18" Scale="4" />
           <Property Name="UnitPriceExclusive" Type="decimal" Precision="18" Scale="4" />
-          <Property Name="Unit" Type="varchar" MaxLength="20" />
+          <Property Name="Unit" Type="varchar" MaxLength="50" />
           <Property Name="UnitPriceInclusive" Type="decimal" Precision="18" Scale="4" />
           <Property Name="TaxPercentage" Type="decimal" Precision="18" Scale="4" />
           <Property Name="DiscountPercentage" Type="decimal" Precision="18" Scale="4" />
@@ -1405,7 +1407,7 @@
           <Property Name="RMQty" Type="Decimal" Precision="18" Scale="6" />
           <Property Name="CompanyID" Type="Int64" />
           <Property Name="BomHID" Type="Int32" />
-          <Property Name="BomUnit" Type="String" MaxLength="20" Unicode="false" FixedLength="false" />
+          <Property Name="BomUnit" Type="String" MaxLength="50" Unicode="false" FixedLength="false" />
         </EntityType>
         <EntityType Name="DelivMethod">
           <Key>
@@ -1489,7 +1491,7 @@
           <Property Name="LineType" Type="Int32" />
           <Property Name="Quantity" Type="Decimal" Precision="18" Scale="4" />
           <Property Name="UnitPriceExclusive" Type="Decimal" Precision="18" Scale="4" />
-          <Property Name="Unit" Type="String" MaxLength="20" FixedLength="false" Unicode="false" />
+          <Property Name="Unit" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="UnitPriceInclusive" Type="Decimal" Precision="18" Scale="4" />
           <Property Name="TaxPercentage" Type="Decimal" Precision="18" Scale="4" />
           <Property Name="DiscountPercentage" Type="Decimal" Precision="18" Scale="4" />
@@ -1606,7 +1608,7 @@
           <Property Name="LastCost" Type="Decimal" Precision="18" Scale="4" />
           <Property Name="AverageCost" Type="Decimal" Precision="18" Scale="4" />
           <Property Name="QuantityOnHand" Type="Decimal" Precision="18" Scale="4" />
-          <Property Name="Unit" Type="String" MaxLength="20" FixedLength="false" Unicode="false" />
+          <Property Name="Unit" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="TextUserField1" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
           <Property Name="TextUserField2" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
           <Property Name="TextUserField3" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
@@ -1678,7 +1680,7 @@
           <Property Name="LineType" Type="Int32" />
           <Property Name="Quantity" Type="Decimal" Precision="18" Scale="4" />
           <Property Name="UnitPriceExclusive" Type="Decimal" Precision="18" Scale="4" />
-          <Property Name="Unit" Type="String" MaxLength="20" FixedLength="false" Unicode="false" />
+          <Property Name="Unit" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="UnitPriceInclusive" Type="Decimal" Precision="18" Scale="4" />
           <Property Name="TaxPercentage" Type="Decimal" Precision="18" Scale="4" />
           <Property Name="DiscountPercentage" Type="Decimal" Precision="18" Scale="4" />
@@ -1795,7 +1797,7 @@
           <Property Name="LotNumber" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
           <Property Name="LineType" Type="Int32" />
           <Property Name="Quantity" Type="Decimal" Precision="18" Scale="4" />
-          <Property Name="Unit" Type="String" MaxLength="20" FixedLength="false" Unicode="false" />
+          <Property Name="Unit" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="Comments" Type="String" MaxLength="400" FixedLength="false" Unicode="false" />
           <Property Name="StoreCodeFrom" Type="String" MaxLength="10" FixedLength="false" Unicode="false" />
           <Property Name="PickBy" Type="Int32" />
@@ -1882,7 +1884,7 @@
           <Property Name="LineType" Type="Int32" />
           <Property Name="Quantity" Type="Decimal" Precision="18" Scale="4" />
           <Property Name="UnitPriceExclusive" Type="Decimal" Precision="18" Scale="4" />
-          <Property Name="Unit" Type="String" MaxLength="20" FixedLength="false" Unicode="false" />
+          <Property Name="Unit" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="UnitPriceInclusive" Type="Decimal" Precision="18" Scale="4" />
           <Property Name="TaxPercentage" Type="Decimal" Precision="6" Scale="4" />
           <Property Name="DiscountPercentage" Type="Decimal" Precision="18" Scale="4" />
@@ -1912,24 +1914,6 @@
           <Property Name="AddCostsReason" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
           <Property Name="ExchRate" Type="Decimal" Precision="18" Scale="4" Nullable="false" />
           <Property Name="RejectQty" Type="Decimal" Precision="18" Scale="4" Nullable="false" />
-        </EntityType>
-        <EntityType Name="UsersMaster">
-          <Key>
-            <PropertyRef Name="ID" />
-          </Key>
-          <Property Name="ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="Useremail" Type="String" MaxLength="50" FixedLength="false" Unicode="false" Nullable="false" />
-          <Property Name="FirstName" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
-          <Property Name="Surname" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
-          <Property Name="CompanyID" Type="Int64" Nullable="false" />
-          <Property Name="Active" Type="Boolean" />
-          <Property Name="RoleId" Type="Int32" />
-          <Property Name="userpwd" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
-          <Property Name="IsSuperUser" Type="Boolean" />
-          <Property Name="IsLoggedIn" Type="Boolean" Nullable="false" />
-          <Property Name="LastActivity" Type="DateTime" Precision="3" />
-          <Property Name="UserGUID" Type="Guid" />
-          <Property Name="LoggedInSessionID" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
         </EntityType>
         <EntityType Name="WorkStation">
           <Key>
@@ -1967,7 +1951,6 @@
           <EntitySet Name="ProdPlanLines" EntityType="Self.ProdPlanLine" />
           <EntitySet Name="ProdTransactions" EntityType="Self.ProdTransaction" />
           <EntitySet Name="TempDocLines" EntityType="Self.TempDocLine" />
-          <EntitySet Name="UsersMasters" EntityType="Self.UsersMaster" />
           <EntitySet Name="WorkStations" EntityType="Self.WorkStation" />
           <FunctionImport Name="GetActiveLotNumbersLinkedToStores" ReturnType="Collection(SBMSModel.GetActiveLotNumbersLinkedToStores_Result)">
           <Parameter Name="CoID" Mode="In" Type="Int64" />
@@ -2169,6 +2152,7 @@
           <EntitySet Name="ItemTransferHeaders" EntityType="SBMSModel.ItemTransferHeader" />
           <EntitySet Name="ItemTransactions" EntityType="SBMSModel.ItemTransaction" />
           <EntitySet Name="CompanyMasters" EntityType="SBMSModel.CompanyMaster" />
+          <EntitySet Name="UsersMasters" EntityType="SBMSModel.UsersMaster" />
         </EntityContainer>
         <ComplexType Name="GetActiveLotNumbersLinkedToStores_Result">
           <Property Type="String" Name="LotNumber" Nullable="true" MaxLength="50" />
@@ -2791,7 +2775,7 @@
           <Property Name="LineType" Type="Int32" />
           <Property Name="Quantity" Type="Decimal" Precision="18" Scale="4" />
           <Property Name="UnitPriceExclusive" Type="Decimal" Precision="18" Scale="4" />
-          <Property Name="Unit" Type="String" MaxLength="20" FixedLength="false" Unicode="false" />
+          <Property Name="Unit" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="UnitPriceInclusive" Type="Decimal" Precision="18" Scale="4" />
           <Property Name="TaxPercentage" Type="Decimal" Precision="18" Scale="4" />
           <Property Name="DiscountPercentage" Type="Decimal" Precision="18" Scale="4" />
@@ -3260,7 +3244,7 @@
           <Property Name="Barcode" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="LotNumberID" Type="Int64" />
           <Property Name="LotNumber" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
-          <Property Name="Unit" Type="String" MaxLength="20" FixedLength="false" Unicode="false" />
+          <Property Name="Unit" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="FromID" Type="Int64" />
           <Property Name="ToID" Type="Int64" />
           <Property Name="Qty" Type="Decimal" Precision="18" Scale="4" />
@@ -3328,6 +3312,26 @@
           <Property Name="BinDelimiter" Type="String" MaxLength="3" FixedLength="false" Unicode="false" />
           <Property Name="MobileModule" Type="Boolean" Nullable="false" />
           <Property Name="LPNPickMode" Type="String" Nullable="false" MaxLength="10" FixedLength="false" Unicode="false" />
+        </EntityType>
+        <EntityType Name="UsersMaster">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="Useremail" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="FirstName" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Surname" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="CompanyID" Type="Int64" Nullable="false" />
+          <Property Name="Active" Type="Boolean" />
+          <Property Name="RoleId" Type="Int32" />
+          <Property Name="userpwd" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="IsSuperUser" Type="Boolean" />
+          <Property Name="IsLoggedIn" Type="Boolean" Nullable="false" />
+          <Property Name="LastActivity" Type="DateTime" Precision="3" />
+          <Property Name="UserGUID" Type="Guid" />
+          <Property Name="LoggedInSessionID" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="UseSageOAuth" Type="Boolean" Nullable="false" />
+          <Property Name="UseGenericLogin" Type="Boolean" Nullable="false" />
         </EntityType>
         </Schema>
     </edmx:ConceptualModels>
@@ -3897,25 +3901,6 @@
                 <ScalarProperty Name="AddCostsReason" ColumnName="AddCostsReason" />
                 <ScalarProperty Name="ExchRate" ColumnName="ExchRate" />
                 <ScalarProperty Name="RejectQty" ColumnName="RejectQty" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
-          <EntitySetMapping Name="UsersMasters">
-            <EntityTypeMapping TypeName="SBMSModel.UsersMaster">
-              <MappingFragment StoreEntitySet="UsersMaster">
-                <ScalarProperty Name="ID" ColumnName="ID" />
-                <ScalarProperty Name="Useremail" ColumnName="Useremail" />
-                <ScalarProperty Name="FirstName" ColumnName="FirstName" />
-                <ScalarProperty Name="Surname" ColumnName="Surname" />
-                <ScalarProperty Name="CompanyID" ColumnName="CompanyID" />
-                <ScalarProperty Name="Active" ColumnName="Active" />
-                <ScalarProperty Name="RoleId" ColumnName="RoleId" />
-                <ScalarProperty Name="userpwd" ColumnName="userpwd" />
-                <ScalarProperty Name="IsSuperUser" ColumnName="IsSuperUser" />
-                <ScalarProperty Name="IsLoggedIn" ColumnName="IsLoggedIn" />
-                <ScalarProperty Name="LastActivity" ColumnName="LastActivity" />
-                <ScalarProperty Name="UserGUID" ColumnName="UserGUID" />
-                <ScalarProperty Name="LoggedInSessionID" ColumnName="LoggedInSessionID" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
@@ -5255,6 +5240,27 @@
                 <ScalarProperty Name="SBCAemail" ColumnName="SBCAemail" />
                 <ScalarProperty Name="SBCACoID" ColumnName="SBCACoID" />
                 <ScalarProperty Name="CoID" ColumnName="CoID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="UsersMasters">
+            <EntityTypeMapping TypeName="SBMSModel.UsersMaster">
+              <MappingFragment StoreEntitySet="UsersMaster">
+                <ScalarProperty Name="UseGenericLogin" ColumnName="UseGenericLogin" />
+                <ScalarProperty Name="UseSageOAuth" ColumnName="UseSageOAuth" />
+                <ScalarProperty Name="LoggedInSessionID" ColumnName="LoggedInSessionID" />
+                <ScalarProperty Name="UserGUID" ColumnName="UserGUID" />
+                <ScalarProperty Name="LastActivity" ColumnName="LastActivity" />
+                <ScalarProperty Name="IsLoggedIn" ColumnName="IsLoggedIn" />
+                <ScalarProperty Name="IsSuperUser" ColumnName="IsSuperUser" />
+                <ScalarProperty Name="userpwd" ColumnName="userpwd" />
+                <ScalarProperty Name="RoleId" ColumnName="RoleId" />
+                <ScalarProperty Name="Active" ColumnName="Active" />
+                <ScalarProperty Name="CompanyID" ColumnName="CompanyID" />
+                <ScalarProperty Name="Surname" ColumnName="Surname" />
+                <ScalarProperty Name="FirstName" ColumnName="FirstName" />
+                <ScalarProperty Name="Useremail" ColumnName="Useremail" />
+                <ScalarProperty Name="ID" ColumnName="ID" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>

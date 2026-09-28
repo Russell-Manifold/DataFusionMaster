@@ -2,6 +2,7 @@
 using SBMS.Classes;
 using SBMS.Models;
 using System;
+using System.Web;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -36,6 +37,31 @@ namespace SBMS
 
             if (!IsPostBack)
             {
+                // Back from "Login with Sage Account" (SageCallback.aspx)
+                string ssoError = Session["SageOAuthError"] as string;
+                if (ssoError != null)
+                {
+                    Session.Remove("SageOAuthError");
+                    lblErr.Text = HttpUtility.HtmlEncode(ssoError);   // came from Sage's redirect query string
+                    return;
+                }
+                var ssoToken = Session["SageOAuth"] as SageOAuthToken;
+                if (Request.QueryString["sso"] == "1" && ssoToken != null)
+                {
+                    string typedEmail = Session["SageOAuthLoginEmail"] as string;
+                    Session.Remove("SageOAuthLoginEmail");
+                    if (!string.Equals(typedEmail, ssoToken.Email, StringComparison.OrdinalIgnoreCase))
+                    {
+                        Session.Remove("SageOAuth");
+                        txtUsername.Text = typedEmail;
+                        lblErr.Text = "You signed in to Sage as " + ssoToken.Email + ", not " + typedEmail + ". Please sign in to Sage with the same email.";
+                        return;
+                    }
+                    txtUsername.Text = ssoToken.Email;
+                    lbtnlogin_Click(sender, e);
+                    return;
+                }
+
                 chkRememberMe.Checked = false;
 
                 var loginCookie = Request.Cookies["Login"];
@@ -84,6 +110,27 @@ namespace SBMS
                 ;
             }
 
+            // Per-user Sage login method (Configuration -> Users -> Sage Login).
+            // OAuth users go to Sage ID first and come back via SageCallback.aspx -> Login.aspx?sso=1.
+            if (UsesSageOAuth(username))
+            {
+                var ssoToken = Session["SageOAuth"] as SageOAuthToken;
+                if (ssoToken == null || !string.Equals(ssoToken.Email, username, StringComparison.OrdinalIgnoreCase))
+                {
+                    if (!SageOAuth.IsConfigured)
+                    {
+                        lblErr.Text = "This user is set to log in with a Sage Account (OAuth 2.0), but Sage OAuth is not configured on this site.";
+                        return;
+                    }
+                    string state = SageOAuth.NewState();
+                    Session["SageOAuthState"] = state;
+                    Session["SageOAuthLoginEmail"] = username;
+                    Response.Redirect(SageOAuth.AuthorizeUrl(state, SageOAuth.CallbackUrl(Request)), false);
+                    return;
+                }
+                password = "";   // never used for OAuth; don't carry a stale cookie password
+            }
+
             if (UserLogin(username, password))
             {
                 // Remember Me: save username, password, last login date
@@ -108,7 +155,8 @@ namespace SBMS
                 #region uservalidation
                 string jsonString = "{ \"Username\": \"" + username + "\", \"Password\": \"" + password + "\" }";
                 ApiUrlCall Api = new ApiUrlCall();
-                string RetStr = await Api.ValidateUserAsync("Company", jsonString, userDets);
+                // Generic-login users were verified locally in setUserDetails; nothing to ask Sage.
+                string RetStr = userDets.UseGenericLogin ? "OK" : await Api.ValidateUserAsync("Company", jsonString, userDets);
 
                 bool isValid = true;
                 lnkSage.Visible = false;
@@ -165,7 +213,8 @@ namespace SBMS
             }
             else
             {
-                lblErr.Text = "Email address not validated, Unable to continue";
+                // setUserDetails may already have said why (generic login: wrong password / no company creds).
+                if (string.IsNullOrEmpty(lblErr.Text)) lblErr.Text = "Email address not validated, Unable to continue";
                 return;
             }
         }
@@ -197,8 +246,7 @@ namespace SBMS
                     {
                         if (userList.Count > 0)
                         {
-                            setUserDetails(username, pwd, userList.First().CompanyID);
-                            return true;
+                            return setUserDetails(username, pwd, userList.First().CompanyID);
                         }
                         else
                         {
@@ -211,6 +259,14 @@ namespace SBMS
                         return false;
                     }
                 }
+            }
+        }
+
+        private static bool UsesSageOAuth(string username)
+        {
+            using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+            {
+                return _db.UsersMasters.Any(x => x.Useremail == username && x.Active == true && x.UseSageOAuth);
             }
         }
 
@@ -269,11 +325,49 @@ namespace SBMS
             {
 
                 var user = _db.UsersMasters.Where(x => x.Useremail == username && x.Active == true && x.CompanyID == CompanyID).FirstOrDefault();
+
+                // Generic login (Configuration -> Users): the typed password is this user's OWN
+                // Data Fusion password, checked here and never sent to Sage. Every Sage call is
+                // then made with the company's one generic Sage account (Configuration -> Company).
+                if (user.UseGenericLogin)
+                {
+                    if (!LocalPassword.Verify(pwd, user.userpwd, (Guid)user.UserGUID))
+                    {
+                        lblErr.Text = "Invalid password.";
+                        return false;
+                    }
+                    var gen = _db.CompanyMasters.Where(x => x.SBCACoID == CompanyID)
+                                .Select(x => new { x.CoGenericLoginEmail, x.CoGenericLoginPwd }).FirstOrDefault();
+                    if (gen == null || string.IsNullOrEmpty(gen.CoGenericLoginEmail) || string.IsNullOrEmpty(gen.CoGenericLoginPwd))
+                    {
+                        lblErr.Text = "Your company has not set up its generic Sage login yet - ask your administrator.";
+                        return false;
+                    }
+                    if (!LocalPassword.IsHashed(user.userpwd))
+                    {
+                        // Legacy plain-text password matched - store it hashed from now on.
+                        user.userpwd = LocalPassword.Hash(pwd, (Guid)user.UserGUID);
+                    }
+                    username = gen.CoGenericLoginEmail;
+                    try
+                    {
+                        pwd = new cTripleDES(key, iv).Decrypt(gen.CoGenericLoginPwd);
+                    }
+                    catch
+                    {
+                        // Not TripleDES (saved by the old plain-text screen) - refuse rather than send it to Sage.
+                        lblErr.Text = "The company's generic Sage password needs to be re-saved (Configuration -> Company).";
+                        return false;
+                    }
+                }
+
                 UserDetails userDetails = new UserDetails
                 {
                     UserName = user.FirstName,
-                    LoginName = user.Useremail,
+                    LoginName = username,
                     LoginPwd = pwd,
+                    UseGenericLogin = user.UseGenericLogin,
+                    UserEmail = user.Useremail,
                     CoID = user.CompanyID,
                     UserGuiD = (Guid)user.UserGUID,
                     RoleID = (int)user.RoleId,
@@ -281,13 +375,17 @@ namespace SBMS
 
                 };
 
+                // "Login with Sage Account": carry the Sage ID token onto this login.
+                var ssoToken = Session["SageOAuth"] as SageOAuthToken;
+                if (user.UseSageOAuth && ssoToken != null && string.Equals(ssoToken.Email, username, StringComparison.OrdinalIgnoreCase))
+                    userDetails.SageToken = ssoToken;
+
                 if ((int)user.RoleId > 0)
                 {
                     // get role details
                     var Role = _db.RolesMasters.Where(x => x.CompanyID == userDetails.CoID && x.RoleID == userDetails.RoleID).FirstOrDefault();
                     if (Role != null)
                     {
-                        userDetails.UseGenericLogin = Role.UseGenericLogin;
                         userDetails.CanReceive = Role.CanReceive;
                         userDetails.CanTransfer = Role.CanReceive;
                         userDetails.CanViewPickSlips = Role.CanViewPickSlips;
@@ -374,11 +472,6 @@ namespace SBMS
                     userDetails.AllowScannerPutAway = GenLogIn.AllowScannerPutAway == true;
                     userDetails.BinSegments = GenLogIn.BinSegments ?? "";
                     userDetails.BinDelimiter = string.IsNullOrEmpty(GenLogIn.BinDelimiter) ? "-" : GenLogIn.BinDelimiter;
-                    //if (userDetails.UseGenericLogin)
-                    //{
-                    //    userDetails.LoginName = GenLogIn.CoGenericLoginEmail;
-                    //    userDetails.LoginPwd = GenLogIn.CoGenericLoginPwd;
-                    //}
                     userDetails.CompanyDecPlaces = GenLogIn.ItemQtyDecPlaces;
 
                 }
@@ -984,7 +1077,8 @@ namespace SBMS
                 #region uservalidation
                 string jsonString = "{ \"Username\": \"" + username + "\", \"Password\": \"" + password + "\" }";
                 ApiUrlCall Api = new ApiUrlCall();
-                string RetStr = await Api.ValidateUserAsync("Company", jsonString, userDets);
+                // Generic-login users were verified locally in setUserDetails; nothing to ask Sage.
+                string RetStr = userDets.UseGenericLogin ? "OK" : await Api.ValidateUserAsync("Company", jsonString, userDets);
                 bool isValid = true;
                 lnkSage.Visible = false;
                 lblErrDetail.Visible = false;
@@ -1041,7 +1135,8 @@ namespace SBMS
             }
             else
             {
-                lblErr.Text = "Email address not validated, Unable to continue";
+                // setUserDetails may already have said why (generic login: wrong password / no company creds).
+                if (string.IsNullOrEmpty(lblErr.Text)) lblErr.Text = "Email address not validated, Unable to continue";
                 return;
             }
         }

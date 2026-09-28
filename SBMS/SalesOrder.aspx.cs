@@ -1399,7 +1399,7 @@ namespace SBMS
                             CompanyId = CurrentUser.CoID,
                             DocumentHeaderId = SO.Header.ID,
                             NoteTypeId = 0,
-                            Username = CurrentUser.LoginName,
+                            Username = CurrentUser.UserEmail ?? CurrentUser.LoginName,
                             Created = DateTime.Now,
                             Note = "Ready To Invoice: " + DateTime.Now,
                             Completed = false

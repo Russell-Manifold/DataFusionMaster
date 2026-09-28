@@ -35,7 +35,11 @@
                       </ProgressTemplate>
                 </asp:UpdateProgress> 
              <asp:UpdatePanel ID="UpdatePanel1" runat="server">
-                    <ContentTemplate> 
+                    <Triggers>
+                        <%-- Full postback: Next may redirect off-site to Sage ID (OAuth 2.0) --%>
+                        <asp:PostBackTrigger ControlID="lbtnNext" />
+                    </Triggers>
+                    <ContentTemplate>
                  <div class="row 150%">
                      <div class="3u 12u$(medium)">&nbsp;</div>
                         <div class="6u 12u$(medium)" style="text-align:center; padding-bottom:7em">
@@ -53,9 +57,26 @@
                                      <td>Sage Accounting Login Name <span style="font-size:1.5em; color:red">*</span></td>
                                      <td><asp:TextBox ID="txtsagemail" runat="server" style="width:100%"></asp:TextBox></td>
                                  </tr>
-                                <tr>
+                                <tr id="trSagePwd">
                                     <td>Sage Accounting Password <span style="font-size:1.5em; color:red">*</span></td>
                                     <td><asp:TextBox ID="txtSagePwd" runat="server" style="width:100%" TextMode="Password"></asp:TextBox></td>
+                                </tr>
+                                <%-- OAuth 2.0 hidden pending Sage app registration + UAT. Basic auth is the only option for now. --%>
+                                <tr id="trSageAuth" runat="server" visible="false">
+                                    <td>Sage Login Method</td>
+                                    <td>
+                                        <asp:DropDownList ID="DDSageAuth" runat="server" style="width:100%" ToolTip="How you sign in to Sage. OAuth 2.0 = you log in with a Sage Account (id.sage.com / 2FA).">
+                                            <asp:ListItem Value="0" Text="Basic auth (Sage password)" Selected="True" />
+                                            <asp:ListItem Value="1" Text="OAuth 2.0 (Sage Account)" />
+                                        </asp:DropDownList>
+                                    </td>
+                                </tr>
+                                <tr id="trSageAuthNote" runat="server" visible="false">
+                                    <td colspan="2" style="font-size:0.85em; text-align:right; color:#b35c00; background:#fff6e5; border-left:3px solid #e69500; padding:0.6em 0.8em; margin-bottom:1em">
+                                        <b>Which one do I pick?</b> If Sage asks you for a code from your phone or an authenticator app when you log in,
+                                        you have 2FA switched on &ndash; choose <b>OAuth 2.0 (Sage Account)</b>. If you log in with just your email and
+                                        password, choose <b>Basic auth (Sage password)</b>.
+                                    </td>
                                 </tr>
                                 <tr>
                                     <td>Billing Address1</td>
@@ -180,6 +201,20 @@
                     </ContentTemplate>
                     </asp:UpdatePanel>
                 </div>
+             <script type="text/javascript">
+                 // OAuth = the user signs in at Sage, so the Sage password box is not needed: hide it.
+                 // pageLoad re-runs after every UpdatePanel postback, so the row stays in step.
+                 function toggleSagePwd() {
+                     var dd = document.getElementById('<%= DDSageAuth.ClientID %>');
+                     var tr = document.getElementById('trSagePwd');
+                     if (dd && tr) tr.style.display = dd.value === '1' ? 'none' : '';
+                 }
+                 function pageLoad() {
+                     var dd = document.getElementById('<%= DDSageAuth.ClientID %>');
+                     if (dd) dd.onchange = toggleSagePwd;
+                     toggleSagePwd();
+                 }
+             </script>
              <section id="footer" class="wrapper">
                      <a href="https://mydatafusion.online/learningCenter.aspx" class="button special icon fa-lightbulb" target="_blank"> Learn more from the Learning Hub >></a>
                  </section>

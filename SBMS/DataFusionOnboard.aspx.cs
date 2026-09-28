@@ -3,6 +3,7 @@ using Newtonsoft.Json.Linq;
 using SBMS.Classes;
 using SBMS.Models;
 using System;
+using System.Web;
 using System.Collections.Generic;
 using System.Linq.Dynamic.Core;
 using System.Web.UI;
@@ -15,25 +16,78 @@ namespace SBMS
 
         public static byte[] key = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 15, 11, 12, 77, 14, 15, 16, 17, 18, 91, 20, 21, 22, 23, 24 };
         public static byte[] iv = { 8, 7, 6, 5, 4, 3, 2, 1 };
-        protected void Page_Load(object sender, EventArgs e)
-            {
-           
-            if (!IsPostBack)
+        protected async void Page_Load(object sender, EventArgs e)
             {
 
+            if (!IsPostBack)
+            {
+                // Back from Sage ID (SageCallback.aspx) - restore the form, then list companies with the token.
+                var form = Session["OnboardForm"] as Dictionary<string, string>;
+                if (form == null) return;
+                Session.Remove("OnboardForm");
+                txtCoName.Text = form["CoName"];
+                txtContact.Text = form["Contact"];
+                txtsagemail.Text = form["Email"];
+                txtAdd1.Text = form["Add1"];
+                txtAdd2.Text = form["Add2"];
+                txtAdd3.Text = form["Add3"];
+                txtAdd4.Text = form["Add4"];
+                DDSageAuth.SelectedValue = "1";
+
+                string ssoError = Session["SageOAuthError"] as string;
+                Session.Remove("SageOAuthError");
+                var token = Session["SageOAuth"] as SageOAuthToken;
+                if (ssoError != null || Request.QueryString["sso"] != "1" || token == null)
+                {
+                    ShowMessage(this, EventArgs.Empty, HttpUtility.JavaScriptStringEncode(ssoError ?? "Sage sign-in did not complete. Please try again."));
+                    return;
+                }
+                // Sage's verified email is the login from now on.
+                txtsagemail.Text = token.Email;
+                await FetchCompaniesAsync(this, token);
             }
           }
 
         protected async void lbtnNext_Click(object sender, EventArgs e)
         {
+            bool useOAuth = DDSageAuth.SelectedValue == "1";
             if (
       txtCoName.Text.Trim().Length > 0 &&
       txtContact.Text.Trim().Length > 0 &&
-      txtsagemail.Text.Trim().Length > 0 &&
-      txtSagePwd.Text.Trim().Length > 0)
+      (useOAuth || (txtsagemail.Text.Trim().Length > 0 &&
+      txtSagePwd.Text.Trim().Length > 0)))
             {
+                if (useOAuth)
+                {
+                    if (!SageOAuth.IsConfigured)
+                    {
+                        ShowMessage(sender, EventArgs.Empty, "Sage Account (OAuth 2.0) sign-in is not configured on this site. Please use Basic auth.");
+                        return;
+                    }
+                    // Keep what was typed - the browser leaves for Sage and comes back to Page_Load.
+                    Session["OnboardForm"] = new Dictionary<string, string>
+                    {
+                        { "CoName", txtCoName.Text }, { "Contact", txtContact.Text }, { "Email", txtsagemail.Text.Trim() },
+                        { "Add1", txtAdd1.Text }, { "Add2", txtAdd2.Text }, { "Add3", txtAdd3.Text }, { "Add4", txtAdd4.Text }
+                    };
+                    string state = SageOAuth.NewState();
+                    Session["SageOAuthState"] = state;
+                    Session["SageOAuthReturn"] = "onboard";
+                    Response.Redirect(SageOAuth.AuthorizeUrl(state, SageOAuth.CallbackUrl(Request)), false);
+                    return;
+                }
+                await FetchCompaniesAsync(sender, null);
+            }
+            else
+            {
+                ShowMessage(sender, EventArgs.Empty, "Please complete all compulsory fields before continuing");
+            }
+        }
+
+        private async System.Threading.Tasks.Task FetchCompaniesAsync(object sender, SageOAuthToken token)
+        {
                 ApiUrlCall api = new ApiUrlCall();
-                JObject result = await api.GetCompaniesEnrollAsync(txtsagemail.Text.Trim(), txtSagePwd.Text.Trim());
+                JObject result = await api.GetCompaniesEnrollAsync(txtsagemail.Text.Trim(), txtSagePwd.Text.Trim(), token);
 
                 if (result != null && result.ContainsKey("success") && (bool)result["success"])
                 {
@@ -76,11 +130,6 @@ namespace SBMS
                     PnlPrimary.Style.Add("display", "none");
                     pnlTroubleshoot.Style.Add("display", "inline-block");
                 }
-            }
-            else
-            {
-                ShowMessage(sender, EventArgs.Empty, "Please complete all compulsory fields before continuing");
-            }
         }
         protected void lbtnNext2_Click(object sender, EventArgs e)
         {
@@ -170,7 +219,8 @@ namespace SBMS
                     userpwd = EncryptedPwd,
                     IsSuperUser = true,
                     IsLoggedIn = false,
-                    UserGUID = newUserguid
+                    UserGUID = newUserguid,
+                    UseSageOAuth = DDSageAuth.SelectedValue == "1"
                 };
                 _db.CompanyMasters.Add(compm);
                 _db.UsersMasters.Add(userM);

@@ -21,6 +21,7 @@
                         <asp:LinkButton ID="lbtnBOM" runat="server" class="buttonC icon fa-book" onclick="lbtnBOM_Click" >&nbsp;View Bill Of Materials (BOM)</asp:LinkButton>
                         <asp:LinkButton ID="lbtnBOMLinks" runat="server" class="buttonC icon fa-sitemap" onclick="lbtnBOMLinks_Click" Visible="false" ToolTip="View all BOMs that use this item as a component" >&nbsp;View BOMs Using This Item</asp:LinkButton>
                         <asp:LinkButton ID="LbtnKit" runat="server" class="buttonC icon fa-bookmark" onclick="LbtnKit_Click">&nbsp;View Kit</asp:LinkButton>
+                        <a href="#" onclick="location.href='LabelPrint.aspx' + location.search; return false;" class="buttonC icon fa-barcode">&nbsp;Print Labels</a>
                         <asp:LinkButton ID="lbtnLogOut" runat="server" class="buttonTransparent icon fa-eject" style="float:right" onclick="lbtnLogOut_Click">&nbsp;</asp:LinkButton><br />
                         <h3 style="padding-top:0; line-height:1em">Item Master</h3>                    
                     </div>

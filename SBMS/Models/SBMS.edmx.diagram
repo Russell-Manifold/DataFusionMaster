@@ -29,7 +29,6 @@
         <EntityTypeShape EntityType="SBMSModel.ProdPlanLine" Width="1.5" PointX="16.75" PointY="12.75" IsExpanded="true" />
         <EntityTypeShape EntityType="SBMSModel.ProdTransaction" Width="1.5" PointX="8.75" PointY="17.75" IsExpanded="true" />
         <EntityTypeShape EntityType="SBMSModel.TempDocLine" Width="1.5" PointX="18.75" PointY="0.75" IsExpanded="true" />
-        <EntityTypeShape EntityType="SBMSModel.UsersMaster" Width="1.5" PointX="4.75" PointY="18.75" IsExpanded="true" />
         <EntityTypeShape EntityType="SBMSModel.WorkStation" Width="1.5" PointX="14.75" PointY="18.75" IsExpanded="true" />
         <EntityTypeShape EntityType="SBMSModel.Notification" Width="1.5" PointX="17.375" PointY="18.75" />
         <EntityTypeShape EntityType="SBMSModel.RolesMaster" Width="1.5" PointX="19.375" PointY="18.75" />
@@ -58,6 +57,7 @@
         <EntityTypeShape EntityType="SBMSModel.ItemTransferHeader" Width="1.5" PointX="23.375" PointY="0.75" />
         <EntityTypeShape EntityType="SBMSModel.ItemTransaction" Width="1.5" PointX="23.375" PointY="6.75" />
         <EntityTypeShape EntityType="SBMSModel.CompanyMaster" Width="1.5" PointX="25.375" PointY="0.75" />
+        <EntityTypeShape EntityType="SBMSModel.UsersMaster" Width="1.5" PointX="3.375" PointY="18.75" />
       </Diagram>
     </edmx:Diagrams>
   </edmx:Designer>

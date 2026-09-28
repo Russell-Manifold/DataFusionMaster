@@ -815,6 +815,7 @@
     <Content Include="js\ProdPlankanbanscript.js" />
     <Content Include="Helper.aspx" />
     <Content Include="Login.aspx" />
+    <Content Include="SageCallback.aspx" />
     <Content Include="images\fgmrp.png" />
     <Content Include="images\Forecasta.png" />
     <Content Include="images\Forecasta2.png" />
@@ -892,6 +893,7 @@
     <Content Include="BOMCreate.aspx" />
     <Content Include="BOMDetailed.aspx" />
     <Content Include="BOMComponentLinks.aspx" />
+    <Content Include="LabelPrint.aspx" />
     <Content Include="ItemEdit.aspx" />
     <Content Include="KitHeaders.aspx" />
     <Content Include="images\logo.png" />
@@ -962,6 +964,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Classes\ConfigEncryptionHelper.cs" />
+    <Compile Include="Classes\SageOAuth.cs" />
     <Compile Include="Classes\Ver.cs" />
     <Compile Include="Classes\EncryptApiKeyUtility.cs" />
     <Compile Include="Models\CompanyMaster.cs">
@@ -1009,6 +1012,9 @@
       <DependentUpon>SBMS.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\Store.cs">
+      <DependentUpon>SBMS.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\UsersMaster.cs">
       <DependentUpon>SBMS.tt</DependentUpon>
     </Compile>
     <Compile Include="SBMSMobile\NotificationsM.aspx.cs">
@@ -1463,9 +1469,6 @@
     <Compile Include="Models\TempDocLine.cs">
       <DependentUpon>SBMS.tt</DependentUpon>
     </Compile>
-    <Compile Include="Models\UsersMaster.cs">
-      <DependentUpon>SBMS.tt</DependentUpon>
-    </Compile>
     <Compile Include="Models\WorksOrderHeader.cs">
       <DependentUpon>SBMS.tt</DependentUpon>
     </Compile>
@@ -1685,6 +1688,13 @@
     </Compile>
     <Compile Include="Login.aspx.designer.cs">
       <DependentUpon>Login.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="SageCallback.aspx.cs">
+      <DependentUpon>SageCallback.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="SageCallback.aspx.designer.cs">
+      <DependentUpon>SageCallback.aspx</DependentUpon>
     </Compile>
     <Compile Include="ItemsOnHandAnalysis.aspx.cs">
       <DependentUpon>ItemsOnHandAnalysis.aspx</DependentUpon>
@@ -1912,6 +1922,13 @@
     <Compile Include="BOMComponentLinks.aspx.designer.cs">
       <DependentUpon>BOMComponentLinks.aspx</DependentUpon>
     </Compile>
+    <Compile Include="LabelPrint.aspx.cs">
+      <DependentUpon>LabelPrint.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="LabelPrint.aspx.designer.cs">
+      <DependentUpon>LabelPrint.aspx</DependentUpon>
+    </Compile>
     <Compile Include="ItemEdit.aspx.cs">
       <DependentUpon>ItemEdit.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -1929,6 +1946,7 @@
     <Compile Include="Classes\ApiUrlCall.cs" />
     <Compile Include="Classes\DataTableToJson.cs" />
     <Compile Include="Classes\emailer.cs" />
+    <Compile Include="Classes\LocalPassword.cs" />
     <Compile Include="Classes\Simple3Des.cs" />
     <Compile Include="StoresMaster.aspx.cs">
       <DependentUpon>StoresMaster.aspx</DependentUpon>

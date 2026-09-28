@@ -48,7 +48,6 @@ namespace SBMS.Models
         public virtual DbSet<ProdPlanLine> ProdPlanLines { get; set; }
         public virtual DbSet<ProdTransaction> ProdTransactions { get; set; }
         public virtual DbSet<TempDocLine> TempDocLines { get; set; }
-        public virtual DbSet<UsersMaster> UsersMasters { get; set; }
         public virtual DbSet<WorkStation> WorkStations { get; set; }
         public virtual DbSet<Notification> Notifications { get; set; }
         public virtual DbSet<RolesMaster> RolesMasters { get; set; }
@@ -73,6 +72,7 @@ namespace SBMS.Models
         public virtual DbSet<ItemTransferHeader> ItemTransferHeaders { get; set; }
         public virtual DbSet<ItemTransaction> ItemTransactions { get; set; }
         public virtual DbSet<CompanyMaster> CompanyMasters { get; set; }
+        public virtual DbSet<UsersMaster> UsersMasters { get; set; }
     
         public virtual ObjectResult<GetActiveLotNumbersLinkedToStores_Result> GetActiveLotNumbersLinkedToStores(Nullable<long> coID)
         {

@@ -67,6 +67,34 @@ namespace SBMS.Classes
         {
             return new HttpClient(SharedHandler, disposeHandler: false);
         }
+
+        /// <summary>
+        /// Sage auth header for this user (Configuration -> Users -> Sage Login):
+        /// Bearer token for OAuth 2.0 / "Login with Sage Account" users, otherwise Basic.
+        /// Refreshes the token in place when it is within 5 minutes of expiry.
+        /// </summary>
+        private static AuthenticationHeaderValue SageAuthHeader(UserDetails userDetails)
+        {
+            SageOAuthToken token = userDetails.SageToken;
+            if (token == null)
+                return new AuthenticationHeaderValue("Basic",
+                    Convert.ToBase64String(Encoding.UTF8.GetBytes($"{userDetails.LoginName}:{userDetails.LoginPwd}")));
+
+            lock (token)   // Sage rotates refresh tokens - only one refresh may use the current one
+            {
+                if (token.ExpiresUtc <= DateTime.UtcNow.AddMinutes(5))
+                {
+                    if (string.IsNullOrEmpty(token.RefreshToken))
+                        throw new InvalidOperationException("Sage session expired - please log in again.");
+                    // SageOAuth awaits with ConfigureAwait(false), so blocking here cannot deadlock.
+                    SageOAuthToken fresh = SageOAuth.RefreshAsync(token).GetAwaiter().GetResult();
+                    token.AccessToken = fresh.AccessToken;
+                    token.RefreshToken = fresh.RefreshToken;
+                    token.ExpiresUtc = fresh.ExpiresUtc;
+                }
+                return new AuthenticationHeaderValue("Bearer", token.AccessToken);
+            }
+        }
         ///
         // In SBMSEntities.Context.cs
         // Replace this:
@@ -118,9 +146,7 @@ namespace SBMS.Classes
             {
                 // Set Basic Authentication Header
                 client.Timeout = TimeSpan.FromSeconds(30); // Set the timeout as per your need
-                string combined = $"{userDetails.LoginName}:{userDetails.LoginPwd}";
-                string base64Encoded = Convert.ToBase64String(Encoding.UTF8.GetBytes(combined));
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", base64Encoded);
+                client.DefaultRequestHeaders.Authorization = SageAuthHeader(userDetails);
                 ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
                 JObject parsedJSON = new JObject();
                 try
@@ -227,9 +253,7 @@ namespace SBMS.Classes
             requ.Method = Method.Get; 
 
                     // ✅ Correct Basic Authentication
-                    string combined = $"{Userdetails.LoginName}:{Userdetails.LoginPwd}";
-            string base64Encoded = Convert.ToBase64String(Encoding.UTF8.GetBytes(combined));
-            requ.AddHeader("Authorization", "Basic " + base64Encoded);
+            requ.AddHeader("Authorization", SageAuthHeader(Userdetails).ToString());
 
             // ✅ Ensure TLS 1.2 security
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
@@ -308,9 +332,7 @@ namespace SBMS.Classes
             var client = new RestClient(options);
             var requ = new RestRequest();
 
-           string combined = $"{Userdetails.LoginName}:{Userdetails.LoginPwd}";
-            string base64Encoded = Convert.ToBase64String(Encoding.UTF8.GetBytes(combined));
-            requ.AddHeader("Authorization", "Basic " + base64Encoded);
+            requ.AddHeader("Authorization", SageAuthHeader(Userdetails).ToString());
             requ.Method = Method.Post;
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
            requ.AddJsonBody(JsonStr);
@@ -352,9 +374,7 @@ namespace SBMS.Classes
             using (HttpClient client = NewPooledClient())
             {
                 client.Timeout = TimeSpan.FromSeconds(30);
-                string combined = $"{Userdetails.LoginName}:{Userdetails.LoginPwd}";
-                string base64Encoded = Convert.ToBase64String(Encoding.UTF8.GetBytes(combined));
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", base64Encoded);
+                client.DefaultRequestHeaders.Authorization = SageAuthHeader(Userdetails);
                 ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
                 try
                 {
@@ -388,9 +408,7 @@ namespace SBMS.Classes
             string requestUrl = sageurl + DocType + "/Save?useSystemDocumentNumber=true&apikey={" + APIKey + "}&CompanyID=" + Userdetails.CoID;
             using (HttpClient client = NewPooledClient())
             {
-                string combined = $"{Userdetails.LoginName}:{Userdetails.LoginPwd}";
-                string base64Encoded = Convert.ToBase64String(Encoding.UTF8.GetBytes(combined));
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", base64Encoded);
+                client.DefaultRequestHeaders.Authorization = SageAuthHeader(Userdetails);
                 ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
                 try
                 {
@@ -510,8 +528,7 @@ namespace SBMS.Classes
                 string requestUrl = $"{sageurl}{controller}/Get/{userDetails.CoID}?apikey={APIKey}";
 
                 //Set Basic Authentication Header
-                string credentials = Convert.ToBase64String(Encoding.UTF8.GetBytes($"{userDetails.LoginName}:{userDetails.LoginPwd}"));
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", credentials);
+                client.DefaultRequestHeaders.Authorization = SageAuthHeader(userDetails);
 
                 //Set request content
                var content = new StringContent(jsonStr, Encoding.UTF8, "application/json");
@@ -601,7 +618,7 @@ namespace SBMS.Classes
             }
         }
 
-        public async Task<JObject> GetCompaniesEnrollAsync(string username, string userpwd)
+        public async Task<JObject> GetCompaniesEnrollAsync(string username, string userpwd, SageOAuthToken sageToken = null)
         {
             JObject result = new JObject
             {
@@ -613,10 +630,9 @@ namespace SBMS.Classes
             string requestUrl = sageurl + "Company/GET?apikey={" + APIKey + "}";
             using (HttpClient client = NewPooledClient())
             {
-                // Set Basic Authentication Header
-                string combined = $"{username}:{userpwd}";
-                string base64Encoded = Convert.ToBase64String(Encoding.UTF8.GetBytes(combined));
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", base64Encoded);
+                // Basic, or Bearer when onboarding with "Login with Sage Account"
+                client.DefaultRequestHeaders.Authorization = SageAuthHeader(
+                    new UserDetails { LoginName = username, LoginPwd = userpwd, SageToken = sageToken });
 
                 // Ensure TLS 1.2 security
                 ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
@@ -2022,9 +2038,7 @@ namespace SBMS.Classes
             {
                 // Set Basic Authentication Header
                 client.Timeout = TimeSpan.FromSeconds(30); // Set the timeout as per your need
-                string combined = $"{userDetails.LoginName}:{userDetails.LoginPwd}";
-                string base64Encoded = Convert.ToBase64String(Encoding.UTF8.GetBytes(combined));
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", base64Encoded);
+                client.DefaultRequestHeaders.Authorization = SageAuthHeader(userDetails);
                 ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
                 JObject parsedJSON = new JObject();
 
@@ -2073,9 +2087,7 @@ namespace SBMS.Classes
             };
             var client = new RestClient(options);
             var requ = new RestRequest();
-            string combined = $"{Userdetails.LoginName}:{Userdetails.LoginPwd}";
-            string base64Encoded = Convert.ToBase64String(Encoding.UTF8.GetBytes(combined));
-            requ.AddHeader("Authorization", "Basic " + base64Encoded);
+            requ.AddHeader("Authorization", SageAuthHeader(Userdetails).ToString());
             requ.Method = Method.Post;
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
             requ.AddJsonBody(JsonStr);
@@ -2171,8 +2183,7 @@ namespace SBMS.Classes
                     client.Timeout = TimeSpan.FromSeconds(30);
 
                     // Add authentication
-                    string auth = Convert.ToBase64String(Encoding.ASCII.GetBytes($"{Userdetails.LoginName}:{Userdetails.LoginPwd}"));
-                    client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", auth);
+                    client.DefaultRequestHeaders.Authorization = SageAuthHeader(Userdetails);
 
                     var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
                     var response = await client.PostAsync(postUrl, content).ConfigureAwait(false);

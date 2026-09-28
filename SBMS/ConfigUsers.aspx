@@ -11,6 +11,20 @@
 <body>
     <form id="form1" runat="server">
          <asp:ScriptManager ID="ScriptManager1" runat="server"></asp:ScriptManager>
+         <script type="text/javascript">
+             // Generic login forces Basic auth on the company's generic account, so the per-user
+             // Sage Login choice does not apply: hide it while the box is ticked.
+             function toggleSageLogin() {
+                 var chk = document.getElementById('<%= chkGenericLogin.ClientID %>');
+                 var tr = document.getElementById('trSageLogin');
+                 if (chk && tr) tr.style.display = chk.checked ? 'none' : '';
+             }
+             function pageLoad() {
+                 var chk = document.getElementById('<%= chkGenericLogin.ClientID %>');
+                 if (chk) chk.onchange = toggleSageLogin;
+                 toggleSageLogin();
+             }
+         </script>
         <div class="content">
             <div class="container">             
                 <div class="row 150%">
@@ -66,7 +80,7 @@
                                         <td style="padding:.5em"><asp:TextBox ID="txtemail" runat="server" Width="250px" style="padding:.5em" ></asp:TextBox></td>
                                     </tr>
                                     <tr>
-                                        <td >Sage Password *</td>
+                                        <td >Password *</td>
                                         <td style="padding:.5em"><asp:TextBox ID="txtPwd1" runat="server" Width="250px" ></asp:TextBox></td>
                                     </tr>
                                      <tr>
@@ -84,6 +98,23 @@
                                      <tr>
                                         <td>Active</td>
                                         <td> <asp:CheckBox ID="chkIsActive" runat="server" Text=" " Checked="true" /></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Use Generic Login</td>
+                                        <td style="padding:.5em">
+                                            <asp:CheckBox ID="chkGenericLogin" runat="server" Text=" " Checked="false"
+                                                ToolTip="This user signs in with the password above (kept in Data Fusion, never sent to Sage). All Sage calls use the company's Generic Sage Login (Configuration -> Company). Not for super users." />
+                                        </td>
+                                    </tr>
+                                    <%-- OAuth 2.0 hidden pending Sage app registration + UAT. Existing flags are kept; nothing new can be set. --%>
+                                    <tr id="trSageLogin" runat="server" visible="false">
+                                        <td>Sage Login</td>
+                                        <td style="padding:.5em">
+                                            <asp:DropDownList ID="DDSageAuth" runat="server" Width="250px" ToolTip="How this user signs in to Sage. OAuth 2.0 = users who log in with a Sage Account (id.sage.com / 2FA).">
+                                                <asp:ListItem Value="0" Text="Basic auth (Sage password)" />
+                                                <asp:ListItem Value="1" Text="OAuth 2.0 (Sage Account)" />
+                                            </asp:DropDownList>
+                                        </td>
                                     </tr>
                                 </table>
                                </div>

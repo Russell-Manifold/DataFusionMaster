@@ -141,6 +141,33 @@ namespace SBMS
         protected global::System.Web.UI.WebControls.TextBox txtContemail;
 
         /// <summary>
+        /// txtGenEmail control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtGenEmail;
+
+        /// <summary>
+        /// txtGenPwd control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtGenPwd;
+
+        /// <summary>
+        /// lblGenPwdSaved control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblGenPwdSaved;
+
+        /// <summary>
         /// TextBox3 control.
         /// </summary>
         /// <remarks>
