@@ -159,6 +159,7 @@
           <Property Name="LPNPickMode" Type="varchar" MaxLength="10" Nullable="false" />
           <Property Name="UseSerialNumbers" Type="bit" Nullable="false" />
           <Property Name="AllowRecPriceEdit" Type="bit" Nullable="false" />
+          <Property Name="InvoiceWhenSOComplete" Type="bit" Nullable="false" />
         </EntityType>
         <EntityType Name="DelivMethods">
           <Key>
@@ -3286,6 +3287,7 @@
           <Property Name="UseLotTracking" Type="Boolean" Nullable="false" />
           <Property Name="UseSerialNumbers" Type="Boolean" Nullable="false" />
           <Property Name="AllowRecPriceEdit" Type="Boolean" Nullable="false" />
+          <Property Name="InvoiceWhenSOComplete" Type="Boolean" Nullable="false" />
           <Property Name="UseLotAddDetails" Type="Boolean" Nullable="false" />
           <Property Name="ItemQtyDecPlaces" Type="Int32" Nullable="false" />
           <Property Name="SageConsultRNum" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
@@ -5221,6 +5223,7 @@
                 <ScalarProperty Name="UseLotAddDetails" ColumnName="UseLotAddDetails" />
                 <ScalarProperty Name="UseLotTracking" ColumnName="UseLotTracking" />
                 <ScalarProperty Name="UseSerialNumbers" ColumnName="UseSerialNumbers" />
+                <ScalarProperty Name="InvoiceWhenSOComplete" ColumnName="InvoiceWhenSOComplete" />
                 <ScalarProperty Name="AllowRecPriceEdit" ColumnName="AllowRecPriceEdit" />
                 <ScalarProperty Name="SendMessages" ColumnName="SendMessages" />
                 <ScalarProperty Name="UATMode" ColumnName="UATMode" />

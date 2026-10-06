@@ -60,6 +60,8 @@ namespace SBMS.Classes
         public bool AutoUpdateSageSOs { get; set; }
         public bool AutoGenTaxInvoice { get; set; }
         public bool AllowRecPriceEdit { get; set; }
+        /// <summary>Part deliveries: the Sales Order stays open and is invoiced once, when complete.</summary>
+        public bool InvoiceWhenSOComplete { get; set; }
         public string LoggedInSessionID { get; set; }
         public bool UsePacks { get; set; }
         public DateTime ExpiryDate { get; set; }

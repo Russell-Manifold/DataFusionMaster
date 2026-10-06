@@ -1029,6 +1029,14 @@ namespace SBMS
                 bool hasShortfall = (orderedQty - pickedQty) > 0.0001m;
                 bool anyPicked = pickedQty > 0.0001m;
 
+                // Part delivery (Configuration -> Company): the Sales Order stays open across
+                // deliveries and is invoiced once. Its earlier completed slips are the deliveries
+                // already made. Switch off = both stay false/empty and nothing below changes.
+                bool partDelivery = CurrentUser.InvoiceWhenSOComplete;
+                List<int> earlierSlips = partDelivery
+                    ? PartDelivery.EarlierSlipIds(_db, CurrentUser.CoID, Docid, slipid)
+                    : new List<int>();
+
                 string closeChoice = hfCloseChoice.Value;
                 hfCloseChoice.Value = "";
 
@@ -1038,10 +1046,25 @@ namespace SBMS
                     string pb = Page.ClientScript.GetPostBackEventReference(LbtnPickSave, "");
                     string hf = hfCloseChoice.ClientID;
                     string js;
+                    // The short-pick question. Part delivery keeps the balance on THIS order
+                    // (answer value stays 'backorder'); otherwise the balance goes to a new order.
+                    string boTitle = partDelivery ? "Part Delivery" : "Keep Unpicked on Back Order?";
+                    string boText = partDelivery
+                        ? "Deliver the picked items now and keep the balance on this Sales Order? A new picking slip is created for the balance. Choosing No cancels the balance and completes the order."
+                        : "Invoice the picked items now and create a new Sales Order for the unpicked balance? Choosing No cancels the unpicked balance.";
+                    string boYes = partDelivery ? "Yes, keep balance on this order" : "Yes, put balance on back order";
                     if (!hasShortfall)
                     {
                         js = "Swal.fire({title:'Close Picking Slip',text:'Mark this picking slip as fully picked and close it off?',icon:'question',showCancelButton:true,confirmButtonText:'Yes, close off'})"
                            + ".then(function(r){if(r.isConfirmed){document.getElementById('" + hf + "').value='full';" + pb + ";}});";
+                    }
+                    else if (!anyPicked && earlierSlips.Count > 0)
+                    {
+                        // Part delivery: earlier deliveries exist, so the order CAN be completed
+                        // with nothing more picked - the balance is cancelled and what was
+                        // already delivered is invoiced.
+                        js = "Swal.fire({title:'Cancel the Balance?',text:'Nothing is picked on this slip. Cancel the outstanding balance and complete the Sales Order with what has already been delivered?',icon:'question',showCancelButton:true,confirmButtonText:'Yes, complete the order',cancelButtonText:'No'})"
+                           + ".then(function(r){if(r.isConfirmed){document.getElementById('" + hf + "').value='shortship';" + pb + ";}});";
                     }
                     else if (!anyPicked)
                     {
@@ -1054,7 +1077,7 @@ namespace SBMS
                         js = "Swal.fire({title:'Picking Complete?',text:'Some items are short-picked. Is picking complete?',icon:'question',showDenyButton:true,showCancelButton:true,confirmButtonText:'Yes, fully picked',denyButtonText:'No, save as short-picked'})"
                            + ".then(function(r){"
                            + "if(r.isConfirmed){document.getElementById('" + hf + "').value='full';" + pb + ";}"
-                           + "else if(r.isDenied){Swal.fire({title:'Keep Unpicked on Back Order?',text:'Invoice the picked items now and create a new Sales Order for the unpicked balance? Choosing No cancels the unpicked balance.',icon:'question',showDenyButton:true,showCancelButton:true,confirmButtonText:'Yes, put balance on back order',denyButtonText:'No, cancel balance'})"
+                           + "else if(r.isDenied){Swal.fire({title:'" + boTitle + "',text:'" + boText + "',icon:'question',showDenyButton:true,showCancelButton:true,confirmButtonText:'" + boYes + "',denyButtonText:'No, cancel balance'})"
                            + ".then(function(r2){"
                            + "if(r2.isConfirmed){document.getElementById('" + hf + "').value='backorder';" + pb + ";}"
                            + "else if(r2.isDenied){document.getElementById('" + hf + "').value='shortship';" + pb + ";}"
@@ -1075,6 +1098,12 @@ namespace SBMS
                 // for it when this SO is posted to Sage. full / shortship both close the SO line off
                 // with nothing owing (short-ship simply abandons the balance).
                 bool keepBackOrder = (closeChoice == "backorder");
+                // Part delivery: same line arithmetic as a back order (QtyLeft = outstanding);
+                // what differs is that the order stays open instead of the balance moving to a new one.
+                bool keepOpen = partDelivery && keepBackOrder;
+                // Extra lot/serial lines the PREVIOUS delivery left on the order: this close-off
+                // writes its own, and all deliveries are rebuilt from the slips on completion.
+                if (earlierSlips.Count > 0) PartDelivery.RemoveExtraLines(_db, CurrentUser.CoID, Docid);
                 // --------------------------------------------------------------------------------
 
                 long FirstLineID = 0;
@@ -1237,20 +1266,42 @@ namespace SBMS
                 // is created for that balance (linked via Reference) and follows the normal workflow.
                 bool hasBackOrder = keepBackOrder && _db.DocLines.Any(x => x.DocID == Docid && (x.QtyLeft ?? 0) > 0.0001m);
 
+                // Part delivery. stayOpen = balance still owing, order waits for the next delivery.
+                // Otherwise the order is completing: add the earlier deliveries to the order lines
+                // so the one Sage update / invoice that follows carries everything delivered.
+                bool stayOpen = keepOpen && hasBackOrder;
+                if (partDelivery && !stayOpen && earlierSlips.Count > 0)
+                {
+                    PartDelivery.AppendEarlierDeliveries(_db, CurrentUser.CoID, Docid, PSLines, earlierSlips);
+                    _db.SaveChanges();
+                }
+
                 var DocH = _db.DocHeaders.Where(x => x.CompanyID == CurrentUser.CoID && x.DocID == Docid).FirstOrDefault();
                 DocH.Complete = true;
                 DocH.Active = true;
                 DocH.CompBy = CurrentUser.RoleID;
                 DocH.CompleteDate = DateTime.Today;
-                if (hasBackOrder)
+                if (hasBackOrder && !stayOpen)
                 {
                     // Cleared back to "Invoiced" once the balance SO has been created at post time.
                     DocH.Status = "Partially Invoiced";
+                }
+                if (stayOpen)
+                {
+                    // Part delivery: the order is NOT complete - it stays open for the balance
+                    // and nothing is sent to Sage until the last delivery completes it.
+                    DocH.Complete = false;
+                    DocH.CompleteDate = null;
                 }
 
                 // get total cost from transactions
                 DocH.DocCost = Convert.ToDecimal((_db.ItemTransactions.Where(x => x.CompanyID == CurrentUser.CoID && x.DocumentID == slipid).Sum(x => (decimal?)x.TotalLineValExcl) ?? 0m).ToString("N2"));
                 if (DocH.DocCost != 0) DocH.DocCost = DocH.DocCost * -1;
+                // Part delivery completing: cost of ALL its deliveries, not just this slip.
+                if (partDelivery && !stayOpen && earlierSlips.Count > 0)
+                {
+                    DocH.DocCost = PartDelivery.TotalCost(_db, CurrentUser.CoID, earlierSlips, slipid);
+                }
                 decimal DocValue = Convert.ToDecimal((_db.DocLines.Where(x => x.CompanyID == CurrentUser.CoID && x.DocID == Docid).Sum(x => (decimal?)x.Exclusive) ?? 0m));
                 decimal cost = DocH.DocCost ?? 0m;
                 decimal gp = 0m;
@@ -1303,17 +1354,38 @@ namespace SBMS
                     }
                 }
                 _db.SaveChanges();
+
+                // Part delivery: the next picking slip, for the outstanding balance.
+                string balanceSlip = "";
+                if (stayOpen)
+                {
+                    try
+                    {
+                        balanceSlip = PartDelivery.CreateBalanceSlip(_db, CurrentUser.CoID, CurrentUser.RoleID, Docid, PSH);
+                    }
+                    catch (Exception ex)
+                    {
+                        new ApiUrlCall().LogErrorToFile($"CoID:{CurrentUser.CoID} PickingSlip part delivery - balance slip not created for DocID:{Docid} - {ex.Message}");
+                    }
+                }
+
                 // Show popup and redirect after confirmation
                 string closeMsg = hasBackOrder
                     ? "Picked items closed off. When this Sales Order is updated to Sage, a new Sales Order will be created for the outstanding balance."
                     : "Picking Slip closed off successfully.";
+                if (stayOpen)
+                {
+                    closeMsg = balanceSlip.Length > 0
+                        ? "Delivery recorded. Picking slip " + balanceSlip + " has been created for the outstanding balance. The Sales Order is invoiced when it is complete."
+                        : "Delivery recorded, but the picking slip for the balance could not be created. Open the Sales Order and use Create Picking Slip.";
+                }
                 string script = @"
                         Swal.fire({
                             title: 'Success!',
                             text: '" + closeMsg + @"',
                             icon: 'success'
                         }).then(function() {
-                            window.location.href = '" + ResolveUrl("~/SalesOrder.aspx?docid=" + docguid.ToString() + "&autosave=" + CurrentUser.AutoUpdateSageSOs) + @"';
+                            window.location.href = '" + ResolveUrl("~/SalesOrder.aspx?docid=" + docguid.ToString() + "&autosave=" + (stayOpen ? false : CurrentUser.AutoUpdateSageSOs)) + @"';
                         }); ";
                 ScriptManager.RegisterStartupScript(this, this.GetType(), "CloseOffSuccess", script, true);
                 return;

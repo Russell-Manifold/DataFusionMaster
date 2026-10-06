@@ -71,7 +71,8 @@ namespace SBMS
 
                 if (AutoUpdate)
                 {
-                    if (await PostOrder() == "OK")
+                    string autoRes = await PostOrder();
+                    if (autoRes == "OK")
                     {
                         lbtnPost.Style.Add("display", "none");
                         lblErr.Text = "Sales Order updated in Sage.";
@@ -80,6 +81,12 @@ namespace SBMS
                         {
                             lbtnTaxInv.Style.Add("display", "inline-block");
                         }
+                    }
+                    else if ((autoRes ?? "").Contains("job card"))
+                    {
+                        // Job card internal lines: the automatic update was refused or stopped
+                        // part-way. Say why here - this path showed nothing before.
+                        lblErr.Text = autoRes;
                     }
                 }
                 else
@@ -268,7 +275,12 @@ namespace SBMS
                     {
                         lbtnViewPS.Style.Add("display", "inline-block");
                         var item = DDOptions.Items.FindByValue("1");
-                        if (item != null) DDOptions.Items.Remove(item);
+                        // Part delivery: an open order whose slips are all complete has no slip for
+                        // its balance (the automatic one failed) - leave "Create Picking Slip" on offer.
+                        bool balanceSlipMissing = CurrentUser.InvoiceWhenSOComplete && !Convert.ToBoolean(thispo.Complete)
+                            && _db.PickingSlipMasters.Any(x => x.CustomerID == CurrentUser.CoID && x.LinkedSOrdID == docid && x.PSComplete == true)
+                            && !_db.PickingSlipMasters.Any(x => x.CustomerID == CurrentUser.CoID && x.LinkedSOrdID == docid && x.PSComplete != true);
+                        if (item != null && !balanceSlipMissing) DDOptions.Items.Remove(item);
                         txtPSNum.Text = thispo.LinkedPSNum.ToString();
                         if (CurrentUser.UseModule2 == false || thispo.LinkedJCNum == null) lbtnViewJC.Style.Add("display", "none");
                         txtJCNum.Enabled = false;
@@ -308,6 +320,18 @@ namespace SBMS
                                 lblspan.Style.Add("float", "left");
                             }
                         }
+                    }
+                    // Part delivery: the order is still open, but a delivery has been made and
+                    // its delivery note must be printable. Only that button - nothing that posts.
+                    if (CurrentUser.InvoiceWhenSOComplete && !Convert.ToBoolean(thispo.Complete)
+                        && _db.PickingSlipMasters.Any(x => x.CustomerID == CurrentUser.CoID && x.LinkedSOrdID == docid && x.PSComplete == true))
+                    {
+                        PnlButtons.Attributes.Add("style", "display:inline-block");
+                        lbtnPrintDN.Attributes.Add("style", "display:inline-block");
+                        lbtnPost.Style.Add("display", "none");
+                        lbtnTaxInv.Style.Add("display", "none");
+                        lbtnUndo.Style.Add("display", "none");
+                        lblspan.Style.Add("display", "none");
                     }
                     ApiUrlCall api = new ApiUrlCall();
                     // Awaited: the grid below binds from the DB, so the Sage pull must have
@@ -395,6 +419,20 @@ namespace SBMS
                         if (TL.ReceiveQty != null)
                         {
                             TL.ReceiveQty = Convert.ToDecimal(ApiUrlCall.NumberToDecimal(TL.ReceiveQty.ToString(), CurrentUser.CompanyDecPlaces));
+                        }
+                    }
+
+                    // Job card internal lines stay visible here, marked, and show no value: they are
+                    // a cost of the job, never billed, so the totals below are what the customer will
+                    // be invoiced. DISPLAY ONLY - nothing is saved (this method never calls SaveChanges).
+                    _hideAdded = JobCardHide.HidesAddedLines(_db, CurrentUser.CoID, docid)
+                                 && TempLines.Any(x => x.SBCALineID != 0);
+                    if (_hideAdded)
+                    {
+                        foreach (var hl in TempLines.Where(x => x.SBCALineID == 0))
+                        {
+                            hl.UnitPriceExclusive = 0; hl.Exclusive = 0; hl.Discount = 0; hl.Tax = 0; hl.Total = 0;
+                            hl.ItemDescription = (hl.ItemDescription ?? "") + "   (Internal - not invoiced)";
                         }
                     }
 
@@ -808,8 +846,11 @@ namespace SBMS
 
                     // get DocLines and add them to the Jobcard
                     var POLines = _db.DocLines.Where(x => x.DocID == docid && x.ItemCode != null).OrderBy(x => x.LineID).ToList();
+                    // Part delivery: a slip after the first is for the outstanding balance only.
+                    bool balanceOnly = CurrentUser.InvoiceWhenSOComplete && priorSlips > 0;
                     foreach (var Ln in POLines)
                     {
+                        if (balanceOnly && (Ln.SBCALineID == 0 || (Ln.QtyLeft ?? 0) <= 0)) continue;
                         PickSlipLine PsL = new PickSlipLine();
                         PsL.PSID = PSN.PSID;
                         PsL.SBCALineID = Ln.SBCALineID;
@@ -818,7 +859,7 @@ namespace SBMS
                         PsL.ItemDescription = Ln.ItemDescription;
                         var bc = _db.ItemBarCodeLinks.Where(x => x.ItemID == Ln.SelectionId).FirstOrDefault();
                         if (bc != null) PsL.BarCode = bc.BarCode;
-                        PsL.Quantity = Ln.Quantity;
+                        PsL.Quantity = balanceOnly ? Ln.QtyLeft : Ln.Quantity;
                         PsL.Comments = Ln.Comments;
                         PsL.PickComplete = false;
                         if (DDStoreH.SelectedIndex > 0)
@@ -1143,6 +1184,9 @@ namespace SBMS
                 var hdrPosted = _db.DocHeaders.FirstOrDefault(x => x.CompanyID == CurrentUser.CoID && x.DocID == docid);
                 if (hdrPosted != null && hdrPosted.Active == false)
                     return "This Sales Order has already been posted to Sage.";
+                // Part delivery: nothing goes to Sage until the last delivery completes the order.
+                if (CurrentUser.InvoiceWhenSOComplete && hdrPosted != null && hdrPosted.Complete != true)
+                    return "This Sales Order is still open for part deliveries. It is updated to Sage when the last delivery completes it.";
 
                 var SOLines = _db.DocLines.Where(x => x.DocID == docid).OrderBy(x=>x.LineID).ToList();
                 List<DocumentLine> documentLines = new List<DocumentLine>();
@@ -1175,10 +1219,57 @@ namespace SBMS
                     retStr = "Cannot post Sales Order with no picked lines. Please pick at least one line before posting.";
                     return retStr;
                 }
+
+                // ── Job card: lines added on the job card are internal (Classes/JobCardHide.cs) ──
+                // jcHide stays null unless this order's job card has "Print all additional lines"
+                // UNTICKED. While it is null every job-card branch below is skipped and this
+                // method posts exactly as it always has.
+                JobCardHide.JobInfo jcHide = JobCardHide.ForOrder(_db, CurrentUser.CoID, docid);
+                if (jcHide != null && jcHide.PrintAllLines) jcHide = null;
+                var jcHiddenQty = new Dictionary<long, decimal>();         // hidden quantity drawn, by item
+                long jcCosAcc = 0, jcStockAdjAcc = 0;
+                if (jcHide != null)
+                {
+                    bool jcHasStock = false;
+                    foreach (var hl in SOLines.Where(x => x.SBCALineID == 0 && (x.ReceiveQty ?? 0) > 0))
+                    {
+                        long hlItem = hl.SelectionId;
+                        if (_db.ItemsMasters.Any(x => x.CompanyID == CurrentUser.CoID && x.ID == hlItem && x.Physical == true)) { jcHasStock = true; break; }
+                    }
+                    if (jcHasStock && CurrentUser.UATMode == false)
+                    {
+                        // Both accounts must be in place BEFORE anything is sent: stock adjusted with
+                        // its cost not journalled is worse than a refused update.
+                        jcCosAcc = JobCardHide.CosAccountId(_db, CurrentUser.CoID);
+                        jcStockAdjAcc = _db.AccountsMasters
+                            .Where(x => x.CompanyID == CurrentUser.CoID && x.AccountAddCostsContra == true)
+                            .Select(x => x.AccountID ?? 0).FirstOrDefault();
+                        if (jcCosAcc <= 0)
+                            return "This job card keeps its additional lines internal, but no Cost of Sales account for job card materials is set (Configuration - Company). Nothing was sent to Sage.";
+                        if (jcStockAdjAcc <= 0)
+                            return "This job card keeps its additional lines internal, but no Stock Adjustment Account is set (Settings - GL Account Access). Nothing was sent to Sage.";
+                        if (jcCosAcc == jcStockAdjAcc)
+                            return "The Cost of Sales account for job card materials is the same as the Stock Adjustment Account. Choose a different one. Nothing was sent to Sage.";
+                    }
+                }
+
                 foreach (var dl in SOLines)
                 {
                     // Back order: skip stock lines that were not picked this cycle (they stay outstanding).
                     if ((dl.LineType ?? 0) == 0 && (dl.ReceiveQty ?? 0) < 0.1m) continue;
+
+                    // Job card internal line: never on the Sage order or invoice, and NEVER billed -
+                    // it is a cost of the job only. (A line added on the job card picks up the item's
+                    // list price automatically; that price is ignored here, so internal materials
+                    // cannot inflate the customer's invoice.) Its stock is dealt with after this loop.
+                    // This also keeps it out of the "No Charge" step further down.
+                    if (jcHide != null && dl.SBCALineID == 0)
+                    {
+                        decimal hQty = dl.ReceiveQty ?? 0;
+                        if (hQty > 0)
+                            jcHiddenQty[dl.SelectionId] = (jcHiddenQty.ContainsKey(dl.SelectionId) ? jcHiddenQty[dl.SelectionId] : 0) + hQty;
+                        continue;
+                    }
                     decimal origqty = dl.ReceiveQty ?? 0;
                     DocumentLine DL = new DocumentLine();
                     if (dl.isKit != null && (bool)dl.isKit)
@@ -1338,6 +1429,65 @@ namespace SBMS
                         }
                     }
                 };
+
+                // ── Job card internal lines: Sage stock and Cost of Sales ──────────────────────
+                // Done BEFORE the Sales Order is sent, and recorded as it goes, so if anything
+                // after this fails the next "Update Sage SO" posts only what is still missing.
+                if (jcHide != null)
+                {
+                    if (documentLines.Count == 0)
+                        return "This job card keeps its additional lines internal, but no line from the customer's order is going to Sage to carry them. Nothing was sent to Sage.";
+
+                    // The first printed line is described by the Job Card Summary. Its price is the
+                    // customer's own order price, untouched.
+                    DocumentLine jcFirst = documentLines[0];
+                    if (!string.IsNullOrWhiteSpace(jcHide.JCSummary)) jcFirst.Description = jcHide.JCSummary.Trim();
+
+                    if (CurrentUser.UATMode == false && jcHiddenQty.Count > 0)
+                    {
+                        string jcRef = string.IsNullOrWhiteSpace(jcHide.JCNumber) ? ("JC" + jcHide.JCID) : jcHide.JCNumber.Trim();
+                        foreach (var kv in jcHiddenQty)
+                        {
+                            long hItemId = kv.Key;
+                            var hItem = _db.ItemsMasters.FirstOrDefault(x => x.CompanyID == CurrentUser.CoID && x.ID == hItemId);
+                            if (hItem == null || hItem.Physical != true) continue;        // a service: no stock, no cost
+                            // Only what has not been adjusted out on an earlier attempt.
+                            decimal need = kv.Value - JobCardHide.AdjustedQty(_db, CurrentUser.CoID, docid, hItemId);
+                            if (need <= 0) continue;
+
+                            // Sage's CURRENT average: an adjustment sets the item's average, so sending
+                            // a stale figure would revalue the item.
+                            try { await api.LoadOneItem(hItemId, CurrentUser); _db.Entry(hItem).Reload(); } catch { }
+                            decimal hAvg = hItem.AverageCost ?? 0;
+
+                            ItemAdjustment hAdj = new ItemAdjustment();
+                            hAdj.Date = DateTime.Now;
+                            hAdj.ItemID = hItemId;
+                            hAdj.AverageCost = hAvg;
+                            hAdj.Quantity = need * -1;
+                            string hReason = jcRef + " - materials used on job card: " + (hItem.Description ?? hItem.Code ?? "");
+                            hAdj.Reason = hReason.Length > 100 ? hReason.Substring(0, 100) : hReason;
+                            hAdj.Created = DateTime.Now;
+                            JObject hRes = await api.APIPostDocumentAsync("ItemAdjustment", JsonConvert.SerializeObject(hAdj, Formatting.Indented), CurrentUser);
+                            if (hRes == null || !hRes.ContainsKey("ID"))
+                                return "Sage did not confirm the stock adjustment for " + (hItem.Code ?? "an item") + " on job card " + jcRef + ". The Sales Order was NOT updated. Click Update Sage SO again to continue.";
+                            JobCardHide.Record(_db, CurrentUser.CoID, docid, jcHide.JCID, "A", hItemId, need, Math.Round(need * hAvg, 2), jcRef);
+                        }
+
+                        // One journal for whatever has been adjusted and not yet journalled:
+                        // DEBIT Cost of Sales, CREDIT Stock Adjustment (which the adjustments debited).
+                        decimal toJournal = JobCardHide.PostedAmount(_db, CurrentUser.CoID, docid, "A")
+                                          - JobCardHide.PostedAmount(_db, CurrentUser.CoID, docid, "J");
+                        if (toJournal > 0.005m)
+                        {
+                            string jRes = AddCostJournal.Post(CurrentUser, jcCosAcc, jcStockAdjAcc, toJournal, jcRef,
+                                                              "Job card " + jcRef + " materials (" + lblDocNum.Text + ")");
+                            if (jRes != AddCostJournal.Ok)
+                                return "The stock for job card " + jcRef + " was adjusted in Sage, but the Cost of Sales journal was refused: " + jRes + ". The Sales Order was NOT updated. Fix the cause and click Update Sage SO again - nothing will be adjusted twice.";
+                            JobCardHide.Record(_db, CurrentUser.CoID, docid, jcHide.JCID, "J", null, null, toJournal, jcRef);
+                        }
+                    }
+                }
 
                 #region CollateDocForsending
                 if (CurrentUser.UATMode == false)
@@ -1544,6 +1694,22 @@ namespace SBMS
                 using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
                 {
                     var DocH = _db.DocHeaders.Where(x => x.CompanyID == CurrentUser.CoID && x.DocGUID == guid).FirstOrDefault();
+                    // Part delivery: re-open reverses ONE picking slip. An order delivered on
+                    // several slips cannot be put back that way, so it is refused.
+                    long undoDocId = DocH.DocID;
+                    // Job card internal lines: once their stock adjustment / journal is in Sage it
+                    // cannot be taken back from here, so the order cannot be re-opened.
+                    if (JobCardHide.AnyPosted(_db, CurrentUser.CoID, undoDocId))
+                    {
+                        AlertHelper.ShowSweetAlert(this, "This order has job card lines that were adjusted in Sage as internal materials, so it cannot be re-opened.", "warning");
+                        return;
+                    }
+                    if (CurrentUser.InvoiceWhenSOComplete
+                        && _db.PickingSlipMasters.Count(x => x.CustomerID == CurrentUser.CoID && x.LinkedSOrdID == undoDocId) > 1)
+                    {
+                        AlertHelper.ShowSweetAlert(this, "This Sales Order was delivered in parts and cannot be re-opened.", "warning");
+                        return;
+                    }
                     DocH.Complete = false;
                     DocH.Active = true;
                     if (DocH.LinkedPSID > 0)
@@ -1688,9 +1854,27 @@ namespace SBMS
             return comments;
         }
 
-        protected void lbtnPrintDN_Click(object sender, EventArgs e)
+        protected async void lbtnPrintDN_Click(object sender, EventArgs e)
         {
-            CreatePDF();
+            // Delivery note layout (Configuration -> Company -> Delivery Note). Only "Detailed"
+            // takes the new path; Standard, settings that cannot be read (script not run), or
+            // any failure building the detailed note all print the standard note as before.
+            bool printed = false;
+            DnSettings dn = LoadDnSettings();
+            if (dn != null && dn.DNLayout == 1)
+            {
+                try
+                {
+                    JObject dnOrder = await FetchDnCustomerAsync();
+                    CreatePDFDetailed(dn, dnOrder);
+                    printed = true;
+                }
+                catch (Exception ex)
+                {
+                    new ApiUrlCall().LogErrorToFile($"CoID:{CurrentUser.CoID} Detailed delivery note failed for {lblDocNum.Text} - {ex.Message}");
+                }
+            }
+            if (!printed) CreatePDF();
             Response.Redirect($"~/ViewPDF.aspx?doc=" + CurrentUser.UserGuiD.ToString() + "\\DN_" + lblDocNum.Text, false);
         }
 
@@ -1765,7 +1949,18 @@ namespace SBMS
                     cell.HorizontalAlignment = 2;
                     table.AddCell(cell);
 
-                    cell = new PdfPCell(new Phrase(DH.DocumentNumber.Replace("SO", ""), headfont));
+                    // Part delivery: one note per delivery - the lines of the latest delivery, and
+                    // its number carries the delivery's sequence (0000006-1, -2, -3).
+                    var DocLines = _db.DocLines.Where(x => x.DocID == DH.DocID).OrderBy(x => x.LineID).ToList();
+                    string dnNumber = DH.DocumentNumber.Replace("SO", "");
+                    if (CurrentUser.InvoiceWhenSOComplete)
+                    {
+                        int dnSeq;
+                        var dnLines = PartDelivery.DeliveryNoteLines(_db, CurrentUser.CoID, DH.DocID, DocLines, DH.Complete == true, out dnSeq);
+                        if (dnSeq > 0) dnNumber = dnNumber + "-" + dnSeq;
+                        if (dnLines != null) DocLines = dnLines;
+                    }
+                    cell = new PdfPCell(new Phrase(dnNumber, headfont));
                     cell.Border = 0;
                     cell.HorizontalAlignment = 2;
                     table.AddCell(cell);
@@ -1904,9 +2099,18 @@ namespace SBMS
 
                     #endregion
 
-                    var DocLines = _db.DocLines.Where(x => x.DocID == DH.DocID).OrderBy(x => x.LineID).ToList();
+                    // Job card internal lines are not the customer's business: left off the note,
+                    // and the first printed line carries the Job Card Summary as its description.
+                    // (If no line has a Sage id this is a picking-slip list, not a job card order.)
+                    JobCardHide.JobInfo dnJob = JobCardHide.ForOrder(_db, CurrentUser.CoID, DH.DocID);
+                    bool dnHide = dnJob != null && !dnJob.PrintAllLines && DocLines.Any(x => x.SBCALineID != 0);
+                    bool dnFirstPrinted = true;
                     foreach (var DL in DocLines)
                     {
+                        if (dnHide && DL.SBCALineID == 0) continue;
+                        string dnDescription = DL.ItemDescription ?? "";
+                        if (dnHide && dnFirstPrinted && !string.IsNullOrWhiteSpace(dnJob.JCSummary)) dnDescription = dnJob.JCSummary.Trim();
+                        dnFirstPrinted = false;
                         cell4 = new PdfPCell(new Phrase(DL.ItemCode ?? "", regfont));
                         cell4.HorizontalAlignment = 0;
                         cell4.FixedHeight = 20f;
@@ -1914,7 +2118,7 @@ namespace SBMS
                         cell4.BorderColor = new BaseColor(211, 211, 211);
                         table4.AddCell(cell4);
 
-                        cell4 = new PdfPCell(new Phrase(DL.ItemDescription ?? "", regfont));
+                        cell4 = new PdfPCell(new Phrase(dnDescription, regfont));
                         cell4.HorizontalAlignment = 0;
                         cell4.VerticalAlignment = Element.ALIGN_MIDDLE;
                         cell4.BorderColor = new BaseColor(211, 211, 211);
@@ -1996,8 +2200,21 @@ namespace SBMS
             }
         }
 
+        // Set by BindGrid: this order's job card keeps the lines it added internal.
+        private bool _hideAdded = false;
+
         protected void GridPOLines_RowDataBound(object sender, GridViewRowEventArgs e)
         {
+            // Job card internal line (no Sage line id): shown lighter so it reads as not invoiced.
+            if (_hideAdded && e.Row.RowType == DataControlRowType.DataRow)
+            {
+                var tl = e.Row.DataItem as TempDocLine;
+                if (tl != null && tl.SBCALineID == 0)
+                {
+                    e.Row.ForeColor = System.Drawing.Color.Gray;
+                    e.Row.Font.Italic = true;
+                }
+            }
             if (CurrentUser.CompanyUseLotNumbers == false)
             {
                 e.Row.Cells[6].Visible = false;

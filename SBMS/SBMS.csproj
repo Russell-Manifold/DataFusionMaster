@@ -96,9 +96,8 @@
     <Reference Include="Irony, Version=1.1.11.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Irony.NetCore.1.1.11\lib\netstandard2.0\Irony.dll</HintPath>
     </Reference>
-    <Reference Include="itextsharp, Version=5.5.13.3, Culture=neutral, PublicKeyToken=8354ae6d2174ddca, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>bin\itextsharp.dll</HintPath>
+    <Reference Include="itextsharp, Version=5.5.13.4, Culture=neutral, PublicKeyToken=8354ae6d2174ddca, processorArchitecture=MSIL">
+      <HintPath>..\packages\iTextSharp.5.5.13.4\lib\net461\itextsharp.dll</HintPath>
     </Reference>
     <Reference Include="MailKit, Version=4.18.0.0, Culture=neutral, PublicKeyToken=4e064fe7c44a8f1b, processorArchitecture=MSIL">
       <HintPath>..\packages\MailKit.4.18.0\lib\net48\MailKit.dll</HintPath>
@@ -299,6 +298,9 @@
     <Content Include="LotBackfill.aspx" />
     <Content Include="ItemStoresLink.aspx" />
     <Content Include="ItemStkAdjustment.aspx" />
+    <Content Include="Returnables.aspx" />
+    <Content Include="JobCardGP.aspx" />
+    <Content Include="SalesGP.aspx" />
     <Content Include="documents\Privacy_Policy.pdf" />
     <Content Include="documents\Cookie_Policy.pdf" />
     <Content Include="documents\Copyright_Notice.pdf" />
@@ -1608,6 +1610,27 @@
     <Compile Include="ItemStkAdjustment.aspx.designer.cs">
       <DependentUpon>ItemStkAdjustment.aspx</DependentUpon>
     </Compile>
+    <Compile Include="Returnables.aspx.cs">
+      <DependentUpon>Returnables.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Returnables.aspx.designer.cs">
+      <DependentUpon>Returnables.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="JobCardGP.aspx.cs">
+      <DependentUpon>JobCardGP.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="JobCardGP.aspx.designer.cs">
+      <DependentUpon>JobCardGP.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="SalesGP.aspx.cs">
+      <DependentUpon>SalesGP.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="SalesGP.aspx.designer.cs">
+      <DependentUpon>SalesGP.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Models\SalesOrderHeader.cs" />
     <Compile Include="ProdPlanningC.aspx.cs">
       <DependentUpon>ProdPlanningC.aspx</DependentUpon>
@@ -1947,6 +1970,11 @@
     <Compile Include="Classes\DataTableToJson.cs" />
     <Compile Include="Classes\emailer.cs" />
     <Compile Include="Classes\LocalPassword.cs" />
+    <Compile Include="Classes\JobCardGP.cs" />
+    <Compile Include="Classes\SalesGP.cs" />
+    <Compile Include="Classes\JobCardHide.cs" />
+    <Compile Include="Classes\PartDelivery.cs" />
+    <Compile Include="Classes\Returnables.cs" />
     <Compile Include="Classes\Simple3Des.cs" />
     <Compile Include="StoresMaster.aspx.cs">
       <DependentUpon>StoresMaster.aspx</DependentUpon>
@@ -1977,6 +2005,10 @@
       <DependentUpon>JobCard.aspx</DependentUpon>
     </Compile>
     <Compile Include="SalesOrder.aspx.cs">
+      <DependentUpon>SalesOrder.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="SalesOrder.DeliveryNoteDetailed.cs">
       <DependentUpon>SalesOrder.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>

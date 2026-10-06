@@ -100,6 +100,16 @@
                                 <td style="text-align: right">
                                     <asp:Label ID="lblJCQuantity" runat="server" Text="Qty Of Items*" Style="color: red;"></asp:Label><asp:TextBox ID="txtJCQuantity" runat="server" Width="50px" Style="margin-right: 3em; text-align: center">1</asp:TextBox></td>
                             </tr>
+                            <%-- Unticked: lines ADDED on this job card are internal - kept here and costed,
+                                 adjusted out of Sage stock, but left off the customer's Sales Order,
+                                 invoice and delivery note. Saved the moment it is changed. --%>
+                            <tr style="background-color: #fff; border: 2px #4282C1 solid; border-top: none">
+                                <td colspan="6" style="padding: .4em .25em">
+                                    <asp:CheckBox ID="chkPrintAllLines" runat="server" Checked="true" AutoPostBack="true" OnCheckedChanged="chkPrintAllLines_CheckedChanged"
+                                        Text=" Print all additional lines" />
+                                    <asp:Label ID="lblPrintAllHint" runat="server" Text="" Style="font-size: .85em; color: #777; margin-left: 1em"></asp:Label>
+                                </td>
+                            </tr>
                         </table>
                         <br />
                         <%--<hr />--%>

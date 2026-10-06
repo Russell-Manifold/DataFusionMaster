@@ -92,15 +92,43 @@
                                      </asp:DropDownList></td>
                               </tr>
                                <tr><td colspan="4"><hr /></td></tr>
-                               <tr><td colspan="4" class="cfg-sec">Generic Sage Login</td></tr>
+                               <tr><td colspan="4" class="cfg-sec">Delivery Note</td></tr>
                                <tr>
+                                   <td>Layout</td>
+                                   <td><asp:DropDownList ID="DDDnLayout" runat="server" ToolTip="Standard: the delivery note as it has always printed. Detailed: customer VAT number, contact, purchase order and sales order number, with Order / Inv / Back Order quantities, a sign-off block and your footer.">
+                                           <asp:ListItem Value="0">Standard</asp:ListItem>
+                                           <asp:ListItem Value="1">Detailed (order / delivered / back order)</asp:ListItem>
+                                       </asp:DropDownList></td>
+                                   <td>Next delivery note number</td>
+                                   <td><asp:TextBox ID="txtPodNext" runat="server" Width="90px" MaxLength="9" ToolTip="One running number across all orders, used by the Detailed layout. Each delivery takes the next number the first time its note is printed. 0 = off: notes are numbered from the Sales Order."></asp:TextBox>
+                                       <span style="font-size:.85em; color:#777">0 = number from the Sales Order</span></td>
+                               </tr>
+                               <tr>
+                                   <td>Company Reg No</td>
+                                   <td><asp:TextBox ID="txtCoRegNo" runat="server" MaxLength="50"></asp:TextBox></td>
+                                   <td>Delivery note number prefix</td>
+                                   <td><asp:TextBox ID="txtPodPrefix" runat="server" Width="90px" MaxLength="10" ToolTip="Printed in front of the running number, e.g. DN"></asp:TextBox></td>
+                               </tr>
+                               <tr>
+                                   <td>Company VAT No</td>
+                                   <td><asp:TextBox ID="txtCoVatNo" runat="server" MaxLength="50"></asp:TextBox></td>
+                                   <td></td><td></td>
+                               </tr>
+                               <tr>
+                                   <td>Footer (Detailed layout)</td>
+                                   <td colspan="3"><asp:TextBox ID="txtDocFooter" runat="server" TextMode="MultiLine" Rows="4" Width="95%" ToolTip="Printed at the foot of the Detailed delivery note - head office address, contact numbers, email, directors. One line per line."></asp:TextBox></td>
+                               </tr>
+                               <tr><td colspan="4"><hr /></td></tr>
+                               <%-- Generic Sage Login hidden until released (a switch will expose it). Controls stay in the tree so the save code is unchanged: blank password = keep. --%>
+                               <tr id="trGenSec" runat="server" visible="false"><td colspan="4" class="cfg-sec">Generic Sage Login</td></tr>
+                               <tr id="trGenLogin" runat="server" visible="false">
                                    <td>Generic Sage user (email)</td>
                                    <td><asp:TextBox ID="txtGenEmail" runat="server" ToolTip="One Sage user, Basic auth, used for every Sage call made by users flagged 'Use Generic Login' (Configuration -> Users)."></asp:TextBox></td>
                                    <td>Generic Sage password</td>
                                    <td><asp:TextBox ID="txtGenPwd" runat="server" TextMode="Password" ToolTip="Stored encrypted. Leave blank to keep the saved password."></asp:TextBox>
                                        <asp:Label ID="lblGenPwdSaved" runat="server" Text="" style="font-size:.85em; color:#777"></asp:Label></td>
                                </tr>
-                               <tr><td colspan="4"><hr /></td></tr>
+                               <tr id="trGenHr" runat="server" visible="false"><td colspan="4"><hr /></td></tr>
                                <tr><td colspan="4" class="cfg-sec">Sage Integration</td></tr>
                                   <tr>
                                    <td>Auto Update Sage on Picking Complete</td>
@@ -137,6 +165,22 @@
                                                  The receipt, the lot cost, the store average and the Sage supplier invoice all use the corrected price.
                                                  The purchase order in Sage is not changed, and neither is the item's own price.
                                              </asp:Panel>
+                                      </td>
+                             </tr>
+                             <tr>
+                                    <td></td><td></td>
+                                        <td>Part deliveries: keep the Sales Order open and invoice once, when it is complete</td>
+                                      <td>
+                                          <asp:CheckBox ID="chkInvWhenComplete" runat="server"
+                                              ToolTip="Off: a short pick puts the balance on a new Sales Order and each Sales Order is invoiced on its own. On: the Sales Order stays open, each delivery gets its own picking slip and delivery note for the balance, and the order is updated to Sage and invoiced once, when it is complete." />
+                                      </td>
+                             </tr>
+                             <tr>
+                                    <td></td><td></td>
+                                        <td>Job cards: Cost of Sales account for internal materials</td>
+                                      <td>
+                                          <asp:DropDownList ID="DDJobCos" runat="server" Width="220px"
+                                              ToolTip="Used when a job card has 'Print all additional lines' unticked. The stock lines added on the job card are adjusted out of Sage and their cost is journalled to this account (debit), against your Stock Adjustment Account (credit)."></asp:DropDownList>
                                       </td>
                              </tr>
                              <tr>

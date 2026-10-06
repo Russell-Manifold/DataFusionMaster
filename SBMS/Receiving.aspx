@@ -351,7 +351,7 @@
                                                     <td class="rec-lbl">Received Qty</td>
                                                     <%-- Variation sits ON this row: it is calculated from the two quantities
                                                          above it, cannot be typed into, and does not deserve a row of its own. --%>
-                                                    <td><asp:textbox id="txtQtyReceive" runat="server" style="width:6em; text-align:center" Text="" onblur="startCalc()" ClientIDMode="Static"  TabIndex="0"></asp:textbox><%--onblur="startCalc()"--%>
+                                                    <td style="white-space:nowrap"><asp:textbox id="txtQtyReceive" runat="server" style="width:6em; text-align:center" Text="" onblur="startCalc()" ClientIDMode="Static"  TabIndex="0"></asp:textbox><%--onblur="startCalc()"--%>
                                                             <cci:FilteredTextBoxExtender ID="ftbe" runat="server" TargetControlID="txtQtyReceive" FilterType="Custom, Numbers" ValidChars="." />
                                                             <span style="margin-left:1em; color:#7a8b98">Variation</span>
                                                             <asp:textbox id="txtBalQty" runat="server" style="width:5em; text-align:center; color:red; border:none; background:transparent; font-weight:600" Text="" ClientIDMode="Static" ReadOnly="true" TabIndex="-1"></asp:textbox></td>
@@ -360,7 +360,7 @@
                                                       price sits beside the box so a change is never silent. --%>
                                                  <tr id="trRecPrice" runat="server" visible="false">
                                                     <td class="rec-lbl">Received Price</td>
-                                                    <td><asp:textbox id="txtRecPrice" runat="server" style="width:6em; text-align:center" Text="" ClientIDMode="Static" TabIndex="0"></asp:textbox>
+                                                    <td style="white-space:nowrap"><asp:textbox id="txtRecPrice" runat="server" style="width:6em; text-align:center" Text="" ClientIDMode="Static" TabIndex="0"></asp:textbox>
                                                             <cci:FilteredTextBoxExtender ID="ftbeRecPrice" runat="server" TargetControlID="txtRecPrice" FilterType="Custom, Numbers" ValidChars="." />
                                                             <span style="margin-left:1em; color:#7a8b98">Order Price</span>
                                                             <asp:Label ID="lblOrdPrice" runat="server" style="font-weight:600"></asp:Label></td>
@@ -607,7 +607,7 @@
         .rec-val        { text-align:left; vertical-align:top; }
         /* Every table in the modal shares the same frame, so the input column starts at the
            same x in all of them. */
-        .rec-frame      { margin:auto; text-align:left; width:400px; border-collapse:collapse; }
+        .rec-frame      { margin:auto; text-align:left; width:480px; border-collapse:collapse; }
         .rec-frame td   { padding:.15em .3em; }
         /* The plain quantity boxes at the top are unstyled inputs; give them the same look. */
         .rec-frame input[type=text], .rec-frame select { height:1.9em; }

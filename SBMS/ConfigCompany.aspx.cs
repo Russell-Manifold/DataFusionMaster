@@ -69,6 +69,17 @@ namespace SBMS
             Response.Redirect("~/Login.aspx", false); Context.ApplicationInstance.CompleteRequest();
         }
 
+        /// <summary>Delivery note settings - columns outside the EF model (SQL/Add_DeliveryNoteLayout.sql).</summary>
+        public class DnConfigRow
+        {
+            public int DNLayout { get; set; }
+            public string CoRegNo { get; set; }
+            public string CoVatNo { get; set; }
+            public string DocFooter { get; set; }
+            public string PODPrefix { get; set; }
+            public int PODNextNumber { get; set; }
+        }
+
         private void GetCompanyDetails()
         {
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
@@ -111,9 +122,41 @@ namespace SBMS
                         .FirstOrDefault();
                 }
                 catch { chkPickByBin.Checked = false; }
+
+                // Cost of Sales account for job card materials (job cards that keep their added
+                // lines internal). Raw SQL too; "not set" when the column is absent.
+                DDJobCos.Items.Clear();
+                DDJobCos.Items.Add(new System.Web.UI.WebControls.ListItem("- Not set -", "0"));
+                long jcCo = CurrentUser.CoID;
+                foreach (var acc in _db.AccountsMasters.Where(x => x.CompanyID == jcCo && x.AccountID != null)
+                                       .OrderBy(x => x.AccountName).Select(x => new { x.AccountID, x.AccountName }).ToList())
+                    DDJobCos.Items.Add(new System.Web.UI.WebControls.ListItem(acc.AccountName ?? acc.AccountID.ToString(), acc.AccountID.ToString()));
+                string jcCos = JobCardHide.CosAccountId(_db, jcCo).ToString();
+                if (DDJobCos.Items.FindByValue(jcCos) != null) DDJobCos.SelectedValue = jcCos;
+
+                // Delivery note layout - raw SQL too. Standard / blank when the columns are absent.
+                try
+                {
+                    var dn = _db.Database.SqlQuery<DnConfigRow>(
+                            "SELECT DNLayout, CoRegNo, CoVatNo, DocFooter, PODPrefix, PODNextNumber FROM dbo.CompanyMaster WHERE SBCACoID = @p0",
+                            CurrentUser.CoID)
+                        .FirstOrDefault();
+                    if (dn != null)
+                    {
+                        DDDnLayout.SelectedValue = dn.DNLayout == 1 ? "1" : "0";
+                        txtCoRegNo.Text = dn.CoRegNo ?? "";
+                        txtCoVatNo.Text = dn.CoVatNo ?? "";
+                        txtDocFooter.Text = dn.DocFooter ?? "";
+                        txtPodPrefix.Text = dn.PODPrefix ?? "";
+                        txtPodNext.Text = dn.PODNextNumber.ToString();
+                        ViewState["PodNextLoaded"] = dn.PODNextNumber;
+                    }
+                }
+                catch { }
                chkPSAuto.Checked = (bool)Comp.AutoUpdateSageSOs;
                chkTaxInvAuto.Checked = (bool)Comp.AutoGenTaxInvoice;
                chkRecPriceEdit.Checked = Comp.AllowRecPriceEdit;
+               chkInvWhenComplete.Checked = Comp.InvoiceWhenSOComplete;
                chkUsePacks.Checked = (bool)Comp.UsePacks;
                 chkManfCosts.Checked = (bool)Comp.ShowManfCosts;
 
@@ -210,6 +253,15 @@ namespace SBMS
                     Comp.AutoGenTaxInvoice = chkTaxInvAuto.Checked;
                     Comp.AllowRecPriceEdit = chkRecPriceEdit.Checked;
                     CurrentUser.AllowRecPriceEdit = Comp.AllowRecPriceEdit;
+                    // Part deliveries cannot be switched OFF while an order delivered in part is
+                    // still open: it would then complete under the back-order rules, and what was
+                    // already delivered on its earlier slips would never be invoiced.
+                    long pdCo = CurrentUser.CoID;
+                    bool partOrdersOpen = Comp.InvoiceWhenSOComplete && !chkInvWhenComplete.Checked
+                        && _db.DocHeaders.Any(h => h.CompanyID == pdCo && h.DocType == 5 && h.Complete != true
+                            && _db.PickingSlipMasters.Any(p => p.CustomerID == pdCo && p.LinkedSOrdID == h.DocID && p.PSComplete == true));
+                    if (!partOrdersOpen) Comp.InvoiceWhenSOComplete = chkInvWhenComplete.Checked;
+                    CurrentUser.InvoiceWhenSOComplete = Comp.InvoiceWhenSOComplete;
                     CurrentUser.AutoGenTaxInvoice = Comp.AutoGenTaxInvoice;
                     Comp.UsePacks = chkUsePacks.Checked;
                     CurrentUser.UsePacks = Comp.UsePacks;
@@ -260,6 +312,57 @@ namespace SBMS
                     // Don't clobber an existing LPN warning - append instead.
                     message = (icon == "warning" ? message + " " : "Saved - but ")
                               + "Pick by Bin was NOT saved. Run Add_PickByBin.sql on this database first.";
+                    icon = "warning";
+                }
+
+                // Delivery note layout - raw SQL. The running number is written ONLY when it was
+                // changed on this screen: it moves on every time a note is printed, so saving the
+                // page with the figure it was loaded with would wind it back and repeat numbers.
+                try
+                {
+                    int podNext;
+                    if (!int.TryParse(txtPodNext.Text.Trim(), out podNext) || podNext < 0) podNext = 0;
+                    string dnReg = txtCoRegNo.Text.Trim();       if (dnReg.Length > 50) dnReg = dnReg.Substring(0, 50);
+                    string dnVat = txtCoVatNo.Text.Trim();       if (dnVat.Length > 50) dnVat = dnVat.Substring(0, 50);
+                    string dnPrefix = txtPodPrefix.Text.Trim();  if (dnPrefix.Length > 10) dnPrefix = dnPrefix.Substring(0, 10);
+                    string dnFooter = txtDocFooter.Text ?? "";   if (dnFooter.Length > 600) dnFooter = dnFooter.Substring(0, 600);
+                    _db.Database.ExecuteSqlCommand(
+                        "UPDATE dbo.CompanyMaster SET DNLayout = @p0, CoRegNo = @p1, CoVatNo = @p2, DocFooter = @p3, PODPrefix = @p4 WHERE SBCACoID = @p5",
+                        DDDnLayout.SelectedValue == "1" ? 1 : 0, dnReg, dnVat, dnFooter, dnPrefix, CurrentUser.CoID);
+                    int podLoaded = ViewState["PodNextLoaded"] == null ? -1 : (int)ViewState["PodNextLoaded"];
+                    if (podNext != podLoaded)
+                    {
+                        _db.Database.ExecuteSqlCommand(
+                            "UPDATE dbo.CompanyMaster SET PODNextNumber = @p0 WHERE SBCACoID = @p1", podNext, CurrentUser.CoID);
+                        ViewState["PodNextLoaded"] = podNext;
+                    }
+                }
+                catch
+                {
+                    message = (icon == "warning" ? message + " " : "Saved - but ")
+                              + "the Delivery Note settings were NOT saved. Run Add_DeliveryNoteLayout.sql on this database first.";
+                    icon = "warning";
+                }
+
+                // Cost of Sales account for job card materials - raw SQL.
+                try
+                {
+                    long jcCosSel;
+                    long.TryParse(DDJobCos.SelectedValue, out jcCosSel);
+                    JobCardHide.SetCosAccountId(_db, CurrentUser.CoID, jcCosSel);
+                }
+                catch
+                {
+                    message = (icon == "warning" ? message + " " : "Saved - but ")
+                              + "the job card Cost of Sales account was NOT saved. Run Add_JobCardHideLines.sql on this database first.";
+                    icon = "warning";
+                }
+
+                if (partOrdersOpen)
+                {
+                    chkInvWhenComplete.Checked = true;
+                    message = (icon == "warning" ? message + " " : "Saved - but ")
+                              + "Part deliveries was left ON: there are Sales Orders delivered in part that are still open. Complete or close those first.";
                     icon = "warning";
                 }
 

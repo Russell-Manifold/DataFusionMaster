@@ -13,6 +13,19 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="js/pickslipkanbanscript.js"></script>
+    <style>
+        .sc-wrap  { max-width:1180px; margin:0 auto 2em; text-align:left; }
+        .sc-h     { text-align:left; font-size:1.05em; color:#4282C1; margin:1.6em 0 .6em; padding-bottom:.25em; border-bottom:1px solid #dfe6eb; }
+        .sc-grid  { display:grid; grid-template-columns:repeat(auto-fill, minmax(250px, 1fr)); gap:.9em; }
+        .sc-tile  { display:grid; grid-template-columns:auto 1fr; column-gap:.9em; align-items:center; min-height:4.6em; padding:.8em 1em; border-radius:.6em;
+                    background:linear-gradient(135deg, #2f4a5c 0%, #1f3443 100%); color:#fff !important; text-decoration:none !important;
+                    box-shadow:0 2px 6px rgba(0,0,0,.18); border:0; line-height:1.3; }
+        .sc-tile:hover { background:linear-gradient(135deg, #3a5b70 0%, #27404f 100%); transform:translateY(-1px); box-shadow:0 4px 10px rgba(0,0,0,.22); }
+        .sc-i     { grid-row:1 / span 2; font-size:1.5em; width:1.4em; text-align:center; color:#9fc3e2; }
+        .sc-t     { display:block; font-weight:600; font-size:.98em; align-self:end; }
+        .sc-d     { display:block; font-size:.78em; color:#c9d6e0; margin-top:.15em; align-self:start; }
+        @media (max-width: 640px) { .sc-grid { grid-template-columns:1fr; } }
+    </style>
 </head>
 <body>
     <form id="form1" runat="server">
@@ -62,40 +75,72 @@
                      </div>
                 <asp:UpdatePanel ID="UpdatePanel1" runat="server" UpdateMode="Conditional">
                     <ContentTemplate>
-                        <div class="row 150%">
-                            <div class="col-6 col-12-wide" style="text-align: center;">
-                                <div>
-                                     <h4 style="text-align:center">Stock Tracking</h4>
-                                        <asp:LinkButton ID="LinkButton1" runat="server" PostBackUrl="~/PurchaseOrdersIncomplete.aspx"   CssClass="button buttonLarge" ToolTip="View SBCA Purchase Orders with lines " >Purchase Orders By Lines</asp:LinkButton><br /><br />
-                                        <asp:LinkButton ID="LinkButton3" runat="server" PostBackUrl="~/OSPurchaseOrdersPartial.aspx"   CssClass="button buttonLarge" ToolTip="View partially received Purchase Orders" >Partially Received Purchase Orders</asp:LinkButton><br /><br />   
-                                        <asp:LinkButton ID="LinkButton2" runat="server" PostBackUrl="~/SalesOrdersIncomplete.aspx" CssClass="button buttonLarge" ToolTip="View and logs of items and lot number transactions." >Incomplete Sales Orders</asp:LinkButton><br /><br />
-                                    <hr />
-                                         <h4 style="text-align:center">Movement</h4>
-                                        <asp:LinkButton ID="imgbTrf" runat="server" OnClick="imgbTrf_Click" CssClass="button buttonLarge" ToolTip="Carry out an inter-store transfer of a single item" >Quick Item Transfer</asp:LinkButton><br /><br />
-                                        <asp:LinkButton ID="imgbTrfB" runat="server" OnClick="imgbTrfB_Click" CssClass="button buttonLarge" ToolTip="Carry out an inter-store transfer" >Bulk Item Transfer</asp:LinkButton><br /><br />
-                                        <asp:LinkButton ID="imgItemAdjust" runat="server" OnClick="imgItemAdjust_Click" CssClass="button buttonLarge" ToolTip="Carry out an item adjustment with the option of updating Sage Accounting" >Item Adjustment</asp:LinkButton><br /><br />
-                                        <asp:LinkButton ID="imgItemConvert" runat="server" OnClick="imgItemConvert_Click" CssClass="button buttonLarge" ToolTip="Convert an items to a different unit of measure" >Convert Item to Different Item Code</asp:LinkButton><br /><br />
-                                    
-                                </div>     
+                        <%-- Stock Control menu: tiles grouped by task (was one tall stack of buttons per column).
+                             Every control keeps its ID and handler; only the presentation changed. --%>
+                        <div class="sc-wrap">
+                            <h4 class="sc-h">Stock Tracking</h4>
+                            <div class="sc-grid">
+                                <asp:LinkButton ID="LinkButton1" runat="server" PostBackUrl="~/PurchaseOrdersIncomplete.aspx" CssClass="sc-tile" ToolTip="View SBCA Purchase Orders with lines">
+                                    <i class="fa fa-list-alt sc-i"></i><span class="sc-t">Purchase Orders By Lines</span><span class="sc-d">Every open purchase order, line by line</span>
+                                </asp:LinkButton>
+                                <asp:LinkButton ID="LinkButton3" runat="server" PostBackUrl="~/OSPurchaseOrdersPartial.aspx" CssClass="sc-tile" ToolTip="View partially received Purchase Orders">
+                                    <i class="fa fa-truck sc-i"></i><span class="sc-t">Partially Received POs</span><span class="sc-d">Deliveries still outstanding</span>
+                                </asp:LinkButton>
+                                <asp:LinkButton ID="LinkButton2" runat="server" PostBackUrl="~/SalesOrdersIncomplete.aspx" CssClass="sc-tile" ToolTip="Sales orders not yet fully invoiced">
+                                    <i class="fa fa-file-alt sc-i"></i><span class="sc-t">Incomplete Sales Orders</span><span class="sc-d">Ordered, invoiced and outstanding per line</span>
+                                </asp:LinkButton>
                             </div>
-                                <div class="col-6 col-12-wide" style="text-align: center;">
-                                    <h4 style="text-align:center">Analysis</h4>
-                                    <asp:LinkButton ID="lbtnStockMove" runat="server" OnClick="lbtnStockMove_Click" CssClass="button buttonLarge" ToolTip="View and logs of items and lot number transactions." >Stock/Lot Movement</asp:LinkButton><br /><br />
-                                    <asp:LinkButton ID="lbtnSOH" runat="server" OnClick="lbtnSOH_Click" CssClass="button buttonLarge" ToolTip="View stock balances by store"  >Stock/Lot Balances</asp:LinkButton><br /><br />
-                                    <asp:LinkButton ID="lbtnReOrder" runat="server" OnClick="lbtnReOrder_Click" CssClass="button buttonLarge" ToolTip="What to buy: on hand, on order, committed and recommended order quantity per item." >Re-Order Report</asp:LinkButton><br /><br />
-                                    <%-- Lot / serial screens. Hidden unless the company tracks lots. --%>
-                                    <asp:LinkButton ID="lbtnTrace" runat="server" OnClick="lbtnTrace_Click" CssClass="button buttonLarge" ToolTip="Search a serial or batch: where it came from, where it went, and who has it." >Traceability &amp; Recall</asp:LinkButton><br /><br />
-                                    <asp:LinkButton ID="lbtnExpiry" runat="server" OnClick="lbtnExpiry_Click" CssClass="button buttonLarge" ToolTip="Expired and short-dated stock still on hand." >Expiry Control</asp:LinkButton><br /><br />
-                                     <asp:LinkButton ID="lbtnPickGP" runat="server" OnClick="lbtnPickGP_Click" CssClass="button buttonLarge" ToolTip="Analyse picking slips and view GP per each one"  >Picking Slip GP Analysis</asp:LinkButton><br /><br />
-                                     <asp:LinkButton ID="lbtnItemGP" runat="server" OnClick="lbtnItemGP_Click" CssClass="button buttonLarge" ToolTip="Analyse item sale and view GP per item"  >Item Sales GP Analysis</asp:LinkButton><br /><br />
-                               
-                            <hr />
-                                 <h4 style="text-align:center">Counts</h4>
-                                <asp:LinkButton ID="lbtnStckCount" runat="server" CssClass="button buttonLarge" OnClick="lbtnStckCount_Click" ToolTip="Plan and record stock takes." >Stock Counts</asp:LinkButton><br /><br />   
-                                <hr />
-                                     <h4 style="text-align:center">Custom Reports</h4>
-                                    <asp:LinkButton ID="lbtnCustom" runat="server" CssClass="button buttonLarge" OnClick="lbtnCustom_Click"  ToolTip="View custom reports created for you." >My Customised</asp:LinkButton><br /><br />           
-                            </div>                   
+                            <h4 class="sc-h">Movement</h4>
+                            <div class="sc-grid">
+                                <asp:LinkButton ID="imgbTrf" runat="server" OnClick="imgbTrf_Click" CssClass="sc-tile" ToolTip="Carry out an inter-store transfer of a single item">
+                                    <i class="fa fa-exchange-alt sc-i"></i><span class="sc-t">Quick Item Transfer</span><span class="sc-d">One item, store to store</span>
+                                </asp:LinkButton>
+                                <asp:LinkButton ID="imgbTrfB" runat="server" OnClick="imgbTrfB_Click" CssClass="sc-tile" ToolTip="Carry out an inter-store transfer">
+                                    <i class="fa fa-cubes sc-i"></i><span class="sc-t">Bulk Item Transfer</span><span class="sc-d">Several items on one transfer slip</span>
+                                </asp:LinkButton>
+                                <asp:LinkButton ID="imgItemAdjust" runat="server" OnClick="imgItemAdjust_Click" CssClass="sc-tile" ToolTip="Carry out an item adjustment with the option of updating Sage Accounting">
+                                    <i class="fa fa-sliders-h sc-i"></i><span class="sc-t">Item Adjustment</span><span class="sc-d">Add or remove stock, optionally in Sage too</span>
+                                </asp:LinkButton>
+                                <a href="Returnables.aspx" class="sc-tile" title="No-charge items that are expected back (pallets, crates, cylinders): log returns against a customer and see who is holding what. Not a credit note.">
+                                    <i class="fa fa-undo sc-i"></i><span class="sc-t">Returnables</span><span class="sc-d">Pallets and crates: returns and who holds what</span>
+                                </a>
+                                <asp:LinkButton ID="imgItemConvert" runat="server" OnClick="imgItemConvert_Click" CssClass="sc-tile" ToolTip="Convert an item to a different item code or unit of measure">
+                                    <i class="fa fa-random sc-i"></i><span class="sc-t">Convert Item Code</span><span class="sc-d">Re-code stock or change its unit</span>
+                                </asp:LinkButton>
+                            </div>
+                            <h4 class="sc-h">Analysis</h4>
+                            <div class="sc-grid">
+                                <asp:LinkButton ID="lbtnStockMove" runat="server" OnClick="lbtnStockMove_Click" CssClass="sc-tile" ToolTip="View and logs of items and lot number transactions.">
+                                    <i class="fa fa-chart-line sc-i"></i><span class="sc-t">Stock/Lot Movement</span><span class="sc-d">Every movement of an item or lot</span>
+                                </asp:LinkButton>
+                                <asp:LinkButton ID="lbtnSOH" runat="server" OnClick="lbtnSOH_Click" CssClass="sc-tile" ToolTip="View stock balances by store">
+                                    <i class="fa fa-balance-scale sc-i"></i><span class="sc-t">Stock/Lot Balances</span><span class="sc-d">On hand by store and lot</span>
+                                </asp:LinkButton>
+                                <asp:LinkButton ID="lbtnReOrder" runat="server" OnClick="lbtnReOrder_Click" CssClass="sc-tile" ToolTip="What to buy: on hand, on order, committed and recommended order quantity per item.">
+                                    <i class="fa fa-shopping-cart sc-i"></i><span class="sc-t">Re-Order Report</span><span class="sc-d">What to buy, and how much</span>
+                                </asp:LinkButton>
+                                <asp:LinkButton ID="lbtnTrace" runat="server" OnClick="lbtnTrace_Click" CssClass="sc-tile" ToolTip="Search a serial or batch: where it came from, where it went, and who has it.">
+                                    <i class="fa fa-search sc-i"></i><span class="sc-t">Traceability &amp; Recall</span><span class="sc-d">Follow a serial or batch end to end</span>
+                                </asp:LinkButton>
+                                <asp:LinkButton ID="lbtnExpiry" runat="server" OnClick="lbtnExpiry_Click" CssClass="sc-tile" ToolTip="Expired and short-dated stock still on hand.">
+                                    <i class="fa fa-calendar-times sc-i"></i><span class="sc-t">Expiry Control</span><span class="sc-d">Expired and short-dated stock</span>
+                                </asp:LinkButton>
+                                <asp:LinkButton ID="lbtnPickGP" runat="server" OnClick="lbtnPickGP_Click" CssClass="sc-tile" ToolTip="Revenue, cost and GP per invoiced sales order, or per item.">
+                                    <i class="fa fa-chart-pie sc-i"></i><span class="sc-t">Sales GP Analysis</span><span class="sc-d">By sales order or by item</span>
+                                </asp:LinkButton>
+                                <a href="JobCardGP.aspx" class="sc-tile" title="Revenue, cost and GP per completed job card, including stock drawn that the customer did not see">
+                                    <i class="fa fa-wrench sc-i"></i><span class="sc-t">Job Card GP Analysis</span><span class="sc-d">Per job, including internal materials</span>
+                                </a>
+                            </div>
+                            <h4 class="sc-h">Counts &amp; Reports</h4>
+                            <div class="sc-grid">
+                                <asp:LinkButton ID="lbtnStckCount" runat="server" OnClick="lbtnStckCount_Click" CssClass="sc-tile" ToolTip="Plan and record stock takes.">
+                                    <i class="fa fa-clipboard-check sc-i"></i><span class="sc-t">Stock Counts</span><span class="sc-d">Plan and record stock takes</span>
+                                </asp:LinkButton>
+                                <asp:LinkButton ID="lbtnCustom" runat="server" OnClick="lbtnCustom_Click" CssClass="sc-tile" ToolTip="View custom reports created for you.">
+                                    <i class="fa fa-star sc-i"></i><span class="sc-t">My Customised</span><span class="sc-d">Reports built for your company</span>
+                                </asp:LinkButton>
+                            </div>
                         </div>
                       </ContentTemplate>
                 </asp:UpdatePanel>              

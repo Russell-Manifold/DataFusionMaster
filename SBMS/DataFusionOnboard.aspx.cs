@@ -22,8 +22,12 @@ namespace SBMS
             if (!IsPostBack)
             {
                 // Back from Sage ID (SageCallback.aspx) - restore the form, then list companies with the token.
+                // Only while OAuth is offered on this screen: with the Login Method row hidden, a
+                // form left in the session by an earlier attempt must not drag the page into the
+                // OAuth path (it forced the dropdown to OAuth and then demanded a token).
                 var form = Session["OnboardForm"] as Dictionary<string, string>;
                 if (form == null) return;
+                if (!trSageAuth.Visible) { Session.Remove("OnboardForm"); Session.Remove("SageOAuthError"); return; }
                 Session.Remove("OnboardForm");
                 txtCoName.Text = form["CoName"];
                 txtContact.Text = form["Contact"];
@@ -50,7 +54,8 @@ namespace SBMS
 
         protected async void lbtnNext_Click(object sender, EventArgs e)
         {
-            bool useOAuth = DDSageAuth.SelectedValue == "1";
+            // OAuth can only be chosen while its row is shown. Hidden = Basic auth, whatever the dropdown holds.
+            bool useOAuth = trSageAuth.Visible && DDSageAuth.SelectedValue == "1";
             if (
       txtCoName.Text.Trim().Length > 0 &&
       txtContact.Text.Trim().Length > 0 &&
@@ -87,7 +92,9 @@ namespace SBMS
         private async System.Threading.Tasks.Task FetchCompaniesAsync(object sender, SageOAuthToken token)
         {
                 ApiUrlCall api = new ApiUrlCall();
-                JObject result = await api.GetCompaniesEnrollAsync(txtsagemail.Text.Trim(), txtSagePwd.Text.Trim(), token);
+                JObject result = token == null
+                    ? await api.GetCompaniesEnrollAsync(txtsagemail.Text.Trim(), txtSagePwd.Text.Trim())            // Basic auth
+                    : await api.GetCompaniesEnrollOAuthAsync(txtsagemail.Text.Trim(), txtSagePwd.Text.Trim(), token); // OAuth 2.0
 
                 if (result != null && result.ContainsKey("success") && (bool)result["success"])
                 {

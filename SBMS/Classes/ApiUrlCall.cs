@@ -107,10 +107,10 @@ namespace SBMS.Classes
         //public SBMSEntities(string connectionString) : base(connectionString) { }
 
         //  for demo version data
-      public static string dbName = $"MyDataFusionDemo2";
+      //public static string dbName = $"MyDataFusionDemo2";
        // LIVE data
       /// <summary>
-      //public static string dbName = $"MyDataFusion";
+      public static string dbName = $"MyDataFusion";
       /// </summary>
 
         public static string constr = $"Data Source=SYNCFLO-DESKTOP\\SYNCFLOSQL;Initial Catalog={dbName};Persist Security Info=True;User ID=sa;Password=M@nif0LD";
@@ -120,11 +120,11 @@ namespace SBMS.Classes
         static DateTime CustDT = Convert.ToDateTime("01 Jan 2015"), SuppDT = Convert.ToDateTime("01 Jan 2015"), ItemDT = Convert.ToDateTime("01 Jan 2015"), PODT = Convert.ToDateTime("01 Jan 2015"), InvoiceDT = Convert.ToDateTime("01 Jan 2015"), CNoteDT = Convert.ToDateTime("01 Jan 2015");
         static DateTime SuppInvDT = Convert.ToDateTime("01 Jan 2015"), SuppRetDT = Convert.ToDateTime("01 Jan 2015"), JrnlDT = Convert.ToDateTime("01 Jan 2015"), QuoteDT = Convert.ToDateTime("01 Jan 2015"), SOrdDT = Convert.ToDateTime("01 Jan 2015"), GLegDT = Convert.ToDateTime("01 Jan 2015");
 
-      //public static string sageurl = "https://accounting.sageone.co.za/api/2.0.0/";
-      //public static string APIKey = "5850E392-0FE8-43B4-9EEB-18D2B28B115C";
+      public static string sageurl = "https://accounting.sageone.co.za/api/2.0.0/";
+      public static string APIKey = "5850E392-0FE8-43B4-9EEB-18D2B28B115C";
         
-      public static string sageurl = "https://resellers.accounting.sageone.co.za/api/2.0.0/";
-      public static string APIKey = "2B7B61BA-41B8-4212-B2A2-77B8734BA688";
+      //public static string sageurl = "https://resellers.accounting.sageone.co.za/api/2.0.0/";
+      //public static string APIKey = "2B7B61BA-41B8-4212-B2A2-77B8734BA688";
 
         // Syncflo SBCA profile - SANDBOX KEY
         //public static string APIKey = "934D4C3F-FF4D-4311-9380-F21ACB54DCBB";
@@ -618,7 +618,8 @@ namespace SBMS.Classes
             }
         }
 
-        public async Task<JObject> GetCompaniesEnrollAsync(string username, string userpwd, SageOAuthToken sageToken = null)
+        // OAuth 2.0 onboarding ("Login with Sage Account"). Basic auth uses GetCompaniesEnrollAsync below.
+        public async Task<JObject> GetCompaniesEnrollOAuthAsync(string username, string userpwd, SageOAuthToken sageToken)
         {
             JObject result = new JObject
             {
@@ -630,7 +631,7 @@ namespace SBMS.Classes
             string requestUrl = sageurl + "Company/GET?apikey={" + APIKey + "}";
             using (HttpClient client = NewPooledClient())
             {
-                // Basic, or Bearer when onboarding with "Login with Sage Account"
+                // Bearer token from Sage ID
                 client.DefaultRequestHeaders.Authorization = SageAuthHeader(
                     new UserDetails { LoginName = username, LoginPwd = userpwd, SageToken = sageToken });
 
@@ -674,52 +675,64 @@ namespace SBMS.Classes
             return result;
         }
 
-        //public static async Task<JObject> GetCompaniesEnrollAsync(string username, string userpwd)
-        // {
-        //     JObject parsedJSON = new JObject();
+        // Basic auth onboarding (username + password). No token involved.
+        public async Task<JObject> GetCompaniesEnrollAsync(string username, string userpwd)
+        {
+            JObject result = new JObject
+            {
+                ["success"] = false,
+                ["data"] = null,
+                ["error"] = null
+            };
 
-        //     string requestUrl = $"{sageurl}Company/GET?apikey={{ {APIKey} }}";
+            string requestUrl = sageurl + "Company/GET?apikey={" + APIKey + "}";
 
-        //     var options = new RestClientOptions(requestUrl)
-        //     {
-        //         ThrowOnAnyError = false, // Allows handling failed requests properly
-        //         ThrowOnDeserializationError = false
-        //     };
+            var options = new RestClientOptions(requestUrl)
+            {
+                ThrowOnAnyError = false,
+                ThrowOnDeserializationError = false
+            };
 
-        //     var client = new RestClient(options);
-        //     var requ = new RestRequest();
+            var client = new RestClient(options);
+            var requ = new RestRequest();
 
-        //     // ✅ Correct authentication method
-        //     string combined = $"{username}:{userpwd}";
-        //     string base64Encoded = Convert.ToBase64String(Encoding.UTF8.GetBytes(combined));
-        //     requ.AddHeader("Authorization", "Basic " + base64Encoded);
+            string combined = $"{username}:{userpwd}";
+            string base64Encoded = Convert.ToBase64String(Encoding.UTF8.GetBytes(combined));
+            requ.AddHeader("Authorization", "Basic " + base64Encoded);
+            requ.Method = Method.Get;
 
-        //     // ✅ Set HTTP method separately
-        //     requ.Method = Method.Get;
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
 
-        //     // ✅ Ensure TLS 1.2 security
-        //     ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+            try
+            {
+                var response = await client.ExecuteAsync(requ);
 
-        //     try
-        //     {
-        //         var response = await client.ExecuteAsync(requ);
+                if (response.IsSuccessful && !string.IsNullOrWhiteSpace(response.Content))
+                {
+                    result["success"] = true;
+                    result["data"] = JObject.Parse(response.Content);
+                }
+                else
+                {
+                    result["error"] = new JObject
+                    {
+                        ["statusCode"] = (int)response.StatusCode,
+                        ["reason"] = response.StatusDescription ?? response.ErrorMessage,
+                        ["message"] = response.Content
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                result["error"] = new JObject
+                {
+                    ["exception"] = ex.Message,
+                    ["reason"] = ex.Message
+                };
+            }
 
-        //         if (response.IsSuccessful && !string.IsNullOrWhiteSpace(response.Content))
-        //         {
-        //             parsedJSON = JObject.Parse(response.Content);
-        //         }
-        //         else
-        //         {
-        //             Console.WriteLine($"Request failed: {response.StatusCode} - {response.Content}");
-        //         }
-        //     }
-        //     catch (Exception ex)
-        //     {
-        //         Console.WriteLine($"Error: {ex.Message}");
-        //     }
-
-        //     return parsedJSON;
-        // }
+            return result;
+        }
 
         public async Task<JObject> GetTaxType(UserDetails Userdetails)
         {

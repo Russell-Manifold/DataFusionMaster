@@ -99,7 +99,8 @@
                                         <td>Active</td>
                                         <td> <asp:CheckBox ID="chkIsActive" runat="server" Text=" " Checked="true" /></td>
                                     </tr>
-                                    <tr>
+                                    <%-- Generic Login hidden until released. Checkbox stays in the tree so save/cancel code is unchanged; hidden = unchecked. --%>
+                                    <tr id="trGenericLogin" runat="server" visible="false">
                                         <td>Use Generic Login</td>
                                         <td style="padding:.5em">
                                             <asp:CheckBox ID="chkGenericLogin" runat="server" Text=" " Checked="false"

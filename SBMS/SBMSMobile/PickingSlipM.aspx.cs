@@ -1912,6 +1912,30 @@ namespace SBMS
                 }
             }
 
+            // Part delivery (Configuration -> Company): a short pick keeps the order open and
+            // creates the balance slip, and a later slip completes the order from all its
+            // deliveries. That logic lives in the web close-off; this screen always completes
+            // the order from ONE slip, so those two cases are sent to the web. A full first
+            // pick is unaffected.
+            if (CurrentUser.InvoiceWhenSOComplete)
+            {
+                using (SBMSEntities dbPd = new SBMSEntities(Config.GetConnectionString()))
+                {
+                    int pdSlip = PSID;
+                    var pdLines = dbPd.PickSlipLines.Where(x => x.PSID == pdSlip && x.CompanyID == CurrentUser.CoID).ToList();
+                    decimal pdOrdered = pdLines.Sum(l => l.Quantity ?? 0);
+                    decimal pdPicked = pdLines.Sum(l => l.PickQty ?? l.Quantity ?? 0);
+                    bool pdShort = (pdOrdered - pdPicked) > 0.0001m;
+                    bool pdLater = PartDelivery.EarlierSlipIds(dbPd, CurrentUser.CoID, DocID, pdSlip).Count > 0;
+                    if (pdShort || pdLater)
+                    {
+                        pnlFinalise.Visible = false;
+                        SetFeedback(false, "&#9888; This order is delivered in parts. Close off this picking slip on the web.");
+                        return;
+                    }
+                }
+            }
+
             IsProcessing                = true;
             lbtnConfirmFinalise.Enabled = false;
 

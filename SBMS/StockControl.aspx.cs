@@ -316,12 +316,14 @@ namespace SBMS
 
         protected void lbtnPickGP_Click(object sender, EventArgs e)
         {
-
+            // Sales GP by invoiced Sales Order, with its picking slips / job card (Classes/SalesGP.cs).
+            Response.Redirect("~/SalesGP.aspx?view=orders", false);
         }
 
         protected void lbtnItemGP_Click(object sender, EventArgs e)
         {
-
+            // Sales GP by item over a period, with the customers underneath.
+            Response.Redirect("~/SalesGP.aspx?view=items", false);
         }
 
         protected void imgItemConvert_Click(object sender, EventArgs e)

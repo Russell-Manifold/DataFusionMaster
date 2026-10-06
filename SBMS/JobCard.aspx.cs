@@ -89,6 +89,7 @@ namespace SBMS
                     txtIssuedTo.Text = thispo.IssuedTo ?? "";
                     lblstatus.Text = thispo.JCStatus ?? "";
                     txtJobCardSummary.Text = thispo.JCSummary ?? "";
+                    LoadPrintAllLines();
                     if (thispo.JCQtyOfItems != null) txtJCQuantity.Text = Convert.ToInt64(thispo.JCQtyOfItems).ToString();
                     if (thispo.JCStartDate != null)
                     {
@@ -1358,6 +1359,37 @@ namespace SBMS
                     }
                 }
                 _db.SaveChanges();
+
+                // Job costing: what the job cost (all stock drawn, printed or hidden) and its GP,
+                // saved on the order as picking slips do. Materials only. Never allowed to stop
+                // the close-off.
+                try
+                {
+                    decimal jobCost = JobCardHide.JobCost(_db, CurrentUser.CoID, jcid);
+                    // Revenue = what the customer is billed. When this job card keeps its added lines
+                    // internal they are never billed (cost only), so only the order's own lines count.
+                    bool jobPrintsAll = JobCardHide.GetPrintAll(_db, CurrentUser.CoID, (int)jcid);
+                    decimal jobValue = _db.DocLines.Where(x => x.DocID == Docid && (jobPrintsAll || x.SBCALineID != 0))
+                                          .Sum(x => (decimal?)((x.Exclusive ?? 0) - (x.Discount ?? 0))) ?? 0m;
+                    DocH.DocCost = jobCost;
+                    DocH.DocGP = jobValue != 0 ? (jobValue - jobCost) / jobValue : 0m;
+                    _db.SaveChanges();
+                }
+                catch { }
+
+                // A kit or bundle added after the box was unticked: hiding is not supported for
+                // those, so the job goes back to printing every line.
+                try
+                {
+                    int jcInt = (int)jcid;
+                    if (!JobCardHide.GetPrintAll(_db, CurrentUser.CoID, jcInt)
+                        && JCL.Any(x => x.isKit == true || x.isKitLine == true || x.isBundle == true || x.isBundleLine == true))
+                    {
+                        JobCardHide.SetPrintAll(_db, CurrentUser.CoID, jcInt, true);
+                    }
+                }
+                catch { }
+
                 Response.Redirect("~/SalesOrder.aspx?docid=" + docguid.ToString() + "&autosave=" + CurrentUser.AutoUpdateSageSOs);
                 //LbtnJCSave.Attributes.Add("style", "display:none");
                 //LbtnSaveEdits.Attributes.Add("style", "display:none");
@@ -1365,6 +1397,68 @@ namespace SBMS
                 //BindGrid();
                 //LoadHistory();
                 //ShowMessage(sender, EventArgs.Empty,"Successfully closed off");
+            }
+        }
+
+        // ── "Print all additional lines" ────────────────────────────────────────────────
+        // Unticked = the lines ADDED on this job card are internal (Classes/JobCardHide.cs).
+        // The setting is stored the moment the box changes; it does not wait for Save Edits.
+        private const string PrintAllOn = "Every line goes onto the invoice and delivery note.";
+        private const string PrintAllOff = "Lines added on this job card are internal: costed to the job, not shown to the customer.";
+
+        private void LoadPrintAllLines()
+        {
+            int jc; long so;
+            if (!int.TryParse(lblJCid.Text, out jc) || !long.TryParse(lblDocID.Text, out so)) return;
+            using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+            {
+                chkPrintAllLines.Checked = JobCardHide.GetPrintAll(_db, CurrentUser.CoID, jc);
+                lblPrintAllHint.Text = chkPrintAllLines.Checked ? PrintAllOn : PrintAllOff;
+                // Locked once the Sales Order has been updated to Sage (or anything was posted for it).
+                var hdr = _db.DocHeaders.FirstOrDefault(x => x.CompanyID == CurrentUser.CoID && x.DocID == so);
+                bool posted = (hdr != null && hdr.Active == false) || JobCardHide.AnyPosted(_db, CurrentUser.CoID, so);
+                chkPrintAllLines.Enabled = !posted;
+                if (posted) lblPrintAllHint.Text += " Locked: the Sales Order has been updated to Sage.";
+            }
+        }
+
+        protected void chkPrintAllLines_CheckedChanged(object sender, EventArgs e)
+        {
+            int jc = Convert.ToInt32(lblJCid.Text);
+            long so = Convert.ToInt64(lblDocID.Text);
+            using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+            {
+                var hdr = _db.DocHeaders.FirstOrDefault(x => x.CompanyID == CurrentUser.CoID && x.DocID == so);
+                if ((hdr != null && hdr.Active == false) || JobCardHide.AnyPosted(_db, CurrentUser.CoID, so))
+                {
+                    LoadPrintAllLines();
+                    ShowMessage(sender, EventArgs.Empty, "This cannot be changed: the Sales Order has already been updated to Sage.");
+                    return;
+                }
+                if (!chkPrintAllLines.Checked)
+                {
+                    // Kits and bundles have their own stock mechanism; hiding their lines is not supported.
+                    bool hasKit = _db.JobCardLines.Any(x => x.JCID == jc
+                        && (x.isKit == true || x.isKitLine == true || x.isBundle == true || x.isBundleLine == true));
+                    if (hasKit)
+                    {
+                        chkPrintAllLines.Checked = true;
+                        lblPrintAllHint.Text = PrintAllOn;
+                        ShowMessage(sender, EventArgs.Empty, "This job card contains a kit or bundle, so all lines must be printed.");
+                        return;
+                    }
+                }
+                try
+                {
+                    JobCardHide.SetPrintAll(_db, CurrentUser.CoID, jc, chkPrintAllLines.Checked);
+                    lblPrintAllHint.Text = chkPrintAllLines.Checked ? PrintAllOn : PrintAllOff;
+                }
+                catch
+                {
+                    chkPrintAllLines.Checked = true;
+                    lblPrintAllHint.Text = PrintAllOn;
+                    ShowMessage(sender, EventArgs.Empty, "Not saved. Run Add_JobCardHideLines.sql on this database first.");
+                }
             }
         }
 

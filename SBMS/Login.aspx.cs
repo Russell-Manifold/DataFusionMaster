@@ -430,6 +430,7 @@ namespace SBMS
                             x.AutoUpdateSageSOs,
                             x.AutoGenTaxInvoice,
                             x.AllowRecPriceEdit,
+                            x.InvoiceWhenSOComplete,
                             x.UsePacks,
                             x.UseEndDate,
                             x.ShowManfCosts,
@@ -448,6 +449,7 @@ namespace SBMS
                     userDetails.AutoUpdateSageSOs = (bool)GenLogIn.AutoUpdateSageSOs;
                     userDetails.AutoGenTaxInvoice = (bool)GenLogIn.AutoGenTaxInvoice;
                     userDetails.AllowRecPriceEdit = GenLogIn.AllowRecPriceEdit;
+                    userDetails.InvoiceWhenSOComplete = GenLogIn.InvoiceWhenSOComplete;
                     userDetails.UseAutoManf = GenLogIn.UseAutoManf;
                     userDetails.UsePacks = GenLogIn.UsePacks;
                     userDetails.ExpiryDate = GenLogIn.UseEndDate != null ? (DateTime)GenLogIn.UseEndDate : DateTime.MaxValue;

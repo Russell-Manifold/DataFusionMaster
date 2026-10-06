@@ -80,7 +80,7 @@
     "semantic_hash": "6ab37b81f617c9b8565fce7cafa0a504"
   },
   "Classes/ApiUrlCall.cs": {
-    "mtime": 1790063717.264977,
+    "mtime": 1791205842.5953698,
     "ast_hash": "e1d6ace7396c8cea170bbf34d3e1122c",
     "semantic_hash": "e1d6ace7396c8cea170bbf34d3e1122c"
   },
@@ -210,9 +210,9 @@
     "semantic_hash": "cd9aab03e1dec8cfbe9f6852ecb9dd56"
   },
   "Classes/UserDetails.cs": {
-    "mtime": 1790581220.41126,
-    "ast_hash": "4a2ad79225375e1c635da47dc8eef423",
-    "semantic_hash": "4a2ad79225375e1c635da47dc8eef423"
+    "mtime": 1791200850.9741218,
+    "ast_hash": "0e1e0dd8e127c87323b16f1adf6e1e58",
+    "semantic_hash": "0e1e0dd8e127c87323b16f1adf6e1e58"
   },
   "Classes/Ver.cs": {
     "mtime": 1790059054.1302514,
@@ -250,14 +250,14 @@
     "semantic_hash": "29be08dea22dab12a222ee7fa99ac7dc"
   },
   "ConfigCompany.aspx.cs": {
-    "mtime": 1790152528.801098,
-    "ast_hash": "54256adf78101a46a35312df45a6ed4f",
-    "semantic_hash": "54256adf78101a46a35312df45a6ed4f"
+    "mtime": 1791215175.3843627,
+    "ast_hash": "594cb1f1193d48a07f2ebb5931764197",
+    "semantic_hash": "594cb1f1193d48a07f2ebb5931764197"
   },
   "ConfigCompany.aspx.designer.cs": {
-    "mtime": 1790152528.801098,
-    "ast_hash": "4581580b8a251df03d75682eb18eb3ed",
-    "semantic_hash": "4581580b8a251df03d75682eb18eb3ed"
+    "mtime": 1791215175.383363,
+    "ast_hash": "40c1ee292de8752554b3a8c971fe053f",
+    "semantic_hash": "40c1ee292de8752554b3a8c971fe053f"
   },
   "ConfigDelivery.aspx.cs": {
     "mtime": 1790059054.2032287,
@@ -305,9 +305,9 @@
     "semantic_hash": "cb557b0da9e57acd11d3a7dabfd99232"
   },
   "ConfigUsers.aspx.designer.cs": {
-    "mtime": 1790582410.4960375,
-    "ast_hash": "f26544b63ee8cb167d71aa8d854dffbf",
-    "semantic_hash": "f26544b63ee8cb167d71aa8d854dffbf"
+    "mtime": 1790589058.4245827,
+    "ast_hash": "f45dcdea392fae469d0b724948f37f49",
+    "semantic_hash": "f45dcdea392fae469d0b724948f37f49"
   },
   "Dashboard.aspx.cs": {
     "mtime": 1790059054.3396854,
@@ -485,14 +485,14 @@
     "semantic_hash": "a41e2a1f3e8fe8ae0fb5dd7476ba3077"
   },
   "JobCard.aspx.cs": {
-    "mtime": 1790059054.9384694,
-    "ast_hash": "c23cf0cc6b37d8223f901ce7bdc81db6",
-    "semantic_hash": "c23cf0cc6b37d8223f901ce7bdc81db6"
+    "mtime": 1791218274.5804586,
+    "ast_hash": "b96a259e2ca683fc0d38b655c1311f84",
+    "semantic_hash": "b96a259e2ca683fc0d38b655c1311f84"
   },
   "JobCard.aspx.designer.cs": {
-    "mtime": 1775112716.9870043,
-    "ast_hash": "9de4f254fe0f2df36ab6361e318ae3a4",
-    "semantic_hash": "9de4f254fe0f2df36ab6361e318ae3a4"
+    "mtime": 1791215030.2458358,
+    "ast_hash": "c5231c3e2d0b19fa9fecc0f7fba26f1f",
+    "semantic_hash": "c5231c3e2d0b19fa9fecc0f7fba26f1f"
   },
   "JobTracking.aspx.cs": {
     "mtime": 1790059054.9818769,
@@ -555,9 +555,9 @@
     "semantic_hash": "1dd7cce087c25d83bc5b620ac397a87a"
   },
   "Login.aspx.cs": {
-    "mtime": 1790581220.4414184,
-    "ast_hash": "e1351b5abdd7e887b967ec5b2923f3fd",
-    "semantic_hash": "e1351b5abdd7e887b967ec5b2923f3fd"
+    "mtime": 1791200850.9751432,
+    "ast_hash": "b0cb53689579431ca0e1607fd48a6e2c",
+    "semantic_hash": "b0cb53689579431ca0e1607fd48a6e2c"
   },
   "Login.aspx.designer.cs": {
     "mtime": 1790060246.0678458,
@@ -605,9 +605,9 @@
     "semantic_hash": "382c6770125b5f94db47b1404a858496"
   },
   "Models/CompanyMaster.cs": {
-    "mtime": 1790059055.2509174,
-    "ast_hash": "b907b07181baf8812a5d730940e76aab",
-    "semantic_hash": "b907b07181baf8812a5d730940e76aab"
+    "mtime": 1791200850.973098,
+    "ast_hash": "3e778ba541c5a7a0d29798f7ac6b661c",
+    "semantic_hash": "3e778ba541c5a7a0d29798f7ac6b661c"
   },
   "Models/DashSalesModel.cs": {
     "mtime": 1763625077.032108,
@@ -1165,9 +1165,9 @@
     "semantic_hash": "e6593df0bdf6c72d76ce84f5893eb0a7"
   },
   "PickingSlip.aspx.cs": {
-    "mtime": 1790059055.5241804,
-    "ast_hash": "f7b855c2df5ddc0459460c979d6aef26",
-    "semantic_hash": "f7b855c2df5ddc0459460c979d6aef26"
+    "mtime": 1791200850.9836216,
+    "ast_hash": "18473139b0efb2dbe264858a8128f547",
+    "semantic_hash": "18473139b0efb2dbe264858a8128f547"
   },
   "PickingSlip.aspx.designer.cs": {
     "mtime": 1790059055.5347204,
@@ -1335,9 +1335,9 @@
     "semantic_hash": "8ffefc00d3e7e5b556b87b0c7b72c143"
   },
   "SBMS.csproj": {
-    "mtime": 1790152528.7652152,
-    "ast_hash": "d784897f14489f5573cac0d388ad14b9",
-    "semantic_hash": "d784897f14489f5573cac0d388ad14b9"
+    "mtime": 1791265858.7481124,
+    "ast_hash": "f9872a93983eedcf2210c025e1444397",
+    "semantic_hash": "f9872a93983eedcf2210c025e1444397"
   },
   "SBMSMobile/DashboardM.aspx.cs": {
     "mtime": 1790059056.0567465,
@@ -1390,9 +1390,9 @@
     "semantic_hash": "1db97ed14f2c32468469c04bc39093cc"
   },
   "SBMSMobile/PickingSlipM.aspx.cs": {
-    "mtime": 1790059056.1976354,
-    "ast_hash": "e787334acc7f976dbe0ff0cf2ad0f624",
-    "semantic_hash": "e787334acc7f976dbe0ff0cf2ad0f624"
+    "mtime": 1791200850.9897883,
+    "ast_hash": "9a9f2ba897433b0ed8614a40e484859c",
+    "semantic_hash": "9a9f2ba897433b0ed8614a40e484859c"
   },
   "SBMSMobile/PickingSlipM.aspx.designer.cs": {
     "mtime": 1790059056.2142026,
@@ -1585,9 +1585,9 @@
     "semantic_hash": "e6e6b20391a298228f22933ecf0f7b81"
   },
   "SalesOrder.aspx.cs": {
-    "mtime": 1790581220.4152603,
-    "ast_hash": "43791b2ff83eecc24439b98401af1853",
-    "semantic_hash": "43791b2ff83eecc24439b98401af1853"
+    "mtime": 1791218274.5769484,
+    "ast_hash": "f9a395ca38fc246b014f1de9750a614d",
+    "semantic_hash": "f9a395ca38fc246b014f1de9750a614d"
   },
   "SalesOrder.aspx.designer.cs": {
     "mtime": 1775112718.2597184,
@@ -1605,9 +1605,9 @@
     "semantic_hash": "7fbab6403d6cf76ca88ee3b6ae1a4847"
   },
   "StockControl.aspx.cs": {
-    "mtime": 1790059057.0672033,
-    "ast_hash": "43ce3380bb6265813e643e78464278df",
-    "semantic_hash": "43ce3380bb6265813e643e78464278df"
+    "mtime": 1791265858.7496395,
+    "ast_hash": "0019b83823a65a892a2a0810287ab6d9",
+    "semantic_hash": "0019b83823a65a892a2a0810287ab6d9"
   },
   "StockControl.aspx.designer.cs": {
     "mtime": 1790059057.0806437,
@@ -2003,5 +2003,85 @@
     "mtime": 1790152528.7576916,
     "ast_hash": "0c7bde08aba3f2f5f99a18933ce9cb48",
     "semantic_hash": "0c7bde08aba3f2f5f99a18933ce9cb48"
+  },
+  "Classes/PartDelivery.cs": {
+    "mtime": 1791266895.076224,
+    "ast_hash": "5b24ff6c4f2e2a5bdd3d856ef19428d6",
+    "semantic_hash": "5b24ff6c4f2e2a5bdd3d856ef19428d6"
+  },
+  "SQL/Add_InvoiceWhenSOComplete.sql": {
+    "mtime": 1791199997.6994445,
+    "ast_hash": "0b6bde81591f086016064b3b375eeb2a",
+    "semantic_hash": "0b6bde81591f086016064b3b375eeb2a"
+  },
+  "Classes/Returnables.cs": {
+    "mtime": 1791203061.6901345,
+    "ast_hash": "55f7a3cb5e3db696ab32bb9556ecbe56",
+    "semantic_hash": "55f7a3cb5e3db696ab32bb9556ecbe56"
+  },
+  "Returnables.aspx.cs": {
+    "mtime": 1791206721.789261,
+    "ast_hash": "0017f1290b50327c7f6d5e19550e5bb8",
+    "semantic_hash": "0017f1290b50327c7f6d5e19550e5bb8"
+  },
+  "Returnables.aspx.designer.cs": {
+    "mtime": 1791206721.790262,
+    "ast_hash": "409e38932d6a4835142083d22fb4abf0",
+    "semantic_hash": "409e38932d6a4835142083d22fb4abf0"
+  },
+  "SQL/Add_DeliveryNoteLayout.sql": {
+    "mtime": 1791202174.8897,
+    "ast_hash": "9e5af983730471c9ac98e8d35ebfdfd6",
+    "semantic_hash": "9e5af983730471c9ac98e8d35ebfdfd6"
+  },
+  "SQL/Add_Returnables.sql": {
+    "mtime": 1791202870.3879051,
+    "ast_hash": "a306f06169b75d3c87d4129524270e56",
+    "semantic_hash": "a306f06169b75d3c87d4129524270e56"
+  },
+  "SalesOrder.DeliveryNoteDetailed.cs": {
+    "mtime": 1791215175.3823621,
+    "ast_hash": "9baaf83f35ec85703deaa4e1ca3ad28e",
+    "semantic_hash": "9baaf83f35ec85703deaa4e1ca3ad28e"
+  },
+  "Classes/JobCardGP.cs": {
+    "mtime": 1791264748.814371,
+    "ast_hash": "a5638551935ba0dd5e5ace9ab57ebad8",
+    "semantic_hash": "a5638551935ba0dd5e5ace9ab57ebad8"
+  },
+  "Classes/JobCardHide.cs": {
+    "mtime": 1791218274.5829778,
+    "ast_hash": "5330522316075fafb7ff1c05e2e79a83",
+    "semantic_hash": "5330522316075fafb7ff1c05e2e79a83"
+  },
+  "Classes/SalesGP.cs": {
+    "mtime": 1791265858.7465916,
+    "ast_hash": "e7e3f94f84abd10648f60dea32d9a910",
+    "semantic_hash": "e7e3f94f84abd10648f60dea32d9a910"
+  },
+  "JobCardGP.aspx.cs": {
+    "mtime": 1791265611.6995497,
+    "ast_hash": "1972263646fe02a29871c0d6f613a17c",
+    "semantic_hash": "1972263646fe02a29871c0d6f613a17c"
+  },
+  "JobCardGP.aspx.designer.cs": {
+    "mtime": 1791265611.6985478,
+    "ast_hash": "103d3d1c9977a821977b603609a92154",
+    "semantic_hash": "103d3d1c9977a821977b603609a92154"
+  },
+  "SQL/Add_JobCardHideLines.sql": {
+    "mtime": 1791218274.5855079,
+    "ast_hash": "363eb471148b457e2c20496e3d2c8648",
+    "semantic_hash": "363eb471148b457e2c20496e3d2c8648"
+  },
+  "SalesGP.aspx.cs": {
+    "mtime": 1791265875.3934774,
+    "ast_hash": "e7806e87d22e84dd468c4d21ef204548",
+    "semantic_hash": "e7806e87d22e84dd468c4d21ef204548"
+  },
+  "SalesGP.aspx.designer.cs": {
+    "mtime": 1791265858.743589,
+    "ast_hash": "d21ba7a382298da27d6059e52b882c4f",
+    "semantic_hash": "d21ba7a382298da27d6059e52b882c4f"
   }
 }
