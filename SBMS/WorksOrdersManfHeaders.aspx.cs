@@ -12,6 +12,15 @@ namespace SBMS
     public partial class WorksOrdersManfHeaders : BasePage
     {
         long CoID;
+
+        // Keep the page state (the whole works-order grid) on the server instead of in the
+        // __VIEWSTATE hidden field. The browser only sends back a short key, so a slow or
+        // dropped connection no longer produces "Invalid viewstate" errors on this page.
+        private PageStatePersister _persister;
+        protected override PageStatePersister PageStatePersister
+        {
+            get { return _persister ?? (_persister = new SessionPageStatePersister(this)); }
+        }
         protected void Page_Load(object sender, EventArgs e)
         {
             UserDetails userDetails = CurrentUser;

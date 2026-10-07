@@ -544,13 +544,38 @@ namespace SBMS
         }
 
 
+        // One Sage refresh per company at a time. A second visitor while a refresh is running
+        // skips the download and sees the report from what is already there - two refreshes
+        // writing DITransactionsTbl together is what produced the deadlocks (errorlog 2026-09-29).
+        private static readonly System.Collections.Concurrent.ConcurrentDictionary<long, byte> _refreshing =
+            new System.Collections.Concurrent.ConcurrentDictionary<long, byte>();
+
         private async Task LoadInvoices()
         {
-            //string dbpath = Server.MapPath("~/DataInsightsAPI/App_Data/" + Request.QueryString["userid"].ToString());
-            await ApiUrlCall.DILoadSalesOrders(CurrentUser);
-            await ApiUrlCall.LoadInvoices(CurrentUser);
-            await ApiUrlCall.LoadCustAdjustments(CurrentUser);
-            await ApiUrlCall.LoadSalesCreditNotes(CurrentUser);  
+            long coId = CurrentUser.CoID;
+            if (!_refreshing.TryAdd(coId, 1))
+            {
+                ShowMessage(this, EventArgs.Empty, "Sage data for your company is being refreshed by another user right now. Showing the current figures - refresh the page in a minute for the latest.");
+                return;
+            }
+            try
+            {
+                await ApiUrlCall.DILoadSalesOrders(CurrentUser);
+                await ApiUrlCall.LoadInvoices(CurrentUser);
+                await ApiUrlCall.LoadCustAdjustments(CurrentUser);
+                await ApiUrlCall.LoadSalesCreditNotes(CurrentUser);
+            }
+            catch (Exception ex)
+            {
+                // Deadlock victim (1205) or SQL timeout (-2) while writing: show the report from
+                // what is already there instead of the crash page.
+                new ApiUrlCall().LogErrorToFile($"CoID:{coId} SalesOrdersIncomplete Sage refresh did not complete - {ex.Message}");
+                ShowMessage(this, EventArgs.Empty, "The Sage refresh did not complete (the database was busy). Showing the current figures - refresh the page in a minute for the latest.");
+            }
+            finally
+            {
+                _refreshing.TryRemove(coId, out _);
+            }
         }
 
       private void UpdateTransTableItems(string CoID)

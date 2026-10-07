@@ -19,6 +19,14 @@ namespace SBMS
     public partial class BOMDetailed : BasePage
     {
 
+        // Page state is kept on the server; the browser only posts back a short key, so a slow
+        // or dropped connection no longer produces "Invalid viewstate" errors on this page.
+        private PageStatePersister _persister;
+        protected override PageStatePersister PageStatePersister
+        {
+            get { return _persister ?? (_persister = new SessionPageStatePersister(this)); }
+        }
+
         private List<ItemsMaster> _items;
         long bomid = 0;
         protected void Page_Load(object sender, EventArgs e)

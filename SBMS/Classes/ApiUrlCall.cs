@@ -185,13 +185,16 @@ namespace SBMS.Classes
                         //Debug.WriteLine($"Request failed: {response.StatusCode} - {await response.Content.ReadAsStringAsync()}");
                     }
                 }
-                catch (TimeoutException ex)
-                {
-                    Console.WriteLine($"Timeout error: {ex.Message}");
-                }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Error: {ex.Message}");
+                    // Was Console.WriteLine only - Sage timeouts and transport errors left no trace.
+                    LogErrorToFile($"CoID:{userDetails?.CoID} Sage GET failed - {ex.GetType().Name}: {ex.Message} | {StripApiKey(requestUrl)}");
+                    parsedJSON["error"] = new JObject
+                    {
+                        ["statusCode"] = 0,
+                        ["reason"] = ex.GetType().Name,
+                        ["message"] = ex.Message
+                    };
                 }
                 return parsedJSON;
             }
@@ -273,7 +276,7 @@ namespace SBMS.Classes
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error: {ex.Message}");
+                LogErrorToFile($"CoID:{Userdetails?.CoID} Sage PDF download failed - {ex.Message} | {StripApiKey(requestUrl)}");
             }
 
             return null; // ✅ Return null on failure
@@ -1500,6 +1503,10 @@ namespace SBMS.Classes
                         {
                             foreach (var item in items)
                             {
+                              // One bad item must not kill the whole sync (it used to surface as an
+                              // unhandled NullReference on first login / ItemStoresLink / ItemQOHSync).
+                              try
+                              {
                                 string Categ = string.Empty; int CategID = 0;
                                 if (item.ToString().Contains("Category"))
                                 {
@@ -1529,7 +1536,7 @@ namespace SBMS.Classes
                                     itm.NumericUserField1 = Convert.ToDecimal(item?["NumericUserField1"] ?? 0, CultureInfo.InvariantCulture);
                                     itm.NumericUserField2 = Convert.ToDecimal(item?["NumericUserField2"] ?? 0, CultureInfo.InvariantCulture);
                                     itm.NumericUserField3 = Convert.ToDecimal(item?["NumericUserField3"] ?? 0, CultureInfo.InvariantCulture);
-                                    itm.Physical = Convert.ToBoolean(item?["Physical"]?.ToString() ?? "");
+                                    itm.Physical = Convert.ToBoolean(item?["Physical"]?.ToString() ?? "false");
                                     itm.PriceExclusive = Convert.ToDecimal(item["PriceExclusive"] ?? 0, CultureInfo.InvariantCulture);
                                     itm.PriceInclusive = Convert.ToDecimal(item["PriceInclusive"] ?? 0, CultureInfo.InvariantCulture);
                                     itm.QuantityOnHand = Convert.ToDecimal(item["QuantityOnHand"] ?? 0, CultureInfo.InvariantCulture);
@@ -1604,12 +1611,12 @@ namespace SBMS.Classes
                                     if (thisitm.Code.Length > 50) { thisitm.Code = thisitm.Code.Substring(0, 50); }
                                     thisitm.Description = item?["Description"]?.ToString() ?? "";
                                     if (thisitm.Description.Length > 100) { thisitm.Description = thisitm.Description.Substring(0, 10); }
-                                    thisitm.ID = Convert.ToInt32(item["ID"].ToString());
+                                    thisitm.ID = Convert.ToInt32(item["ID"]?.ToString() ?? "0");
                                     thisitm.LastCost = Convert.ToDecimal(item["LastCost"] ?? 0, CultureInfo.InvariantCulture);
                                     thisitm.NumericUserField1 = Convert.ToDecimal(item["NumericUserField1"] ?? 0, CultureInfo.InvariantCulture);
                                     thisitm.NumericUserField2 = Convert.ToDecimal(item["NumericUserField2"] ?? 0, CultureInfo.InvariantCulture);
                                     thisitm.NumericUserField3 = Convert.ToDecimal(item["NumericUserField3"] ?? 0, CultureInfo.InvariantCulture);
-                                    thisitm.Physical = Convert.ToBoolean(item["Physical"].ToString() ?? "");
+                                    thisitm.Physical = Convert.ToBoolean(item["Physical"]?.ToString() ?? "false");
                                     // New items inherit the COMPANY's lot policy - the user changes it per item
                                     // afterwards if it differs. Previously this keyed off Physical alone, which
                                     // lot-tracked every stock item even for companies that don't use lot numbers.
@@ -1671,6 +1678,12 @@ namespace SBMS.Classes
                                 catch { thisitm.GPPercentage = 0; }
                                 _db.ItemsMasters.Add(thisitm);
                                 }
+                              }
+                              catch (Exception exItem)
+                              {
+                                  errorList.Add($"Item {item?["Code"]} skipped: {exItem.Message}");
+                                  LogErrorToFile($"CoID: {Userdetails.CoID} LoadItems item {item?["Code"]} (ID {item?["ID"]}) skipped: {exItem}");
+                              }
                             }
                         }
                         UpdateDate = true;
@@ -1780,7 +1793,9 @@ namespace SBMS.Classes
                         {
                             foreach (var item in items)
                             {
-                                string Bundlecode = item["BundleCode"].ToString();
+                              try
+                              {
+                                string Bundlecode = item?["BundleCode"]?.ToString() ?? "";
                                 // add to BundleHeaders
                                 var thisbund = _db.BundlesHeaders.Where(x => x.CompanyID == Userdetails.CoID && x.BundCode == Bundlecode).FirstOrDefault(); 
                                 if (thisbund != null)
@@ -1832,7 +1847,16 @@ namespace SBMS.Classes
                                 {
                                     _db.SaveChanges();
                                 }
-                                catch { }
+                                catch (Exception exSave)
+                                {
+                                    LogErrorToFile($"CoID: {Userdetails.CoID} LoadBundles save failed for bundle {item?["BundleCode"]}: {exSave.Message}");
+                                }
+                              }
+                              catch (Exception exBund)
+                              {
+                                  // One bad bundle must not kill the item sync it runs inside.
+                                  LogErrorToFile($"CoID: {Userdetails.CoID} LoadBundles bundle {item?["BundleCode"]} (ID {item?["ID"]}) skipped: {exBund}");
+                              }
                             }
                         }
                     }
@@ -2524,6 +2548,12 @@ namespace SBMS.Classes
                     };
                 }
 
+                if (parsedJSON["Lines"] == null)
+                {
+                    // Sage did not return the order (error, timeout, rate limit) - keep the local lines as they are.
+                    LogErrorToFile($"CoID: {Userdetails.CoID} LoadSOLines {soid}: no lines returned - {parsedJSON["error"]?.ToString() ?? "empty response"}");
+                    return;
+                }
                 if (parsedJSON.Count > 0)
                 {
                     List<DocumentLine> myObjects = JsonConvert.DeserializeObject<List<DocumentLine>>(parsedJSON["Lines"].ToString());
@@ -4474,6 +4504,13 @@ namespace SBMS.Classes
             }
 
             return new JObject();
+        }
+
+        /// <summary>Request URL safe for the log: the apikey value is masked.</summary>
+        public static string StripApiKey(string url)
+        {
+            if (string.IsNullOrEmpty(url)) return url;
+            return System.Text.RegularExpressions.Regex.Replace(url, @"apikey=\{?[^}&]*\}?", "apikey=***", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
         }
 
         public void LogErrorToFile(string message)

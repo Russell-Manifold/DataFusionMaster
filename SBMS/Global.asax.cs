@@ -46,8 +46,15 @@ namespace SBMS
                 if (ex != null)
                 {
                     string url = HttpContext.Current?.Request?.RawUrl ?? "(no url)";
+                    string who = "";
+                    try
+                    {
+                        var u = HttpContext.Current?.Session?["UserDetails"] as SBMS.Classes.UserDetails;
+                        if (u != null) who = $" [CoID:{u.CoID} {u.UserEmail ?? u.LoginName}]";
+                    }
+                    catch { }
                     new SBMS.Classes.ApiUrlCall().LogErrorToFile(
-                        "UNHANDLED on " + url + " - " + ex.ToString());
+                        "UNHANDLED on " + url + who + " - " + ex.ToString());
                 }
             }
             catch { }   // logging must never mask the original error

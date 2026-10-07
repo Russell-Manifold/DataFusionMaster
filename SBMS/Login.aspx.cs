@@ -184,7 +184,7 @@ namespace SBMS
                     using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
                     {
                         var LastCall = _db.LastCallLogs.FirstOrDefault(x => x.CompanyID == userDets.CoID);
-                        if (LastCall == null)
+                        if (LastCall == null || !_db.RolesMasters.Any(x => x.CompanyID == userDets.CoID))
                         {
                             PnlNewP.Style.Add("display", "inline-block");
                             PnlNewUser.Style.Add("display", "none");
@@ -380,12 +380,14 @@ namespace SBMS
                 if (user.UseSageOAuth && ssoToken != null && string.Equals(ssoToken.Email, username, StringComparison.OrdinalIgnoreCase))
                     userDetails.SageToken = ssoToken;
 
+                bool roleLoaded = false;
                 if ((int)user.RoleId > 0)
                 {
                     // get role details
                     var Role = _db.RolesMasters.Where(x => x.CompanyID == userDetails.CoID && x.RoleID == userDetails.RoleID).FirstOrDefault();
                     if (Role != null)
                     {
+                        roleLoaded = true;
                         userDetails.CanReceive = Role.CanReceive;
                         userDetails.CanTransfer = Role.CanReceive;
                         userDetails.CanViewPickSlips = Role.CanViewPickSlips;
@@ -401,6 +403,15 @@ namespace SBMS
                         userDetails.CanViewRMD = Role.CanViewRMD;
                         userDetails.CanEditLotNumbers = Role.UseEditLotNumbers;
                     }
+                }
+                if (!roleLoaded && user.IsSuperUser == true)
+                {
+                    // Super user whose role row is missing (first-use setup did not complete):
+                    // full access, otherwise the dashboard shows only the always-on tiles.
+                    userDetails.CanReceive = userDetails.CanTransfer = userDetails.CanViewPickSlips = userDetails.CanTrackPickSlips = true;
+                    userDetails.CanSalesForecast = userDetails.CanViewJobCards = userDetails.CanTrackJobCards = userDetails.CanSeeFGDemands = true;
+                    userDetails.CanCreateBomKit = userDetails.CanStockControl = userDetails.CanViewWorksOrders = userDetails.CanFillWorksOrders = true;
+                    userDetails.CanViewRMD = userDetails.CanEditLotNumbers = true;
                 }
 
 
@@ -609,7 +620,12 @@ namespace SBMS
                     {
                         _db.SaveChanges();
                     }
-                    catch { }
+                    catch (Exception ex)
+                    {
+                        lblErr.Text = "Error creating the default roles, setup not completed: " + ex.Message;
+                        PnlNewP.Style.Add("display", "none");
+                        return;
+                    }
                     superuserid = rlm.RoleID;
                     var usr = _db.UsersMasters.Where(x => x.UserGUID == userDets.UserGuiD).FirstOrDefault();
                     usr.RoleId = (int?)superuserid;
@@ -617,7 +633,12 @@ namespace SBMS
                     {
                         _db.SaveChanges();
                     }
-                    catch { }
+                    catch (Exception ex)
+                    {
+                        lblErr.Text = "Error assigning the Super User role, setup not completed: " + ex.Message;
+                        PnlNewP.Style.Add("display", "none");
+                        return;
+                    }
 
 
                     rlm = new RolesMaster();
@@ -648,7 +669,7 @@ namespace SBMS
                     }
                     catch (Exception ex)
                     {
-                        string str = ex.Message;
+                        new ApiUrlCall().LogErrorToFile($"CoID:{userDets.CoID} first-use setup - default stores (RM) save failed: {ex.Message}");
                     }
                 }
 
@@ -672,7 +693,7 @@ namespace SBMS
                     }
                     catch (Exception ex)
                     {
-                        string str = ex.Message;
+                        new ApiUrlCall().LogErrorToFile($"CoID:{userDets.CoID} first-use setup - default stores save failed: {ex.Message}");
                     }
 
                     stor = new Store();
@@ -731,7 +752,7 @@ namespace SBMS
                     }
                     catch (Exception ex)
                     {
-                        string str = ex.Message;
+                        new ApiUrlCall().LogErrorToFile($"CoID:{userDets.CoID} first-use setup - picking slip processes save failed: {ex.Message}");
                     }
                 }
 
@@ -787,7 +808,7 @@ namespace SBMS
                     }
                     catch (Exception ex)
                     {
-                        string str = ex.Message;
+                        new ApiUrlCall().LogErrorToFile($"CoID:{userDets.CoID} first-use setup - workstations / item load save failed: {ex.Message}");
                     }
                 }
 
@@ -1107,7 +1128,7 @@ namespace SBMS
                     using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
                     {
                         var LastCall = _db.LastCallLogs.FirstOrDefault(x => x.CompanyID == userDets.CoID);
-                        if (LastCall == null)
+                        if (LastCall == null || !_db.RolesMasters.Any(x => x.CompanyID == userDets.CoID))
                         {
                             PnlNewP.Style.Add("display", "inline-block");
                             PnlNewUser.Style.Add("display", "none");

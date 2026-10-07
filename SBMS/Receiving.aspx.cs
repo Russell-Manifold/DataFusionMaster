@@ -25,6 +25,14 @@ namespace SBMS
 {
     public partial class Receiving : BasePage
     {
+
+        // Page state is kept on the server; the browser only posts back a short key, so a slow
+        // or dropped connection no longer produces "Invalid viewstate" errors on this page.
+        private PageStatePersister _persister;
+        protected override PageStatePersister PageStatePersister
+        {
+            get { return _persister ?? (_persister = new SessionPageStatePersister(this)); }
+        }
         long docid = 0;
         Guid docguid;
         decimal RecValue = 0, RecTax = 0, RecEx = 0;
@@ -864,7 +872,11 @@ namespace SBMS
                 return;
             }
            
-            long lineid = Convert.ToInt64(lblLineID.Text);
+            if (!long.TryParse(lblLineID.Text, out long lineid) || lineid == 0)
+            {
+                AlertHelper.ShowSweetAlert(this, "Please select the line you are receiving first.", "error");
+                return;
+            }
 
             // ── Received Price ─────────────────────────────────────────────────────
             // Parsed here with the quantity so a bad entry stops the save before anything

@@ -1230,6 +1230,11 @@ namespace SBMS
                             FirstSOLine.ReceiveComplete = (FirstSOLine.QtyLeft == 0);
                         }
 
+                        if (FirstSOLine == null)
+                        {
+                            AlertHelper.ShowSweetAlert(this, $"Sales order line for item {PsL.ItemCode} was not found on the order. Re-open the sales order to refresh its lines, then save the pick again.", "error");
+                            return;
+                        }
                         DLn.ReceiveQty = pickQty;
                         DLn.UnitPriceExclusive = FirstSOLine.UnitPriceExclusive;
                         DLn.UnitPriceInclusive = FirstSOLine.UnitPriceInclusive;
