@@ -54,7 +54,7 @@
           <Property Name="FGID" Type="bigint" />
           <Property Name="FGCode" Type="varchar" MaxLength="50" />
           <Property Name="FGDescript" Type="varchar" MaxLength="100" />
-          <Property Name="StoreCode" Type="varchar" MaxLength="6" />
+          <Property Name="StoreCode" Type="varchar" MaxLength="50" />
           <Property Name="AddCost01" Type="decimal" Precision="18" Scale="4" />
           <Property Name="AddCost02" Type="decimal" Precision="18" Scale="4" />
           <Property Name="AddCost03" Type="decimal" Precision="18" Scale="4" />
@@ -273,7 +273,7 @@
           <Property Name="ReceiveQty" Type="decimal" Precision="18" Scale="4" />
           <Property Name="ToReceive" Type="bit" />
           <Property Name="ReceiveComplete" Type="bit" />
-          <Property Name="StoreCode" Type="varchar" MaxLength="10" />
+          <Property Name="StoreCode" Type="varchar" MaxLength="50" />
           <Property Name="LotNumber" Type="varchar" MaxLength="50" />
           <Property Name="ReceiveTotalExcl" Type="decimal" Precision="18" Scale="4" />
           <Property Name="ReceiveTotalTax" Type="decimal" Precision="18" Scale="4" />
@@ -398,7 +398,7 @@
           <Property Name="GPPercentage" Type="decimal" Precision="18" Scale="4" />
           <Property Name="GPAmount" Type="decimal" Precision="18" Scale="4" />
           <Property Name="CompanyID" Type="bigint" Nullable="false" />
-          <Property Name="BarCode" Type="varchar" MaxLength="20" />
+          <Property Name="BarCode" Type="varchar" MaxLength="50" />
           <Property Name="IsBOMComponent" Type="bit" />
           <Property Name="IsKitComponent" Type="bit" />
           <Property Name="IsFinishedGoods" Type="bit" />
@@ -542,7 +542,7 @@
           <Property Name="AnalysisCategoryId2" Type="bigint" />
           <Property Name="AnalysisCategoryId3" Type="bigint" />
           <Property Name="UnitCost" Type="decimal" Precision="18" Scale="4" />
-          <Property Name="StoreCodeFrom" Type="varchar" MaxLength="10" />
+          <Property Name="StoreCodeFrom" Type="varchar" MaxLength="50" />
           <Property Name="LinePickDate" Type="date" />
           <Property Name="Physical" Type="bit" />
           <Property Name="isKit" Type="bit" />
@@ -613,7 +613,7 @@
           <Property Name="FGID" Type="bigint" />
           <Property Name="FGCode" Type="varchar" MaxLength="50" />
           <Property Name="FGDescript" Type="varchar" MaxLength="100" />
-          <Property Name="StoreCode" Type="varchar" MaxLength="6" />
+          <Property Name="StoreCode" Type="varchar" MaxLength="50" />
           <Property Name="AddCost01" Type="decimal" Precision="18" Scale="4" />
           <Property Name="AddCost02" Type="decimal" Precision="18" Scale="4" />
           <Property Name="AddCost03" Type="decimal" Precision="18" Scale="4" />
@@ -721,7 +721,7 @@
           <Property Name="Quantity" Type="decimal" Precision="18" Scale="4" />
           <Property Name="Unit" Type="varchar" MaxLength="50" />
           <Property Name="Comments" Type="varchar" MaxLength="400" />
-          <Property Name="StoreCodeFrom" Type="varchar" MaxLength="10" />
+          <Property Name="StoreCodeFrom" Type="varchar" MaxLength="50" />
           <Property Name="PickBy" Type="int" />
           <Property Name="PickTime" Type="datetime" />
           <Property Name="PickQty" Type="decimal" Precision="18" Scale="4" />
@@ -928,7 +928,7 @@
           </Key>
           <Property Name="StoreID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="CompanyID" Type="bigint" />
-          <Property Name="StoreCode" Type="varchar" MaxLength="6" />
+          <Property Name="StoreCode" Type="varchar" MaxLength="50" />
           <Property Name="StoreDescript" Type="varchar" MaxLength="50" />
           <Property Name="StoreActive" Type="bit" />
           <Property Name="StorePerm" Type="bit" Nullable="false" />
@@ -978,7 +978,7 @@
           <Property Name="ReceiveQty" Type="decimal" Precision="18" Scale="4" />
           <Property Name="ToReceive" Type="bit" />
           <Property Name="ReceiveComplete" Type="bit" />
-          <Property Name="StoreCode" Type="varchar" MaxLength="10" />
+          <Property Name="StoreCode" Type="varchar" MaxLength="50" />
           <Property Name="LotNumber" Type="varchar" MaxLength="50" />
           <Property Name="ReceiveTotalExcl" Type="decimal" Precision="18" Scale="4" />
           <Property Name="ReceiveTotalTax" Type="decimal" Precision="18" Scale="4" />
@@ -1090,7 +1090,7 @@
           <Property Name="AnalysisCategoryId2" Type="bigint" />
           <Property Name="AnalysisCategoryId3" Type="bigint" />
           <Property Name="UnitCost" Type="decimal" Precision="18" Scale="4" />
-          <Property Name="StoreCodeFrom" Type="varchar" MaxLength="10" />
+          <Property Name="StoreCodeFrom" Type="varchar" MaxLength="50" />
           <Property Name="LinePickDate" Type="date" />
           <Property Name="Physical" Type="bit" />
           <Property Name="isKit" Type="bit" />
@@ -1385,7 +1385,7 @@
           <Property Name="FGID" Type="Int64" />
           <Property Name="FGCode" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="FGDescript" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
-          <Property Name="StoreCode" Type="String" MaxLength="6" FixedLength="false" Unicode="false" />
+          <Property Name="StoreCode" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="AddCost01" Type="Decimal" Precision="18" Scale="4" />
           <Property Name="AddCost02" Type="Decimal" Precision="18" Scale="4" />
           <Property Name="AddCost03" Type="Decimal" Precision="18" Scale="4" />
@@ -1510,7 +1510,7 @@
           <Property Name="ReceiveQty" Type="Decimal" Precision="18" Scale="4" />
           <Property Name="ToReceive" Type="Boolean" />
           <Property Name="ReceiveComplete" Type="Boolean" />
-          <Property Name="StoreCode" Type="String" MaxLength="10" FixedLength="false" Unicode="false" />
+          <Property Name="StoreCode" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="LotNumber" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="ReceiveTotalExcl" Type="Decimal" Precision="18" Scale="4" />
           <Property Name="ReceiveTotalTax" Type="Decimal" Precision="18" Scale="4" />
@@ -1624,7 +1624,7 @@
           <Property Name="GPPercentage" Type="Decimal" Precision="18" Scale="4" />
           <Property Name="GPAmount" Type="Decimal" Precision="18" Scale="4" />
           <Property Name="CompanyID" Type="Int64" Nullable="false" />
-          <Property Name="BarCode" Type="String" MaxLength="20" FixedLength="false" Unicode="false" />
+          <Property Name="BarCode" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="IsBOMComponent" Type="Boolean" />
           <Property Name="IsKitComponent" Type="Boolean" />
           <Property Name="IsFinishedGoods" Type="Boolean" />
@@ -1694,7 +1694,7 @@
           <Property Name="AnalysisCategoryId2" Type="Int64" />
           <Property Name="AnalysisCategoryId3" Type="Int64" />
           <Property Name="UnitCost" Type="Decimal" Precision="18" Scale="4" />
-          <Property Name="StoreCodeFrom" Type="String" MaxLength="10" FixedLength="false" Unicode="false" />
+          <Property Name="StoreCodeFrom" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="LinePickDate" Type="DateTime" Precision="0" />
           <Property Name="Physical" Type="Boolean" />
           <Property Name="isKit" Type="Boolean" />
@@ -1734,7 +1734,7 @@
           <Property Name="FGID" Type="Int64" />
           <Property Name="FGCode" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="FGDescript" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
-          <Property Name="StoreCode" Type="String" MaxLength="6" FixedLength="false" Unicode="false" />
+          <Property Name="StoreCode" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="AddCost01" Type="Decimal" Precision="18" Scale="4" />
           <Property Name="AddCost02" Type="Decimal" Precision="18" Scale="4" />
           <Property Name="AddCost03" Type="Decimal" Precision="18" Scale="4" />
@@ -1800,7 +1800,7 @@
           <Property Name="Quantity" Type="Decimal" Precision="18" Scale="4" />
           <Property Name="Unit" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="Comments" Type="String" MaxLength="400" FixedLength="false" Unicode="false" />
-          <Property Name="StoreCodeFrom" Type="String" MaxLength="10" FixedLength="false" Unicode="false" />
+          <Property Name="StoreCodeFrom" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="PickBy" Type="Int32" />
           <Property Name="PickTime" Type="DateTime" Precision="3" />
           <Property Name="PickQty" Type="Decimal" Precision="18" Scale="4" />
@@ -1903,7 +1903,7 @@
           <Property Name="ReceiveQty" Type="Decimal" Precision="18" Scale="4" />
           <Property Name="ToReceive" Type="Boolean" />
           <Property Name="ReceiveComplete" Type="Boolean" />
-          <Property Name="StoreCode" Type="String" MaxLength="10" FixedLength="false" Unicode="false" />
+          <Property Name="StoreCode" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="LotNumber" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="ReceiveTotalExcl" Type="Decimal" Precision="18" Scale="4" />
           <Property Name="ReceiveTotalTax" Type="Decimal" Precision="18" Scale="4" />
@@ -2158,7 +2158,7 @@
         <ComplexType Name="GetActiveLotNumbersLinkedToStores_Result">
           <Property Type="String" Name="LotNumber" Nullable="true" MaxLength="50" />
           <Property Type="Int64" Name="ItemId" Nullable="true" />
-          <Property Type="String" Name="StoreCode" Nullable="true" MaxLength="15" />
+          <Property Type="String" Name="StoreCode" Nullable="true" MaxLength="50" />
           <Property Type="Decimal" Name="QtyHandToStore" Nullable="false" />
           <Property Type="Decimal" Name="TotalUnitPriceExclInclAdd" Nullable="false" />
           <Property Type="Boolean" Name="AllowPicking" Nullable="false" />
@@ -2192,7 +2192,7 @@
           <Property Type="DateTime" Name="JCCreatedDate" Nullable="true" Precision="23" />
         </ComplexType>
         <ComplexType Name="GetLinkedStoredFromItem_Result">
-          <Property Type="String" Name="StoreCode" Nullable="true" MaxLength="15" />
+          <Property Type="String" Name="StoreCode" Nullable="true" MaxLength="50" />
           <Property Type="Int32" Name="StoreID" Nullable="false" />
           <Property Type="String" Name="StoreDescript" Nullable="true" MaxLength="50" />
           <Property Type="Int64" Name="ItemID" Nullable="true" />
@@ -2218,7 +2218,7 @@
           <Property Type="String" Name="ItemDescription" Nullable="true" MaxLength="100" />
           <Property Type="String" Name="Category" Nullable="true" MaxLength="100" />
           <Property Type="Decimal" Name="TotalOnHand" Nullable="true" Precision="18" Scale="4" />
-          <Property Type="String" Name="StoreCode" Nullable="true" MaxLength="15" />
+          <Property Type="String" Name="StoreCode" Nullable="true" MaxLength="50" />
           <Property Type="Int64" Name="StoreID" Nullable="true" />
           <Property Type="Decimal" Name="QOH" Nullable="true" Precision="18" Scale="4" />
           <Property Type="String" Name="LotNumber" Nullable="true" MaxLength="50" />
@@ -2432,7 +2432,7 @@
           <Property Type="String" Name="CategoryDescript" Nullable="true" MaxLength="100" />
           <Property Type="String" Name="ItemCode" Nullable="true" MaxLength="50" />
           <Property Type="String" Name="ItemDescription" Nullable="true" MaxLength="50" />
-          <Property Type="String" Name="StoreCode" Nullable="true" MaxLength="15" />
+          <Property Type="String" Name="StoreCode" Nullable="true" MaxLength="50" />
           <Property Type="String" Name="LotNumber" Nullable="true" MaxLength="50" />
           <Property Type="Decimal" Name="QtyOnHand" Nullable="true" Precision="18" Scale="2" />
           <Property Type="Decimal" Name="Count1Qty" Nullable="true" Precision="18" Scale="2" />
@@ -2446,7 +2446,7 @@
         <ComplexType Name="GetStockCountList_Result">
           <Property Type="String" Name="Code" Nullable="true" MaxLength="50" />
           <Property Type="String" Name="Description" Nullable="true" MaxLength="100" />
-          <Property Type="String" Name="StoreCode" Nullable="true" MaxLength="15" />
+          <Property Type="String" Name="StoreCode" Nullable="true" MaxLength="50" />
           <Property Type="String" Name="CategoryDescript" Nullable="true" MaxLength="100" />
           <Property Type="Int64" Name="ItemID" Nullable="false" />
           <Property Type="Decimal" Name="QOH" Nullable="false" Precision="18" Scale="2" />
@@ -2643,7 +2643,7 @@
           <Property Type="String" Name="Description" Nullable="true" MaxLength="100" />
           <Property Type="String" Name="CategoryDescript" Nullable="true" MaxLength="100" />
           <Property Type="Decimal" Name="Sum_Qty" Nullable="true" Precision="38" Scale="4" />
-          <Property Type="String" Name="StoreCode" Nullable="true" MaxLength="15" />
+          <Property Type="String" Name="StoreCode" Nullable="true" MaxLength="50" />
           <Property Type="String" Name="LotNumber" Nullable="true" MaxLength="50" />
           <Property Type="Decimal" Name="Unit_Cost" Nullable="true" Precision="18" Scale="4" />
           <Property Type="Decimal" Name="Local_Curr_Value" Nullable="true" Precision="18" Scale="4" />
@@ -2789,7 +2789,7 @@
           <Property Name="AnalysisCategoryId2" Type="Int64" />
           <Property Name="AnalysisCategoryId3" Type="Int64" />
           <Property Name="UnitCost" Type="Decimal" Precision="18" Scale="4" />
-          <Property Name="StoreCodeFrom" Type="String" MaxLength="10" FixedLength="false" Unicode="false" />
+          <Property Name="StoreCodeFrom" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="LinePickDate" Type="DateTime" Precision="0" />
           <Property Name="Physical" Type="Boolean" />
           <Property Name="isKit" Type="Boolean" />
@@ -3044,7 +3044,7 @@
           <Property Type="String" Name="Description" Nullable="true" MaxLength="100" />
           <Property Type="String" Name="CategoryDescript" Nullable="true" MaxLength="100" />
           <Property Type="Decimal" Name="Sum_Qty" Nullable="true" Precision="38" Scale="4" />
-          <Property Type="String" Name="StoreCode" Nullable="true" MaxLength="15" />
+          <Property Type="String" Name="StoreCode" Nullable="true" MaxLength="50" />
           <Property Type="String" Name="LotNumber" Nullable="true" MaxLength="50" />
           <Property Type="Decimal" Name="Unit_Cost" Nullable="true" Precision="18" Scale="4" />
           <Property Type="String" Name="Value_On_Hand" Nullable="false" MaxLength="1" />
@@ -3060,7 +3060,7 @@
           <Property Type="String" Name="Description" Nullable="true" MaxLength="100" />
           <Property Type="String" Name="CategoryDescript" Nullable="true" MaxLength="100" />
           <Property Type="Decimal" Name="Sum_Qty" Nullable="true" Precision="38" Scale="4" />
-          <Property Type="String" Name="StoreCode" Nullable="true" MaxLength="15" />
+          <Property Type="String" Name="StoreCode" Nullable="true" MaxLength="50" />
           <Property Type="String" Name="LotNumber" Nullable="true" MaxLength="50" />
           <Property Type="Decimal" Name="Unit_Cost" Nullable="true" Precision="18" Scale="4" />
           <Property Type="String" Name="Value_On_Hand" Nullable="false" MaxLength="1" />
@@ -3088,7 +3088,7 @@
           <Property Type="String" Name="ItemDescription" Nullable="true" MaxLength="100" />
           <Property Type="String" Name="Category" Nullable="true" MaxLength="100" />
           <Property Type="Decimal" Name="TotalOnHand" Nullable="true" Precision="18" Scale="4" />
-          <Property Type="String" Name="StoreCode" Nullable="true" MaxLength="15" />
+          <Property Type="String" Name="StoreCode" Nullable="true" MaxLength="50" />
           <Property Type="Int64" Name="StoreID" Nullable="true" />
           <Property Type="Decimal" Name="QOH" Nullable="true" Precision="38" Scale="4" />
           <Property Type="Decimal" Name="PriceExclusive" Nullable="true" Precision="18" Scale="4" />
@@ -3168,7 +3168,7 @@
           </Key>
           <Property Name="StoreID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
           <Property Name="CompanyID" Type="Int64" />
-          <Property Name="StoreCode" Type="String" MaxLength="6" FixedLength="false" Unicode="false" />
+          <Property Name="StoreCode" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="StoreDescript" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="StoreActive" Type="Boolean" />
           <Property Name="StorePerm" Type="Boolean" Nullable="false" />

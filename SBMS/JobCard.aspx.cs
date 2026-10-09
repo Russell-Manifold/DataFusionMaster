@@ -1780,63 +1780,79 @@ namespace SBMS
 
 
                     #region HeaderRow
-                    PdfPTable table4 = new PdfPTable(9);
+                    // Columns follow the company set-up: Bar Code only when UseBarcodes, Lot Number only when
+                    // lot tracking is on. Item Code is 1.5x its old width; the lines table font is 9pt.
+                    bool showLot = CurrentUser.CompanyUseLotNumbers;
+                    bool showBc = _db.CompanyMasters.Where(x => x.SBCACoID == CurrentUser.CoID).Select(x => x.UseBarcodes).FirstOrDefault();
+                    var tblfont = FontFactory.GetFont(Server.MapPath("~/fonts/Roboto-Regular.ttf"), 9, BaseColor.BLACK);
+                    var colWidths = new List<int> { 75, 130 };
+                    if (showBc) colWidths.Add(70);
+                    colWidths.AddRange(new[] { 25, 30 });
+                    if (showLot) colWidths.Add(70);
+                    colWidths.AddRange(new[] { 40, 40, 50 });
+                    PdfPTable table4 = new PdfPTable(colWidths.Count);
                     PdfPCell cell4;
                     table4.SpacingBefore = 15f;
-                    table4.SetWidths(new int[] { 50, 130, 70, 25, 30, 70, 40, 40, 50 });
+                    table4.SetWidths(colWidths.ToArray());
                     table4.TotalWidth = doc.PageSize.Width - 80;
                     table4.LockedWidth = true;
 
-                    cell4 = new PdfPCell(new Phrase("Code", regfont));
+                    cell4 = new PdfPCell(new Phrase("Code", tblfont));
                     cell4.HorizontalAlignment = 0;
                     cell4.FixedHeight = 20f; ;
                     cell4.BackgroundColor = BaseColor.LIGHT_GRAY;
                     cell4.BorderColor = new BaseColor(211, 211, 211);
                     table4.AddCell(cell4);
 
-                    cell4 = new PdfPCell(new Phrase("Description", regfont));
+                    cell4 = new PdfPCell(new Phrase("Description", tblfont));
                     cell4.HorizontalAlignment = 1;
                     cell4.BackgroundColor = BaseColor.LIGHT_GRAY;
                     cell4.BorderColor = new BaseColor(211, 211, 211);
                     table4.AddCell(cell4);
 
-                    cell4 = new PdfPCell(new Phrase("Bar Code", regfont));
+                    if (showBc)
+                    {
+                    cell4 = new PdfPCell(new Phrase("Bar Code", tblfont));
+                    cell4.HorizontalAlignment = 1;
+                    cell4.BackgroundColor = BaseColor.LIGHT_GRAY;
+                    cell4.BorderColor = new BaseColor(211, 211, 211);
+                    table4.AddCell(cell4);
+                    }
+
+                    cell4 = new PdfPCell(new Phrase("Unit", tblfont));
                     cell4.HorizontalAlignment = 1;
                     cell4.BackgroundColor = BaseColor.LIGHT_GRAY;
                     cell4.BorderColor = new BaseColor(211, 211, 211);
                     table4.AddCell(cell4);
 
-                    cell4 = new PdfPCell(new Phrase("Unit", regfont));
+                    cell4 = new PdfPCell(new Phrase("Store", tblfont));
                     cell4.HorizontalAlignment = 1;
                     cell4.BackgroundColor = BaseColor.LIGHT_GRAY;
                     cell4.BorderColor = new BaseColor(211, 211, 211);
                     table4.AddCell(cell4);
 
-                    cell4 = new PdfPCell(new Phrase("Store", regfont));
+                    if (showLot)
+                    {
+                    cell4 = new PdfPCell(new Phrase("Lot Number", tblfont));
+                    cell4.HorizontalAlignment = 1;
+                    cell4.BackgroundColor = BaseColor.LIGHT_GRAY;
+                    cell4.BorderColor = new BaseColor(211, 211, 211);
+                    table4.AddCell(cell4);
+                    }
+
+                    cell4 = new PdfPCell(new Phrase("Qty", tblfont));
                     cell4.HorizontalAlignment = 1;
                     cell4.BackgroundColor = BaseColor.LIGHT_GRAY;
                     cell4.BorderColor = new BaseColor(211, 211, 211);
                     table4.AddCell(cell4);
 
-                    cell4 = new PdfPCell(new Phrase("Lot Number", regfont));
+                    cell4 = new PdfPCell(new Phrase("Use Qty", tblfont));
                     cell4.HorizontalAlignment = 1;
                     cell4.BackgroundColor = BaseColor.LIGHT_GRAY;
                     cell4.BorderColor = new BaseColor(211, 211, 211);
                     table4.AddCell(cell4);
 
-                    cell4 = new PdfPCell(new Phrase("Qty", regfont));
-                    cell4.HorizontalAlignment = 1;
-                    cell4.BackgroundColor = BaseColor.LIGHT_GRAY;
-                    cell4.BorderColor = new BaseColor(211, 211, 211);
-                    table4.AddCell(cell4);
-
-                    cell4 = new PdfPCell(new Phrase("Use Qty", regfont));
-                    cell4.HorizontalAlignment = 1;
-                    cell4.BackgroundColor = BaseColor.LIGHT_GRAY;
-                    cell4.BorderColor = new BaseColor(211, 211, 211);
-                    table4.AddCell(cell4);
-
-                    cell4 = new PdfPCell(new Phrase("Complete", regfont));
+                    cell4 = new PdfPCell(new Phrase("Complete", tblfont));
                     cell4.HorizontalAlignment = 1;
                     cell4.BackgroundColor = BaseColor.LIGHT_GRAY;
                     cell4.BorderColor = new BaseColor(211, 211, 211);
@@ -1848,52 +1864,58 @@ namespace SBMS
                     int DLCount = DocLines.Count();
                     foreach (var DL in DocLines)
                     {
-                        cell4 = new PdfPCell(new Phrase(DL.ItemCode ?? "", regfont));
+                        cell4 = new PdfPCell(new Phrase(DL.ItemCode ?? "", tblfont));
                         cell4.HorizontalAlignment = 0;
-                        cell4.FixedHeight = 20f;
+                        cell4.MinimumHeight = 20f;   // not FixedHeight: a long item code wraps and the row grows
                         cell4.VerticalAlignment = Element.ALIGN_MIDDLE;
                         cell4.BorderColor = new BaseColor(211, 211, 211);  // RGB values for light gray
                         table4.AddCell(cell4);
 
-                        cell4 = new PdfPCell(new Phrase(DL.ItemDescription ?? "", regfont));
+                        cell4 = new PdfPCell(new Phrase(DL.ItemDescription ?? "", tblfont));
                         cell4.HorizontalAlignment = 0;
                         cell4.VerticalAlignment = Element.ALIGN_MIDDLE;
                         cell4.BorderColor = new BaseColor(211, 211, 211);  // RGB values for light gray
                         table4.AddCell(cell4);
 
-                        cell4 = new PdfPCell(new Phrase(DL.BarCode ?? "", regfont));
+                    if (showBc)
+                    {
+                        cell4 = new PdfPCell(new Phrase(DL.BarCode ?? "", tblfont));
+                        cell4.HorizontalAlignment = 1;
+                        cell4.VerticalAlignment = Element.ALIGN_MIDDLE;
+                        cell4.BorderColor = new BaseColor(211, 211, 211);  // RGB values for light gray
+                        table4.AddCell(cell4);
+                    }
+
+                        cell4 = new PdfPCell(new Phrase(DL.Unit ?? "", tblfont));
                         cell4.HorizontalAlignment = 1;
                         cell4.VerticalAlignment = Element.ALIGN_MIDDLE;
                         cell4.BorderColor = new BaseColor(211, 211, 211);  // RGB values for light gray
                         table4.AddCell(cell4);
 
-                        cell4 = new PdfPCell(new Phrase(DL.Unit ?? "", regfont));
+                        cell4 = new PdfPCell(new Phrase(DL.StoreCodeFrom ?? "", tblfont));
                         cell4.HorizontalAlignment = 1;
                         cell4.VerticalAlignment = Element.ALIGN_MIDDLE;
                         cell4.BorderColor = new BaseColor(211, 211, 211);  // RGB values for light gray
                         table4.AddCell(cell4);
 
-                        cell4 = new PdfPCell(new Phrase(DL.StoreCodeFrom ?? "", regfont));
+                    if (showLot)
+                    {
+                        cell4 = new PdfPCell(new Phrase(DL.LotNumber ?? "", tblfont));
                         cell4.HorizontalAlignment = 1;
                         cell4.VerticalAlignment = Element.ALIGN_MIDDLE;
                         cell4.BorderColor = new BaseColor(211, 211, 211);  // RGB values for light gray
                         table4.AddCell(cell4);
-
-                        cell4 = new PdfPCell(new Phrase(DL.LotNumber ?? "", regfont));
-                        cell4.HorizontalAlignment = 1;
-                        cell4.VerticalAlignment = Element.ALIGN_MIDDLE;
-                        cell4.BorderColor = new BaseColor(211, 211, 211);  // RGB values for light gray
-                        table4.AddCell(cell4);
+                    }
 
                         string dnp = string.Empty;
                         decimal jcqty = Convert.ToDecimal(DL.Quantity);
                         if (jcqty > 0)
                         {
-                            cell4 = new PdfPCell(new Phrase(Convert.ToDecimal(ApiUrlCall.NumberToDecimal(jcqty.ToString(), CurrentUser.CompanyDecPlaces)).ToString(), regfont));
+                            cell4 = new PdfPCell(new Phrase(Convert.ToDecimal(ApiUrlCall.NumberToDecimal(jcqty.ToString(), CurrentUser.CompanyDecPlaces)).ToString(), tblfont));
                         }
                         else
                         {
-                            cell4 = new PdfPCell(new Phrase("", regfont));
+                            cell4 = new PdfPCell(new Phrase("", tblfont));
                         }
                         
                         if (DL.isBundle != null)
@@ -1933,18 +1955,18 @@ namespace SBMS
                         decimal jcUseqty = Convert.ToDecimal(DL.LinePickQty);
                         if (jcUseqty > 0)
                         {
-                            cell4 = new PdfPCell(new Phrase(Convert.ToDecimal(ApiUrlCall.NumberToDecimal(jcUseqty.ToString(), CurrentUser.CompanyDecPlaces)).ToString(), regfont));
+                            cell4 = new PdfPCell(new Phrase(Convert.ToDecimal(ApiUrlCall.NumberToDecimal(jcUseqty.ToString(), CurrentUser.CompanyDecPlaces)).ToString(), tblfont));
                         }
                         else
                         {
-                            cell4 = new PdfPCell(new Phrase("", regfont));
+                            cell4 = new PdfPCell(new Phrase("", tblfont));
                         }
                         cell4.HorizontalAlignment = 1;
                         cell4.VerticalAlignment = Element.ALIGN_MIDDLE;
                         cell4.BorderColor = new BaseColor(211, 211, 211);  // RGB values for light gray
                         table4.AddCell(cell4);
 
-                        cell4 = new PdfPCell(new Phrase(dnp, regfont));
+                        cell4 = new PdfPCell(new Phrase(dnp, tblfont));
                         cell4.BorderColor = new BaseColor(211, 211, 211);  // RGB values for light gray
                         table4.AddCell(cell4);
 
@@ -1954,42 +1976,13 @@ namespace SBMS
                     {
                         do
                         {
-                            cell4 = new PdfPCell(new Phrase("", regfont));
-                            cell4.FixedHeight = 25f;
-                            cell4.BorderColor = BaseColor.LIGHT_GRAY;
-                            table4.AddCell(cell4);
-
-                            cell4 = new PdfPCell(new Phrase("", regfont));
-                            cell4.BorderColor = BaseColor.LIGHT_GRAY;
-                            table4.AddCell(cell4);
-
-                            cell4 = new PdfPCell(new Phrase("", regfont));
-                            cell4.BorderColor = BaseColor.LIGHT_GRAY;
-                            table4.AddCell(cell4);
-
-                            cell4 = new PdfPCell(new Phrase("", regfont));
-                            cell4.BorderColor = BaseColor.LIGHT_GRAY;
-                            table4.AddCell(cell4);
-
-                            cell4 = new PdfPCell(new Phrase("", regfont));
-                            cell4.BorderColor = BaseColor.LIGHT_GRAY;
-                            table4.AddCell(cell4);
-
-                            cell4 = new PdfPCell(new Phrase("", regfont));
-                            cell4.BorderColor = BaseColor.LIGHT_GRAY;
-                            table4.AddCell(cell4);
-
-                            cell4 = new PdfPCell(new Phrase("", regfont));
-                            cell4.BorderColor = BaseColor.LIGHT_GRAY;
-                            table4.AddCell(cell4);
-
-                            cell4 = new PdfPCell(new Phrase("", regfont));
-                            cell4.BorderColor = BaseColor.LIGHT_GRAY; ;
-                            table4.AddCell(cell4);
-
-                            cell4 = new PdfPCell(new Phrase("", regfont));
-                            cell4.BorderColor = BaseColor.LIGHT_GRAY;
-                            table4.AddCell(cell4);
+                            for (int fc = 0; fc < colWidths.Count; fc++)
+                            {
+                                cell4 = new PdfPCell(new Phrase("", tblfont));
+                                if (fc == 0) cell4.FixedHeight = 25f;
+                                cell4.BorderColor = BaseColor.LIGHT_GRAY;
+                                table4.AddCell(cell4);
+                            }
                             DLCount++;
                         } while (DLCount < 20);
                     }

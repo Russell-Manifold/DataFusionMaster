@@ -38,7 +38,7 @@
                                                <cci:ConfirmButtonExtender ID="lbtnDeleteBom_ConfirmButtonExtender1" runat="server" ConfirmText="Delete this BOM? Are you sure?" Enabled="True" TargetControlID="lbtnDeleteBom"></cci:ConfirmButtonExtender>
                                            </td>
                                             <td>BOM Code:</td>
-                                            <td><asp:TextBox ID="txtBomCode" runat="server" Width="80px" MaxLength="20"></asp:TextBox></td>       
+                                            <td><asp:TextBox ID="txtBomCode" runat="server" Width="80px" MaxLength="50"></asp:TextBox></td>       
                                             <td> <asp:TextBox ID="txtBomDescript" runat="server" Style="width: 100%" MaxLength="50"></asp:TextBox></td> 
                                             <td rowspan="2" style="padding:2em; vertical-align:top"><asp:LinkButton ID="LbtnSaveBOM" runat="server" style="float:right; font-size:1em;" CssClass="icon fa-save buttonIndex" OnClick="LbtnSaveBOM_Click"> SAVE BOM</asp:LinkButton>
                                            </td>

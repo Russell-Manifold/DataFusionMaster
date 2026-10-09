@@ -45,7 +45,7 @@
                                     <table style="width: 100%">
                                         <tr>
                                             <td style="width:12em">BOM Code:</td>
-                                            <td style="width:6em"><asp:TextBox ID="lblBOMCode" runat="server" Text="" MaxLength="20"></asp:TextBox></td>           
+                                            <td style="width:6em"><asp:TextBox ID="lblBOMCode" runat="server" Text="" MaxLength="50"></asp:TextBox></td>           
                                             <td><asp:TextBox ID="lblBOMDescipt" runat="server" Text="" style="width:300px" MaxLength="50"></asp:TextBox></td> 
                                             <td style="text-align:left"><asp:CheckBox ID="chkActive" runat="server" Text="BOM is Active" /></td>
                                         </tr>
