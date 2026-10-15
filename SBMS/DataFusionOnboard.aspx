@@ -162,13 +162,18 @@
                                    <tr>
                                        <td colspan="2" style="text-align:center">Additional Information <br />(These settings can be edited through the setting feature)<br /><br /></td>
                                    </tr>
-                                    <tr>
+                                    <%-- Module 2/3 hidden for now (fixed defaults: Module 2 off, Module 3 on) --%>
+                                    <tr style="display:none">
                                        <td>Use Module 2 (Job Cards, Forecasting + more)</td>
                                        <td><asp:CheckBox ID="chkMod2" runat="server" Checked="false" Enabled="false" /></td>
                                    </tr>
-                                    <tr>
+                                    <tr style="display:none">
                                        <td>Use Module 3 (BOM's, Kit's, Manufacturing + more)</td>
                                        <td><asp:CheckBox ID="chkMod3" runat="server" Checked="true" Enabled="false" /></td>
+                                   </tr>
+                                    <tr>
+                                       <td>Slim - Works Orders Only version<br /><small>Works Orders, BOMs and Items only. No receiving, picking, stores, lots or roles, and Data Fusion never changes a cost. Cannot be changed once you have stock history.</small></td>
+                                       <td><asp:CheckBox ID="chkSageStockOnly" runat="server" onclick="var l=document.querySelector('input[id$=chkLotTrack]'); if(l){ if(this.checked){ l.checked=false; } l.disabled=this.checked; }" /></td>
                                    </tr>
                                      <tr>
                                            <td>Use Lot Tracking</td>

@@ -58,6 +58,8 @@ namespace SBMS
                     DDFGCode.Items.Insert(0, "-Select-");
                 }
             }
+            // Slim manufacturing never adds cost: no additional costs on a BOM.
+            if (CurrentUser.SageStockOnly) Panel2.Visible = false;
         }
 
 
@@ -350,7 +352,8 @@ namespace SBMS
             // An additional cost has to have somewhere to post. It raises stock value in Sage
             // and needs a matching credit, so refuse to save a cost without an account rather
             // than let it fail later at manufacture.
-            if (!BomAddCostAccounts.Validate(this, DDAddCostAcct, CurrentUser, adc1 + adc2 + adc3)) return;
+            // Slim manufacturing never posts additional costs, so there is nothing to validate.
+            if (!CurrentUser.SageStockOnly && !BomAddCostAccounts.Validate(this, DDAddCostAcct, CurrentUser, adc1 + adc2 + adc3)) return;
 
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {

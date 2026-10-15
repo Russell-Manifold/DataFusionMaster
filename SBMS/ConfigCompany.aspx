@@ -51,10 +51,11 @@
                      <div class="8u 12u$(medium)" style="text-align:center">
 
                         <asp:HiddenField ID="hfActiveTab" runat="server" ClientIDMode="Static" />
+                        <asp:Literal ID="litSlimCss" runat="server" /><%-- slim: hides every .slim-hide setting the slim version does not use --%>
                         <div class="cfg-tabnav">
                             <button type="button" data-tab="general"  onclick="cfgShowTab('general')">General</button>
-                            <button type="button" data-tab="lots" onclick="cfgShowTab('lots')">Lots, Packs &amp; Bins</button>
-                            <asp:PlaceHolder ID="phMobileTabBtn" runat="server"><button type="button" data-tab="mobile" onclick="cfgShowTab('mobile')">Mobile Picking</button></asp:PlaceHolder>
+                            <button type="button" class="slim-hide" data-tab="lots" onclick="cfgShowTab('lots')">Lots, Packs &amp; Bins</button>
+                            <asp:PlaceHolder ID="phMobileTabBtn" runat="server"><button type="button" class="slim-hide" data-tab="mobile" onclick="cfgShowTab('mobile')">Mobile Picking</button></asp:PlaceHolder>
                             <button type="button" data-tab="manf"     onclick="cfgShowTab('manf')">Manufacturing</button>
                         </div>
 
@@ -91,9 +92,9 @@
                                      <asp:ListItem>4</asp:ListItem>
                                      </asp:DropDownList></td>
                               </tr>
-                               <tr><td colspan="4"><hr /></td></tr>
-                               <tr><td colspan="4" class="cfg-sec">Delivery Note</td></tr>
-                               <tr>
+                               <tr class="slim-hide"><td colspan="4"><hr /></td></tr>
+                               <tr class="slim-hide"><td colspan="4" class="cfg-sec">Delivery Note</td></tr>
+                               <tr class="slim-hide">
                                    <td>Layout</td>
                                    <td><asp:DropDownList ID="DDDnLayout" runat="server" ToolTip="Standard: the delivery note as it has always printed. Detailed: customer VAT number, contact, purchase order and sales order number, with Order / Inv / Back Order quantities, a sign-off block and your footer.">
                                            <asp:ListItem Value="0">Standard</asp:ListItem>
@@ -103,18 +104,18 @@
                                    <td><asp:TextBox ID="txtPodNext" runat="server" Width="90px" MaxLength="9" ToolTip="One running number across all orders, used by the Detailed layout. Each delivery takes the next number the first time its note is printed. 0 = off: notes are numbered from the Sales Order."></asp:TextBox>
                                        <span style="font-size:.85em; color:#777">0 = number from the Sales Order</span></td>
                                </tr>
-                               <tr>
+                               <tr class="slim-hide">
                                    <td>Company Reg No</td>
                                    <td><asp:TextBox ID="txtCoRegNo" runat="server" MaxLength="50"></asp:TextBox></td>
                                    <td>Delivery note number prefix</td>
                                    <td><asp:TextBox ID="txtPodPrefix" runat="server" Width="90px" MaxLength="10" ToolTip="Printed in front of the running number, e.g. DN"></asp:TextBox></td>
                                </tr>
-                               <tr>
+                               <tr class="slim-hide">
                                    <td>Company VAT No</td>
                                    <td><asp:TextBox ID="txtCoVatNo" runat="server" MaxLength="50"></asp:TextBox></td>
                                    <td></td><td></td>
                                </tr>
-                               <tr>
+                               <tr class="slim-hide">
                                    <td>Footer (Detailed layout)</td>
                                    <td colspan="3"><asp:TextBox ID="txtDocFooter" runat="server" TextMode="MultiLine" Rows="4" Width="95%" ToolTip="Printed at the foot of the Detailed delivery note - head office address, contact numbers, email, directors. One line per line."></asp:TextBox></td>
                                </tr>
@@ -129,8 +130,8 @@
                                        <asp:Label ID="lblGenPwdSaved" runat="server" Text="" style="font-size:.85em; color:#777"></asp:Label></td>
                                </tr>
                                <tr id="trGenHr" runat="server" visible="false"><td colspan="4"><hr /></td></tr>
-                               <tr><td colspan="4" class="cfg-sec">Sage Integration</td></tr>
-                                  <tr>
+                               <tr class="slim-hide"><td colspan="4" class="cfg-sec">Sage Integration</td></tr>
+                                  <tr class="slim-hide">
                                    <td>Auto Update Sage on Picking Complete</td>
                                    <td>
                                        <asp:CheckBox ID="chkPSAuto" runat="server" />
@@ -152,7 +153,7 @@
                                              </asp:Panel>
                                       </td>
                              </tr>
-                             <tr>
+                             <tr class="slim-hide">
                                     <td></td><td></td>
                                         <td>Allow purchase price to be changed on receiving</td>
                                       <td>
@@ -167,7 +168,7 @@
                                              </asp:Panel>
                                       </td>
                              </tr>
-                             <tr>
+                             <tr class="slim-hide">
                                     <td></td><td></td>
                                         <td>Part deliveries: keep the Sales Order open and invoice once, when it is complete</td>
                                       <td>
@@ -175,7 +176,7 @@
                                               ToolTip="Off: a short pick puts the balance on a new Sales Order and each Sales Order is invoiced on its own. On: the Sales Order stays open, each delivery gets its own picking slip and delivery note for the balance, and the order is updated to Sage and invoiced once, when it is complete." />
                                       </td>
                              </tr>
-                             <tr>
+                             <tr class="slim-hide">
                                     <td></td><td></td>
                                         <td>Job cards: Cost of Sales account for internal materials</td>
                                       <td>
@@ -183,21 +184,21 @@
                                               ToolTip="Used when a job card has 'Print all additional lines' unticked. The stock lines added on the job card are adjusted out of Sage and their cost is journalled to this account (debit), against your Stock Adjustment Account (credit)."></asp:DropDownList>
                                       </td>
                              </tr>
-                             <tr>
+                             <tr class="slim-hide">
                                     <td>Use Produce Weights (for deliveries, shipping etc)</td>
                                      <td><asp:CheckBox ID="chkweight" runat="server" /></td>
                                     <td></td>
                                    <td></td>
                              </tr>
-                             <tr>
+                             <tr class="slim-hide">
                                     <td>Sage field name used for Unit weight</td>
                                    <td><asp:TextBox ID="txtSageWght" runat="server" placeholder="eg: NumericUserField1"></asp:TextBox></td>
                                     <td></td>
                                    <td></td>
                              </tr>
-                               <tr><td colspan="4"><hr /></td></tr>
+                               <tr class="slim-hide"><td colspan="4"><hr /></td></tr>
                                <tr><td colspan="4" class="cfg-sec">Modules</td></tr>
-                               <tr>
+                               <tr class="slim-hide">
                                    <td>Module 2 Active</td>
                                    <td><asp:CheckBox ID="chkMod2" runat="server"/>
                                        <cci:BalloonPopupExtender ID="BalloonPopupExtender5" TargetControlID="chkMod2" UseShadow="true" DisplayOnMouseOver ="true" Position="BottomRight" BalloonPopupControlID="pnlJC" BalloonStyle="Rectangle"  runat="server" />
@@ -213,15 +214,20 @@
                                              </asp:Panel>
                                     </td>
                                 </tr>
-                               <tr>
+                               <tr class="slim-hide">
                                    <td>Mobile Module Active</td>
                                    <td><asp:CheckBox ID="chkMobileModule" runat="server"/></td>
                                    <td colspan="2"> <span style="font-size:small;color:#666;">(Grants the Mobile Picking tab &amp; the scanner (mobile) app for this company.)</span></td>
                                </tr>
+                               <tr>
+                                   <td>Slim - Works Orders Only version</td>
+                                   <td><asp:CheckBox ID="chkSageStockOnly" runat="server" OnCheckedChanged="chkSageStockOnly_CheckedChanged" AutoPostBack="true" /></td>
+                                   <td colspan="2"> <span style="font-size:small;color:#666;">(Works Orders, BOMs and Items only. On-hand and costs come from Sage, one SAGE store, no lots or roles. Contact us if you want it switched on or off.)</span></td>
+                               </tr>
                                <tr><td colspan="4"><hr /></td></tr>
                                 <tr>
-                                     <td>Send Notifications</td>
-                                     <td><asp:CheckBox ID="chkNotifs" runat="server"/></td>
+                                     <td class="slim-hide">Send Notifications</td>
+                                     <td class="slim-hide"><asp:CheckBox ID="chkNotifs" runat="server"/></td>
                                      <td>Testing Mode<br />
                                          <span style="font-size:.8em">In Testing Mode, integration <br /> with Sage accounting is ONE WAY only. <br /> No data is sent TO Sage, <br />but all data FROM Sage is current and rereshed on demand.</span>
                                      </td>
@@ -250,7 +256,7 @@
                         </div>
 
                         <%-- ═══════════════════ LOTS & PACKS ═══════════════════ --%>
-                        <div id="cfgtab-lots" class="cfg-tab">
+                        <div id="cfgtab-lots" class="cfg-tab slim-hide">
                            <table class="cfg-form">
                                 <tr><td colspan="2" class="cfg-sec">Lot Tracking</td></tr>
                                 <tr>
@@ -300,7 +306,7 @@
 
                         <%-- ═══════════════════ MOBILE PICKING (hidden unless the company has the Mobile Module) ═══════════════════ --%>
                         <asp:PlaceHolder ID="phMobileTab" runat="server">
-                        <div id="cfgtab-mobile" class="cfg-tab">
+                        <div id="cfgtab-mobile" class="cfg-tab slim-hide">
                            <table style="width:100%; text-align:left">
                                <tr><td colspan="4" class="cfg-sec">Scanner / Mobile Receiving Modes</td></tr>
                                <tr>
@@ -346,7 +352,7 @@
                         <%-- ═══════════════════ MANUFACTURING ═══════════════════ --%>
                         <div id="cfgtab-manf" class="cfg-tab">
                            <table style="width:100%; text-align:left">
-                               <tr>
+                               <tr class="slim-hide">
                                    <td>Use Auto Manufacture</td>
                                     <td><asp:CheckBox ID="chkAutoManf" runat="server" OnCheckedChanged="chkAutoManf_CheckedChanged" AutoPostBack="true" />
                                         <cci:BalloonPopupExtender ID="BalloonPopupExtender4" TargetControlID="chkAutoManf" UseShadow="true"
@@ -357,7 +363,7 @@
                                            </asp:Panel>
                                     </td>
                                </tr>
-                                    <tr>
+                                    <tr class="slim-hide">
                                         <td colspan="4">
                                             <div id="pnlAutoManfConfirm">
                                                 <span style="color:red">Switching on Auto Manufacture switches Lot Tracking off.</span><br />
@@ -365,7 +371,7 @@
                                             </div>
                                         </td>
                                     </tr>
-                               <tr><td colspan="4"><hr /></td></tr>
+                               <tr class="slim-hide"><td colspan="4"><hr /></td></tr>
                                 <tr>
                                      <td>Show Manufacturing Costs On Works Orders</td>
                                      <td><asp:CheckBox ID="chkManfCosts" runat="server"/></td>

@@ -28,6 +28,15 @@ namespace SBMS
         protected global::System.Web.UI.WebControls.Label lblPrompt;
         protected global::System.Web.UI.WebControls.Panel pnlScan;
         protected global::System.Web.UI.WebControls.TextBox txtScan;
+
+        /// <summary>
+        /// ddlWO control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.DropDownList ddlWO;
         protected global::System.Web.UI.WebControls.LinkButton lbtnLoadDoc;
         protected global::System.Web.UI.WebControls.LinkButton lbtnClearScan;
         protected global::System.Web.UI.WebControls.Label lblFeedback;
@@ -43,6 +52,15 @@ namespace SBMS
         protected global::System.Web.UI.WebControls.Panel pnlMake;
         protected global::System.Web.UI.WebControls.DropDownList ddlStore;
         protected global::System.Web.UI.WebControls.DropDownList ddlToStore;
+
+        /// <summary>
+        /// phStores control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.PlaceHolder phStores;
         protected global::System.Web.UI.WebControls.TextBox txtQty;
         protected global::System.Web.UI.WebControls.LinkButton lbtnMakeHere;
         protected global::System.Web.UI.WebControls.LinkButton lbtnMakeMove;

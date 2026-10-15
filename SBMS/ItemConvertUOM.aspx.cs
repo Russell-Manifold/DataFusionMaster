@@ -70,6 +70,12 @@ namespace SBMS
                 ibtmWOrdMgment.Style.Add("display", "none");
                 ibtnRMD.Style.Add("display", "none");
             }
+            // Slim manufacturing: Works Orders only.
+            if (CurrentUser.SageStockOnly)
+            {
+                imgbRec.Visible = ibtnPickSlips.Visible = ibtnPickTrack.Visible = ibtnStckCtl.Visible = false;
+                ibtnFCasts.Visible = ibtnmrp.Visible = ibtnJobTrack.Visible = ibtnRMD.Visible = false;
+            }
         }
 
         protected void lbtnHome_Click(object sender, EventArgs e)
@@ -224,6 +230,8 @@ namespace SBMS
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {
                 var Stores = _db.Stores.Where(x => x.CompanyID == CurrentUser.CoID && x.StoreActive == true && x.StoreCode != "CoD" && x.StoreCode != "CoR").ToList();
+                // Slim manufacturing: SAGE is the only store, so it is chosen already.
+                if (CurrentUser.SageStockOnly) Stores = Stores.Where(x => x.StoreCode == SageStore.Code).ToList();
                 if (Stores.Any())
                 {
                     DDStore.DataSource = Stores;
@@ -232,6 +240,32 @@ namespace SBMS
                     DDStore.DataBind();
                     DDStore.Items.Insert(0, "- Any/All -");
                 }
+            }
+            if (CurrentUser.SageStockOnly && DDStore.Items.Count > 1)
+            {
+                DDStore.SelectedIndex = 1;
+                DDStore_SelectedIndexChanged(DDStore, EventArgs.Empty);
+            }
+        }
+
+        // Slim manufacturing: stock lives in Sage, so every physical item with its Sage
+        // on-hand and Sage average - in the shape the store balances proc returns.
+        private List<GetOpeningBalancesByStore_Result> SageBalances()
+        {
+            using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+            {
+                long coId = CurrentUser.CoID;
+                return _db.ItemsMasters
+                    .Where(x => x.CompanyID == coId && x.Active != false && x.Physical != false)
+                    .OrderBy(x => x.Code)
+                    .Select(x => new { x.ID, x.Code, x.Unit, x.Description, x.QuantityOnHand, x.AverageCost })
+                    .ToList()
+                    .Select(x => new GetOpeningBalancesByStore_Result
+                    {
+                        ItemID = x.ID, Code = x.Code, Unit = x.Unit, ItemDescription = x.Description,
+                        QOH = x.QuantityOnHand, AverageCost = x.AverageCost
+                    })
+                    .ToList();
             }
         }
 
@@ -242,7 +276,7 @@ namespace SBMS
                 using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
                 {
                     string Storeid =DDStore.SelectedValue;
-                    var _items = _db.GetOpeningBalancesByStore(Storeid, CurrentUser.CoID).ToList();
+                    var _items = CurrentUser.SageStockOnly ? SageBalances() : _db.GetOpeningBalancesByStore(Storeid, CurrentUser.CoID).ToList();
                     if (_items.Any())
                     {
                         // Show "CODE - Description" so the searchable picker matches on either.
@@ -265,6 +299,7 @@ namespace SBMS
         // large list (up to ~5000 items) in ViewState, which bloats the page on every postback.
         private List<GetOpeningBalancesByStore_Result> GetOpeningBalances()
         {
+            if (CurrentUser.SageStockOnly) return SageBalances();
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {
                 return _db.GetOpeningBalancesByStore(DDStore.SelectedValue, CurrentUser.CoID).ToList();
@@ -365,6 +400,30 @@ namespace SBMS
                 return;
             }
 
+            // Slim manufacturing never changes a cost: each leg goes to Sage at that item's own
+            // Sage average, so both are refreshed first - a stale average sent to Sage would
+            // overwrite the real one. On-hand is re-read from the same refresh.
+            bool slim = CurrentUser.SageStockOnly;
+            decimal toSageAvg = 0;
+            if (slim)
+            {
+                ApiUrlCall api = new ApiUrlCall();
+                if (!api.LoadOneItemNA(fromItemId, CurrentUser) || !api.LoadOneItemNA(toItemId, CurrentUser))
+                {
+                    AlertHelper.ShowSweetAlert(this, "Could not refresh the items from Sage - nothing was converted. Check the connection and try again.", "error");
+                    return;
+                }
+                using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+                {
+                    long coId = CurrentUser.CoID;
+                    var f = _db.ItemsMasters.Where(x => x.CompanyID == coId && x.ID == fromItemId).Select(x => new { x.QuantityOnHand, x.AverageCost }).FirstOrDefault();
+                    var t = _db.ItemsMasters.Where(x => x.CompanyID == coId && x.ID == toItemId).Select(x => new { x.AverageCost }).FirstOrDefault();
+                    fromItem.QOH = f?.QuantityOnHand;
+                    fromItem.AverageCost = f?.AverageCost;
+                    toSageAvg = t?.AverageCost ?? 0;
+                }
+            }
+
             // Validate QOH against the fromItem's quantity
             decimal qoh = fromItem.QOH ?? 0;
             if (convertFromQty > qoh)
@@ -399,13 +458,14 @@ namespace SBMS
             {
                 long storeid = getstoreid(DDStore.SelectedValue.ToString());
                 // per-store weighted average drives the outbound cost; item-wide average only when the store has no history
-                decimal fromStoreCost = StoreCosting.GetStoreAvgCost(_db, CurrentUser.CoID, (long)fromItem.ItemID, storeid);
+                decimal fromStoreCost = slim ? 0 : StoreCosting.GetStoreAvgCost(_db, CurrentUser.CoID, (long)fromItem.ItemID, storeid);
                 if (fromStoreCost == 0) fromStoreCost = fromAverageCost;
                 // Local ledger: the target units carry the SAME per-store value that left the source
                 // item, so the store's stock value is conserved. (The OUT leg books at fromStoreCost;
                 // the IN leg must match. Previously toCost came from the item-wide average, which did
                 // not match the per-store cost booked out, quietly creating/destroying ledger value.)
-                toCost = (fromStoreCost * convertFromQty) / convertToQty;
+                // Slim: the target comes in at its own Sage average - never re-blended.
+                toCost = slim ? toSageAvg : (fromStoreCost * convertFromQty) / convertToQty;
                 ItemTransaction ItemTransOUT = new ItemTransaction();
                 ItemTransOUT.CompanyID = CurrentUser.CoID;
                 ItemTransOUT.DocumentID = 0;
@@ -457,10 +517,10 @@ namespace SBMS
                 if (refD.Length > 100) refD = refD.Substring(0, 100);
                 ItemTransIN.TransactionReference = refD;
                 ItemTransIN.ExchRate = 1;
-                ItemTransIN.StoreAvgCost = StoreCosting.ComputeMovement(_db, CurrentUser.CoID, (long)toItem.ItemID, storeid, convertToQty, toCost * convertToQty, out var _v);
+                ItemTransIN.StoreAvgCost = slim ? toCost : StoreCosting.ComputeMovement(_db, CurrentUser.CoID, (long)toItem.ItemID, storeid, convertToQty, toCost * convertToQty, out var _v);
 
                 _db.ItemTransactions.Add(ItemTransIN);
-                _db.SaveChanges();
+                if (!slim) _db.SaveChanges();   // slim: saved only once Sage has accepted both legs (below)
 
                 // Target item's new ITEM-WIDE average (Sage keeps one average per item). Blend the
                 // item-wide value that left the source item (fromAverageCost x convertFromQty) with the
@@ -471,11 +531,12 @@ namespace SBMS
                 decimal ToItemWideQty = (decimal)(itemMaster?.QuantityOnHand ?? 0);
                 decimal ConvertedValue = fromAverageCost * convertFromQty;
                 // Denominator is always > 0 (convertToQty is validated > 0 above).
-                decimal toItemNewAvg = (ConvertedValue + (ToCurrAvcost * ToItemWideQty)) / (convertToQty + ToItemWideQty);
+                // Slim: Sage's average stays exactly as it is.
+                decimal toItemNewAvg = slim ? ToCurrAvcost : (ConvertedValue + (ToCurrAvcost * ToItemWideQty)) / (convertToQty + ToItemWideQty);
                 if (itemMaster != null)
                 {
                     itemMaster.AverageCost = toItemNewAvg;
-                    _db.SaveChanges();
+                    if (!slim) _db.SaveChanges();
                 }
 
                 if (CurrentUser.UATMode == false)
@@ -489,7 +550,19 @@ namespace SBMS
                     iAdj.Reason = ItemTransOUT.TransactionReference;
                     iAdj.Created = DateTime.Now;
                     string jsonBody = JsonConvert.SerializeObject(iAdj, Formatting.Indented);
-                    await SendItemAdjustment(jsonBody);
+                    JObject outResp = await SendItemAdjustment(jsonBody);
+                    // Slim: Sage is the only stock record - stop if it refused the out leg, and keep
+                    // the local Sage on-hand in step when it accepted it.
+                    if (slim)
+                    {
+                        if (!SageAccepted(outResp))
+                        {
+                            AlertHelper.ShowSweetAlert(this, $"Sage did not accept the adjustment for {fromItem.Code} - nothing was posted to Sage. {outResp?["Message"]}", "error");
+                            return;
+                        }
+                        var fromMaster = _db.ItemsMasters.FirstOrDefault(x => x.ID == fromItem.ItemID && x.CompanyID == CurrentUser.CoID);
+                        if (fromMaster != null) fromMaster.QuantityOnHand = (fromMaster.QuantityOnHand ?? 0) + iAdj.Quantity;
+                    }
 
                     // 4. Add Sage stock adjustment for To Qty up
                     ItemAdjustment iAdjIn = new ItemAdjustment();
@@ -500,8 +573,29 @@ namespace SBMS
                     iAdjIn.Reason = ItemTransIN.TransactionReference;
                     iAdjIn.Created = DateTime.Now;
                     string jsonBodyIn = JsonConvert.SerializeObject(iAdjIn, Formatting.Indented);
-                    await SendItemAdjustment(jsonBodyIn);
+                    JObject inResp = await SendItemAdjustment(jsonBodyIn);
+                    if (slim)
+                    {
+                        if (SageAccepted(inResp))
+                        {
+                            if (itemMaster != null) itemMaster.QuantityOnHand = (itemMaster.QuantityOnHand ?? 0) + iAdjIn.Quantity;
+                        }
+                        else
+                        {
+                            // All or nothing: put the out leg back in Sage, save nothing here.
+                            iAdj.Quantity = -iAdj.Quantity;
+                            iAdj.Reason = ("Reversal: " + iAdj.Reason);
+                            if (iAdj.Reason.Length > 100) iAdj.Reason = iAdj.Reason.Substring(0, 100);
+                            JObject revResp = await SendItemAdjustment(JsonConvert.SerializeObject(iAdj, Formatting.Indented));
+                            AlertHelper.ShowSweetAlert(this, SageAccepted(revResp)
+                                ? $"Sage did not accept {toItem.Code} coming in, so {fromItem.Code} was put back in Sage - nothing was converted. {inResp?["Message"]}"
+                                : $"Sage did not accept {toItem.Code} coming in, and {fromItem.Code} could not be put back - add {convertFromQty} {fromItem.Unit} of {fromItem.Code} back in Sage by hand. {inResp?["Message"]}",
+                                "error");
+                            return;
+                        }
+                    }
                 }
+                if (slim) _db.SaveChanges();   // both legs accepted by Sage (or UAT mode) - now record them here
             }
 
             // Show success message with conversion details
@@ -512,7 +606,7 @@ namespace SBMS
             // Clear the form
             txtFromQty.Text = "";
             txtToQty.Text = "";
-            DDStore.SelectedIndex = 0;
+            DDStore.SelectedIndex = slim && DDStore.Items.Count > 1 ? 1 : 0;   // slim keeps SAGE chosen
             ddConvertFrom.SelectedIndex = 0;
             DDConvertTo.SelectedIndex = 0;
             lblFromUOM.Text = "";
@@ -530,12 +624,21 @@ namespace SBMS
             return storeid;
         }
 
-        public async Task SendItemAdjustment(string Item)
+        public async Task<JObject> SendItemAdjustment(string Item)
         {
             string doctype = "";
             doctype = "ItemAdjustment";
             ApiUrlCall Api = new ApiUrlCall();
             JObject parsedJSON = await Api.APIPostDocumentAsync(doctype, Item, CurrentUser);
+            return parsedJSON;
+        }
+
+        // APIPostDocumentAsync returns Success=false on a refused/failed post, Sage's own object otherwise.
+        private static bool SageAccepted(JObject resp)
+        {
+            if (resp == null || !resp.HasValues) return false;
+            JToken ok = resp["Success"];
+            return !(ok != null && ok.Type == JTokenType.Boolean && !ok.Value<bool>());
         }
 
     }

@@ -87,11 +87,11 @@
                                         <td>Confirm Password *</td>
                                         <td style="padding:.5em"><asp:TextBox ID="txtPwd2" runat="server" Width="250px" ></asp:TextBox></td>
                                     </tr> 
-                                    <tr>
+                                    <tr id="trRole" runat="server">
                                         <td>Role *</td>
                                         <td style="padding:.5em"> <asp:DropDownList ID="DDRole" runat="server" Width="250px"></asp:DropDownList></td>
                                     </tr>
-                                    <tr>
+                                    <tr id="trSuperUser" runat="server">
                                         <td>Is a Super User</td>
                                         <td> <asp:CheckBox ID="chkSuperUser" runat="server" Text=" " Checked="false" /></td>
                                     </tr>

@@ -87,6 +87,8 @@
 
         <asp:Panel ID="pnlScan" runat="server" CssClass="mob-scan-bar">
             <div class="mob-scan-wrap">
+                <asp:DropDownList ID="ddlWO" runat="server" Visible="false" AutoPostBack="true" OnSelectedIndexChanged="ddlWO_SelectedIndexChanged"
+                    CssClass="mob-lot-select" style="font-size:16px; width:100%;" />
                 <asp:TextBox ID="txtScan" runat="server" placeholder="Scan WO&hellip;" AutoPostBack="true" OnTextChanged="txtScan_TextChanged"
                     autocomplete="off" autocorrect="off" autocapitalize="off" style="font-size:16px;" />
                 <asp:LinkButton ID="lbtnLoadDoc" runat="server" OnClick="lbtnLoadDoc_Click" Visible="false" CssClass="mob-action-btn" style="min-width:4em;">Load</asp:LinkButton>
@@ -116,6 +118,7 @@
         </asp:Panel>
 
         <asp:Panel ID="pnlMake" runat="server" Visible="false" CssClass="qm-card">
+            <asp:PlaceHolder ID="phStores" runat="server"><%-- hidden for slim manufacturing (one SAGE store) --%>
             <div class="ho-field" style="margin-top:0;">
                 <label>From store (consume raw materials)</label>
                 <asp:DropDownList ID="ddlStore" runat="server" CssClass="mob-lot-select" />
@@ -124,6 +127,7 @@
                 <label>Destination store (for "Make &amp; move")</label>
                 <asp:DropDownList ID="ddlToStore" runat="server" CssClass="mob-lot-select" />
             </div>
+            </asp:PlaceHolder>
             <div class="mob-qty-input-row" style="margin-top:.6em;">
                 <span class="mob-qty-label">Make</span>
                 <asp:TextBox ID="txtQty" runat="server" TextMode="Number" />

@@ -204,6 +204,24 @@ namespace SBMS
         protected global::System.Web.UI.WebControls.CheckBox chkSuperUser;
 
         /// <summary>
+        /// trRole control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlTableRow trRole;
+
+        /// <summary>
+        /// trSuperUser control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlTableRow trSuperUser;
+
+        /// <summary>
         /// chkIsActive control.
         /// </summary>
         /// <remarks>

@@ -48,6 +48,9 @@
 
             var unitCostText = costElement.textContent || '0';
             var unitCost = parseFloat(unitCostText.replace(/[^\d.-]/g, '')) || 0;
+            // Slim pages carry the exact Sage average (invariant) - use it so this matches the footer WO cost.
+            var exactCost = parseFloat(costElement.getAttribute('data-cost'));
+            if (!isNaN(exactCost)) unitCost = exactCost;
             var useQty = parseFloat(input.value) || 0;
 
             totalMaterialCost += useQty * unitCost;

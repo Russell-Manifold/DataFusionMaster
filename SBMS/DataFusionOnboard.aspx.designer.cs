@@ -303,6 +303,15 @@ namespace SBMS
         protected global::System.Web.UI.WebControls.CheckBox chkMod3;
 
         /// <summary>
+        /// chkSageStockOnly control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.CheckBox chkSageStockOnly;
+
+        /// <summary>
         /// chkLotTrack control.
         /// </summary>
         /// <remarks>

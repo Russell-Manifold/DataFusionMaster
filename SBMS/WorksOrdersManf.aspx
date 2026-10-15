@@ -11,7 +11,7 @@
     <link id="Link3" runat="server" rel="shortcut icon" href="images/datafusionicon.ico" type="image/x-icon" />
     <link id="Link4" runat="server" rel="icon" href="images/datafusionicon.ico" type="image/ico" />
     <link rel="stylesheet" href="assets/css/main.css" />
-    <script src="js/cost-calculation.js" type="text/javascript"></script>
+    <script src="js/cost-calculation.js?v=2" type="text/javascript"></script>
      <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> <!-- Simple button disable script -->
     <script type="text/javascript">
         function disableButtonsDuringProcess() {
@@ -381,7 +381,7 @@
             txtNewSell.value = newSell.toFixed(2);
         }
     </script>
-     <script src="<%= ResolveUrl("~/js/cost-calculation.js") %>"></script>
+     <script src="<%= ResolveUrl("~/js/cost-calculation.js?v=2") %>"></script>
      <script src="<%= ResolveUrl("~/scripts/itemSearch.js") %>"></script>
 </body>
 </html>

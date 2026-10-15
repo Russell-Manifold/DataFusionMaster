@@ -2069,6 +2069,123 @@ namespace SBMS.Classes
             }
         }
 
+        // Same as LoadOneItemNA, but for many items in ONE Sage call: an OData $filter on ID
+        // ("ID eq 1 or ID eq 2 ..."), 25 IDs per call - the same chunk as Receiving's batch refresh
+        // (OData's default filter limit is 100 nodes). Returns false if a batch failed or an item
+        // was not returned; the batches that did come back are still saved.
+        public bool LoadItemsNA(List<long> ItemIDs, UserDetails Userdetails)
+        {
+            bool ok = true;
+            using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+            {
+                List<long> ids = ItemIDs.Distinct().ToList();
+                for (int i = 0; i < ids.Count; i += 25)
+                {
+                    List<long> batch = ids.Skip(i).Take(25).ToList();
+                    string filter = string.Join(" or ", batch.Select(id => "ID eq " + id));
+                    string requestUrl = sageurl + "Item/Get?apikey={" + APIKey + "}&CompanyID=" + Userdetails.CoID + "&$filter=" + Uri.EscapeDataString(filter);
+                    JObject parsedJSON = ApiCallNA(requestUrl, Userdetails); // Call the API synchronously
+
+                    if (parsedJSON.Count == 0 || !(parsedJSON["Results"] is JArray)) { ok = false; continue; }   // Sage call failed - this batch stays stale
+                    if (((JArray)parsedJSON["Results"]).Count < batch.Count) ok = false;   // an item was not returned
+
+                    foreach (JObject itemJSON in (JArray)parsedJSON["Results"])
+                    try   // one malformed item must not lose the refresh for the rest
+                    {
+                        long ItemID = Convert.ToInt64(itemJSON["ID"].ToString());
+                        string Categ = string.Empty;
+                        int CategID = 0;
+                        if (itemJSON.ToString().Contains("Category"))
+                        {
+                            Categ = itemJSON["Category"]["Description"].ToString();
+                            CategID = Convert.ToInt32(itemJSON["Category"]["ID"].ToString());
+                        }
+                        string unt = "EACH";
+                        if (itemJSON["Unit"] != null) unt = itemJSON["Unit"].ToString();
+
+                        var itm = _db.ItemsMasters.FirstOrDefault(x => x.ID == ItemID);
+                        if (itm != null)
+                        {
+                            if (itemJSON["Active"] != null) itm.Active = Convert.ToBoolean(itemJSON["Active"].ToString() ?? "");
+                            itm.AverageCost = Convert.ToDecimal(itemJSON["AverageCost"] ?? "", CultureInfo.InvariantCulture);
+                            itm.CategoryDescript = Categ;
+                            itm.CategoryID = CategID;
+                            itm.CompanyID = Userdetails.CoID;
+                            itm.Code = new string((itemJSON["Code"] ?? "").ToString().Take(50).ToArray());   // column widths, as the bulk sync
+                            itm.Description = new string((itemJSON["Description"] ?? "").ToString().Take(100).ToArray());
+                            itm.LastCost = Convert.ToDecimal(itemJSON["LastCost"] ?? 0, CultureInfo.InvariantCulture);
+                            itm.NumericUserField1 = Convert.ToDecimal(itemJSON["NumericUserField1"] ?? 0, CultureInfo.InvariantCulture);
+                            itm.NumericUserField2 = Convert.ToDecimal(itemJSON["NumericUserField2"] ?? 0, CultureInfo.InvariantCulture);
+                            itm.NumericUserField3 = Convert.ToDecimal(itemJSON["NumericUserField3"] ?? 0, CultureInfo.InvariantCulture);
+                            itm.Physical = Convert.ToBoolean(itemJSON["Physical"].ToString() ?? "");
+                            itm.PriceExclusive = Convert.ToDecimal(itemJSON["PriceExclusive"] ?? 0, CultureInfo.InvariantCulture);
+                            itm.PriceInclusive = Convert.ToDecimal(itemJSON["PriceInclusive"] ?? 0, CultureInfo.InvariantCulture);
+                            itm.QuantityOnHand = Convert.ToDecimal(itemJSON["QuantityOnHand"] ?? 0, CultureInfo.InvariantCulture);
+                            itm.QuantityReserved = Convert.ToDecimal(itemJSON["QuantityReserved"] ?? 0, CultureInfo.InvariantCulture);
+                            itm.TextUserField1 = (itemJSON["TextUserField1"] ?? "").ToString();
+                            itm.TextUserField2 = (itemJSON["TextUserField2"] ?? "").ToString();
+                            itm.TextUserField3 = (itemJSON["TextUserField3"] ?? "").ToString();
+                            string unit = (itemJSON["Unit"] ?? "").ToString() ?? "";
+                            itm.Unit = unit.Length > 10 ? unit.Substring(0, 10) : unit;
+                            if (itemJSON["YesNoUserField1"] != null) itm.YesNoUserField1 = Convert.ToBoolean(itemJSON["YesNoUserField1"].ToString() ?? "");
+                            if (itemJSON["YesNoUserField2"] != null) itm.YesNoUserField2 = Convert.ToBoolean(itemJSON["YesNoUserField2"].ToString() ?? "");
+                            if (itemJSON["YesNoUserField3"] != null) itm.YesNoUserField3 = Convert.ToBoolean(itemJSON["YesNoUserField3"].ToString() ?? "");
+                            _db.Entry(itm).State = System.Data.Entity.EntityState.Modified;
+                        }
+                        else
+                        {
+                            ItemsMaster thisitm = new ItemsMaster();
+                            if (itemJSON["Active"] != null) thisitm.Active = Convert.ToBoolean(itemJSON["Active"].ToString() ?? "");
+                            thisitm.AverageCost = Convert.ToDecimal(itemJSON["AverageCost"] ?? "", CultureInfo.InvariantCulture);
+                            thisitm.CategoryDescript = Categ;
+                            thisitm.CategoryID = CategID;
+                            thisitm.CompanyID = Userdetails.CoID;
+                            thisitm.Code = new string((itemJSON["Code"] ?? "").ToString().Take(50).ToArray());
+                            thisitm.Description = new string((itemJSON["Description"] ?? "").ToString().Take(100).ToArray());
+                            thisitm.ID = Convert.ToInt32(itemJSON["ID"].ToString());
+                            thisitm.LastCost = Convert.ToDecimal(itemJSON["LastCost"] ?? 0, CultureInfo.InvariantCulture);
+                            thisitm.NumericUserField1 = Convert.ToDecimal(itemJSON["NumericUserField1"] ?? 0, CultureInfo.InvariantCulture);
+                            thisitm.NumericUserField2 = Convert.ToDecimal(itemJSON["NumericUserField2"] ?? 0, CultureInfo.InvariantCulture);
+                            thisitm.NumericUserField3 = Convert.ToDecimal(itemJSON["NumericUserField3"] ?? 0, CultureInfo.InvariantCulture);
+                            thisitm.Physical = Convert.ToBoolean(itemJSON["Physical"].ToString() ?? "");
+                            // Match the bulk sync: a new item inherits the company's lot policy.
+                            thisitm.IsLotTracked = Userdetails.CompanyUseLotNumbers && (thisitm.Physical == true);
+                            thisitm.PriceExclusive = Convert.ToDecimal(itemJSON["PriceExclusive"] ?? 0, CultureInfo.InvariantCulture);
+                            thisitm.PriceInclusive = Convert.ToDecimal(itemJSON["PriceInclusive"] ?? 0, CultureInfo.InvariantCulture);
+                            thisitm.QuantityOnHand = Convert.ToDecimal(itemJSON["QuantityOnHand"] ?? 0, CultureInfo.InvariantCulture);
+                            thisitm.QuantityReserved = Convert.ToDecimal(itemJSON["QuantityReserved"] ?? 0, CultureInfo.InvariantCulture);
+                            thisitm.TextUserField1 = (itemJSON["TextUserField1"] ?? "").ToString();
+                            thisitm.TextUserField2 = (itemJSON["TextUserField2"] ?? "").ToString();
+                            thisitm.TextUserField3 = (itemJSON["TextUserField3"] ?? "").ToString();
+                            string unit = (itemJSON["Unit"] ?? "").ToString() ?? "";
+                            thisitm.Unit = unit.Length > 10 ? unit.Substring(0, 10) : unit;
+                            if (itemJSON["YesNoUserField1"] != null) thisitm.YesNoUserField1 = Convert.ToBoolean(itemJSON["YesNoUserField1"].ToString() ?? "");
+                            if (itemJSON["YesNoUserField2"] != null) thisitm.YesNoUserField2 = Convert.ToBoolean(itemJSON["YesNoUserField2"].ToString() ?? "");
+                            if (itemJSON["YesNoUserField3"] != null) thisitm.YesNoUserField3 = Convert.ToBoolean(itemJSON["YesNoUserField3"].ToString() ?? "");
+                            thisitm.IsBOMComponent = false;
+                            thisitm.IsKitComponent = false;
+                            thisitm.IsFinishedGoods = true;
+                            thisitm.IsFromBOM = false;
+                            thisitm.IsFromKit = false;
+                            thisitm.TaxTypeIdSales = Convert.ToInt32(itemJSON["TaxTypeIdSales"] ?? 0);
+                            thisitm.TaxTypeSalesPerc = _db.TaxTypesMasters.Where(x => x.CompanyID == Userdetails.CoID && x.TaxTypeID == thisitm.TaxTypeIdSales).Select(x => x.TaxPerc).FirstOrDefault();
+                            thisitm.TaxTypeIdPurchase = Convert.ToInt32(itemJSON["TaxTypeIdPurchases"] ?? 0);
+                            thisitm.TaxTypePurchPerc = _db.TaxTypesMasters.Where(x => x.CompanyID == Userdetails.CoID && x.TaxTypeID == thisitm.TaxTypeIdPurchase).Select(x => x.TaxPerc).FirstOrDefault();
+                            _db.ItemsMasters.Add(thisitm);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        ok = false;
+                        LogErrorToFile($"LoadItemsNA: item {itemJSON["ID"]} skipped - {ex.Message}");
+                    }
+                    parsedJSON.RemoveAll();
+                }
+                _db.SaveChanges();
+                return ok;
+            }
+        }
+
         public JObject ApiCallNA(string requestUrl, UserDetails userDetails)
         {
             using (HttpClient client = NewPooledClient())

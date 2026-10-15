@@ -35,6 +35,11 @@ namespace SBMS
             }
 
             CoID = CurrentUser.CoID;
+            // Slim manufacturing: one SAGE store, on-hand from Sage - no store links or per-store
+            // stock, no barcodes or labels, no user defined fields, no store filter on the history.
+            if (CurrentUser.SageStockOnly)
+                PaneStores.Visible = PaneQOHByStore.Visible = PaneBarcodes.Visible = lnkPrintLabels.Visible
+                    = PaneUDF.Visible = spnStore.Visible = ddStore.Visible = false;
             if (!IsPostBack)
             {
                 if (CurrentUser.CompanyUseLotNumbers == true)

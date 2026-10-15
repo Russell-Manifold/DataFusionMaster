@@ -123,7 +123,8 @@
         <div class="dash-welcome">Welcome, <asp:Label ID="lblUsername" runat="server" /></div>
     </div>
 
-    <%-- ══ Receiving & Put-away ══ --%>
+    <%-- ══ Receiving & Put-away ══ (hidden for slim manufacturing) --%>
+    <asp:PlaceHolder ID="phNotSlimTop" runat="server">
     <div class="dash-section-head">Receiving &amp; Put-away</div>
     <div class="dash-grid">
 
@@ -146,6 +147,7 @@
         </asp:LinkButton>
 
     </div>
+    </asp:PlaceHolder>
 
     <%-- ══ Manufacturing ══ --%>
     <div class="dash-section-head">Manufacturing</div>
@@ -159,7 +161,8 @@
 
     </div>
 
-    <%-- ══ Transfers ══ --%>
+    <%-- ══ Transfers, Picking, Stock counts ══ (hidden for slim manufacturing) --%>
+    <asp:PlaceHolder ID="phNotSlimBottom" runat="server">
     <div class="dash-section-head">Transfers</div>
     <div class="dash-grid">
 
@@ -200,6 +203,7 @@
         </asp:LinkButton>
 
     </div>
+    </asp:PlaceHolder>
 
 </form>
 

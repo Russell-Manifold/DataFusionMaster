@@ -213,6 +213,15 @@ namespace SBMS
         protected global::System.Web.UI.HtmlControls.HtmlGenericControl headmod2;
 
         /// <summary>
+        /// headmod1 control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl headmod1;
+
+        /// <summary>
         /// ibtnFCasts control.
         /// </summary>
         /// <remarks>

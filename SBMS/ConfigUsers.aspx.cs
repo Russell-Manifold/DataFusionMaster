@@ -49,7 +49,9 @@ namespace SBMS
             if (!IsPostBack)
             {
                 LoadUsers();
-            }     
+            }
+            // Slim manufacturing: no roles - every user gets everything.
+            trRole.Visible = trSuperUser.Visible = !CurrentUser.SageStockOnly;
         }
 
         protected void lbtnHome_Click(object sender, EventArgs e)
@@ -167,7 +169,10 @@ namespace SBMS
                     return;
                 }
                 
-                if (DDRole.SelectedIndex == 0)
+                // Slim manufacturing has no roles (and no super-user flag to edit): the user keeps
+                // whatever is on file, a new user gets role 0.
+                bool slim = CurrentUser.SageStockOnly;
+                if (DDRole.SelectedIndex == 0 && !slim)
                 {
                     string message = "alert('" + "Please select a valid role for this user." + "')";
                     ScriptManager.RegisterClientScriptBlock((sender as Control), this.GetType(), "alert", message, true);
@@ -204,9 +209,12 @@ namespace SBMS
                     var User = _db.UsersMasters.FirstOrDefault(x => x.ID == userid && x.CompanyID == CurrentUser.CoID);
                     User.FirstName = txtUsername.Text.Replace("'", "''");
                     User.Useremail = txtemail.Text.ToString();
-                    User.RoleId = Convert.ToInt32(DDRole.SelectedItem.Value.ToString());
+                    if (!slim)
+                    {
+                        User.RoleId = Convert.ToInt32(DDRole.SelectedItem.Value.ToString());
+                        User.IsSuperUser = chkSuperUser.Checked;
+                    }
                     User.Active = chkIsActive.Checked;
-                    User.IsSuperUser = chkSuperUser.Checked;
                     User.UseSageOAuth = useOAuth;
                     User.UseGenericLogin = useGeneric;
                     // Password is only changed when one is typed (left blank = keep the current one).
@@ -224,7 +232,7 @@ namespace SBMS
                     NewUser.Active = chkIsActive.Checked;
                     NewUser.UseSageOAuth = useOAuth;
                     NewUser.UseGenericLogin = useGeneric;
-                    NewUser.RoleId = Convert.ToInt32(DDRole.SelectedItem.Value.ToString());
+                    NewUser.RoleId = slim ? 0 : Convert.ToInt32(DDRole.SelectedItem.Value.ToString());
                     NewUser.UserGUID =Guid.NewGuid();
                     NewUser.userpwd = LocalPassword.Hash(txtPwd1.Text, (Guid)NewUser.UserGUID);
                     NewUser.CompanyID = CurrentUser.CoID;

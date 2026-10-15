@@ -66,6 +66,9 @@ namespace SBMS
                 imgbCount.Visible   = false;
                 imgbReceive.Visible = false;
             }
+
+            // Slim manufacturing: the Manufacturing tile only.
+            phNotSlimTop.Visible = phNotSlimBottom.Visible = !userDets.SageStockOnly;
         }
         // Mode 1 — Count: pick a PO, scan accept/reject counts; the web posts the GRN.
         protected void imgbCount_Click(object sender, EventArgs e)

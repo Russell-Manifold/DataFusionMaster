@@ -103,6 +103,16 @@ namespace SBMS
                 DDProgBoard.Items.Remove("Production");
                 PnlProduction.Style.Add("display", "none");
             }
+
+            // Slim manufacturing: Works Orders only - everything else lives in Sage.
+            if (userDets.SageStockOnly)
+            {
+                headmod1.Visible = false;
+                imgbRec.Visible = ibtnPickSlips.Visible = ibtnPickTrack.Visible = ibtnStckCtl.Visible = ibtnmrp2.Visible = false;
+                PnlForecast.Visible = false;
+                ibtnRMD.Visible = false;
+                DDProgBoard.Visible = false;
+            }
         }
 
         protected void lbtnLogOut_Click(object sender, EventArgs e)

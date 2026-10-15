@@ -40,6 +40,7 @@
                              <h4>Master Files Management</h4>
                             <ul>
                                 <li><asp:LinkButton ID="lbtnItems" runat="server" CssClass="buttonRed" style="width:100%" ToolTip="Add/Edit Item additional details" PostBackUrl="~/ItemsHeaders.aspx" >Items</asp:LinkButton></li>
+                                <li><asp:LinkButton ID="lbtnConvert" runat="server" Visible="false" CssClass="buttonRed" style="width:100%" ToolTip="Convert an item to a different item code or unit of measure" PostBackUrl="~/ItemConvertUOM.aspx" >Convert Item Code</asp:LinkButton></li>
                                 <li><asp:LinkButton ID="lbtnStores" runat="server" CssClass="buttonRed" style="width:100%" PostBackUrl="~/StoresMaster.aspx" ToolTip="Add/Edit Locations" >Multi Locations</asp:LinkButton></li>
                                 <li><asp:LinkButton ID="lbtnItemStore" runat="server" CssClass="buttonRed" style="width:100%" PostBackUrl="~/ItemStoresLink.aspx" ToolTip="Bulk link items to stores">Items<-->Stores Link</asp:LinkButton></li>
                                 <li><asp:LinkButton ID="lbtnPickProc" runat="server" CssClass="buttonRed" style="width:100%" ToolTip="Add/Edit Picking, Job Card and Production Processes" PostBackUrl="~/ConfigProcesses.aspx" >Internal Processes</asp:LinkButton></li>

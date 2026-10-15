@@ -43,7 +43,9 @@ namespace SBMS
                 using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
                 {
                     var CompanySettings = _db.CompanyMasters.Where(x => x.SBCACoID == CurrentUser.CoID).FirstOrDefault();
-                    if (CompanySettings.UseLotTracking == false)
+                    // Slim manufacturing switches lots off but keeps each item's own flags, so that
+                    // switching slim off later restores them.
+                    if (CompanySettings.UseLotTracking == false && !CurrentUser.SageStockOnly)
                     {
                         ViewState["UseLotTrack"] = false;
                         var itms = _db.ItemsMasters.Where(x => x.CompanyID == CurrentUser.CoID).ToList();
@@ -297,7 +299,8 @@ namespace SBMS
         {
             
             decimal SBCAQty = 0, MDFQty = 0, PickQty = 0, JCQty = 0;
-            if (e.Row.RowType == DataControlRowType.DataRow)
+            // Slim manufacturing has no Data Fusion stock to reconcile against Sage.
+            if (e.Row.RowType == DataControlRowType.DataRow && !CurrentUser.SageStockOnly)
             {
                 SBCAQty = CellParse.ToDecimal(e.Row.Cells[2].Text);
                 MDFQty = CellParse.ToDecimal(e.Row.Cells[3].Text);
@@ -336,6 +339,12 @@ namespace SBMS
                     e.Row.Cells[9].Visible = false;
                     e.Row.Cells[10].Visible = false;
                     e.Row.Cells[12].Visible = false;
+                }
+                // Slim manufacturing: Sage on-hand only - no Data Fusion on-hand or picked qty.
+                if (CurrentUser.SageStockOnly)
+                {
+                    e.Row.Cells[3].Visible = false;
+                    e.Row.Cells[4].Visible = false;
                 }
             }
          }
@@ -543,7 +552,8 @@ namespace SBMS
             dt.Columns.Add("Sage_QuantityOnHand", typeof(decimal));
             dt.Columns.Add("TotalPicked", typeof(decimal));
             dt.Columns.Add("ReorderLevel", typeof(decimal));
-            dt.Columns.Add("DataFusion_QOH", typeof(decimal));
+            bool slim = CurrentUser.SageStockOnly;   // slim manufacturing: no Data Fusion on-hand
+            if (!slim) dt.Columns.Add("DataFusion_QOH", typeof(decimal));
 
             foreach (var item in items)
             {
@@ -577,7 +587,7 @@ namespace SBMS
                     dr["Sage_QuantityOnHand"] = item.QuantityOnHand;
                 dr["TotalPicked"] = item.TotQPicked;
                 dr["ReorderLevel"] = item.ReorderLevel;
-                dr["DataFusion_QOH"] = item.TotQOH_MDF;
+                if (!slim) dr["DataFusion_QOH"] = item.TotQOH_MDF;
                 dt.Rows.Add(dr);
             }
 

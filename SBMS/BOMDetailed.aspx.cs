@@ -47,6 +47,14 @@ namespace SBMS
                 //deleteNewUnused();
                 LoadBom();
             }
+            // Slim manufacturing never adds or pushes a cost or price: no additional costs, no
+            // "Update Sage", no Required GP / New Selling Price.
+            if (CurrentUser.SageStockOnly)
+            {
+                Panel2.Visible = false;
+                lbtnSBCAUpdate.Style.Add("display", "none");
+                trNewGP.Visible = trNewSell.Visible = false;
+            }
         }
 
 
@@ -160,7 +168,8 @@ namespace SBMS
 
                     var totalRMQty = BomL.Sum(bomLine => bomLine.RMQty);
                     var totalRMCost = BomL.Sum(bomLine => bomLine.AvRMCost);
-                    decimal BOMCost = adc1 + adc2 + adc3 + totalRMCost;
+                    // Slim manufacturing has no additional costs (hidden, never posted), so they are not in the cost.
+                    decimal BOMCost = (CurrentUser.SageStockOnly ? 0 : adc1 + adc2 + adc3) + totalRMCost;
                     if (BomL.Count > 0)
                     {
                         GridBOMLines.DataSource = BomL;
@@ -438,7 +447,8 @@ namespace SBMS
             // An additional cost has to have somewhere to post. It raises stock value in Sage
             // and needs a matching credit, so refuse to save a cost without an account rather
             // than let it fail later at manufacture.
-            if (!BomAddCostAccounts.Validate(this, DDAddCostAcct, CurrentUser, adc1 + adc2 + adc3)) return;
+            // Slim manufacturing never posts additional costs, so there is nothing to validate.
+            if (!CurrentUser.SageStockOnly && !BomAddCostAccounts.Validate(this, DDAddCostAcct, CurrentUser, adc1 + adc2 + adc3)) return;
 
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {
@@ -500,6 +510,8 @@ namespace SBMS
 
         protected async void lbtnSBCAUpdate_Click(object sender, EventArgs e)
         {
+            if (CurrentUser.SageStockOnly) return;   // slim manufacturing: Data Fusion never changes a cost or price
+
             // The New Selling Price is calculated client-side and is deliberately
             // blanked when Required GP% >= 100, when GP%/cost is missing, or when the
             // result is non-finite. An empty box therefore means the inputs were

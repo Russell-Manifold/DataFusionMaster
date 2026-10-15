@@ -52,7 +52,7 @@
                                         </div>
                                  </div>
                                 <asp:Panel ID="pnlButtons" runat="server">  
-                                    <h5>Module 1 - Multi Stores, Receiving, Item Transfers & Picking Slip Management,
+                                    <h5 id="headmod1" runat="server">Module 1 - Multi Stores, Receiving, Item Transfers & Picking Slip Management,
                                         <br />
                                         Stock Counts, Lot/Batch Tracking & Item Movement Reporting</h5>
                                     <asp:LinkButton ID="imgbRec" runat="server" CssClass="button big" OnClick="imgbRec_Click" OnClientClick="showDiv()" ToolTip ="See outstanding Purchase Orders and carry out receiving process."><img src="images/receiving.png" alt="Click Here" class="image fit" /></asp:LinkButton>

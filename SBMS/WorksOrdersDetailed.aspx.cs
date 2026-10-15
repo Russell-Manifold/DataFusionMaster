@@ -197,7 +197,10 @@ namespace SBMS
             bool isFromBom;
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {
-                onHand = _db.ItemTransactions
+                onHand = CurrentUser.SageStockOnly
+                    ? _db.ItemsMasters.Where(x => x.CompanyID == CoID && x.ID == itemId)   // slim manufacturing: stock lives in Sage
+                        .Select(x => x.QuantityOnHand).FirstOrDefault() ?? 0
+                    : _db.ItemTransactions
                     .Where(x => x.CompanyID == CoID && x.ItemID == itemId)
                     .Select(x => (decimal?)x.Qty).DefaultIfEmpty(0).Sum() ?? 0;
                 isFromBom = _db.ItemsMasters

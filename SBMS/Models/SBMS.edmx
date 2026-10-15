@@ -160,6 +160,7 @@
           <Property Name="UseSerialNumbers" Type="bit" Nullable="false" />
           <Property Name="AllowRecPriceEdit" Type="bit" Nullable="false" />
           <Property Name="InvoiceWhenSOComplete" Type="bit" Nullable="false" />
+          <Property Name="SageStockOnly" Type="bit" Nullable="false" />
         </EntityType>
         <EntityType Name="DelivMethods">
           <Key>
@@ -3314,6 +3315,7 @@
           <Property Name="BinDelimiter" Type="String" MaxLength="3" FixedLength="false" Unicode="false" />
           <Property Name="MobileModule" Type="Boolean" Nullable="false" />
           <Property Name="LPNPickMode" Type="String" Nullable="false" MaxLength="10" FixedLength="false" Unicode="false" />
+          <Property Name="SageStockOnly" Type="Boolean" Nullable="false" />
         </EntityType>
         <EntityType Name="UsersMaster">
           <Key>
@@ -5195,6 +5197,7 @@
           <EntitySetMapping Name="CompanyMasters">
             <EntityTypeMapping TypeName="SBMSModel.CompanyMaster">
               <MappingFragment StoreEntitySet="CompanyMaster">
+                <ScalarProperty Name="SageStockOnly" ColumnName="SageStockOnly" />
                 <ScalarProperty Name="LPNPickMode" ColumnName="LPNPickMode" />
                 <ScalarProperty Name="MobileModule" ColumnName="MobileModule" />
                 <ScalarProperty Name="BinDelimiter" ColumnName="BinDelimiter" />

@@ -456,6 +456,24 @@ namespace SBMS
         protected global::System.Web.UI.WebControls.CheckBox chkMobileModule;
 
         /// <summary>
+        /// chkSageStockOnly control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.CheckBox chkSageStockOnly;
+
+        /// <summary>
+        /// litSlimCss control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litSlimCss;
+
+        /// <summary>
         /// chkNotifs control.
         /// </summary>
         /// <remarks>

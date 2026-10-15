@@ -82,6 +82,12 @@ namespace SBMS
                 ibtmWOrdMgment.Style.Add("display", "none");
                 ibtnRMD.Style.Add("display", "none");
             }
+            // Slim manufacturing: Works Orders only.
+            if (CurrentUser.SageStockOnly)
+            {
+                imgbRec.Visible = ibtnPickSlips.Visible = ibtnPickTrack.Visible = ibtnStckCtl.Visible = false;
+                ibtnFCasts.Visible = ibtnmrp.Visible = ibtnJobTrack.Visible = ibtnRMD.Visible = false;
+            }
         }
 
         protected void LoadWOs(string sortExpression = "WONum", string sortDirection = "Desc")

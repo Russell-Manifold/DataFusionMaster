@@ -21,7 +21,7 @@
                         <asp:LinkButton ID="lbtnBOM" runat="server" class="buttonC icon fa-book" onclick="lbtnBOM_Click" >&nbsp;View Bill Of Materials (BOM)</asp:LinkButton>
                         <asp:LinkButton ID="lbtnBOMLinks" runat="server" class="buttonC icon fa-sitemap" onclick="lbtnBOMLinks_Click" Visible="false" ToolTip="View all BOMs that use this item as a component" >&nbsp;View BOMs Using This Item</asp:LinkButton>
                         <asp:LinkButton ID="LbtnKit" runat="server" class="buttonC icon fa-bookmark" onclick="LbtnKit_Click">&nbsp;View Kit</asp:LinkButton>
-                        <a href="#" onclick="location.href='LabelPrint.aspx' + location.search; return false;" class="buttonC icon fa-barcode">&nbsp;Print Labels</a>
+                        <a id="lnkPrintLabels" runat="server" href="#" onclick="location.href='LabelPrint.aspx' + location.search; return false;" class="buttonC icon fa-barcode">&nbsp;Print Labels</a>
                         <asp:LinkButton ID="lbtnLogOut" runat="server" class="buttonTransparent icon fa-eject" style="float:right" onclick="lbtnLogOut_Click">&nbsp;</asp:LinkButton><br />
                         <h3 style="padding-top:0; line-height:1em">Item Master</h3>                    
                     </div>
@@ -126,7 +126,7 @@
                                          </asp:Panel>--%>
                                     </Content>
                                  </cci:AccordionPane>     
-                             <cci:AccordionPane runat="server">
+                             <cci:AccordionPane ID="PaneStores" runat="server">
                                   <Header>
                                           2) Linked Stores
                                     </Header>
@@ -137,7 +137,7 @@
                                      
                                     </Content>
                                  </cci:AccordionPane>
-                              <cci:AccordionPane runat="server">
+                              <cci:AccordionPane ID="PaneQOHByStore" runat="server">
                                   <Header>
                                           3) Qty On Hand By Store
                                     </Header>
@@ -154,7 +154,7 @@
                                         </asp:GridView>
                                     </Content>
                                  </cci:AccordionPane>
-                              <cci:AccordionPane runat="server">
+                              <cci:AccordionPane ID="PaneBarcodes" runat="server">
                                   <Header>
                                           4) Bar Codes
                                     </Header>
@@ -182,7 +182,7 @@
                                      <br />
                                     </Content>
                                  </cci:AccordionPane>
-                             <cci:AccordionPane runat="server">
+                             <cci:AccordionPane ID="PaneUDF" runat="server">
                             <Header>
                                     5) User Defined Fields
                               </Header>
@@ -204,7 +204,7 @@
                         <asp:LinkButton ID="lbtnSaveItem" runat="server" CssClass="icon fa-save buttonRed" OnClick="lbtnSaveItem_Click" style="width:100%; font-size:1.2em" >&nbsp;Save Changes</asp:LinkButton>
                   
                         <h2>Item Movement History</h2>
-                        Store <asp:DropDownList ID="ddStore" runat="server" AutoPostBack="true" OnSelectedIndexChanged="ddStore_SelectedIndexChanged" CssClass="optiondd"></asp:DropDownList>
+                        <span id="spnStore" runat="server">Store</span> <asp:DropDownList ID="ddStore" runat="server" AutoPostBack="true" OnSelectedIndexChanged="ddStore_SelectedIndexChanged" CssClass="optiondd"></asp:DropDownList>
                             <asp:GridView ID="GridItemTrans" runat="server" AutoGenerateColumns="false" CssClass="gridview"  ShowHeaderWhenEmpty ="true" ShowFooter="true" OnRowDataBound="GridItemTrans_RowDataBound" >
                             <HeaderStyle CssClass="gridViewHeader" />
                             <FooterStyle CssClass="gridViewHeader" />

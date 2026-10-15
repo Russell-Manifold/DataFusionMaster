@@ -45,8 +45,12 @@ namespace SBMS
                     chkMod2.Enabled = false;
                     chkMod3.Enabled = false;
                     chkMobileModule.Enabled = false;
+                    chkSageStockOnly.Enabled = false;   // like the modules: customers ask us to switch slim on or off
                 }
             }
+            // Slim: hide every setting the slim version does not use (rendered and posted as before,
+            // so saving keeps their values - just not shown).
+            litSlimCss.Text = CurrentUser.SageStockOnly ? "<style>.slim-hide{display:none !important}</style>" : "";
         }
 
         protected void lbtnHome_Click(object sender, EventArgs e)
@@ -178,6 +182,12 @@ namespace SBMS
                 DDecPlaces.Text = Comp.ItemQtyDecPlaces.ToString();
                 chkMod2.Checked = Convert.ToBoolean(Comp.UseModule2);
                 chkMod3.Checked = Convert.ToBoolean(Comp.UseModule3);
+                // Slim manufacturing: changeable only while the company has no stock history
+                // (switching it later would need a stock take to seed or retire the ledger).
+                long ssCo = CurrentUser.CoID;
+                chkSageStockOnly.Checked = Comp.SageStockOnly;
+                chkSageStockOnly.Enabled = !_db.ItemTransactions.Any(x => x.CompanyID == ssCo);
+                ApplySageStockOnly();
                 if (Comp.SageWeightField != null)
                 {
                     txtSageWght.Text = Comp.SageWeightField.ToString();
@@ -205,6 +215,11 @@ namespace SBMS
             {
                 var Comp = _db.CompanyMasters.FirstOrDefault(x => x.SBCACoID == CurrentUser.CoID);
                 {
+                    // Slim manufacturing changes only while there is no stock history; it then
+                    // forces its pairing (below) whatever the other boxes say.
+                    long ssCo = CurrentUser.CoID;
+                    if (!_db.ItemTransactions.Any(x => x.CompanyID == ssCo)) Comp.SageStockOnly = chkSageStockOnly.Checked;
+                    if (Comp.SageStockOnly) uselotTrack = false;
                     Comp.CompanyName = lblCoName.Text;
                     // Generic Sage login (Basic auth) for users flagged "Use Generic Login".
                     // Same TripleDES key/iv as onboarding uses for SBCApwd; Login decrypts it.
@@ -246,6 +261,14 @@ namespace SBMS
                     CurrentUser.UsePickSlipTracking = Comp.UsePickSlipTracking;
                     Comp.MobileModule = chkMobileModule.Checked;
                     CurrentUser.MobileModule = Comp.MobileModule;
+                    if (Comp.SageStockOnly)
+                    {
+                        Comp.UseModule2 = CurrentUser.UseModule2 = false;
+                        Comp.UseModule3 = CurrentUser.UseModule3 = true;
+                        Comp.UseAutoManf = CurrentUser.UseAutoManf = true;
+                        Comp.MobileModule = CurrentUser.MobileModule = true;
+                    }
+                    CurrentUser.SageStockOnly = Comp.SageStockOnly;
                     phMobileTab.Visible = chkMobileModule.Checked;
                     phMobileTabBtn.Visible = chkMobileModule.Checked;
                     Comp.AutoUpdateSageSOs = chkPSAuto.Checked;
@@ -280,6 +303,7 @@ namespace SBMS
                         CurrentUser.SageWeightField = null;
                     }
                         _db.SaveChanges();
+                if (Comp.SageStockOnly) SageStore.Ensure(_db, ssCo);
                 string message = "Successfully Saved";
                 string icon = "success";
 
@@ -454,6 +478,53 @@ namespace SBMS
                 chkAutoManf.Enabled = true;
             }
             ApplyLotTrackDependants();
+        }
+
+        protected void chkSageStockOnly_CheckedChanged(object sender, EventArgs e)
+        {
+            if (!chkSageStockOnly.Checked)
+            {
+                // Unticked again before saving: put back what the company actually has, so
+                // ticking it by mistake does not leave its forced settings behind.
+                using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+                {
+                    var Comp = _db.CompanyMasters.FirstOrDefault(x => x.SBCACoID == CurrentUser.CoID);
+                    if (Comp != null)
+                    {
+                        chkLotTrack.Checked = Comp.UseLotTracking;
+                        chkSysLot.Checked = Comp.AllowSystemLotNumbers == true;
+                        chkSerialTrack.Checked = Comp.UseSerialNumbers;
+                        chkAutoManf.Checked = chkAutoManfConf.Checked = Comp.UseAutoManf;
+                        chkMod2.Checked = Comp.UseModule2;
+                        chkMod3.Checked = Comp.UseModule3;
+                        chkMobileModule.Checked = Comp.MobileModule;
+                    }
+                }
+                ApplyLotTrackDependants();
+            }
+            ApplySageStockOnly();
+        }
+
+        // Slim manufacturing forces Module 3 + Auto Manufacture + Mobile on and Module 2 + lots
+        // off, and locks lot tracking / Auto Manufacture while it is on. Save enforces the same.
+        private void ApplySageStockOnly()
+        {
+            bool slim = chkSageStockOnly.Checked;
+            if (slim)
+            {
+                chkLotTrack.Checked = false;
+                ApplyLotTrackDependants();
+                chkAutoManf.Checked = chkAutoManfConf.Checked = true;
+                chkMod2.Checked = false;
+                chkMod3.Checked = chkMobileModule.Checked = true;
+                // Everything on the hidden Lots/Packs/Bins and Mobile Picking tabs is off (saved as off).
+                chkUsePacks.Checked = false;
+                chkScanCount.Checked = chkScanReceive.Checked = chkScanPutAway.Checked = false;
+                chkPickSlip.Checked = chkPickByBin.Checked = false;
+                if (DDLPNMode.Items.FindByValue("off") != null) DDLPNMode.SelectedValue = "off";
+            }
+            chkLotTrack.Enabled = !slim;
+            chkAutoManf.Enabled = !slim;
         }
 
         // The Advanced and System-Generated options only mean anything while lot tracking

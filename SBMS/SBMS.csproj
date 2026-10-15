@@ -1114,6 +1114,7 @@
       <DependentUpon>Traceability.aspx</DependentUpon>
     </Compile>
     <Compile Include="Classes\StoreCosting.cs" />
+    <Compile Include="Classes\SageStore.cs" />
     <Compile Include="Classes\Authentication.cs" />
     <Compile Include="Classes\ChatService.cs" />
     <Compile Include="Classes\HelpService.cs" />

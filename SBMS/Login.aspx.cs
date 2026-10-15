@@ -445,7 +445,8 @@ namespace SBMS
                             x.UsePacks,
                             x.UseEndDate,
                             x.ShowManfCosts,
-                            x.SageWeightField
+                            x.SageWeightField,
+                            x.SageStockOnly
                         })
                         .FirstOrDefault();
 
@@ -486,6 +487,41 @@ namespace SBMS
                     userDetails.BinSegments = GenLogIn.BinSegments ?? "";
                     userDetails.BinDelimiter = string.IsNullOrEmpty(GenLogIn.BinDelimiter) ? "-" : GenLogIn.BinDelimiter;
                     userDetails.CompanyDecPlaces = GenLogIn.ItemQtyDecPlaces;
+
+                    // Slim manufacturing: no roles or restrictions - every user gets everything.
+                    // Set here, after the company row, because roles are read before it.
+                    userDetails.SageStockOnly = GenLogIn.SageStockOnly;
+                    if (userDetails.SageStockOnly)
+                    {
+                        userDetails.CanReceive = userDetails.CanTransfer = userDetails.CanViewPickSlips = userDetails.CanTrackPickSlips = true;
+                        userDetails.CanSalesForecast = userDetails.CanViewJobCards = userDetails.CanTrackJobCards = userDetails.CanSeeFGDemands = true;
+                        userDetails.CanCreateBomKit = userDetails.CanStockControl = userDetails.CanViewWorksOrders = userDetails.CanFillWorksOrders = true;
+                        userDetails.CanViewRMD = userDetails.CanEditLotNumbers = true;
+                        // Slim forces its pairing whatever the company row says (e.g. the flag was
+                        // set by script): Module 3 + Auto Manufacture + Mobile on, Module 2 and lots off.
+                        userDetails.UseModule2 = false;
+                        userDetails.UseModule3 = userDetails.UseAutoManf = userDetails.MobileModule = true;
+                        userDetails.CompanyUseLotNumbers = userDetails.CompanyUseSerialNumbers = false;
+                        userDetails.UsePacks = userDetails.UsePickSlipTracking = false;
+                        userDetails.AllowScannerCount = userDetails.AllowScannerReceive = userDetails.AllowScannerPutAway = false;
+                        // ...and writes the same back, so pages that read the company row agree. A no-op
+                        // once in step. Never allowed to break login.
+                        try
+                        {
+                            _db.Database.ExecuteSqlCommand(
+                                "UPDATE dbo.CompanyMaster SET UseModule2 = 0, UseModule3 = 1, UseAutoManf = 1, MobileModule = 1, UseLotTracking = 0, UseSerialNumbers = 0, UseBarcodes = 0, " +
+                                "UsePacks = 0, AllowScannerCount = 0, AllowScannerReceive = 0, AllowScannerPutAway = 0, UsePickSlipTracking = 0, LPNPickMode = 'off' " +
+                                "WHERE SBCACoID = @p0 AND SageStockOnly = 1 AND (UseModule2 = 1 OR UseModule3 = 0 OR UseAutoManf = 0 OR MobileModule = 0 OR UseLotTracking = 1 OR UseSerialNumbers = 1 OR UseBarcodes = 1 " +
+                                "OR UsePacks = 1 OR AllowScannerCount = 1 OR AllowScannerReceive = 1 OR AllowScannerPutAway = 1 OR UsePickSlipTracking = 1 OR LPNPickMode <> 'off')",
+                                userDetails.CoID);
+                            // Items keep their own lot/serial flags (switching slim off restores them);
+                            // slim simply ignores them.
+                        }
+                        catch (Exception ex)
+                        {
+                            new ApiUrlCall().LogErrorToFile($"CoID:{userDetails.CoID} slim login - settings sync failed: {ex.Message}");
+                        }
+                    }
 
                 }
 
@@ -674,7 +710,19 @@ namespace SBMS
                 }
 
                 int StorCount = _db.Stores.Where(x => x.CompanyID == userDets.CoID).Count();
-                if (StorCount < 1)
+                if (StorCount < 1 && userDets.SageStockOnly)
+                {
+                    // Slim manufacturing: one store only - stock lives in Sage.
+                    try
+                    {
+                        SageStore.Ensure(_db, userDets.CoID);
+                    }
+                    catch (Exception ex)
+                    {
+                        new ApiUrlCall().LogErrorToFile($"CoID:{userDets.CoID} first-use setup - SAGE store save failed: {ex.Message}");
+                    }
+                }
+                if (StorCount < 1 && !userDets.SageStockOnly)
                 {
                     // add default stores
                     Store stor = new Store();

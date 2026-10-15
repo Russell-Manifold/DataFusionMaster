@@ -67,10 +67,22 @@ namespace SBMS
             lblUsername.Text = CurrentUser.UserName;
 
             // Barcode-off: capture the WO number by typing + Load button (scanner auto-submits on scan).
-            bool scan = CurrentUser.MobileModule == true;
+            bool scan = CurrentUser.MobileModule == true && !CurrentUser.SageStockOnly;   // slim: no barcodes
             txtScan.AutoPostBack = scan;
             lbtnLoadDoc.Visible = !scan;
             if (!scan) txtScan.Attributes["placeholder"] = "Enter WO number";
+
+            // Slim manufacturing: pick the works order from a list, one SAGE store - no store
+            // pickers, one Manufacture button.
+            if (CurrentUser.SageStockOnly)
+            {
+                ddlWO.Visible = true;
+                txtScan.Visible = lbtnLoadDoc.Visible = lbtnClearScan.Visible = false;
+                phStores.Visible = false;
+                lbtnMakeMove.Visible = false;
+                lbtnMakeHere.Text = "Manufacture";
+                lbtnMakeHere.CssClass = "mob-btn-primary";
+            }
 
             if (!IsPostBack)
             {
@@ -108,8 +120,14 @@ namespace SBMS
             HandleWOScan(raw);
         }
 
+        // Set when this postback loaded a works order. Without a scanner (slim) a typed number only
+        // posts back with the next click - if that click is Manufacture, the quantity on screen still
+        // belongs to the previous order, so it must not run in the same request.
+        private bool _woLoadedThisRequest;
+
         private void HandleWOScan(string code)
         {
+            _woLoadedThisRequest = true;
             long won;
             string digits = new string(code.Where(char.IsDigit).ToArray());
             if (!long.TryParse(digits, out won) || won == 0)
@@ -130,7 +148,7 @@ namespace SBMS
                     .OrderBy(x => x.LineID).FirstOrDefault();
                 if (fg == null) { SetFeedback(false, $"&#9888; WO {won} has no open line to manufacture."); return; }
 
-                if (fg.IsLotTracked == true)
+                if (fg.IsLotTracked == true && !CurrentUser.SageStockOnly)   // slim has no lots
                 {
                     SetFeedback(false, "&#9888; This item is lot-tracked — use the full Works Order Manufacture screen.");
                     return;
@@ -158,6 +176,7 @@ namespace SBMS
             }
 
             WOLoaded = true;
+            if (CurrentUser.SageStockOnly) txtQty.Text = string.Empty;   // slim: default to THIS order's balance, never the last one's qty
             SetFeedback(true, $"&#10003; WO {WONum} &mdash; making <strong>{OutCode}</strong> ({Remaining:0.##} outstanding).");
             RenderForm();
         }
@@ -165,6 +184,14 @@ namespace SBMS
         // Make & keep: produce the finished good into the From store (multi-phase / stays in WIP).
         protected void lbtnMakeHere_Click(object sender, EventArgs e)
         {
+            if (CurrentUser.SageStockOnly)
+            {
+                // Slim manufacturing: draw from and make into the one SAGE store.
+                using (SBMSEntities db = new SBMSEntities(Config.GetConnectionString()))
+                    SageStore.Ensure(db, CurrentUser.CoID);
+                DoManufacture(SageStore.Code, SageStore.Code);
+                return;
+            }
             DoManufacture(ddlStore.SelectedValue, ddlStore.SelectedValue);
         }
 
@@ -181,6 +208,7 @@ namespace SBMS
         // remaining leaves the balance open (part manufacture).
         private void DoManufacture(string fromStore, string targetStore)
         {
+            if (_woLoadedThisRequest) return;   // a different works order was just loaded - check it, then Manufacture
             if (!TryConsumeActionToken(hfActionToken))
             {
                 SetFeedback(false, "&#9888; Already processed &mdash; that manufacture ran once.");
@@ -215,6 +243,7 @@ namespace SBMS
             }
 
             IsProcessing = true;
+            _slimQoh = CurrentUser.SageStockOnly ? new Dictionary<long, decimal>() : null;
             // Declared out here so the result message below the context can still read them.
             decimal bomAddTotal = 0;
             long jDebitAcc = 0, jCreditAcc = 0;
@@ -277,7 +306,7 @@ namespace SBMS
                         ?? db.BOMHeaders
                         .Where(x => x.CompanyID == CurrentUser.CoID && x.FGID == OutItemId)
                         .OrderBy(x => x.BomHID).FirstOrDefault();
-                    if (bomHdrM != null)
+                    if (bomHdrM != null && !CurrentUser.SageStockOnly)   // slim never adds cost: no additional costs, no journal
                     {
                         decimal addPerUnit = (bomHdrM.AddCost01 ?? 0) + (bomHdrM.AddCost02 ?? 0) + (bomHdrM.AddCost03 ?? 0);
                         if (addPerUnit > 0)
@@ -365,6 +394,8 @@ namespace SBMS
                         }
                     }
                 }
+
+                if (_slimQoh != null) ApplySlimQoh();
 
                 // Clear the additional cost off Sage's stock adjustment account: debit it,
                 // credit the account chosen on the BOM. Posted AFTER the commit on purpose -
@@ -478,11 +509,15 @@ namespace SBMS
                 // Draws leave at the draw store's running weighted average (outs never
                 // revalue a store). The same number then drives the Sage adjustment and
                 // the local row below — one cost, every side (mirrors desktop DoItemAdjustment).
-                if (qty < 0)
+                bool slim = CurrentUser.SageStockOnly;
+                if (qty < 0 && !slim)
                 {
                     decimal drawAvg = StoreCosting.GetStoreAvgCost(db, CurrentUser.CoID, itmid, storeId);
                     if (drawAvg > 0) unitcost = drawAvg;
                 }
+                // Slim manufacturing never changes a cost: draw or make, at the item's own
+                // just-refreshed Sage average (zero included); newAvCost is pinned to it below.
+                if (slim) unitcost = itm.AverageCost ?? 0;
 
                 decimal currentQOH = itm.QuantityOnHand ?? 0;
                 decimal sageAvCost = itm.AverageCost ?? 0;
@@ -506,6 +541,7 @@ namespace SBMS
                         newAvCost = unitcost;
                     }
                 }
+                if (slim) newAvCost = sageAvCost;   // slim: Sage's average stays exactly as it is
 
                 if (CurrentUser.UATMode == false)
                 {
@@ -524,13 +560,20 @@ namespace SBMS
                     {
                         ItemID = itmid, ItemCode = code, Qty = qty, AvCost = newAvCost
                     });
+                    // Slim: Sage accepted it - remember the item's new Sage on-hand. Written after the
+                    // caller commits (an update here would lock the row the next refresh writes).
+                    if (slim && _slimQoh != null)
+                    {
+                        if (!_slimQoh.ContainsKey(itmid)) _slimQoh[itmid] = currentQOH;   // first refresh in this run
+                        _slimQoh[itmid] += qty;
+                    }
                 }
 
                 // Serial items are refused on works orders, on mobile exactly as on the web
                 // (WorksOrdersManf). A manufactured unit has no serial number - nothing here
                 // can capture one - and a DRAW of several units against a serial component
                 // would move stock off a lot that holds one.
-                if (SerialGuard.IsSerialItem(db, CurrentUser.CoID, itmid))
+                if (!slim && SerialGuard.IsSerialItem(db, CurrentUser.CoID, itmid))   // slim has no lots/serials
                 {
                     return code + " is serial tracked. Serial items cannot be manufactured or "
                          + "drawn into a works order - a manufactured unit has no serial number "
@@ -541,7 +584,7 @@ namespace SBMS
                 // unchanged (unitcost already IS the store average); MANF re-blends it.
                 // Computed BEFORE the Add so the new row is not yet in the ledger.
                 decimal storeAvgAfter;
-                if (qty < 0)
+                if (qty < 0 || slim)   // slim: the Sage average, never blended
                 {
                     storeAvgAfter = unitcost;
                 }
@@ -580,6 +623,32 @@ namespace SBMS
             catch (Exception ex)
             {
                 return ex.Message;
+            }
+        }
+
+        // Slim manufacturing: Sage on-hand per item as first refreshed in this run, plus every qty
+        // Sage accepted - so an item drawn on two lines still lands on the right figure.
+        private Dictionary<long, decimal> _slimQoh;
+
+        // Written after the manufacture commits. Display figure only - never fails the run.
+        private void ApplySlimQoh()
+        {
+            try
+            {
+                using (SBMSEntities db = new SBMSEntities(Config.GetConnectionString()))
+                {
+                    long coId = CurrentUser.CoID;
+                    foreach (var kv in _slimQoh)
+                    {
+                        var itm = db.ItemsMasters.FirstOrDefault(x => x.CompanyID == coId && x.ID == kv.Key);
+                        if (itm != null) itm.QuantityOnHand = kv.Value;
+                    }
+                    db.SaveChanges();
+                }
+            }
+            catch (Exception ex)
+            {
+                new ApiUrlCall().LogErrorToFile($"CoID:{CurrentUser.CoID} ManufactureM slim on-hand update - {ex.Message}");
             }
         }
 
@@ -631,8 +700,9 @@ private static decimal PerUnit(WorksOrderRMLine r)
 
             pnlWO.Visible = WOLoaded;
             pnlMake.Visible = WOLoaded;
-            lblPrompt.Text = WOLoaded ? "Choose store and quantity, then Manufacture"
-                : (CurrentUser.MobileModule == true ? "Scan the Works Order barcode" : "Enter the Works Order number");
+            lblPrompt.Text = WOLoaded ? (CurrentUser.SageStockOnly ? "" : "Choose store and quantity, then Manufacture")
+                : (CurrentUser.SageStockOnly ? "Select the Works Order"
+                   : CurrentUser.MobileModule == true ? "Scan the Works Order barcode" : "Enter the Works Order number");
             if (WOLoaded)
             {
                 lblWONum.Text = WONum;
@@ -643,6 +713,15 @@ private static decimal PerUnit(WorksOrderRMLine r)
                 if (string.IsNullOrEmpty(txtQty.Text)) txtQty.Text = Remaining.ToString("0.##", CultureInfo.InvariantCulture);
             }
             lbtnRestart.Visible = WOLoaded;
+
+            // Slim manufacturing: one tap posts straight to Sage, so confirm it first.
+            if (CurrentUser.SageStockOnly && WOLoaded)
+            {
+                string what = ((OutCode ?? "") + " (WO " + WONum + ")").Replace("\\", "").Replace("'", "\\'");
+                string effect = CurrentUser.UATMode ? "UAT mode - Sage is not updated." : "This updates the stock in Sage.";
+                lbtnMakeHere.OnClientClick = "return confirm('Manufacture ' + document.getElementById('" + txtQty.ClientID
+                    + "').value + ' x " + what + "? " + effect + "');";
+            }
         }
 
         private void ResetCycle()
@@ -654,6 +733,47 @@ private static decimal PerUnit(WorksOrderRMLine r)
             if (ddlStore.Items.Count > 0) ddlStore.SelectedIndex = 0;
             if (ddlToStore.Items.Count > 0) ddlToStore.SelectedIndex = 0;
             rptBom.DataSource = null; rptBom.DataBind();
+            if (CurrentUser.SageStockOnly) LoadOpenWOs();   // fresh list each cycle - a finished order drops off
+        }
+
+        // Slim manufacturing: the works orders that still have something to make, newest first.
+        private void LoadOpenWOs()
+        {
+            using (SBMSEntities db = new SBMSEntities(Config.GetConnectionString()))
+            {
+                long coId = CurrentUser.CoID;
+                var wos = db.WorksOrderHeaders
+                    .Where(h => h.CompanyID == coId && h.Active != false && h.Status != "Complete"
+                             && db.WorksOrderLines.Any(l => l.CompanyID == coId && l.WOID == h.ID
+                                    && l.Active == true && l.Complete != true && (l.Quantity ?? 0) > 0))
+                    .OrderByDescending(h => h.WONum)
+                    .Select(h => new
+                    {
+                        h.WONum,
+                        h.Reference,
+                        FG = db.WorksOrderLines
+                            .Where(l => l.CompanyID == coId && l.WOID == h.ID && l.Active == true && l.Complete != true && (l.Quantity ?? 0) > 0)
+                            .OrderBy(l => l.LineID).Select(l => l.ItemCode).FirstOrDefault()
+                    })
+                    .ToList();
+
+                ddlWO.Items.Clear();
+                ddlWO.Items.Add(new ListItem("- select works order -", ""));
+                foreach (var w in wos)
+                {
+                    string text = "WO " + w.WONum + " - " + w.FG + (string.IsNullOrEmpty(w.Reference) ? "" : " (" + w.Reference + ")");
+                    ddlWO.Items.Add(new ListItem(text, w.WONum.ToString()));
+                }
+            }
+        }
+
+        protected void ddlWO_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            // Never leave the previous order loaded under a different selection: if this pick
+            // cannot load (finished elsewhere, or the placeholder) nothing stays manufacturable.
+            WOLoaded = false;
+            if (!string.IsNullOrEmpty(ddlWO.SelectedValue) && !PageBlocked) HandleWOScan(ddlWO.SelectedValue);
+            RenderForm();
         }
 
         protected void lbtnRestart_Click(object sender, EventArgs e) { ResetCycle(); ClearFeedback(); RenderForm(); }

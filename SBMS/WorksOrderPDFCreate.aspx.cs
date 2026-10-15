@@ -105,7 +105,7 @@ namespace SBMS
                     table.AddCell(cell);
 
                     Phrase wonHead = new Phrase();
-                    if (CurrentUser.MobileModule)
+                    if (CurrentUser.MobileModule && !CurrentUser.SageStockOnly)   // slim manufacturing: no barcodes
                     {
                         Barcode128 bc = new Barcode128();
                         bc.Code = WO.WONum.ToString();

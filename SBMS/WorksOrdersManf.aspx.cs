@@ -71,6 +71,7 @@ namespace SBMS
                     _kits = _db.KitHeaders.Where(i => i.KitActive == true && i.CompanyID == CoID).OrderBy(x => x.KitCode).ToList();
                 }
 
+                if (CurrentUser.SageStockOnly) RefreshComponentsFromSage();
                 LoadItems();
                 LoadBoms();
                 LoadKits();
@@ -144,8 +145,80 @@ namespace SBMS
 
         protected void LoadWOLines()
         {
+            _slimItemCache = null;   // slim: re-read Sage figures each rebuild (a manufacture just changed them)
             LoadAccordion(woid, CoID);
             SetPartManufactureButtons();
+        }
+
+        // Slim manufacturing: this works order's items (Sage on-hand + average) read in ONE query
+        // per page build instead of one per grid row; an item not on the order is read on its own.
+        private Dictionary<long, ItemsMaster> _slimItemCache;
+        private ItemsMaster SlimItem(long itemId)
+        {
+            using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+            {
+                if (_slimItemCache == null)
+                {
+                    List<long> ids = _db.WorksOrderRMLines.Where(x => x.CompanyID == CoID && x.WOID == woid)
+                        .Select(x => x.SelectionId).Distinct().ToList();
+                    _slimItemCache = _db.ItemsMasters.AsNoTracking().Where(x => x.CompanyID == CoID && ids.Contains(x.ID))
+                        .ToList().ToDictionary(x => x.ID);
+                }
+                if (!_slimItemCache.TryGetValue(itemId, out ItemsMaster itm))
+                {
+                    itm = _db.ItemsMasters.AsNoTracking().FirstOrDefault(x => x.CompanyID == CoID && x.ID == itemId);
+                    if (itm != null) _slimItemCache[itemId] = itm;
+                }
+                return itm;
+            }
+        }
+
+        // Slim manufacturing reads on-hand and cost from Sage (ItemsMaster), so pull this works
+        // order's components fresh before showing them - ONE filtered Sage call for all of them
+        // (per 25 items), not a call per line. The manufacture post refreshes every item it
+        // touches again, so a failed refresh only affects what is displayed.
+        private void RefreshComponentsFromSage()
+        {
+            List<long> ids;
+            using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+            {
+                ids = _db.WorksOrderRMLines
+                    .Where(x => x.CompanyID == CoID && x.WOID == woid && x.Physical != false)
+                    .Select(x => x.SelectionId).Distinct().ToList();
+            }
+            bool ok;
+            try { ok = new ApiUrlCall().LoadItemsNA(ids, CurrentUser); }
+            catch (Exception ex)
+            {
+                ok = false;
+                new ApiUrlCall().LogErrorToFile($"CoID:{CoID} WO {woid} slim refresh from Sage failed: {ex.Message}");
+            }
+            if (!ok)
+            {
+                AlertHelper.ShowSweetAlert(this, "Could not refresh the components from Sage - on-hand figures shown are "
+                    + "from the last Sage sync. Each item is refreshed again when you manufacture.", "warning");
+            }
+        }
+
+        // Slim manufacturing: Sage's on-hand is the only figure there is.
+        private decimal SageOnHand(SBMSEntities _db, long itemId)
+        {
+            return SlimItem(itemId)?.QuantityOnHand ?? 0m;
+        }
+
+        // Slim manufacturing: every item draws from / is made into the one SAGE store.
+        private int _sageStoreId;
+        private List<GetLinkedStoredFromItem_Result> SageStoreList(long itemId)
+        {
+            if (_sageStoreId == 0)
+            {
+                using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+                    _sageStoreId = SageStore.Ensure(_db, CoID).StoreID;
+            }
+            return new List<GetLinkedStoredFromItem_Result>
+            {
+                new GetLinkedStoredFromItem_Result { ItemID = itemId, StoreCode = SageStore.Code, StoreID = _sageStoreId, StoreDescript = "Sage Stock" }
+            };
         }
 
         // Populates the single "Draw from" store selector used by no-lot Auto-fill.
@@ -163,12 +236,17 @@ namespace SBMS
                 var stores = _db.Stores
                     .Where(x => x.CompanyID == CoID && x.StoreActive == true && x.StoreCode != "CoR" && x.StoreCode != "CoD")
                     .OrderBy(x => x.StoreCode).ToList();
+                // Slim manufacturing: SAGE is the only store, so it is chosen already.
+                bool slim = CurrentUser.SageStockOnly;
+                if (slim) stores = stores.Where(x => x.StoreCode == SageStore.Code).ToList();
 
                 ddlDrawFrom.DataSource = stores;
                 ddlDrawFrom.DataTextField = "StoreCode";
                 ddlDrawFrom.DataValueField = "StoreID";
                 ddlDrawFrom.DataBind();
                 ddlDrawFrom.Items.Insert(0, new ListItem("-?-", "0"));
+                if (slim && ddlDrawFrom.Items.Count > 1) ddlDrawFrom.SelectedIndex = 1;
+                if (slim) pnlDrawFrom.Style.Add("display", "none");   // still posted (Auto-fill reads it), not shown
             }
         }
 
@@ -298,6 +376,7 @@ namespace SBMS
             // Add header controls
             pane.HeaderContainer.Controls.Add(chkC);
             DDHStore.Attributes.Add("style", "float:right; width:5em; text-align:center; margin:0 0.5em 0 0; padding:0.15em 0.3em; font-size:0.8em; line-height:1.6em; vertical-align:middle");
+            if (CurrentUser.SageStockOnly) DDHStore.Style.Add("display", "none");   // slim: always SAGE - still posted, not shown
             pane.HeaderContainer.Controls.Add(DDHStore);
 
             // Part Manufacture button on every open (incomplete) line. Added after the
@@ -332,7 +411,10 @@ namespace SBMS
             // Add cost calculation table
             if (CurrentUser.ShowManfCosts)
             {
-                tblCosts.Attributes.Add("style", "display:inline-block; font-size:0.8em");
+                // Slim: only the cost row is left, so give it the width to read cleanly.
+                tblCosts.Attributes.Add("style", CurrentUser.SageStockOnly
+                    ? "display:table; width:60%; margin:0.5em auto 1em auto; font-size:0.85em"
+                    : "display:inline-block; font-size:0.8em");
             }
             else
             {
@@ -348,6 +430,7 @@ namespace SBMS
                                                x.StoreCode != "CoR" &&
                                                x.StoreCode != "CoD" &&
                                                x.StoreCode.ToLower() != "scr").ToList();
+            if (CurrentUser.SageStockOnly) storeList = SageStoreList(line.SelectionId);
 
             DDHStore.ID = $"dd_{line.LineID}";
             DDHStore.DataSource = storeList;
@@ -499,7 +582,47 @@ namespace SBMS
             gridRMs.DataSource = MLines;
             gridRMs.DataBind();
 
+            if (CurrentUser.SageStockOnly) AddSlimCostFooter(gridRMs, line.LineID, MLines, _db);
+
             return gridRMs;
+        }
+
+        // Slim manufacturing: the works order cost in the grid footer - (Use + Scrap) x each item's
+        // Sage average, the same figure every draw posts at. Kept live in the browser as the
+        // quantities change.
+        private void AddSlimCostFooter(GridView gridRMs, long lineId, List<WorksOrderRMLine> lines, SBMSEntities _db)
+        {
+            if (gridRMs.FooterRow == null) return;
+            int costCol = -1;
+            for (int c = 0; c < gridRMs.Columns.Count; c++)
+                if (gridRMs.Columns[c].HeaderText == "Cost") costCol = c;
+            if (costCol < 1 || costCol >= gridRMs.FooterRow.Cells.Count) return;
+
+            decimal total = 0;
+            foreach (var ln in lines)
+                total += (ln.UseQty + ln.ScrapQty) * (SlimItem(ln.SelectionId)?.AverageCost ?? 0m);
+
+            gridRMs.FooterRow.Cells[costCol - 1].Text = "WO Cost:";
+            gridRMs.FooterRow.Cells[costCol - 1].HorizontalAlign = HorizontalAlign.Right;
+            Label lblTotal = new Label
+            {
+                ID = $"lblSlimWOCost_{lineId}",
+                Text = total.ToString("N2", CultureInfo.InvariantCulture),
+                CssClass = "wo-total-cost"
+            };
+            lblTotal.Attributes.Add("data-line-id", lineId.ToString());
+            lblTotal.Style.Add("font-weight", "bold");
+            gridRMs.FooterRow.Cells[costCol].Controls.Add(lblTotal);
+            gridRMs.FooterRow.Cells[costCol].HorizontalAlign = HorizontalAlign.Right;
+
+            ScriptManager.RegisterStartupScript(this, GetType(), "slimWOCost",
+                "(function(){function n(e){return e?(parseFloat(String(e.value).replace(/\\s/g,'').replace(',','.'))||0):0;}" +
+                "function t(){document.querySelectorAll('.wo-total-cost').forEach(function(l){var id=l.getAttribute('data-line-id'),s=0;" +
+                "document.querySelectorAll('.use-qty-input[data-line-id=\"'+id+'\"]').forEach(function(u){var r=u.closest('tr');if(!r)return;" +
+                "var c=r.querySelector('.unit-cost-label');s+=(n(u)+n(r.querySelector('.scrap-qty-input')))*(c?(parseFloat(c.getAttribute('data-cost'))||0):0);});" +
+                "l.textContent=s.toFixed(2).replace(/\\B(?=(\\d{3})+(?!\\d))/g,',');});}" +
+                "if(!window.__slimWOCost){window.__slimWOCost=1;document.addEventListener('input',function(e){if(e.target.matches&&e.target.matches('.use-qty-input,.scrap-qty-input'))t();});}t();})();",
+                true);
         }
 
         private void AddGridViewColumns(GridView gridRMs)
@@ -766,8 +889,12 @@ namespace SBMS
             cell2_6.Controls.Add(ddlUpdate);
             row2.Cells.Add(cell2_6);
 
-            tblCosts.Rows.Add(row3);
-            tblCosts.Rows.Add(row2);
+            // Slim manufacturing never changes a price: no "update selling price in Sage" rows.
+            if (!CurrentUser.SageStockOnly)
+            {
+                tblCosts.Rows.Add(row3);
+                tblCosts.Rows.Add(row2);
+            }
 
             // Set consistent styling for all cells
             foreach (TableRow row in tblCosts.Rows)
@@ -788,6 +915,13 @@ namespace SBMS
             {
                 e.Row.Cells[0].Visible = false;
                 e.Row.Cells[1].Visible = false;
+
+                // Slim manufacturing: the Store column is always SAGE - rendered (the post reads it), not shown.
+                if (CurrentUser.SageStockOnly && sender is GridView gvRM)
+                {
+                    for (int c = 0; c < gvRM.Columns.Count && c < e.Row.Cells.Count; c++)
+                        if (gvRM.Columns[c].HeaderText == "Store") e.Row.Cells[c].Style.Add("display", "none");
+                }
 
                 if (e.Row.RowType == DataControlRowType.DataRow)
                 {
@@ -857,12 +991,25 @@ namespace SBMS
             if (txtScrapQty != null)
             {
                 txtScrapQty.Text = item.ScrapQty.ToString();
+                if (CurrentUser.SageStockOnly)   // slim: scrap counts in the footer WO cost
+                {
+                    txtScrapQty.Attributes.Add("class", "scrap-qty-input");
+                    txtScrapQty.Attributes.Add("data-line-id", item.LinkedWOLineID.ToString());
+                }
             }
 
             // Set unit cost
             if (txtUnitCost != null)
             {
                 decimal unitCost = item.UnitCost ?? 0m;
+                // Slim: show the item's Sage average - the cost every draw posts at. The raw figure
+                // also goes in data-cost (invariant) for the footer total, so it never depends on
+                // how the server culture formats the label.
+                if (CurrentUser.SageStockOnly)
+                {
+                    unitCost = SlimItem(itemID)?.AverageCost ?? 0m;
+                    txtUnitCost.Attributes.Add("data-cost", unitCost.ToString(CultureInfo.InvariantCulture));
+                }
                 txtUnitCost.Text = unitCost.ToString("N2");
                 txtUnitCost.Attributes.Add("data-line-id", item.LineID.ToString());
                 txtUnitCost.Attributes.Add("class", "unit-cost-label");
@@ -902,9 +1049,13 @@ namespace SBMS
                         .Where(x => x.CompanyID == CoID && x.StoreCode == storeCode)
                         .Select(x => (long)x.StoreID).FirstOrDefault();
                 }
-                bool storeKnown = haveStore && storeId > 0;
+                // Slim manufacturing: stock lives in Sage - its on-hand is the figure to judge by.
+                bool slim = CurrentUser.SageStockOnly;
+                bool storeKnown = slim || (haveStore && storeId > 0);
 
-                decimal onHand = storeKnown
+                decimal onHand = slim
+                    ? SageOnHand(dbOH, itemId)
+                    : storeKnown
                     ? StoreCosting.GetStoreQty(dbOH, CoID, itemId, storeId)
                     : dbOH.ItemTransactions
                         .Where(x => x.CompanyID == CoID && x.ItemID == itemId)
@@ -914,7 +1065,9 @@ namespace SBMS
 
                 TableCell cell = row.Cells[6];
                 cell.Text = onHand.ToString("N2");
-                cell.ToolTip = storeKnown
+                cell.ToolTip = slim
+                    ? "On hand in Sage"
+                    : storeKnown
                     ? "On hand in " + storeCode
                     : "Total across all stores - choose a store to see what is available there";
 
@@ -939,6 +1092,7 @@ namespace SBMS
                                                x.StoreCode != "CoR" &&
                                                x.StoreCode != "CoD" &&
                                                x.StoreCode.ToLower() != "scr").ToList();
+            if (CurrentUser.SageStockOnly) storeList = SageStoreList(itemID);
 
             ddlStore.DataSource = storeList;
             ddlStore.DataTextField = "StoreCode";
@@ -962,7 +1116,7 @@ namespace SBMS
             }
 
             // Set selected value
-            if (!string.IsNullOrEmpty(item.StoreCodeFrom))
+            if (!string.IsNullOrEmpty(item.StoreCodeFrom) && !CurrentUser.SageStockOnly)   // slim: always SAGE
             {
                 ListItem foundItem = ddlStore.Items.FindByText(item.StoreCodeFrom) ??
                                    ddlStore.Items.FindByValue(item.StoreCodeFrom);
@@ -2570,7 +2724,9 @@ namespace SBMS
             bool isFromBom;
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {
-                onHand = _db.ItemTransactions
+                onHand = CurrentUser.SageStockOnly
+                    ? SageOnHand(_db, itemId)   // slim manufacturing: stock lives in Sage
+                    : _db.ItemTransactions
                     .Where(x => x.CompanyID == CoID && x.ItemID == itemId)
                     .Select(x => (decimal?)x.Qty).DefaultIfEmpty(0).Sum() ?? 0;
                 isFromBom = _db.ItemsMasters
@@ -2626,7 +2782,9 @@ namespace SBMS
                     decimal required = CellParse.ToDecimal(gvr.Cells[5].Text);
                     if (required <= 0) continue;
 
-                    decimal onHand = _db.ItemTransactions
+                    decimal onHand = CurrentUser.SageStockOnly
+                        ? SageOnHand(_db, itemId)   // slim manufacturing: stock lives in Sage
+                        : _db.ItemTransactions
                         .Where(x => x.CompanyID == CoID && x.ItemID == itemId && x.ToID == drawStoreId)
                         .Select(x => (decimal?)x.Qty).DefaultIfEmpty(0).Sum() ?? 0;
 
@@ -2704,6 +2862,10 @@ namespace SBMS
         /// </summary>
         private decimal ResolveRmUnitCost(SBMSEntities _db, long itemId, long storeId)
         {
+            // Slim manufacturing: the Sage average is the only cost - and what the draw posts at.
+            if (CurrentUser.SageStockOnly)
+                return SlimItem(itemId)?.AverageCost ?? 0m;
+
             decimal unitCost = StoreCosting.GetStoreAvgCost(_db, CoID, itemId, storeId);
             if (unitCost > 0) return unitCost;
 
@@ -3944,7 +4106,8 @@ namespace SBMS
             // ONE unit, captured with its number and expiry at receiving; manufacturing would mint
             // a single lot holding the whole run, which the picking chooser then refuses to show -
             // stock that exists, is valued, and can never be issued or traced. Refused here, before
-            // anything is posted to Sage or written locally.
+            // anything is posted to Sage or written locally. (Slim has no lots or serials - no lot is minted.)
+            if (!CurrentUser.SageStockOnly)
             using (SBMSEntities _dbSer = new SBMSEntities(Config.GetConnectionString()))
             {
                 long woidSer = Convert.ToInt64(lblwoid.Text);
@@ -4280,7 +4443,8 @@ namespace SBMS
                             .Where(x => x.CompanyID == CoID && x.FGID == fgItemId)
                             .OrderBy(x => x.BomHID).FirstOrDefault();
                         decimal bomAddTotal = 0;
-                        if (bomHdr != null)
+                        // Slim manufacturing never adds cost: no BOM additional costs, no journal.
+                        if (bomHdr != null && !CurrentUser.SageStockOnly)
                         {
                             decimal bomAddPerUnit = (bomHdr.AddCost01 ?? 0) + (bomHdr.AddCost02 ?? 0) + (bomHdr.AddCost03 ?? 0);
                             if (bomAddPerUnit > 0) bomAddTotal = bomAddPerUnit * itemqty;
@@ -4462,7 +4626,7 @@ namespace SBMS
                                     }
                                 }
                             }
-                            else if (control is Table tbl)
+                            else if (control is Table tbl && !CurrentUser.SageStockOnly)   // slim never updates a price
                             {
                                 TextBox txtNewSell = FindControlInTable<TextBox>(tbl, $"txtNewSell_{lineID}");
                                 RadioButtonList ddlUpdate = FindControlInTable<RadioButtonList>(tbl, $"ddlUpdate_{lineID}");
@@ -4705,6 +4869,7 @@ namespace SBMS
                                                x.StoreCode != "CoR" &&
                                                x.StoreCode != "CoD" &&
                                                x.StoreCode.ToLower() != "scr").ToList();
+            if (CurrentUser.SageStockOnly) storeList = SageStoreList(itmID);
 
             DDItemAddStore.DataSource = storeList;
             DDItemAddStore.DataTextField = "StoreCode";
@@ -4851,11 +5016,16 @@ namespace SBMS
                         // Draws leave at the draw store's running weighted average (outs never
                         // revalue a store). The same number then drives the Sage adjustment and
                         // the local row below — one cost, every side.
-                        if (useqty < 0)
+                        if (useqty < 0 && !CurrentUser.SageStockOnly)
                         {
                             decimal drawAvg = StoreCosting.GetStoreAvgCost(_db, CurrentUser.CoID, itmid, store1);
                             if (drawAvg > 0) unitcost = drawAvg;
                         }
+
+                        // Slim manufacturing never changes a cost: every movement - draw, scrap or
+                        // finished good - goes through at the item's own Sage average, just refreshed
+                        // above (zero included). newAvCost is pinned to the same figure below.
+                        if (CurrentUser.SageStockOnly) unitcost = itm.AverageCost ?? 0;
 
                         // GUARD A - never draw VALUED stock out at zero cost.
                         // Removing quantity while removing NO value re-weights the remainder upwards:
@@ -4926,6 +5096,7 @@ namespace SBMS
                                 newAvCost = thisUnitCost;
                             }
                         }
+                        if (CurrentUser.SageStockOnly) newAvCost = SageCurrentAvCost;   // slim: Sage's average stays exactly as it is
 
                         ItemAdjustment iAdj = new ItemAdjustment();
                         iAdj.Date = DateTime.Now;
@@ -4945,6 +5116,8 @@ namespace SBMS
                                 success = $"Error 1892:{reslt}";
                                 return success;
                             }
+                            // Slim: Sage accepted it, so keep the local Sage on-hand in step (saved with the ledger row below).
+                            if (CurrentUser.SageStockOnly) itm.QuantityOnHand = (itm.QuantityOnHand ?? 0) + useqty;
                         }
 
                         // ONLY AFTER API SUCCESS - save to local DB
@@ -4976,7 +5149,8 @@ namespace SBMS
                         ItemTrans.TotalLineValExcl = ItemTrans.PriceExclusive * ItemTrans.Qty;
                         // Stamp the store's running average after this movement: a DRAW leaves it
                         // unchanged (unitcost already IS the store average); MANF re-blends it.
-                        if (useqty < 0)
+                        // Slim: the Sage average, never blended.
+                        if (useqty < 0 || CurrentUser.SageStockOnly)
                         {
                             ItemTrans.StoreAvgCost = unitcost;
                         }

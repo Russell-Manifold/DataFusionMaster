@@ -76,6 +76,12 @@ namespace SBMS
                 ibtmWOrdMgment.Style.Add("display", "none");
                 ibtnRMD.Style.Add("display", "none");
             }
+            // Slim manufacturing: Works Orders only.
+            if (CurrentUser.SageStockOnly)
+            {
+                imgbRec.Visible = ibtnPickSlips.Visible = ibtnPickTrack.Visible = ibtnStckCtl.Visible = false;
+                ibtnFCasts.Visible = ibtnmrp.Visible = ibtnJobTrack.Visible = ibtnRMD.Visible = false;
+            }
 
         }
 
@@ -256,6 +262,9 @@ namespace SBMS
                     var lbtn = (LinkButton)e.Row.FindControl("lbtnDelete");
                     lbtn.Visible = false;
                 }
+                // Slim manufacturing has no sales orders, picking slips or job cards to open - the
+                // linked document number is shown as plain text.
+                if (CurrentUser.SageStockOnly && e.Row.FindControl("lbtnLinkedDoc") is LinkButton lbtnDoc) lbtnDoc.Enabled = false;
             }
         }
 
@@ -363,6 +372,7 @@ namespace SBMS
 
         protected void lbtnLinkedDoc_Click(object sender, EventArgs e)
         {
+            if (CurrentUser.SageStockOnly) return;   // slim: nothing to open (link is disabled)
             LinkButton lbtnLinkedDoc = (LinkButton)sender;
             GridViewRow row = (GridViewRow)lbtnLinkedDoc.NamingContainer;
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))

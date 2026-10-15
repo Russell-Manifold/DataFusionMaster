@@ -49,6 +49,21 @@ namespace SBMS
                 {
                     lbtnBOM.Style.Add("display", "none");
                 }
+                // Slim manufacturing: Items, Users, Company and BOMs only (+ item code convert,
+                // whose usual home - Stock Control - is not part of slim).
+                if (CurrentUser.SageStockOnly)
+                {
+                    lbtnStores.Style.Add("display", "none");
+                    lbtnItemStore.Style.Add("display", "none");
+                    lbtnPickProc.Style.Add("display", "none");
+                    lbtnRoles.Style.Add("display", "none");
+                    lbtnDeliv.Style.Add("display", "none");
+                    lbtnAccts.Style.Add("display", "none");
+                    lbtnBundle.Style.Add("display", "none");
+                    lbtnKit.Style.Add("display", "none");
+                    lbtnOpenBals.Style.Add("display", "none");
+                    lbtnConvert.Visible = true;
+                }
             }
         }
 

@@ -118,13 +118,13 @@
                                           <tr>
                                               <td colspan="2"><hr /></td>
                                           </tr>
-                                                 <tr>
+                                                 <tr id="trNewGP" runat="server">
                                                 <td>Required GP%:</td>
                                                 <td style="text-align:right"><asp:TextBox ID="txtNewGP" runat="server" Width="70" style="text-align:right; font-size:1em" oninput="calculateNewSell()" AutoPostBack="false">1.00</asp:TextBox>
                                                     <cci:FilteredTextBoxExtender ID="FilteredTextBoxExtender3" runat="server" TargetControlID="txtNewGP" FilterType="Custom, Numbers" ValidChars="." />
                                                 </td> 
                                             </tr>
-                                             <tr>
+                                             <tr id="trNewSell" runat="server">
                                             <td>New Selling Price:</td>
                                             <td style="text-align:right"><asp:TextBox ID="txtNewSell" runat="server" Width="70" style="text-align:right; font-size:1em">1.00</asp:TextBox>
                                                 <cci:FilteredTextBoxExtender ID="FilteredTextBoxExtender4" runat="server" TargetControlID="txtNewSell" FilterType="Custom, Numbers" ValidChars="." />

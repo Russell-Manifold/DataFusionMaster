@@ -141,6 +141,60 @@ namespace SBMS
         protected global::AjaxControlToolkit.Accordion Accordion1;
 
         /// <summary>
+        /// PaneStores control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::AjaxControlToolkit.AccordionPane PaneStores;
+
+        /// <summary>
+        /// PaneQOHByStore control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::AjaxControlToolkit.AccordionPane PaneQOHByStore;
+
+        /// <summary>
+        /// PaneBarcodes control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::AjaxControlToolkit.AccordionPane PaneBarcodes;
+
+        /// <summary>
+        /// PaneUDF control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::AjaxControlToolkit.AccordionPane PaneUDF;
+
+        /// <summary>
+        /// spnStore control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl spnStore;
+
+        /// <summary>
+        /// lnkPrintLabels control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlAnchor lnkPrintLabels;
+
+        /// <summary>
         /// chkPhysical control.
         /// </summary>
         /// <remarks>
