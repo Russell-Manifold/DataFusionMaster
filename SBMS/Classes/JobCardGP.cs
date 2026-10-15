@@ -64,8 +64,11 @@ namespace SBMS.Classes
                 "       ISNULL(r.Revenue, 0) AS Revenue, ISNULL(c.TotalCost, 0) AS TotalCost, ISNULL(c.AddedCost, 0) AS AddedCost " +
                 "FROM dbo.JobCardsMaster j " +
                 "JOIN dbo.DocHeader h ON h.LinkedJCID = j.JCID AND h.CompanyID = j.CustomerID " +   // the order points at the job card; JobCardsMaster.LinkedSOrdID is never filled
+                // Revenue = the ORDER's lines (what the customer is billed), not the job card's own
+                // lines: ticking Done on a job card line rewrites its price to the item's list price,
+                // which made this report disagree with the Sales Order and the Sales GP report.
                 "OUTER APPLY (SELECT SUM(ISNULL(l.Exclusive, 0) - ISNULL(l.Discount, 0)) AS Revenue " +
-                "             FROM dbo.JobCardLines l WHERE l.JCID = j.JCID AND ISNULL(l.isKitLine, 0) = 0 " +
+                "             FROM dbo.DocLines l WHERE l.DocID = h.DocID " +
                 "               AND (j.PrintAllLines = 1 OR ISNULL(l.SBCALineID, 0) <> 0)) r " +
                 "OUTER APPLY (SELECT -SUM(x.V) AS TotalCost, -SUM(CASE WHEN x.IsOrder = 0 THEN x.V ELSE 0 END) AS AddedCost " +
                 "             FROM (SELECT ISNULL(t.TotalLineValExcl, 0) AS V, " +

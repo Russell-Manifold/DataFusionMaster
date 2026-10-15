@@ -616,5 +616,49 @@ namespace SBMS
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::AjaxControlToolkit.ModalPopupExtender Button2551_ModalPopupExtender;
+            /// <summary>
+        /// PnlJobCost control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Panel PnlJobCost;
+
+        /// <summary>
+        /// lblJcCostNum control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Label lblJcCostNum;
+
+        /// <summary>
+        /// GridJcCost control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.GridView GridJcCost;
+
+        /// <summary>
+        /// lblJcMatCost control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Label lblJcMatCost;
+
+        /// <summary>
+        /// lblJcQty control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Label lblJcQty;
+
+        /// <summary>
+        /// txtJobPrice control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.TextBox txtJobPrice;
+
+        /// <summary>
+        /// lbtnJobPriceSave control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.LinkButton lbtnJobPriceSave;
+
+        /// <summary>
+        /// lblJcMargin control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Label lblJcMargin;
+
+        /// <summary>
+        /// lblJcPriceNote control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Label lblJcPriceNote;
     }
 }

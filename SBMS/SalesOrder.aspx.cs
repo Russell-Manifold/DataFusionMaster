@@ -216,6 +216,8 @@ namespace SBMS
 
                     lblDocCost.Text = (thispo.DocCost ?? 0m).ToString("N2");
                     lblDocGP.Text = (thispo.DocGP ?? 0m).ToString("P2");
+                    LoadJobCostBlock(_db, docid, thispo.LinkedJCID == null ? (long?)null : Convert.ToInt64(thispo.LinkedJCID),
+                                     thispo.Complete == true, thispo.Active == true);
 
                     DDOptions.Attributes.Add("style", "display:inline-block; color:#4282C1; font-size:1em; border: 1px #4282C1 solid; border-radius:.25em; margin-top:.5em");
                     //if (thispo.LinkedJCNum != null || thispo.LinkedPSNum != null) DDOptions.Attributes.Add("style", "display:none");
@@ -404,9 +406,13 @@ namespace SBMS
                 {
                     var TempLines = _db.TempDocLines.Where(x => x.DocID == docid).OrderBy(x => x.LineID).ToList();
                     var totalQuantity = TempLines.Sum(x => x.Exclusive);
+                    // Job card internal lines (SBCALineID 0 on a job card with "Print all additional lines"
+                    // unticked) never reach Sage, so they must not raise the "No Charge lines" prompt.
+                    _hideAdded = JobCardHide.HidesAddedLines(_db, CurrentUser.CoID, docid)
+                                 && TempLines.Any(x => x.SBCALineID != 0);
                     foreach (var TL in TempLines)
                     {
-                        if (TL.Exclusive == 0)
+                        if (TL.Exclusive == 0 && !(_hideAdded && TL.SBCALineID == 0))
                         {
                             lblspan.Style.Add("display", "inline-block");
                             lblspan.Style.Add("float", "left");
@@ -425,8 +431,6 @@ namespace SBMS
                     // Job card internal lines stay visible here, marked, and show no value: they are
                     // a cost of the job, never billed, so the totals below are what the customer will
                     // be invoiced. DISPLAY ONLY - nothing is saved (this method never calls SaveChanges).
-                    _hideAdded = JobCardHide.HidesAddedLines(_db, CurrentUser.CoID, docid)
-                                 && TempLines.Any(x => x.SBCALineID != 0);
                     if (_hideAdded)
                     {
                         foreach (var hl in TempLines.Where(x => x.SBCALineID == 0))
@@ -438,7 +442,7 @@ namespace SBMS
 
                     GridPOLines.DataSource = TempLines;
                     GridPOLines.DataBind();
-                    bool hasZeroPrice = TempLines.Any(x => x.UnitPriceExclusive == 0);
+                    bool hasZeroPrice = TempLines.Any(x => x.UnitPriceExclusive == 0 && !(_hideAdded && x.SBCALineID == 0));
                     if (hasZeroPrice)
                     {
                         lblspan.Style.Add("display", "inline-block");
@@ -525,6 +529,9 @@ namespace SBMS
                         Button2551_ModalPopupExtender.Show();
                         return;
                     }
+
+                    string jcRule = JobCardRuleError(_db, docid);
+                    if (jcRule != null) { AlertHelper.ShowSweetAlert(this, jcRule, "warning"); return; }
 
                     JobCardsMaster JCN = new JobCardsMaster();
                     JCN.CustomerID = CurrentUser.CoID;
@@ -914,6 +921,9 @@ namespace SBMS
             docid = Convert.ToInt64(lblDocID.Text);
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {
+                string jcRule = JobCardRuleError(_db, docid);
+                if (jcRule != null) { AlertHelper.ShowSweetAlert(this, jcRule, "warning"); return; }
+
                 var JcD = _db.JobCardsMasters.Where(x => x.CustomerID == CurrentUser.CoID && x.JCNumber == lblDocNum.Text.Replace("SO", "JC")).FirstOrDefault();
                 if (JcD != null)
                 {

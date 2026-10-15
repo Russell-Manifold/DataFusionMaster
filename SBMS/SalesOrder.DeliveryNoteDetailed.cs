@@ -297,7 +297,11 @@ namespace SBMS
                         if (dnHide && dnFirstPrinted && !string.IsNullOrWhiteSpace(dnJob.JCSummary)) olDescription = dnJob.JCSummary.Trim();
                         dnFirstPrinted = false;
                         decimal olOrdered = ol.Quantity ?? 0;
-                        decimal olInv = ol.ReceiveQty ?? 0;
+                        // Same rule as the standard note: the picked qty when there is one, otherwise the
+                        // ordered qty. A job card order has no picking slip, and after the Sage post its
+                        // lines are re-synced with ReceiveQty 0, so reading ReceiveQty alone printed
+                        // "INV 0 / BACK ORDER 20" on a completed job.
+                        decimal olInv = (ol.ReceiveQty ?? 0) > 0 ? ol.ReceiveQty.Value : olOrdered;
                         decimal olBack = olOrdered - olInv;
                         if (olBack < 0) olBack = 0;
                         string[] olVals =

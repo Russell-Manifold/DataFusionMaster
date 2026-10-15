@@ -132,6 +132,32 @@
                              <asp:TextBox ID="txtMsg" runat="server" ReadOnly="true" Rows="5" Columns="50" TextMode="MultiLine"></asp:TextBox>
                          </asp:Panel>
 
+                         <%-- Job card costing: shown once the job card has closed off. Materials drawn on the
+                              added lines, the job price on the order's service line (editable until posted), margin. --%>
+                         <asp:Panel ID="PnlJobCost" runat="server" Visible="false" style="float:left; margin:1em 0 0 1.5em; max-width:46%; font-size:0.8em; border:1px solid #4282C1; border-radius:.4em; padding:.5em .8em; text-align:left">
+                             <b>Job card <asp:Label ID="lblJcCostNum" runat="server" Text=""></asp:Label> - costing and selling rates</b>
+                             <asp:GridView ID="GridJcCost" runat="server" AutoGenerateColumns="false" CssClass="gridview" style="margin-top:.4em; font-size:1em" EmptyDataText="No materials drawn on the job card.">
+                                 <HeaderStyle CssClass="gridViewHeader" />
+                                 <RowStyle CssClass="gridViewRow" />
+                                 <Columns>
+                                     <asp:BoundField HeaderText="Item" DataField="ItemCode" />
+                                     <asp:BoundField HeaderText="Description" DataField="ItemDescription" />
+                                     <asp:BoundField HeaderText="Qty drawn" DataField="Qty" DataFormatString="{0:N2}" ItemStyle-HorizontalAlign="Right" />
+                                     <asp:BoundField HeaderText="Unit cost" DataField="UnitCost" DataFormatString="{0:N2}" ItemStyle-HorizontalAlign="Right" />
+                                     <asp:BoundField HeaderText="Cost" DataField="Cost" DataFormatString="{0:N2}" ItemStyle-HorizontalAlign="Right" />
+                                     <asp:BoundField HeaderText="Sell rate" DataField="SellRate" DataFormatString="{0:N2}" ItemStyle-HorizontalAlign="Right" />
+                                 </Columns>
+                             </asp:GridView>
+                             <table style="margin-top:.4em; width:100%">
+                                 <tr><td>Materials cost (added lines)</td><td style="text-align:right"><asp:Label ID="lblJcMatCost" runat="server" Text=""></asp:Label></td></tr>
+                                 <tr><td>Job price excl VAT, for <asp:Label ID="lblJcQty" runat="server" Text=""></asp:Label> x</td>
+                                     <td style="text-align:right; white-space:nowrap"><asp:TextBox ID="txtJobPrice" runat="server" Width="110px" style="text-align:right; display:inline-block"></asp:TextBox>
+                                         <asp:LinkButton ID="lbtnJobPriceSave" runat="server" OnClick="lbtnJobPriceSave_Click" CssClass="buttonSage icon fa-save" style="margin-left:.4em" ToolTip="Save this price onto the order's job line. It is sent to Sage when you click Update Sage SO." OnClientClick="return confirm('Change the job price on this order? It is sent to Sage when you click Update Sage SO.');"> Save price</asp:LinkButton></td></tr>
+                                 <tr><td>Margin at this price</td><td style="text-align:right"><asp:Label ID="lblJcMargin" runat="server" Text=""></asp:Label></td></tr>
+                             </table>
+                             <asp:Label ID="lblJcPriceNote" runat="server" Text="" style="color:#c0392b"></asp:Label>
+                         </asp:Panel>
+
                          <asp:Panel ID="PnlTotals" runat="server" style="float:right; border:1px gray solid; margin-top:1em; max-width:48%;margin-right:1em; font-size:0.8em">
                              <table>
                                   <tr>

@@ -159,7 +159,11 @@ namespace SBMS
                         itm.Quantity = Convert.ToDecimal(ApiUrlCall.NumberToDecimal(itm.Quantity.ToString(), CurrentUser.CompanyDecPlaces));
                     }
                 }
-                GridJCLines.DataSource = DispLines.OrderBy(x=>x.LineID);
+                // The order's service line is the job itself: it lives in Job Card Summary / Qty of
+                // Items and is never a grid line (never picked, never draws stock). Close-off marks it
+                // complete with Use Qty = ordered qty. Only the first Sage line is treated this way.
+                long? primaryId = DispLines.Where(x => (x.SBCALineID ?? 0) != 0).OrderBy(x => x.LineID).Select(x => (long?)x.LineID).FirstOrDefault();
+                GridJCLines.DataSource = DispLines.Where(x => x.LineID != primaryId).OrderBy(x => x.LineID);
                 GridJCLines.DataBind();
 
                 if (txtJobCardSummary.Text.Length < 1)
@@ -172,6 +176,11 @@ namespace SBMS
    
         protected void GridJCLines_RowDataBound(object sender, GridViewRowEventArgs e)
         {
+            // Job cards take untracked items only, so the Lot # column is never needed. Hidden with
+            // CSS rather than Visible=false so the row's DDlotNum control still exists for the code.
+            for (int ci = 0; ci < GridJCLines.Columns.Count; ci++)
+                if (GridJCLines.Columns[ci].HeaderText == "Lot #" && ci < e.Row.Cells.Count)
+                    e.Row.Cells[ci].Style["display"] = "none";
             CheckBox chkCompl = (CheckBox)e.Row.FindControl("chkCompl");
             DropDownList ddLotNum = (DropDownList)e.Row.FindControl("DDlotNum");
             DropDownList DDStore = (DropDownList)e.Row.FindControl("DDStore");
@@ -464,6 +473,20 @@ namespace SBMS
                 long selectedItemid = Convert.ToInt64(ddl.SelectedValue);
                 if (ddl.SelectedIndex > 0)
                 {
+                    // Job cards take UNTRACKED items only (see lbtnLineSave_Click). Refuse at selection
+                    // so a tracked item never lands on the line, not even half-filled.
+                    using (SBMSEntities _chk = new SBMSEntities(Config.GetConnectionString()))
+                    {
+                        var trk = _chk.ItemsMasters.Where(x => x.CompanyID == CurrentUser.CoID && x.ID == selectedItemid)
+                                      .Select(x => new { x.IsLotTracked, x.IsSerialTracked }).FirstOrDefault();
+                        if (trk != null && (trk.IsLotTracked == true || trk.IsSerialTracked == true))
+                        {
+                            string trkName = ddl.SelectedItem.Text;
+                            ddl.SelectedIndex = 0;
+                            ShowMessage(sender, EventArgs.Empty, trkName + " is lot/serial tracked. Job cards take untracked items only - draw it on a works order, or make the item untracked.");
+                            return;
+                        }
+                    }
                     PopulateItemDetails(row, selectedItemid);
                 }
             }
@@ -615,6 +638,23 @@ namespace SBMS
                     ShowMessage(sender, EventArgs.Empty, "Invalid Store selected, unable to continue");
                     return;
                 }
+                // Use Qty is what actually leaves stock. Done with Use Qty empty means "used what was
+                // planned": default it from Qty. Only refuse when there is no quantity at all.
+                decimal useQtyChk;
+                if (chkCompl.Checked && (!decimal.TryParse(txtUseQty.Text.Trim(), out useQtyChk) || useQtyChk <= 0))
+                {
+                    decimal plannedChk;
+                    if (decimal.TryParse(txtQty.Text.Trim(), out plannedChk) && plannedChk > 0)
+                    {
+                        txtUseQty.Text = txtQty.Text.Trim();
+                    }
+                    else
+                    {
+                        chkCompl.Checked = false;
+                        ShowMessage(sender, EventArgs.Empty, "Enter a quantity before marking the line Done.");
+                        return;
+                    }
+                }
             }
             
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
@@ -622,6 +662,21 @@ namespace SBMS
                 // update existing line (tenant-scoped: this handler writes stock off the loaded line)
                 var NewJCLine = _db.JobCardLines.Where(x => x.CompanyID == CurrentUser.CoID && x.LineID == ThisLineID).FirstOrDefault();
                 if (NewJCLine == null) return;
+                // Job cards take UNTRACKED items only. A lot or serial tracked item drawn here without a
+                // lot would move stock but leave the lot balance untouched; tracked items belong on a
+                // works order. (Lot and serial are item properties - this is where the rule lives.)
+                if (Convert.ToInt32(DDItemType.SelectedValue) == 0)
+                {
+                    long selId = Convert.ToInt64(DDItemCode.SelectedItem.Value);
+                    var selItm = _db.ItemsMasters.Where(x => x.CompanyID == CurrentUser.CoID && x.ID == selId)
+                                    .Select(x => new { x.IsLotTracked, x.IsSerialTracked }).FirstOrDefault();
+                    if (selItm != null && (selItm.IsLotTracked == true || selItm.IsSerialTracked == true))
+                    {
+                        chkCompl.Checked = false;
+                        ShowMessage(sender, EventArgs.Empty, DDItemCode.SelectedItem.Text + " is lot/serial tracked. Job cards take untracked items only - draw it on a works order, or make the item untracked.");
+                        return;
+                    }
+                }
                 if (NewJCLine.IsLotTracked == true)
                 {
                     if (DDlotNum.SelectedItem == null ||  DDlotNum.SelectedItem.Value.ToLower().Contains("number") || DDlotNum.Items.Count ==0)
@@ -690,9 +745,25 @@ namespace SBMS
 
                     if (DDItemType.SelectedValue != "1" && DDItemType.SelectedValue != "2")
                     {
+                        // Ticking Done saves the line (AutoPostBack); clicking the save icon afterwards saved
+                        // it again, writing a reversal and a fresh draw for an identical line (3 ledger rows,
+                        // net right, ledger noisy). If the existing draw already matches item, store, lot
+                        // and quantity, there is nothing to move: skip both the reversal and the re-draw.
+                        bool stockUnchanged = false;
+                        if (chkCompl.Checked && NewJCLine.ItemTransLineID != null)
+                        {
+                            long prevTrn = 0; try { prevTrn = Convert.ToInt64(NewJCLine.ItemTransLineID); } catch { }
+                            var prev = prevTrn > 0 ? _db.ItemTransactions.FirstOrDefault(x => x.CompanyID == CurrentUser.CoID && x.TrnID == prevTrn) : null;
+                            stockUnchanged = prev != null
+                                && prev.ItemID == NewJCLine.SelectionId
+                                && (prev.ToID ?? 0) == FrmStorid
+                                && (prev.Qty ?? 0) == Convert.ToDecimal(NewJCLine.LinePickQty ?? NewJCLine.Quantity ?? 0) * -1
+                                && (prev.LotNumber ?? "") == (NewJCLine.LotNumber ?? "");
+                        }
+
                         #region UpdateItemTransactions - reverse transaction if there is a previous one only
                         // NEED TO REVERSE TRANSACTIONS - NOT DELETE
-                        if (NewJCLine.ItemTransLineID != null)
+                        if (!stockUnchanged && NewJCLine.ItemTransLineID != null)
                         {
                             long TrnLineid = 0;
                             try
@@ -749,7 +820,7 @@ namespace SBMS
                         #endregion
                       
                         #region If Row is complete
-                        if (chkCompl.Checked)
+                        if (!stockUnchanged && chkCompl.Checked)
                         {
                             // add record to item movement table to update on hand balances   
                             ItemTransaction ItemTrans = new ItemTransaction();
@@ -769,7 +840,8 @@ namespace SBMS
                             ItemTrans.Unit = NewJCLine.Unit;
                             ItemTrans.FromID = 0;
                             ItemTrans.ToID = FrmStorid;
-                            ItemTrans.Qty = Convert.ToDecimal(NewJCLine.Quantity) * -1;
+                            // Stock moves by Use Qty (what was actually used); Qty is the planned figure.
+                            ItemTrans.Qty = Convert.ToDecimal(NewJCLine.LinePickQty ?? NewJCLine.Quantity) * -1;
                             ItemTrans.DocumentType = 7;
                             ItemTrans.ExchRate = 1;
                             // get latest ItemTransaction Line with Unit costs
@@ -1103,6 +1175,15 @@ namespace SBMS
             {
                 // get current jobcard lines
                 var JCL = _db.JobCardLines.Where(x => x.JCID == jcid).OrderBy(x => x.LineID).ToList();
+                // The order's service line (hidden from the grid) is the job itself: complete it here,
+                // Use Qty = ordered qty, no stock movement. It flows to the Sage order as before.
+                var primaryLine = JCL.Where(x => (x.SBCALineID ?? 0) != 0).OrderBy(x => x.LineID).FirstOrDefault();
+                if (primaryLine != null)
+                {
+                    primaryLine.LinePickQty = primaryLine.Quantity;
+                    primaryLine.PickComplete = true;
+                    _db.SaveChanges();
+                }
                 // for each jobcard line - ensure there is an item transaction for that item, moving stock between stores.
                 foreach (var JCLn in JCL)
                 {
@@ -1782,7 +1863,7 @@ namespace SBMS
                     #region HeaderRow
                     // Columns follow the company set-up: Bar Code only when UseBarcodes, Lot Number only when
                     // lot tracking is on. Item Code is 1.5x its old width; the lines table font is 9pt.
-                    bool showLot = CurrentUser.CompanyUseLotNumbers;
+                    bool showLot = false;   // job cards take untracked items only - never a Lot column
                     bool showBc = _db.CompanyMasters.Where(x => x.SBCACoID == CurrentUser.CoID).Select(x => x.UseBarcodes).FirstOrDefault();
                     var tblfont = FontFactory.GetFont(Server.MapPath("~/fonts/Roboto-Regular.ttf"), 9, BaseColor.BLACK);
                     var colWidths = new List<int> { 75, 130 };

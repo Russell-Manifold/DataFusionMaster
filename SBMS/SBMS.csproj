@@ -2012,6 +2012,10 @@
       <DependentUpon>SalesOrder.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
+    <Compile Include="SalesOrder.JobCost.cs">
+      <DependentUpon>SalesOrder.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
     <Compile Include="SalesOrder.aspx.designer.cs">
       <DependentUpon>SalesOrder.aspx</DependentUpon>
     </Compile>
