@@ -16,6 +16,7 @@ namespace SBMS.Classes
             //string sqlInstance = $"MANIFOLDSERVER\\SQL2022";
             string dbName = ApiUrlCall.dbName;
             #if DEBUG
+                        //sqlInstance = $"100.106.25.66";
                         sqlInstance = $"SYNCFLO-DESKTOP\\SYNCFLOSQL";
                         //sqlInstance = $"RUSSELL-DELL\\DELLSQL";
             #endif

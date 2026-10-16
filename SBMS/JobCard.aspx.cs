@@ -95,7 +95,9 @@ namespace SBMS
                     {
                         try
                         {
-                            DateTime dt = Convert.ToDateTime(thispo.JCStartDate.ToString(), CultureInfo.InvariantCulture);
+                            // JCStartDate is already a DateTime; round-tripping it through ToString() and an
+                            // invariant parse failed under en-ZA every time, so the issue date never showed.
+                            DateTime dt = Convert.ToDateTime(thispo.JCStartDate);
                             txtIssueDate.Text = dt.ToString("dd MMM yyyy");
                         }
                         catch { }

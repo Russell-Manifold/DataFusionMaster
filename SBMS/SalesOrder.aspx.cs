@@ -1504,47 +1504,33 @@ namespace SBMS
                 {
                     SO.Header = SOH;
                     SO.Lines = documentLines;
-                    object jsonObject;
-                    if (SO.Header.SalesRepresentativeId > 0)
-                    {
-                        jsonObject = new
-                        {
-                            SO.Header.DeliveryDate,
-                            SO.Header.CustomerId,
-                            SO.Header.ID,
-                            SO.Header.DocumentNumber,
-                            SO.Header.Date,
-                            SO.Header.Message,
-                            SO.Header.Reference,
-                            SO.Header.SalesRepresentativeId,
-                            SO.Lines
-                        };
-                    }
-                    else
-                    {
-                        jsonObject = new
-                        {
-                            SO.Header.DeliveryDate,
-                            SO.Header.CustomerId,
-                            SO.Header.ID,
-                            SO.Header.DocumentNumber,
-                            SO.Header.Date,
-                            SO.Header.Message,
-                            SO.Header.Reference,
-                            SO.Lines
-                        };
-                    }
-                    jsonBody = JsonConvert.SerializeObject(jsonObject, Formatting.Indented);
 
-                    // Back order: fetch the FULL original SO from Sage BEFORE the update below,
-                    // because the update only sends the picked lines. The original line set is
-                    // needed to build the new balance SO (same pattern as GenerateTaxInvoiceAsync).
-                    bool balanceOwing = SOLines.Any(x => (x.QtyLeft ?? 0) > 0.0001m);
-                    JObject origSoJson = null;
-                    if (balanceOwing)
+                    // Sage's SalesOrder/Save REPLACES the whole document. This used to send a
+                    // hand-built payload with eight header fields and the lines, so everything
+                    // else on the order - both address blocks, the VAT number, discount, shipping -
+                    // was wiped in Sage, and the tax invoice built from the order afterwards
+                    // inherited the blanks. Start from the full order as Sage holds it, change only
+                    // what this post changes, and send that back.
+                    JObject fullSo = await api.GetOneSOFull(CurrentUser, docid);
+                    if (fullSo == null || fullSo.Count == 0 || fullSo["ID"] == null)
                     {
-                        origSoJson = await api.GetOneSOFull(CurrentUser, docid);
+                        retStr = "Could not read the Sales Order from Sage, so nothing was updated. Please try again.";
+                        return retStr;
                     }
+                    // The original lines are needed for a back order (built below); keep them before replacing.
+                    bool balanceOwing = SOLines.Any(x => (x.QtyLeft ?? 0) > 0.0001m);
+                    JObject origSoJson = balanceOwing ? (JObject)fullSo.DeepClone() : null;
+
+                    fullSo.Remove("StatusId");            // status is set by the invoicing step, exactly as before
+                    foreach (string k in new[] { "Modified", "Created", "Printed", "Editable", "HasAttachments", "HasNotes", "HasSpecialCountryTax", "Status" })
+                        fullSo.Remove(k);
+                    fullSo["DeliveryDate"] = SOH.DeliveryDate;
+                    fullSo["Date"] = SOH.Date;
+                    fullSo["Message"] = SOH.Message;
+                    fullSo["Reference"] = SOH.Reference;
+                    if (SOH.SalesRepresentativeId > 0) fullSo["SalesRepresentativeId"] = SOH.SalesRepresentativeId;
+                    fullSo["Lines"] = JArray.FromObject(documentLines);
+                    jsonBody = fullSo.ToString(Formatting.Indented);
 
                     string SupInv = await SendSalesOrder(jsonBody);
                     string SuppInvNum = "";
