@@ -269,7 +269,13 @@ namespace SBMS
             string storeCode = DDStoreTo.SelectedValue;
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {
-                int Storeid = _db.Stores.FirstOrDefault(x => x.CompanyID == CurrentUser.CoID && x.StoreCode == storeCode).StoreID;
+                var store = _db.Stores.FirstOrDefault(x => x.CompanyID == CurrentUser.CoID && x.StoreCode == storeCode);
+                if (store == null)
+                {
+                    AlertHelper.ShowSweetAlert(this, "Select a store first. Nothing was linked.", "warning");
+                    return;
+                }
+                int Storeid = store.StoreID;
                 foreach (GridViewRow gvr in GridItems.Rows)
                 {
                     CheckBox chk = new CheckBox();

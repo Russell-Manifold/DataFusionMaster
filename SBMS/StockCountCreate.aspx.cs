@@ -213,7 +213,11 @@ namespace SBMS
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {
                 // Pull all existing lines for this count once — outside the loop
-                var existingLines = _db.StockCountLines.Where(l => l.CompanyID == CurrentUser.CoID && l.CountID == countid).Select(l => new { l.ItemID, l.StoreID }).ToList();
+                // On a new count the URL has id=0 and countid is only set on first load, so on
+                // postback it is 0 again while the lines are saved under lblCountID. The duplicate
+                // check then saw nothing and a second "Add Selected" hit the unique index.
+                int cntId = Convert.ToInt32(lblCountID.Text);
+                var existingLines = _db.StockCountLines.Where(l => l.CompanyID == CurrentUser.CoID && l.CountID == cntId).Select(l => new { l.ItemID, l.StoreID }).ToList();
 
                 foreach (GridViewRow row in GridItemsSelect.Rows)
                 {

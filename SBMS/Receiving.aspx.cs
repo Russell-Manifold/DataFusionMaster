@@ -527,9 +527,9 @@ namespace SBMS
                         ReceivingOutstanding or = new ReceivingOutstanding
                         {
                             CompanyID = CurrentUser.CoID,
-                            PONumber = txtDocNum.Text,
+                            PONumber = txtDocNum.Text.Length > 50 ? txtDocNum.Text.Substring(0, 50) : txtDocNum.Text,
                             PODocID = docid,
-                            Supplier = txtSuppName.Text,
+                            Supplier = txtSuppName.Text.Length > 50 ? txtSuppName.Text.Substring(0, 50) : txtSuppName.Text,
                             SupplierID = supplierIdParsed,
                             ItemCode = dl.ItemCode,
                             SelectionId = dl.SelectionId,
@@ -1136,9 +1136,9 @@ namespace SBMS
                         ReceivingOutstanding or = new ReceivingOutstanding
                         {
                             CompanyID = CurrentUser.CoID,
-                            PONumber = txtDocNum.Text,
+                            PONumber = txtDocNum.Text.Length > 50 ? txtDocNum.Text.Substring(0, 50) : txtDocNum.Text,
                             PODocID = Convert.ToInt64(lblDocID.Text),
-                            Supplier = txtSuppName.Text,
+                            Supplier = txtSuppName.Text.Length > 50 ? txtSuppName.Text.Substring(0, 50) : txtSuppName.Text,
                             SupplierID = Convert.ToInt64(lblSupplierID.Text), // get supplier id from docheader
                             ItemCode = Docline.ItemCode,
                             SelectionId = Convert.ToInt64(Docline.SelectionId),
@@ -1725,9 +1725,9 @@ namespace SBMS
                         _db.ReceivingOutstandings.Add(new ReceivingOutstanding
                         {
                             CompanyID = CurrentUser.CoID,
-                            PONumber = txtDocNum.Text,
+                            PONumber = txtDocNum.Text.Length > 50 ? txtDocNum.Text.Substring(0, 50) : txtDocNum.Text,
                             PODocID = docid,
-                            Supplier = txtSuppName.Text,
+                            Supplier = txtSuppName.Text.Length > 50 ? txtSuppName.Text.Substring(0, 50) : txtSuppName.Text,
                             SupplierID = rejSuppId,
                             ItemCode = dl.ItemCode,
                             SelectionId = dl.SelectionId,

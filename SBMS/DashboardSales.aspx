@@ -18,7 +18,6 @@
     <meta name="description" content="Access your personalized dashboard in My Data Insights to explore business analytics, financial reports, and AI-powered insights from Sage Accounting data." />
     <meta name="keywords" content="SageCloudDIReporting, business dashboard, Sage Accounting, financial reports, management reporting, business insights, data analytics" />
     <meta name="robots" content="index, follow" />
-    <link rel="canonical" href="https://mydatainsights.online/za/SageCloudDIReporting.aspx" />
     <link id="Link3" runat="server" rel="shortcut icon" href="images/BusIntelligenceImg.png" type="image/x-icon" />
 	<link id="Link4" runat="server" rel="icon" href="images/BusIntelligenceImg.png" type="image/ico" />
     
@@ -41,15 +40,6 @@
 <!-- Template Main CSS File -->
 <link href="niceadmin/assets/css/style.css" rel="stylesheet"/>
 
-    <script type="application/ld+json">
-        {
-          "@context": "http://schema.org",
-          "@type": "WebPage",
-          "name": "SageCloudDIReporting - My Data Insights Dashboard",
-          "url": "https://mydatainsights.online/za/SageCloudDIReporting.aspx",
-          "description": "Access your personalized dashboard in My Data Insights for real-time business analytics, reporting, and AI-driven insights from Sage Accounting data."
-        }
-    </script>
 </head>
 <body>
     <form id="form1" runat="server">
@@ -61,7 +51,7 @@
       
                 <header id="header" class="header fixed-top d-flex align-items-center">
                     <div class="d-flex align-items-center justify-content-between">
-                        <a href="https://mydatainsights.online" target="_blank" class="logo d-flex align-items-center">
+                        <a href="Dashboard.aspx" class="logo d-flex align-items-center">
                             <img src="images/logo2.png" alt="" style="height: 2em" /></a>
                         <i class="bi bi-list toggle-sidebar-btn"></i>
                     </div>
@@ -448,8 +438,8 @@
             const breadcrumbs = document.createElement("nav");
             breadcrumbs.className = "breadcrumbs";
             const breadcrumbLinks = [
-                { name: "Home", url: "https://mydatainsights.online/za/index.aspx" },
-                { name: "Dashboard", url: "https://mydatainsights.online/za/SageCloudDIReporting.aspx" }
+                { name: "Home", url: "Dashboard.aspx" },
+                { name: "Sales Dashboard", url: "DashboardSales.aspx" }
             ];
 
             breadcrumbLinks.forEach(function (link, index) {

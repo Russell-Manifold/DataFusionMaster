@@ -46,6 +46,8 @@ namespace SBMS
                 if (ex != null)
                 {
                     string url = HttpContext.Current?.Request?.RawUrl ?? "(no url)";
+                    // Behind Cloudflare the connection IP is Cloudflare's; the real caller is in CF-Connecting-IP.
+                    string ip = " ip:" + (HttpContext.Current?.Request?.Headers?["CF-Connecting-IP"] ?? HttpContext.Current?.Request?.UserHostAddress ?? "?");
                     string who = "";
                     try
                     {
@@ -53,8 +55,25 @@ namespace SBMS
                         if (u != null) who = $" [CoID:{u.CoID} {u.UserEmail ?? u.LoginName}]";
                     }
                     catch { }
+                    string detail = "";
+                    var ev = (ex as System.Data.Entity.Validation.DbEntityValidationException)
+                          ?? (ex.InnerException as System.Data.Entity.Validation.DbEntityValidationException);
+                    if (ev != null)
+                        foreach (var en in ev.EntityValidationErrors)
+                            foreach (var ve in en.ValidationErrors)
+                                detail += $" [{en.Entry.Entity.GetType().Name}.{ve.PropertyName}: {ve.ErrorMessage}]";
+                    // Tampered postbacks (vulnerability scanners, stale pages) are rejected by
+                    // ASP.NET event validation. One line each, no stack - a scan on 2026-10-19
+                    // wrote 19,000 of these with full traces and made the log 70 MB.
+                    var inner = ex.InnerException ?? ex;
+                    if (inner is ArgumentException && inner.Message.StartsWith("Invalid postback or callback argument"))
+                    {
+                        new SBMS.Classes.ApiUrlCall().LogErrorToFile(
+                            "REJECTED POSTBACK on " + url + who + ip);
+                    }
+                    else
                     new SBMS.Classes.ApiUrlCall().LogErrorToFile(
-                        "UNHANDLED on " + url + who + " - " + ex.ToString());
+                        "UNHANDLED on " + url + who + ip + detail + " - " + ex.ToString());
                 }
             }
             catch { }   // logging must never mask the original error

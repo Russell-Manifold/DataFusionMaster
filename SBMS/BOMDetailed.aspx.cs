@@ -371,6 +371,11 @@ namespace SBMS
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {
                 var bomH = _db.BOMHeaders.Where(x => x.CompanyID == CurrentUser.CoID && x.BomHID == bomid).FirstOrDefault();
+                if (bomH == null)
+                {
+                    AlertHelper.ShowSweetAlert(this, "This BOM could not be found. Re-open it from the BOM list and try again.", "error");
+                    return;
+                }
                 BOMHeader NewBH = new BOMHeader();
                 NewBH.AddCost01 = bomH.AddCost01;
                 NewBH.AddCost02 = bomH.AddCost02;
@@ -453,6 +458,11 @@ namespace SBMS
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {
                 var bomH = _db.BOMHeaders.Where(x => x.CompanyID == CurrentUser.CoID && x.BomHID == bomid).FirstOrDefault();
+                if (bomH == null)
+                {
+                    AlertHelper.ShowSweetAlert(this, "This BOM could not be found. Re-open it from the BOM list and try again.", "error");
+                    return;
+                }
                 bomH.BOMCode = lblBOMCode.Text.ToString().Trim();
                 bomH.BomDescript = lblBOMDescipt.Text.ToString().Trim();
                 bomH.AddCost01 = adc1;

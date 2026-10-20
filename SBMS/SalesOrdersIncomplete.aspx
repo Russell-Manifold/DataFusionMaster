@@ -167,8 +167,8 @@
             const breadcrumbs = document.createElement("nav");
             breadcrumbs.className = "breadcrumbs";
             const breadcrumbLinks = [
-                { name: "Home", url: "https://mydatainsights.online/za/index.aspx" },
-                { name: "Sales Orders Analysis", url: "https://mydatainsights.online/za/SageCloudDISalesOrders.aspx" }
+                { name: "Home", url: "Dashboard.aspx" },
+                { name: "Incomplete Sales Orders", url: "SalesOrdersIncomplete.aspx" }
             ];
 
             breadcrumbLinks.forEach(function (link, index) {

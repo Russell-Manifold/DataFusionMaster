@@ -414,16 +414,22 @@ namespace SBMS
 
         protected void lbtnDeleteBom_Click1(object sender, EventArgs e)
         {
-            LinkButton lbtn = (LinkButton)sender;
-            GridViewRow row = (GridViewRow)lbtn.NamingContainer;
-            int Lid = Convert.ToInt32(lbtn.CommandArgument);
-            using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+            // The button sits in the page, not a grid row, and has no CommandArgument - the old
+            // GridViewRow cast threw InvalidCastException every time (log 2026-10-13). Delete the
+            // BOM on this page the same way BOMDetailed does, then go back to the list.
+            if (bomid > 0)
             {
-                var BL = _db.BOMLines.Where(x => x.BLID == Lid);
-                _db.BOMLines.RemoveRange(BL);
-                _db.SaveChanges();
-                LoadBom();
+                using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+                {
+                    var bomH = _db.BOMHeaders.Where(x => x.CompanyID == CurrentUser.CoID && x.BomHID == bomid);
+                    _db.BOMHeaders.RemoveRange(bomH);
+                    var BomL = _db.BOMLines.Where(x => x.CompanyID == CurrentUser.CoID && x.BomHID == bomid);
+                    _db.BOMLines.RemoveRange(BomL);
+                    _db.SaveChanges();
+                }
             }
+            Response.Redirect("~/BOMHeaders.aspx", false);
+            Context.ApplicationInstance.CompleteRequest();
         }
 
         protected void lbtnHome_Click(object sender, EventArgs e)

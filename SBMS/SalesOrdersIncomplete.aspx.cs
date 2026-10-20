@@ -569,7 +569,7 @@ namespace SBMS
             {
                 // Deadlock victim (1205) or SQL timeout (-2) while writing: show the report from
                 // what is already there instead of the crash page.
-                new ApiUrlCall().LogErrorToFile($"CoID:{coId} SalesOrdersIncomplete Sage refresh did not complete - {ex.Message}");
+                new ApiUrlCall().LogErrorToFile($"CoID:{coId} SalesOrdersIncomplete Sage refresh did not complete - {ex}");
                 ShowMessage(this, EventArgs.Empty, "The Sage refresh did not complete (the database was busy). Showing the current figures - refresh the page in a minute for the latest.");
             }
             finally

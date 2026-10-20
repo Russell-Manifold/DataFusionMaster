@@ -1558,7 +1558,7 @@ namespace SBMS.Classes
                                     catch { }
                                     try
                                     {
-                                        if (Userdetails.SageWeightField.ToLower().Contains("userfield"))
+                                        if ((Userdetails.SageWeightField ?? "").ToLower().Contains("userfield"))
                                         {
                                             decimal unitmass = Convert.ToDecimal(item[Userdetails.SageWeightField]);
                                             if (unitmass > 0) itm.NettMass = Convert.ToDecimal(item[Userdetails.SageWeightField] ?? 0, CultureInfo.InvariantCulture);
@@ -1639,7 +1639,7 @@ namespace SBMS.Classes
                                     if (item["YesNoUserField2"] != null) thisitm.YesNoUserField2 = Convert.ToBoolean(item["YesNoUserField2"].ToString() ?? "");
                                     if (item["YesNoUserField3"] != null) thisitm.YesNoUserField3 = Convert.ToBoolean(item["YesNoUserField3"].ToString() ?? "");
 
-                                    if (Userdetails.SageWeightField.ToLower().Contains("userfield"))
+                                    if ((Userdetails.SageWeightField ?? "").ToLower().Contains("userfield"))
                                     {
                                         decimal unitmass = Convert.ToDecimal(item[Userdetails.SageWeightField]);
                                         if (unitmass > 0) thisitm.NettMass = Convert.ToDecimal(item[Userdetails.SageWeightField] ?? 0, CultureInfo.InvariantCulture);
@@ -4468,28 +4468,28 @@ namespace SBMS.Classes
                     DocH.DocDate = Convert.ToDateTime(parsedJSON["Date"].ToString());
                     DocH.DocID = Convert.ToInt64(parsedJSON["ID"].ToString());
                     DocH.DueDelDate = Convert.ToDateTime(parsedJSON["DeliveryDate"] ?? "");
-                    DocH.DocumentNumber = parsedJSON["DocumentNumber"].ToString().Trim() ?? "";
+                    DocH.DocumentNumber = parsedJSON["DocumentNumber"]?.ToString().Trim() ?? "";
                     DocH.CustSuppID = Convert.ToInt64(parsedJSON["CustomerId"].ToString());
-                    DocH.CustSupName = parsedJSON["CustomerName"].ToString().Trim() ?? "";
+                    DocH.CustSupName = parsedJSON["CustomerName"]?.ToString().Trim() ?? "";
                     DocH.CompanyID = Convert.ToInt32(Userdetails.CoID);
                     DocH.Started = false;
                     DocH.Complete = false;
                     if (parsedJSON["SalesRepresentativeId"] != null) DocH.SalesRepresentativeId = Convert.ToInt64(parsedJSON["SalesRepresentativeId"].ToString()) ;
-                    DocH.Status = parsedJSON["Status"].ToString().Trim();
-                    DocH.Reference = parsedJSON["Reference"].ToString().Trim();
-                    DocH.Message = parsedJSON["Message"].ToString().Trim();
+                    DocH.Status = parsedJSON["Status"]?.ToString().Trim() ?? "";
+                    DocH.Reference = parsedJSON["Reference"]?.ToString().Trim() ?? "";
+                    DocH.Message = parsedJSON["Message"]?.ToString().Trim() ?? "";
                     DocH.Discount = Convert.ToDecimal(parsedJSON["Discount"].ToString());
                     DocH.Exclusive = Convert.ToDecimal(parsedJSON["Exclusive"].ToString());
                     DocH.Tax = Convert.ToDecimal(parsedJSON["Tax"].ToString());
                     DocH.Rounding = Convert.ToDecimal(parsedJSON["Rounding"].ToString());
                     DocH.Total = Convert.ToDecimal(parsedJSON["Total"].ToString());
                     DocH.DocType = 5;
-                    DocH.DelAddress1 = parsedJSON["DeliveryAddress01"].ToString().Trim() ?? "";
-                    DocH.DelAddress2 = parsedJSON["DeliveryAddress02"].ToString().Trim() ?? "";
-                    DocH.DelAddress3 = parsedJSON["DeliveryAddress03"].ToString().Trim() ?? "";
-                    DocH.DelAddress4 = parsedJSON["DeliveryAddress04"].ToString().Trim() ?? "";
-                    DocH.DelAddress5 = parsedJSON["DeliveryAddress05"].ToString().Trim() ?? "";
-                    DocH.PostAddress5 = parsedJSON["PostalAddress05"].ToString().Trim() ?? "";
+                    DocH.DelAddress1 = parsedJSON["DeliveryAddress01"]?.ToString().Trim() ?? "";
+                    DocH.DelAddress2 = parsedJSON["DeliveryAddress02"]?.ToString().Trim() ?? "";
+                    DocH.DelAddress3 = parsedJSON["DeliveryAddress03"]?.ToString().Trim() ?? "";
+                    DocH.DelAddress4 = parsedJSON["DeliveryAddress04"]?.ToString().Trim() ?? "";
+                    DocH.DelAddress5 = parsedJSON["DeliveryAddress05"]?.ToString().Trim() ?? "";
+                    DocH.PostAddress5 = parsedJSON["PostalAddress05"]?.ToString().Trim() ?? "";
                     if (parsedJSON.ToString().Contains("SalesRepresentative"))
                     {
                         DocH.SalesRepName = parsedJSON["SalesRepresentative"]["Name"].ToString().Replace("'", "''").Trim();
@@ -4498,7 +4498,7 @@ namespace SBMS.Classes
                     _db.DocHeaders.Add(DocH);
                     _db.SaveChanges();
 
-                    if (CompList.Complete == false) await api.LoadSOLines(DocID, Userdetails);
+                    if (CompList == null || CompList.Complete == false) await api.LoadSOLines(DocID, Userdetails);
                 }
             }
         }

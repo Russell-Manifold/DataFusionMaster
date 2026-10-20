@@ -155,7 +155,15 @@ namespace SBMS
 
         protected void ApplyFilterAndSort(string sortExpression = null, string sortDirection = "ASC")
         {
-            int CntID = Convert.ToInt32(DDStckCount.SelectedValue);         
+            // Store or filter changed while the count dropdown still reads "-Select Count-" (or is
+            // empty): nothing to load. Converting that text to a number crashed the page.
+            int CntID;
+            if (!int.TryParse(DDStckCount.SelectedValue, out CntID) || CntID <= 0)
+            {
+                GridCntLines.DataSource = null;
+                GridCntLines.DataBind();
+                return;
+            }
             string filterText = txtFilter.Text;
 
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
