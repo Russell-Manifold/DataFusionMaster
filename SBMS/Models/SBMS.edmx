@@ -230,6 +230,7 @@
           <Property Name="DocGP" Type="decimal" Precision="18" Scale="4" />
           <Property Name="PostAddress5" Type="varchar" MaxLength="200" />
           <Property Name="RecStatus" Type="int" Nullable="false" />
+          <Property Name="MissingInSage" Type="datetime" />
         </EntityType>
         <EntityType Name="DocHeaderAttachment">
           <Key>
@@ -647,6 +648,8 @@
           <Property Name="LastTaxInvDate" Type="datetime" />
           <Property Name="LastItemDate" Type="datetime" />
           <Property Name="LastPODate" Type="datetime" />
+          <Property Name="LastSOReconcile" Type="datetime" />
+          <Property Name="LastSOReconcileDocID" Type="bigint" />
         </EntityType>
         <EntityType Name="LotTrackingMaster">
           <Key>
@@ -1479,6 +1482,7 @@
           <Property Name="DocGP" Type="Decimal" Precision="18" Scale="4" />
           <Property Name="PostAddress5" Type="String" MaxLength="200" FixedLength="false" Unicode="false" />
           <Property Name="RecStatus" Type="Int32" Nullable="false" />
+          <Property Name="MissingInSage" Type="DateTime" Precision="3" />
         </EntityType>
         <EntityType Name="DocLine">
           <Key>
@@ -1768,6 +1772,8 @@
           <Property Name="LastTaxInvDate" Type="DateTime" Precision="3" />
           <Property Name="LastItemDate" Type="DateTime" Precision="3" />
           <Property Name="LastPODate" Type="DateTime" Precision="3" />
+          <Property Name="LastSOReconcile" Type="DateTime" Precision="3" />
+          <Property Name="LastSOReconcileDocID" Type="Int64" />
         </EntityType>
         <EntityType Name="LotTrackingMaster">
           <Key>
@@ -3448,6 +3454,7 @@
                 <ScalarProperty Name="DocGP" ColumnName="DocGP" />
                 <ScalarProperty Name="PostAddress5" ColumnName="PostAddress5" />
                 <ScalarProperty Name="RecStatus" ColumnName="RecStatus" />
+                <ScalarProperty Name="MissingInSage" ColumnName="MissingInSage" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
@@ -3750,6 +3757,8 @@
                 <ScalarProperty Name="LastTaxInvDate" ColumnName="LastTaxInvDate" />
                 <ScalarProperty Name="LastItemDate" ColumnName="LastItemDate" />
                 <ScalarProperty Name="LastPODate" ColumnName="LastPODate" />
+                <ScalarProperty Name="LastSOReconcile" ColumnName="LastSOReconcile" />
+                <ScalarProperty Name="LastSOReconcileDocID" ColumnName="LastSOReconcileDocID" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>

@@ -181,7 +181,13 @@
                                        </tr>
                                     <tr>
                                          <td>Unit Decimal Places</td>
-                                         <td><asp:TextBox ID="txtDecPlaces" runat="server" TextMode="Number" Width="45">0</asp:TextBox></td>
+                                         <td><asp:DropDownList ID="DDDecPlaces" runat="server" Width="50px" style="text-align:center">
+                                             <asp:ListItem>0</asp:ListItem>
+                                             <asp:ListItem>1</asp:ListItem>
+                                             <asp:ListItem>2</asp:ListItem>
+                                             <asp:ListItem>3</asp:ListItem>
+                                             <asp:ListItem>4</asp:ListItem>
+                                         </asp:DropDownList></td>
                                      </tr>
                                     <tr>
                                        <td><asp:LinkButton ID="lbtnBack3" runat="server" CssClass="icon fa-chevron-left buttonC" OnClick="lbtnBack3_Click" > Back</asp:LinkButton></td>

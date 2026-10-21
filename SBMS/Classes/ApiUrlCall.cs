@@ -3,6 +3,7 @@ using Newtonsoft.Json.Linq;
 using RestSharp;
 using SBMS.Models;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
@@ -14,6 +15,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.NetworkInformation;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Hosting;
@@ -107,10 +109,10 @@ namespace SBMS.Classes
         //public SBMSEntities(string connectionString) : base(connectionString) { }
 
         //  for demo version data
-      public static string dbName = $"MyDataFusionDemo2";
+      //public static string dbName = $"MyDataFusionDemo2";
        // LIVE data
       /// <summary>
-      //public static string dbName = $"MyDataFusion";
+      public static string dbName = $"MyDataFusion";
       /// </summary>
 
         //public static string constr = $"Data Source=100.106.25.66;Initial Catalog={dbName};Persist Security Info=True;User ID=sa;Password=M@nif0LD";
@@ -121,11 +123,11 @@ namespace SBMS.Classes
         static DateTime CustDT = Convert.ToDateTime("01 Jan 2015"), SuppDT = Convert.ToDateTime("01 Jan 2015"), ItemDT = Convert.ToDateTime("01 Jan 2015"), PODT = Convert.ToDateTime("01 Jan 2015"), InvoiceDT = Convert.ToDateTime("01 Jan 2015"), CNoteDT = Convert.ToDateTime("01 Jan 2015");
         static DateTime SuppInvDT = Convert.ToDateTime("01 Jan 2015"), SuppRetDT = Convert.ToDateTime("01 Jan 2015"), JrnlDT = Convert.ToDateTime("01 Jan 2015"), QuoteDT = Convert.ToDateTime("01 Jan 2015"), SOrdDT = Convert.ToDateTime("01 Jan 2015"), GLegDT = Convert.ToDateTime("01 Jan 2015");
 
-      //public static string sageurl = "https://accounting.sageone.co.za/api/2.0.0/";
-      //public static string APIKey = "5850E392-0FE8-43B4-9EEB-18D2B28B115C";
+      public static string sageurl = "https://accounting.sageone.co.za/api/2.0.0/";
+      public static string APIKey = "5850E392-0FE8-43B4-9EEB-18D2B28B115C";
         
-      public static string sageurl = "https://resellers.accounting.sageone.co.za/api/2.0.0/";
-      public static string APIKey = "2B7B61BA-41B8-4212-B2A2-77B8734BA688";
+      //public static string sageurl = "https://resellers.accounting.sageone.co.za/api/2.0.0/";
+      //public static string APIKey = "2B7B61BA-41B8-4212-B2A2-77B8734BA688";
 
         // Syncflo SBCA profile - SANDBOX KEY
         //public static string APIKey = "934D4C3F-FF4D-4311-9380-F21ACB54DCBB";
@@ -394,7 +396,7 @@ namespace SBMS.Classes
                     }
                     else
                     {
-                        LogErrorToFile($"APIUpdateSalesOrderAsync {DocType}/Save failed: {response.StatusCode} - {await response.Content.ReadAsStringAsync()}");
+                        LogErrorToFile($"CoID:{Userdetails.CoID} APIUpdateSalesOrderAsync {DocType}/Save failed: {response.StatusCode} - {await response.Content.ReadAsStringAsync()}");
                     }
                 }
                 catch (Exception ex)
@@ -428,7 +430,7 @@ namespace SBMS.Classes
                     }
                     else
                     {
-                        LogErrorToFile($"APIUpdatePurchaseOrderAsync {DocType}/Save failed: {response.StatusCode} - {await response.Content.ReadAsStringAsync()}");
+                        LogErrorToFile($"CoID:{Userdetails.CoID} APIUpdatePurchaseOrderAsync {DocType}/Save failed: {response.StatusCode} - {await response.Content.ReadAsStringAsync()}");
                     }
                 }
                 catch (Exception ex)
@@ -2462,6 +2464,7 @@ namespace SBMS.Classes
                                         ChkDoc.DocDate = Convert.ToDateTime(item["Date"].ToString());
                                         ChkDoc.DueDelDate = Convert.ToDateTime(item["DeliveryDate"] ?? "");
                                         ChkDoc.Status = item["Status"].ToString();
+                                        ChkDoc.MissingInSage = null;           // Sage lists it, so it exists
                                         ChkDoc.Discount = Convert.ToDecimal(item["Discount"].ToString());
                                         ChkDoc.Exclusive = Convert.ToDecimal(item["Exclusive"].ToString());
                                         ChkDoc.Tax = Convert.ToDecimal(item["Tax"].ToString());
@@ -2645,7 +2648,10 @@ namespace SBMS.Classes
             return parsedJSON;
         }
 
-        public async Task LoadSOLines(long soid, UserDetails Userdetails)
+        /// <summary>Returns "ok" (lines loaded), "notfound" (Sage answered an empty body: no such
+        /// order for this company), "nolines" (order returned without a Lines array) or "error"
+        /// (timeout, 429, 5xx). Local lines are left untouched in every case but "ok".</summary>
+        public async Task<string> LoadSOLines(long soid, UserDetails Userdetails)
         {
            JObject parsedJSON = null;
            DataSet ds = new DataSet();
@@ -2668,9 +2674,15 @@ namespace SBMS.Classes
 
                 if (parsedJSON["Lines"] == null)
                 {
-                    // Sage did not return the order (error, timeout, rate limit) - keep the local lines as they are.
-                    LogErrorToFile($"CoID: {Userdetails.CoID} LoadSOLines {soid}: no lines returned - {parsedJSON["error"]?.ToString() ?? "empty response"}");
-                    return;
+                    // Sage did not return the order's lines - keep the local lines as they are. Say WHY:
+                    // an error (timeout, 429, 5xx), an empty body (Sage's answer for an order that does
+                    // not exist for this company), or a document without a Lines array.
+                    string outcome = parsedJSON["error"] != null ? "error" : (parsedJSON.Count == 0 ? "notfound" : "nolines");
+                    string why = outcome == "error" ? parsedJSON["error"].ToString()
+                               : outcome == "notfound" ? "empty body - Sage has no such order for this company"
+                               : "no Lines array, keys: " + string.Join(",", parsedJSON.Properties().Select(pr => pr.Name));
+                    LogErrorToFile($"CoID: {Userdetails.CoID} LoadSOLines {soid}: no lines returned - {why}");
+                    return outcome;
                 }
                 if (parsedJSON.Count > 0)
                 {
@@ -2763,6 +2775,87 @@ namespace SBMS.Classes
                     }
                 }
             }
+            return "ok";
+        }
+
+        // Once a day per company, every open local sales order is checked against Sage by ID.
+        // Sage answers an EMPTY body (HTTP 200, "null") for an order that no longer exists for the
+        // company - that is the ONLY signal that marks DocHeader.MissingInSage. Any error (timeout,
+        // 429, 5xx) skips the order, and three errors in a row abort the pass, so a Sage outage can
+        // never mark anything. Nothing is deleted: the order drops off the open list, the "Missing in
+        // Sage" filter shows it, and the user deletes it from the Sales Order screen (which still
+        // refuses while a picking slip or job card is linked). LoadSalesOrders clears the mark the
+        // moment Sage lists the order again, so a wrong mark heals itself.
+        /// <summary>Read-only fields a Sage SalesOrder GET returns that SalesOrder/Save rejects or
+        /// ignores. Strip them from any full-order payload before saving (PostOrder, job price save,
+        /// back order). FromDocument* belong to the ORIGINAL conversion; echoing them back fails with
+        /// "The provided FromDocument is invalid" on orders converted from a quote (log 2026-10-21).</summary>
+        public static readonly string[] SageReadOnlySOFields =
+            { "Modified", "Created", "Printed", "Editable", "HasAttachments", "HasNotes", "HasSpecialCountryTax", "Status",
+              "FromDocument", "FromDocumentId", "FromDocumentTypeId" };
+
+        private static readonly ConcurrentDictionary<long, byte> _reconciling = new ConcurrentDictionary<long, byte>();
+        public async Task ReconcileOpenSalesOrders(UserDetails Userdetails, CancellationToken ct = default(CancellationToken))
+        {
+            long coId = Userdetails.CoID;
+            if (!_reconciling.TryAdd(coId, 1)) return;
+            try
+            {
+                using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+                {
+                    var log = _db.LastCallLogs.FirstOrDefault(x => x.CompanyID == coId);
+                    if (log == null) return;                                   // first sync not done yet
+                    if (log.LastSOReconcile != null && log.LastSOReconcile.Value.Date == DateTime.Today) return;
+
+                    // Marked orders are included so a wrong mark is cleared on a later pass (self-healing).
+                    // Capped at 300 orders a day (some companies carry thousands of open orders; Sage
+                    // allows 5000 calls a day per company) and continues from last time's watermark,
+                    // wrapping to the start, so every open order gets its turn.
+                    const int perDay = 300;
+                    long after = log.LastSOReconcileDocID ?? 0;
+                    var allOpen = _db.DocHeaders
+                        .Where(x => x.CompanyID == coId && x.DocType == 5 && x.Complete == false && x.Active == true)
+                        .Select(x => x.DocID).OrderBy(x => x).ToList();
+                    var open = allOpen.Where(x => x > after).Take(perDay).ToList();
+                    if (open.Count < perDay) open.AddRange(allOpen.Where(x => x <= after).Take(perDay - open.Count));
+
+                    int marked = 0, restored = 0, errors = 0, consecutiveErrors = 0;
+                    foreach (long docId in open)
+                    {
+                        if (ct.IsCancellationRequested) { LogErrorToFile($"CoID:{coId} SO reconcile stopped by app shutdown - nothing saved, will run again next visit"); return; }
+                        string url = sageurl + "SalesOrder/GET/" + docId + "?apikey={" + APIKey + "}&CompanyID=" + coId;
+                        JObject r = await ApiCallAsync(url, Userdetails);
+                        if (r["error"] != null)
+                        {
+                            errors++;
+                            if (++consecutiveErrors >= 3)
+                            {
+                                LogErrorToFile($"CoID:{coId} SO reconcile aborted after {errors} Sage errors - nothing marked, will retry next visit: {r["error"]}");
+                                return;                                        // LastSOReconcile not set -> runs again
+                            }
+                        }
+                        else
+                        {
+                            consecutiveErrors = 0;
+                            var dh = _db.DocHeaders.FirstOrDefault(x => x.CompanyID == coId && x.DocID == docId);
+                            if (dh != null)
+                            {
+                                if (r.Count == 0 && dh.MissingInSage == null) { dh.MissingInSage = DateTime.Now; marked++; }
+                                else if (r.Count > 0 && dh.MissingInSage != null) { dh.MissingInSage = null; restored++; }
+                            }
+                        }
+                        // ~50 calls/min: leaves room for users' own Sage calls under the 100/min company cap.
+                        try { await Task.Delay(1200, ct); } catch (OperationCanceledException) { LogErrorToFile($"CoID:{coId} SO reconcile stopped by app shutdown - nothing saved, will run again next visit"); return; }
+                    }
+                    log.LastSOReconcile = DateTime.Now;
+                    log.LastSOReconcileDocID = open.Count > 0 ? open[open.Count - 1] : 0;
+                    _db.SaveChanges();
+                    if (marked > 0 || restored > 0 || errors > 0)
+                        LogErrorToFile($"CoID:{coId} SO reconcile: {open.Count} of {allOpen.Count} open orders checked, {marked} not found in Sage (marked Missing in Sage), {restored} found again (mark cleared), {errors} skipped on Sage errors");
+                }
+            }
+            catch (Exception ex) { LogErrorToFile($"CoID:{coId} SO reconcile failed - {ex}"); }
+            finally { _reconciling.TryRemove(coId, out _); }
         }
         #endregion
 
@@ -4446,6 +4539,8 @@ namespace SBMS.Classes
 
         public static decimal NumberToDecimal(decimal value, int decimalPlaces)
         {
+            if (decimalPlaces < 0) decimalPlaces = 0;
+            if (decimalPlaces > 28) decimalPlaces = 28;
             return Math.Round(value, decimalPlaces);
         }
 

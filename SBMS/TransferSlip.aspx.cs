@@ -406,12 +406,17 @@ namespace SBMS
                 if (Ln != null)
                 {
                     Ln.ItemSelectionId = Convert.ToInt64(ddlGridItem.SelectedValue);
-                    try
+                    // Code and description come from the item record, not from splitting the
+                    // dropdown text on "-": codes like SG7011-81 printed as code SG7011, description 81.
+                    long selId = Ln.ItemSelectionId ?? 0;
+                    var selItem = _db.ItemsMasters.Where(x => x.CompanyID == CurrentUser.CoID && x.ID == selId)
+                                     .Select(x => new { x.Code, x.Description }).FirstOrDefault();
+                    if (selItem != null)
                     {
-                        Ln.ItemDescription = ddlGridItem.SelectedItem.Text.Split('-')[1].Trim();
-                        Ln.ItemCode = ddlGridItem.SelectedItem.Text.Split('-')[0].Trim();
+                        Ln.ItemCode = selItem.Code;
+                        Ln.ItemDescription = selItem.Description;
                     }
-                    catch
+                    else
                     {
                         Ln.ItemDescription = ddlGridItem.SelectedItem.Text;
                     }

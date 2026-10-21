@@ -312,6 +312,11 @@ namespace SBMS
         protected global::System.Web.UI.WebControls.CheckBox chkActive;
 
         /// <summary>
+        /// chkMissing control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.CheckBox chkMissing;
+
+        /// <summary>
         /// lbtnDownload control.
         /// </summary>
         /// <remarks>

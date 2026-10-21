@@ -207,7 +207,7 @@ namespace SBMS
                     SendMessages = true,
                     UseLotTracking = chkLotTrack.Checked && !chkSageStockOnly.Checked,
                     UseLotAddDetails = true,
-                    ItemQtyDecPlaces = Convert.ToInt16(txtDecPlaces.Text.Trim()),
+                    ItemQtyDecPlaces = Convert.ToInt32(DDDecPlaces.SelectedValue),
                     SageConsultRNum = txtConsultRNum.Text.Trim(),
                     ProfileStatus = "Pending",
                     // Non-nullable in the EDMX, so EF marks it Required and rejects the entity

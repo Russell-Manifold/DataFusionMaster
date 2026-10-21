@@ -159,6 +159,10 @@ namespace SBMS
                     sageLine["Discount"] = primary.Discount;
                     sageLine["Tax"] = primary.Tax;
                     sageLine["Total"] = primary.Total;
+                    // Same read-only fields PostOrder strips: Sage rejects a Save that echoes
+                    // back FromDocument on an order converted from a quote.
+                    foreach (string k in ApiUrlCall.SageReadOnlySOFields)
+                        soJson.Remove(k);
                     string res = await SendSalesOrder(soJson.ToString());
                     long sageId;
                     if (!long.TryParse((res ?? "").Split('|')[0], out sageId))

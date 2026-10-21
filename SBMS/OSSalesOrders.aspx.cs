@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Linq.Dynamic.Core;
 using System.Web.Services.Description;
+using System.Web.Hosting;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -55,6 +56,10 @@ namespace SBMS
                 {
                     ApiUrlCall api = new ApiUrlCall();
                     JObject SOResult = await api.LoadSalesOrders(CurrentUser);
+                    // Daily check of every open order against Sage runs in the background (one Sage
+                    // call per order, paced) so this page never waits on it; results show next visit.
+                    UserDetails forReconcile = CurrentUser;
+                    HostingEnvironment.QueueBackgroundWorkItem(ct => new ApiUrlCall().ReconcileOpenSalesOrders(forReconcile, ct));
                     if (SOResult != null && SOResult["error"] != null)
                     {
                         string message = SOResult["error"].ToString();
@@ -87,6 +92,12 @@ namespace SBMS
                 {
                     query = query.Where(x => x.Active == true);
                 }
+                // Orders Sage no longer has: hidden from the normal list, shown only under "Missing in Sage".
+                var missingIds = new HashSet<long>(_db.DocHeaders
+                    .Where(x => x.CompanyID == userDetails.CoID && x.DocType == 5 && x.MissingInSage != null)
+                    .Select(x => x.DocID));
+                query = chkMissing.Checked ? query.Where(x => missingIds.Contains(x.DocID))
+                                           : query.Where(x => !missingIds.Contains(x.DocID));
                 if (DDSOStatus.SelectedIndex > 0)
                 {
                     query = query.Where(x => x.Status == DDSOStatus.Text);
@@ -219,6 +230,11 @@ namespace SBMS
                 {
                     e.Row.Cells[7].BackColor = System.Drawing.Color.Orange;
                     e.Row.Cells[7].ForeColor = System.Drawing.Color.White;
+                }
+                if (chkMissing.Checked && e.Row.RowType == DataControlRowType.DataRow)
+                {
+                    e.Row.BackColor = System.Drawing.Color.MistyRose;
+                    e.Row.ToolTip = "Not found in Sage. Open the order and delete it here if it was removed in Sage.";
                 }
             }
         }

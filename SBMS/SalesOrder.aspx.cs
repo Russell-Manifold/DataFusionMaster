@@ -216,6 +216,7 @@ namespace SBMS
 
                     lblDocCost.Text = (thispo.DocCost ?? 0m).ToString("N2");
                     lblDocGP.Text = (thispo.DocGP ?? 0m).ToString("P2");
+                    ShowMissingInSage(_db.DocHeaders.Where(x => x.CompanyID == CurrentUser.CoID && x.DocID == docid).Select(x => x.MissingInSage).FirstOrDefault());
                     LoadJobCostBlock(_db, docid, thispo.LinkedJCID == null ? (long?)null : Convert.ToInt64(thispo.LinkedJCID),
                                      thispo.Complete == true, thispo.Active == true);
 
@@ -338,10 +339,31 @@ namespace SBMS
                     ApiUrlCall api = new ApiUrlCall();
                     // Awaited: the grid below binds from the DB, so the Sage pull must have
                     // FINISHED first. Un-awaited, this raced LoadLines() and swallowed errors.
-                    await api.LoadSOLines(docid, CurrentUser);
+                    string soLoad = await api.LoadSOLines(docid, CurrentUser);
+                    if (soLoad == "notfound")
+                    {
+                        // Sage has no such order for this company any more - mark it now rather than
+                        // waiting for the daily check, so the user sees why the lines did not refresh.
+                        var dhMissing = _db.DocHeaders.FirstOrDefault(x => x.CompanyID == CurrentUser.CoID && x.DocID == docid);
+                        if (dhMissing != null && dhMissing.MissingInSage == null) { dhMissing.MissingInSage = DateTime.Now; _db.SaveChanges(); }
+                        ShowMissingInSage(dhMissing?.MissingInSage);
+                    }
+                    else if (soLoad == "ok")
+                    {
+                        // Sage returned the order, so a Missing-in-Sage mark (if any) was wrong - clear it.
+                        var dhBack = _db.DocHeaders.FirstOrDefault(x => x.CompanyID == CurrentUser.CoID && x.DocID == docid && x.MissingInSage != null);
+                        if (dhBack != null) { dhBack.MissingInSage = null; _db.SaveChanges(); lblMissingSage.Visible = false; }
+                    }
                     LoadLines();
                 }
             }
+        }
+        private void ShowMissingInSage(DateTime? since)
+        {
+            if (since == null) return;
+            lblMissingSage.Visible = true;
+            lblMissingSage.Text = "This order was not found in Sage (checked " + since.Value.ToString("dd MMM yyyy HH:mm") +
+                                  "). If it was deleted in Sage, use Delete to remove it here. It is hidden from the open orders list.";
         }
         protected void LoadLines()
         {
@@ -1522,7 +1544,7 @@ namespace SBMS
                     JObject origSoJson = balanceOwing ? (JObject)fullSo.DeepClone() : null;
 
                     fullSo.Remove("StatusId");            // status is set by the invoicing step, exactly as before
-                    foreach (string k in new[] { "Modified", "Created", "Printed", "Editable", "HasAttachments", "HasNotes", "HasSpecialCountryTax", "Status" })
+                    foreach (string k in ApiUrlCall.SageReadOnlySOFields)
                         fullSo.Remove(k);
                     fullSo["DeliveryDate"] = SOH.DeliveryDate;
                     fullSo["Date"] = SOH.Date;
@@ -2351,14 +2373,10 @@ namespace SBMS
                 }
             }
 
-            boJson.Remove("Modified");
-            boJson.Remove("Created");
-            boJson.Remove("Printed");
-            boJson.Remove("Editable");
-            boJson.Remove("HasAttachments");
-            boJson.Remove("HasNotes");
-            boJson.Remove("HasSpecialCountryTax");
-            boJson.Remove("Status");
+            // Same strip as PostOrder (incl. FromDocument*: the new balance order is not "from" the
+            // original quote, and Sage rejects the Save if those fields are echoed back).
+            foreach (string k in ApiUrlCall.SageReadOnlySOFields)
+                boJson.Remove(k);
 
             // Update Lines: only lines with an outstanding balance, at the balance quantity
             if (soJson["Lines"] is JArray soLines)

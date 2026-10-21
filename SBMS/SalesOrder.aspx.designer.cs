@@ -159,6 +159,11 @@ namespace SBMS
         protected global::System.Web.UI.WebControls.Label lblSOStatus;
 
         /// <summary>
+        /// lblMissingSage control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Label lblMissingSage;
+
+        /// <summary>
         /// lblDocID control.
         /// </summary>
         /// <remarks>
