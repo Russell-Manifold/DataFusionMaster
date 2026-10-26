@@ -4839,7 +4839,18 @@ namespace SBMS
 
         protected void lbtnAddYesM_Click(object sender, EventArgs e)
         {
-            long itmID = Convert.ToInt64(ddlItemCode.SelectedValue);
+            // No item or no store selected used to crash the page (log 2026-10-26).
+            long itmID;
+            if (!long.TryParse(ddlItemCode.SelectedValue, out itmID) || itmID <= 0)
+            {
+                AlertHelper.ShowSweetAlert(this, "Select an item first.", "error");
+                return;
+            }
+            if (DDItemAddStore.SelectedItem == null)
+            {
+                AlertHelper.ShowSweetAlert(this, "Select a store for the item first.", "error");
+                return;
+            }
             decimal itemQty = 0;
             try
             {

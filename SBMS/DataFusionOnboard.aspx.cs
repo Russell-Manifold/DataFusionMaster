@@ -187,7 +187,8 @@ namespace SBMS
                     SBCACoID = CoId,
                     SBCAemail = txtsagemail.Text.ToString().Trim(),
                     SBCApwd = EncryptedPwd,
-                    CompanyName = DDCompany.SelectedItem.Text,
+                    // CompanyMaster.CompanyName is 50 chars; Sage names can be longer (sign-up crashed 2026-10-25).
+                    CompanyName = DDCompany.SelectedItem.Text.Length > 50 ? DDCompany.SelectedItem.Text.Substring(0, 50) : DDCompany.SelectedItem.Text,
                     Contact = txtContact.Text.ToString(),
                     Contactemail = txtsagemail.Text.ToString().Trim(),
                     UseStartDate = DateTime.Now,
