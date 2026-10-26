@@ -139,6 +139,26 @@ namespace SBMS
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.TextBox txtContemail;
+        
+        /// <summary>
+        /// txtAddr1 control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.TextBox txtAddr1;
+        
+        /// <summary>
+        /// txtAddr2 control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.TextBox txtAddr2;
+        
+        /// <summary>
+        /// txtAddr3 control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.TextBox txtAddr3;
+        
+        /// <summary>
+        /// txtAddr4 control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.TextBox txtAddr4;
 
         /// <summary>
         /// txtGenEmail control.
@@ -490,6 +510,11 @@ namespace SBMS
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.CheckBox chkUAT;
+
+        /// <summary>
+        /// chkConsign control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.CheckBox chkConsign;
 
         /// <summary>
         /// fileUpload control.

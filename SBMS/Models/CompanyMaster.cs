@@ -63,5 +63,6 @@ namespace SBMS.Models
         public bool MobileModule { get; set; }
         public string LPNPickMode { get; set; }
         public bool SageStockOnly { get; set; }
+        public bool UseConsignment { get; set; }
     }
 }

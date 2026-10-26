@@ -161,6 +161,7 @@
           <Property Name="AllowRecPriceEdit" Type="bit" Nullable="false" />
           <Property Name="InvoiceWhenSOComplete" Type="bit" Nullable="false" />
           <Property Name="SageStockOnly" Type="bit" Nullable="false" />
+          <Property Name="UseConsignment" Type="bit" Nullable="false" />
         </EntityType>
         <EntityType Name="DelivMethods">
           <Key>
@@ -940,6 +941,9 @@
           <Property Name="AllowReceiving" Type="bit" Nullable="false" />
           <Property Name="IsRejectStore" Type="bit" Nullable="false" />
           <Property Name="IsWip" Type="bit" Nullable="false" />
+          <Property Name="ConsignCustomerId" Type="bigint" />
+          <Property Name="ConsignCustomer" Type="varchar" MaxLength="100" />
+          <Property Name="ConsignAddress" Type="varchar" MaxLength="400" />
         </EntityType>
         <EntityType Name="TaxTypesMaster">
           <Key>
@@ -3183,6 +3187,9 @@
           <Property Name="AllowReceiving" Type="Boolean" Nullable="false" />
           <Property Name="IsRejectStore" Type="Boolean" Nullable="false" />
           <Property Name="IsWip" Type="Boolean" Nullable="false" />
+          <Property Name="ConsignCustomerId" Type="Int64" />
+          <Property Name="ConsignCustomer" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
+          <Property Name="ConsignAddress" Type="String" MaxLength="400" FixedLength="false" Unicode="false" />
         </EntityType>
         <EntityType Name="ReceivingOutstanding">
           <Key>
@@ -3322,6 +3329,7 @@
           <Property Name="MobileModule" Type="Boolean" Nullable="false" />
           <Property Name="LPNPickMode" Type="String" Nullable="false" MaxLength="10" FixedLength="false" Unicode="false" />
           <Property Name="SageStockOnly" Type="Boolean" Nullable="false" />
+          <Property Name="UseConsignment" Type="Boolean" Nullable="false" />
         </EntityType>
         <EntityType Name="UsersMaster">
           <Key>
@@ -5102,6 +5110,9 @@
           <EntitySetMapping Name="Stores">
             <EntityTypeMapping TypeName="SBMSModel.Store">
               <MappingFragment StoreEntitySet="Stores">
+                <ScalarProperty Name="ConsignCustomerId" ColumnName="ConsignCustomerId" />
+                <ScalarProperty Name="ConsignCustomer" ColumnName="ConsignCustomer" />
+                <ScalarProperty Name="ConsignAddress" ColumnName="ConsignAddress" />
                 <ScalarProperty Name="IsWip" ColumnName="IsWip" />
                 <ScalarProperty Name="IsRejectStore" ColumnName="IsRejectStore" />
                 <ScalarProperty Name="AllowReceiving" ColumnName="AllowReceiving" />
@@ -5207,6 +5218,7 @@
             <EntityTypeMapping TypeName="SBMSModel.CompanyMaster">
               <MappingFragment StoreEntitySet="CompanyMaster">
                 <ScalarProperty Name="SageStockOnly" ColumnName="SageStockOnly" />
+                <ScalarProperty Name="UseConsignment" ColumnName="UseConsignment" />
                 <ScalarProperty Name="LPNPickMode" ColumnName="LPNPickMode" />
                 <ScalarProperty Name="MobileModule" ColumnName="MobileModule" />
                 <ScalarProperty Name="BinDelimiter" ColumnName="BinDelimiter" />

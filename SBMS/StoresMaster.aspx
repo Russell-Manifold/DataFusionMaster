@@ -28,10 +28,10 @@
                     </div>
             
                 <div class="row 150%">
-                    <div class="4u 12u$(medium)">&nbsp;</div>    
-                    <div class="4u 12u$(medium)">
+                    <div class="2u 12u$(medium)">&nbsp;</div>    
+                    <div class="8u 12u$(medium)">
                         <asp:LinkButton ID="lbtnAddStore" runat="server" CssClass="fa fa-plus-circle buttonRed"> Add New Location</asp:LinkButton>
-                        <asp:GridView ID="GridStores" runat="server" AutoGenerateColumns="false" CssClass="gridview" OnRowDataBound="GridStores_RowDataBound">
+                        <asp:GridView ID="GridStores" runat="server" AutoGenerateColumns="false" CssClass="gridview" OnRowDataBound="GridStores_RowDataBound" OnRowCreated="GridStores_RowCreated" Width="100%">
                         <HeaderStyle CssClass="gridViewHeader" />
                                     <FooterStyle CssClass="gridViewHeader" />
                                     <RowStyle CssClass="gridViewRow" />
@@ -66,11 +66,19 @@
                                              <asp:CheckBox ID="chkActive" runat="server" Text=" " Checked='<%# Eval("StoreActive") %>' AutoPostBack="true" OnCheckedChanged="chkActive_CheckedChanged" />
                                          </ItemTemplate>
                                      </asp:TemplateField>
+                                     <asp:TemplateField HeaderText="Consignment customer / delivery address" ItemStyle-Width="26em">
+                                         <ItemTemplate>
+                                             <asp:DropDownList ID="ddlConsignCust" runat="server" EnableViewState="false" AutoPostBack="true" OnSelectedIndexChanged="ddlConsignCust_SelectedIndexChanged" style="width:100%; font-size:.85em" ToolTip="Sage customer whose premises this store is at. '- Not a consignment store -' = normal store."></asp:DropDownList>
+                                             <asp:HiddenField ID="hfConsignCustId" runat="server" Value='<%# Eval("ConsignCustomerId") %>' />
+                                             <asp:TextBox ID="txtConsignAddr" runat="server" Text='<%# Eval("ConsignAddress") %>' MaxLength="400" TextMode="MultiLine" Rows="3" placeholder="Delivery address" style="width:100%; font-size:.85em; margin-top:2px"></asp:TextBox>
+                                             <asp:LinkButton ID="lbtnConsignSave" runat="server" CssClass="icon fa-save buttonCancel" OnClick="lbtnConsignSave_Click" ToolTip="Save consignment customer for this store" style="font-size:.8em"> Save</asp:LinkButton>
+                                         </ItemTemplate>
+                                     </asp:TemplateField>
                                     </Columns>
                             </asp:GridView>
                     
                     </div>
-                    <div class="4u 12u$(medium)">&nbsp;</div>    
+                    <div class="2u 12u$(medium)">&nbsp;</div>    
                     </div>
                 </div>
         </div>

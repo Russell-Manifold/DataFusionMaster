@@ -12,6 +12,9 @@ namespace SBMS.Classes
         PdfTemplate template;
         //SqlCommands sqlc = new SqlCommands();
         BaseFont bf = null;
+        // Signature-line labels; the consignment delivery note overrides them.
+        public string LeftLabel = "Completed By";
+        public string CenterLabel = "Checked";
         // write on top of document       
         public override void OnOpenDocument(PdfWriter writer, Document document)
         {
@@ -31,9 +34,9 @@ namespace SBMS.Classes
         {
             base.OnEndPage(writer, document);
             int currentPage = writer.PageNumber;
-            string text = "Completed By: _______________________________";
+            string text = LeftLabel == "Completed By" ? "Completed By: _______________________________" : LeftLabel + ": " + new string('_', 28);
             string text1 = "Date: ________________________________";
-            string text2 = "Checked: ________________________________";
+            string text2 = CenterLabel == "Checked" ? "Checked: ________________________________" : CenterLabel + ": " + new string('_', 28);
 
             //string text3 = "________________________________________________________________________________________________________";
             string textpg = $"Page {currentPage}";

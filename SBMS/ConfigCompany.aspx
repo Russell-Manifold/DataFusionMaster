@@ -81,6 +81,15 @@
                                    <td>Tel 2</td>
                                    <td><asp:TextBox ID="TextBox4" runat="server"></asp:TextBox></td>
                                </tr>
+                               <tr>
+                                   <td style="vertical-align:top">Company address<br /><span style="font-size:.8em">(printed on consignment delivery notes)</span></td>
+                                   <td colspan="3">
+                                       <asp:TextBox ID="txtAddr1" runat="server" MaxLength="50" placeholder="Address line 1" style="width:48%"></asp:TextBox>
+                                       <asp:TextBox ID="txtAddr2" runat="server" MaxLength="50" placeholder="Address line 2" style="width:48%"></asp:TextBox><br />
+                                       <asp:TextBox ID="txtAddr3" runat="server" MaxLength="50" placeholder="Suburb / City" style="width:48%; margin-top:3px"></asp:TextBox>
+                                       <asp:TextBox ID="txtAddr4" runat="server" MaxLength="50" placeholder="Postal code" style="width:48%; margin-top:3px"></asp:TextBox>
+                                   </td>
+                               </tr>
                                <tr><td colspan="4"><hr /></td></tr>
                                <tr>
                                  <td>Item Quantity - decimal places</td>
@@ -232,6 +241,12 @@
                                          <span style="font-size:.8em">In Testing Mode, integration <br /> with Sage accounting is ONE WAY only. <br /> No data is sent TO Sage, <br />but all data FROM Sage is current and rereshed on demand.</span>
                                      </td>
                                      <td><asp:CheckBox ID="chkUAT" runat="server" Enabled="false" /></td>
+                                 </tr>
+                                 <tr class="slim-hide">
+                                     <td>Consignment Stock Control<br />
+                                         <span style="font-size:.8em">Link a location to a Sage customer (Location Master). Transfers into it print as a Consignment Delivery Note with the customer's name, address and signature lines.</span>
+                                     </td>
+                                     <td><asp:CheckBox ID="chkConsign" runat="server" /></td>
                                  </tr>
                                <tr><td colspan="4"><hr /></td></tr>
                                <tr><td colspan="4" class="cfg-sec">Company Image</td></tr>

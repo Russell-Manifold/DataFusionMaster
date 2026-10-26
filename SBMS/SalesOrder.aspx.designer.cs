@@ -162,6 +162,11 @@ namespace SBMS
         /// lblMissingSage control.
         /// </summary>
         protected global::System.Web.UI.WebControls.Label lblMissingSage;
+        
+        /// <summary>
+        /// lblConsignNote control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Label lblConsignNote;
 
         /// <summary>
         /// lblDocID control.

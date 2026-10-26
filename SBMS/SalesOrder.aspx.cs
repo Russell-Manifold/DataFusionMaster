@@ -217,10 +217,26 @@ namespace SBMS
                     lblDocCost.Text = (thispo.DocCost ?? 0m).ToString("N2");
                     lblDocGP.Text = (thispo.DocGP ?? 0m).ToString("P2");
                     ShowMissingInSage(_db.DocHeaders.Where(x => x.CompanyID == CurrentUser.CoID && x.DocID == docid).Select(x => x.MissingInSage).FirstOrDefault());
+                    // Consignment month-end order: the stock is already at the customer and has been booked
+                    // out of the consignment location. Invoice only - no picking slip, job card or Update.
+                    bool consignOrder = ConsignmentUsage.IsUsageOrder(_db, CurrentUser.CoID, docid);
+                    if (consignOrder)
+                    {
+                        lblConsignNote.Visible = true;
+                        lblConsignNote.Text = "<b>Consignment usage order.</b> The stock is already at the customer and has been taken out of the consignment location. " +
+                                              "Do not pick it: confirm the order and invoice it the way you normally do.";
+                        lbtnPost.Style.Add("display", "none");
+                        lbtnUndo.Style.Add("display", "none");
+                        lbtnPrintDN.Style.Add("display", "none");
+                        // Companies that invoice from Data Fusion keep that one button; nothing else.
+                        if (CurrentUser.AutoGenTaxInvoice == true && thispo.Status != "Invoiced")
+                            PnlButtons.Attributes.Add("style", "display:inline-block");
+                    }
                     LoadJobCostBlock(_db, docid, thispo.LinkedJCID == null ? (long?)null : Convert.ToInt64(thispo.LinkedJCID),
                                      thispo.Complete == true, thispo.Active == true);
 
                     DDOptions.Attributes.Add("style", "display:inline-block; color:#4282C1; font-size:1em; border: 1px #4282C1 solid; border-radius:.25em; margin-top:.5em");
+                    if (consignOrder) DDOptions.Attributes.Add("style", "display:none");   // no picking slip / job card on a consignment usage order
                     //if (thispo.LinkedJCNum != null || thispo.LinkedPSNum != null) DDOptions.Attributes.Add("style", "display:none");
 
                     if (CurrentUser.UseModule2 == false)

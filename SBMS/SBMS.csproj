@@ -299,6 +299,7 @@
     <Content Include="ItemStoresLink.aspx" />
     <Content Include="ItemStkAdjustment.aspx" />
     <Content Include="Returnables.aspx" />
+    <Content Include="ConsignmentUsage.aspx" />
     <Content Include="JobCardGP.aspx" />
     <Content Include="SalesGP.aspx" />
     <Content Include="documents\Privacy_Policy.pdf" />
@@ -1611,6 +1612,13 @@
     <Compile Include="ItemStkAdjustment.aspx.designer.cs">
       <DependentUpon>ItemStkAdjustment.aspx</DependentUpon>
     </Compile>
+    <Compile Include="ConsignmentUsage.aspx.cs">
+      <DependentUpon>ConsignmentUsage.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="ConsignmentUsage.aspx.designer.cs">
+      <DependentUpon>ConsignmentUsage.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Returnables.aspx.cs">
       <DependentUpon>Returnables.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -1974,8 +1982,10 @@
     <Compile Include="Classes\JobCardGP.cs" />
     <Compile Include="Classes\SalesGP.cs" />
     <Compile Include="Classes\JobCardHide.cs" />
+    <Compile Include="Classes\SageCustomers.cs" />
     <Compile Include="Classes\PartDelivery.cs" />
     <Compile Include="Classes\Returnables.cs" />
+    <Compile Include="Classes\ConsignmentUsage.cs" />
     <Compile Include="Classes\Simple3Des.cs" />
     <Compile Include="StoresMaster.aspx.cs">
       <DependentUpon>StoresMaster.aspx</DependentUpon>

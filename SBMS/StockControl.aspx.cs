@@ -25,6 +25,7 @@ namespace SBMS
                 // Traceability and Expiry are built on lot numbers - no lots, nothing to show.
                 lbtnTrace.Visible = CurrentUser.CompanyUseLotNumbers;
                 lbtnExpiry.Visible = CurrentUser.CompanyUseLotNumbers;
+                tileConsign.Visible = CurrentUser.UseConsignment;
                 lblUsername.Text = $":.. {CurrentUser.UserName} ..:";
                 string imgname = CurrentUser.CoID + ".png";
                 string imgPath = $"~/images/CoImages/{imgname}";

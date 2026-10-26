@@ -933,7 +933,10 @@ namespace SBMS
 
                 // check for itemstore link
                 long itmID = Convert.ToInt64(ItemTrans.ItemID);
-                var ItS = _db.ItemStoreLinkMasters.Where(x => x.CompanyID == CurrentUser.CoID && x.StoreID == ItemTrans.ToID && x.ItemID == itmID).FirstOrDefault();
+                // Link the item to the RECEIVING store (toStoreId). This used ItemTrans.ToID, which on
+                // the OUT record is the sending store, so the destination never got a link and the item
+                // could not be adjusted or picked there afterwards.
+                var ItS = _db.ItemStoreLinkMasters.Where(x => x.CompanyID == CurrentUser.CoID && x.StoreID == toStoreId && x.ItemID == itmID).FirstOrDefault();
                 if (ItS == null)
                 {
                     // create item/store link
@@ -941,7 +944,7 @@ namespace SBMS
                     {
                         CompanyID = CurrentUser.CoID,
                         ItemID = itmID,
-                        StoreID = (int?)ItemTrans.ToID,
+                        StoreID = (int?)toStoreId,
                         Active = true,
                     };
                     _db.ItemStoreLinkMasters.Add(isL);
@@ -996,6 +999,21 @@ namespace SBMS
             {
                 var TrL = _db.ItemTransferLines.Where(x => x.TrfID == TrfThisID && x.TrfOutQty >0).OrderBy(x=>x.TrfLID).ToList();
                 var DH = _db.ItemTransferHeaders.Where(x => x.CompanyID == CurrentUser.CoID && x.TrfID == TrfThisID).FirstOrDefault();
+                // Transfer INTO a consignment store (store at a customer's premises) prints as a
+                // Consignment Delivery Note: our name + address, the customer's name + delivery
+                // address, and "Delivered by / Received by" signature lines. Otherwise unchanged.
+                var toStore = DH == null ? null : _db.Stores.FirstOrDefault(x => x.CompanyID == CurrentUser.CoID && x.StoreID == DH.TrfToID);
+                bool consign = CurrentUser.UseConsignment && toStore != null && !string.IsNullOrWhiteSpace(toStore.ConsignCustomer);
+                string fromText = null, toText = null;
+                var co = _db.CompanyMasters.FirstOrDefault(x => x.SBCACoID == CurrentUser.CoID);
+                if (consign)
+                {
+                    var fromLines = new List<string> { co?.CompanyName };
+                    foreach (string a in new[] { co?.BillAddress1, co?.BillAddress2, co?.BillAddress3, co?.BillAddress4 })
+                        if (!string.IsNullOrWhiteSpace(a)) fromLines.Add(a.Trim());
+                    fromText = string.Join("\n", fromLines.Where(l => !string.IsNullOrWhiteSpace(l)));
+                    toText = toStore.ConsignCustomer.Trim() + (string.IsNullOrWhiteSpace(toStore.ConsignAddress) ? "" : "\n" + toStore.ConsignAddress.Trim());
+                }
                 if (TrL != null)
                 {
                     iTextSharp.text.Document doc = new iTextSharp.text.Document(iTextSharp.text.PageSize.A4, 40, 40, 40, 40);
@@ -1019,7 +1037,9 @@ namespace SBMS
                         writer = PdfWriter.GetInstance(doc, new FileStream(filepath, FileMode.Create));
                         writer.SetPdfVersion(PdfWriter.PDF_VERSION_1_7);
                         writer.SetFullCompression();
-                        writer.PageEvent = new PDFFooter();
+                        var footer = new PDFFooter();
+                        if (consign) { footer.LeftLabel = "Delivered by"; footer.CenterLabel = "Received by (sign)"; }
+                        writer.PageEvent = footer;
                     }
                     catch { }
                     doc.Open();
@@ -1067,13 +1087,14 @@ namespace SBMS
                         tsHead.Add(new Chunk(bcImg, 0, -8, true));
                         tsHead.Add(new Chunk("   ", headfont));
                     }
-                    tsHead.Add(new Chunk("Transfer Slip ", headfont));
+                    var titlefont = consign ? FontFactory.GetFont(Server.MapPath("~/fonts/Roboto-Regular.ttf"), 14, BaseColor.BLACK) : headfont;
+                    tsHead.Add(new Chunk(consign ? "Consignment Delivery Note " : "Transfer Slip ", titlefont));
                     cell = new PdfPCell(tsHead);
                     cell.Border = 0;
                     cell.HorizontalAlignment = 2;
                     table.AddCell(cell);
 
-                    cell = new PdfPCell(new Phrase((DH.TrfReference ?? "").ToString(), headfont));
+                    cell = new PdfPCell(new Phrase((DH.TrfReference ?? "").ToString(), consign ? medfont : headfont));
                     cell.Border = 0;
                     cell.HorizontalAlignment = 2;
                     table.AddCell(cell);
@@ -1084,7 +1105,7 @@ namespace SBMS
                     table.AddCell(cell);
 
                     var fromStoreDto = _stores.FirstOrDefault(x => x.StoreID == DH.TrfFromID);
-                    cell = new PdfPCell(new Phrase(fromStoreDto != null ? fromStoreDto.StoreDescript : string.Empty, medfont));
+                    cell = new PdfPCell(new Phrase(consign ? fromText : (fromStoreDto != null ? fromStoreDto.StoreDescript : string.Empty), medfont));
                     cell.Border = 0;
                     cell.HorizontalAlignment = 2;
                     table.AddCell(cell);
@@ -1095,7 +1116,7 @@ namespace SBMS
                     table.AddCell(cell);
 
                     var toStoreDto = _stores.FirstOrDefault(x => x.StoreID == DH.TrfToID);
-                    cell = new PdfPCell(new Phrase(toStoreDto != null ? toStoreDto.StoreDescript : string.Empty, medfont));
+                    cell = new PdfPCell(new Phrase(consign ? toText : (toStoreDto != null ? toStoreDto.StoreDescript : string.Empty), medfont));
                     cell.Border = 0;
                     cell.HorizontalAlignment = 2;
                     table.AddCell(cell);
@@ -1166,10 +1187,19 @@ namespace SBMS
 
 
                     #region HeaderRow
-                    PdfPTable table4 = new PdfPTable(8);
+                    // Columns follow the company set-up: Bar Code only when UseBarcodes, Lot Number only
+                    // when lot tracking is on. Their width goes to the description.
+                    bool showBc = co != null && co.UseBarcodes;
+                    bool showLot = CurrentUser.CompanyUseLotNumbers;
+                    var colWidths = new List<int> { 50, 150 + (showBc ? 0 : 60) + (showLot ? 0 : 100) };
+                    if (showBc) colWidths.Add(60);
+                    colWidths.Add(30);
+                    if (showLot) colWidths.Add(100);
+                    colWidths.AddRange(new[] { 40, 40, 40 });
+                    PdfPTable table4 = new PdfPTable(colWidths.Count);
                     PdfPCell cell4;
                     table4.SpacingBefore = 15f;
-                    table4.SetWidths(new int[] { 50, 150, 60, 30, 100, 40, 40, 40 });
+                    table4.SetWidths(colWidths.ToArray());
                     table4.TotalWidth = doc.PageSize.Width - 80;
                     table4.LockedWidth = true;
 
@@ -1186,11 +1216,14 @@ namespace SBMS
                     cell4.BorderColor = new BaseColor(211, 211, 211);
                     table4.AddCell(cell4);
 
+                    if (showBc)
+                    {
                     cell4 = new PdfPCell(new Phrase("Bar Code", regfont));
                     cell4.HorizontalAlignment = 1;
                     cell4.BackgroundColor = BaseColor.LIGHT_GRAY;
                     cell4.BorderColor = new BaseColor(211, 211, 211);
                     table4.AddCell(cell4);
+                    }
 
                     cell4 = new PdfPCell(new Phrase("Unit", regfont));
                     cell4.HorizontalAlignment = 1;
@@ -1198,11 +1231,14 @@ namespace SBMS
                     cell4.BorderColor = new BaseColor(211, 211, 211);
                     table4.AddCell(cell4);
 
+                    if (showLot)
+                    {
                     cell4 = new PdfPCell(new Phrase("Lot Number", regfont));
                     cell4.HorizontalAlignment = 1;
                     cell4.BackgroundColor = BaseColor.LIGHT_GRAY;
                     cell4.BorderColor = new BaseColor(211, 211, 211);
                     table4.AddCell(cell4);
+                    }
 
                     cell4 = new PdfPCell(new Phrase("Out Qty", regfont));
                     cell4.HorizontalAlignment = 1;
@@ -1240,11 +1276,14 @@ namespace SBMS
                         cell4.BorderColor = new BaseColor(211, 211, 211);  // RGB values for light gray
                         table4.AddCell(cell4);
 
+                        if (showBc)
+                        {
                         cell4 = new PdfPCell(new Phrase("", regfont));
                         cell4.HorizontalAlignment = 1;
                         cell4.VerticalAlignment = Element.ALIGN_MIDDLE;
                         cell4.BorderColor = new BaseColor(211, 211, 211);  // RGB values for light gray
                         table4.AddCell(cell4);
+                        }
 
                         cell4 = new PdfPCell(new Phrase(DL.Unit ?? "", regfont));
                         cell4.HorizontalAlignment = 1;
@@ -1252,11 +1291,14 @@ namespace SBMS
                         cell4.BorderColor = new BaseColor(211, 211, 211);  // RGB values for light gray
                         table4.AddCell(cell4);
 
+                        if (showLot)
+                        {
                         cell4 = new PdfPCell(new Phrase(DL.LotNumber ?? "", regfont));
                         cell4.HorizontalAlignment = 1;
                         cell4.VerticalAlignment = Element.ALIGN_MIDDLE;
                         cell4.BorderColor = new BaseColor(211, 211, 211);  // RGB values for light gray
                         table4.AddCell(cell4);
+                        }
 
                         string outQty = "";
                         if (DL.TrfOutQty != null)
@@ -1290,7 +1332,7 @@ namespace SBMS
                     doc.Add(table4);
 
 
-                    doc.AddTitle("Transfer Slip: ");
+                    doc.AddTitle(consign ? "Consignment Delivery Note: " : "Transfer Slip: ");
                     doc.AddAuthor("Data Fusion");
                     doc.Close();
 

@@ -1,8 +1,11 @@
 ﻿using SBMS.Classes;
 using SBMS.Models;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
+using System.Web.UI;
 using System.Web.UI.WebControls;
 
 namespace SBMS
@@ -18,6 +21,32 @@ namespace SBMS
             }
             if (!IsPostBack)
             {
+                // Consignment column only when the company switch (Company Config) is on. The Sage
+                // customer list is read once and kept in Session for 10 minutes (a company can have
+                // thousands of customers; each read is several Sage calls against the per-company budget).
+                ConsignColumn.Visible = CurrentUser.UseConsignment;
+                var cached = _customerList;
+                if (!CurrentUser.UseConsignment || (cached != null && (DateTime.Now - cached.ReadAt).TotalMinutes < 10))
+                {
+                    LoadStores();
+                }
+                else
+                RegisterAsyncTask(new PageAsyncTask(async () =>
+                {
+                    SageCustomerList list;
+                    try { list = await SageCustomers.GetAllAsync(CurrentUser); }
+                    catch (Exception ex)
+                    {
+                        new ApiUrlCall().LogErrorToFile($"CoID:{CurrentUser.CoID} StoresMaster customer load failed - {ex}");
+                        list = new SageCustomerList { Complete = false, ReadAt = DateTime.MinValue };
+                    }
+                    _customerList = list;
+                    if (!list.Complete)
+                        PopMessage(list.Customers.Count == 0
+                            ? "Could not read the customer list from Sage right now, so consignment customers cannot be set. Existing links are kept. Refresh the page to try again."
+                            : "Sage stopped answering part-way through the customer list, so some customers may be missing from the dropdowns. Refresh the page to try again.");
+                    LoadStores();
+                }));
                 string imgname = CurrentUser.CoID + ".png";
                 string imgPath = $"~/images/CoImages/{imgname}";
                 if (File.Exists(Server.MapPath(imgPath)))
@@ -29,8 +58,41 @@ namespace SBMS
                     imgCoImg.ImageUrl = ResolveUrl("~/images/CoImages/0000.png");
                 }
 
-                LoadStores();
                 SetBinFormatHint();
+            }
+        }
+
+        // Session, not ViewState: a company can have thousands of customers. Keyed by company so a
+        // user who switches company never sees another company's customers.
+        private SageCustomerList _customerList
+        {
+            get { return CurrentUser == null ? null : Session["SageCustomers_" + CurrentUser.CoID] as SageCustomerList; }
+            set { Session["SageCustomers_" + CurrentUser.CoID] = value; }
+        }
+        private List<SageCustomerDto> _customers { get { return _customerList?.Customers ?? new List<SageCustomerDto>(); } }
+        private DataControlField ConsignColumn
+        {
+            get { return GridStores.Columns.Cast<DataControlField>().First(c => c.HeaderText.StartsWith("Consignment")); }
+        }
+
+        // The dropdown is not kept in ViewState (thousands of options x every store row); its items are
+        // rebuilt here on every request, including postbacks, so the posted selection still matches an item.
+        private const string KeepMarker = " (saved - not in Sage list)";
+        protected void GridStores_RowCreated(object sender, GridViewRowEventArgs e)
+        {
+            if (e.Row.RowType != DataControlRowType.DataRow || CurrentUser == null) return;   // session gone: BasePage already redirected
+            var ddl = (DropDownList)e.Row.FindControl("ddlConsignCust");
+            if (ddl == null) return;
+            ddl.Items.Clear();
+            ddl.Items.Add(new ListItem("- Not a consignment store -", ""));
+            foreach (var c in _customers) ddl.Items.Add(new ListItem(c.Name, c.ID.ToString()));
+            // On a postback the saved customer may not be in today's Sage list (inactive, or the list
+            // failed to load). Keep it selectable from the posted value so Save never clears the link.
+            if (IsPostBack)
+            {
+                string posted = Request.Form[ddl.UniqueID];
+                if (!string.IsNullOrEmpty(posted) && ddl.Items.FindByValue(posted) == null)
+                    ddl.Items.Add(new ListItem("Customer " + posted + KeepMarker, posted));
             }
         }
 
@@ -66,6 +128,19 @@ namespace SBMS
         {
             if (e.Row.RowType == DataControlRowType.DataRow)
             {
+                var ddl = (DropDownList)e.Row.FindControl("ddlConsignCust");
+                var hf = (HiddenField)e.Row.FindControl("hfConsignCustId");
+                if (ddl != null)
+                {
+                    string cur = hf?.Value ?? "";
+                    if (cur.Length > 0 && ddl.Items.FindByValue(cur) == null)
+                    {
+                        // Saved customer not in today's Sage list (inactive / list failed): keep it selectable.
+                        var st = e.Row.DataItem as Store;
+                        ddl.Items.Add(new ListItem((st?.ConsignCustomer ?? "Customer " + cur) + KeepMarker, cur));
+                    }
+                    if (cur.Length > 0) ddl.SelectedValue = cur;
+                }
                 LinkButton lbtn = new LinkButton();
                 lbtn = (LinkButton)e.Row.FindControl("lbtnDelete");
                 //if (e.Row.Cells[0].Text == "Co")
@@ -114,6 +189,49 @@ namespace SBMS
             ClientScript.RegisterClientScriptBlock(this.GetType(), "alert", sb.ToString());
         }
 
+        // Consignment store = a store at a customer's premises. Name + address print on the
+        // transfer slip as a Consignment Delivery Note. Blank name = ordinary store.
+        // Picking a customer fills the address from Sage; it stays editable (a customer can have
+        // several DCs). Nothing is saved until Save is clicked.
+        protected void ddlConsignCust_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            var ddl = (DropDownList)sender;
+            // The dropdown is rebuilt on every postback with nothing selected, so ASP.NET raises this
+            // on EVERY postback for every linked row. Only act when the user actually changed THIS
+            // dropdown; otherwise a Save (or any other click) would overwrite an edited address.
+            if (Request.Form["__EVENTTARGET"] != ddl.UniqueID) return;
+            GridViewRow row = (GridViewRow)ddl.NamingContainer;
+            var txtAddr = (TextBox)row.FindControl("txtConsignAddr");
+            long id;
+            var cust = long.TryParse(ddl.SelectedValue, out id) ? _customers.FirstOrDefault(c => c.ID == id) : null;
+            if (txtAddr != null) txtAddr.Text = cust?.DeliveryAddress ?? "";
+        }
+
+        protected void lbtnConsignSave_Click(object sender, EventArgs e)
+        {
+            LinkButton lbtn = (LinkButton)sender;
+            GridViewRow row = (GridViewRow)lbtn.NamingContainer;
+            string stCode = row.Cells[0].Text.ToString();
+            var ddl = (DropDownList)row.FindControl("ddlConsignCust");
+            string addr = ((TextBox)row.FindControl("txtConsignAddr")).Text.Trim();
+            long custId;
+            bool isConsign = long.TryParse(ddl.SelectedValue, out custId) && custId > 0;
+            bool keepName = isConsign && ddl.SelectedItem.Text.EndsWith(KeepMarker);   // customer not in today's list: keep the saved name
+            string name = isConsign ? ddl.SelectedItem.Text.Replace(KeepMarker, "").Trim() : null;
+            if (name != null && name.Length > 100) name = name.Substring(0, 100);
+            if (addr.Length > 400) addr = addr.Substring(0, 400);
+            using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+            {
+                Store st = _db.Stores.Where(x => x.CompanyID == CurrentUser.CoID && x.StoreCode == stCode).FirstOrDefault();
+                if (st == null) { PopMessage("Store not found"); return; }
+                st.ConsignCustomerId = isConsign ? custId : (long?)null;
+                if (!keepName || st.ConsignCustomerId != custId) st.ConsignCustomer = name;
+                st.ConsignAddress = isConsign && addr.Length > 0 ? addr : null;
+                _db.SaveChanges();
+                LoadStores();
+                PopMessage(isConsign ? "Consignment customer saved - transfers into this store print as a Consignment Delivery Note" : "Consignment customer cleared - normal store");
+            }
+        }
         protected void chkAllowPick_CheckedChanged(object sender, EventArgs e)
         {
             CheckBox chk = (CheckBox)sender;

@@ -101,6 +101,9 @@
                                 <asp:LinkButton ID="imgItemAdjust" runat="server" OnClick="imgItemAdjust_Click" CssClass="sc-tile" ToolTip="Carry out an item adjustment with the option of updating Sage Accounting">
                                     <i class="fa fa-sliders-h sc-i"></i><span class="sc-t">Item Adjustment</span><span class="sc-d">Add or remove stock, optionally in Sage too</span>
                                 </asp:LinkButton>
+                                <asp:HyperLink ID="tileConsign" runat="server" NavigateUrl="~/ConsignmentUsage.aspx" CssClass="sc-tile" Visible="false" ToolTip="Month end for stock held at a customer: count, agree the statement, create the Sage sales order for what was used.">
+                                    <i class="fa fa-handshake sc-i"></i><span class="sc-t">Consignment Stock</span><span class="sc-d">Month end: count, statement, sales order</span>
+                                </asp:HyperLink>
                                 <a href="Returnables.aspx" class="sc-tile" title="No-charge items that are expected back (pallets, crates, cylinders): log returns against a customer and see who is holding what. Not a credit note.">
                                     <i class="fa fa-undo sc-i"></i><span class="sc-t">Returnables</span><span class="sc-d">Pallets and crates: returns and who holds what</span>
                                 </a>

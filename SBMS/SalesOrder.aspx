@@ -65,6 +65,7 @@
                                     <cci:ConfirmButtonExtender ID="ConfirmButtonExtender2" runat="server" ConfirmText="WARNING - Delete this Sales Order from Data Fusion? Are you sure?" Enabled="True" TargetControlID="lbtnDelSO"></cci:ConfirmButtonExtender>
                                     <h6>Sales Order Details: <asp:Label ID="lblDocNum" runat="server" Text=""></asp:Label>&nbsp;<asp:Label ID="lblSOStatus" runat="server" Text=""></asp:Label></h6>
                                     <asp:Label ID="lblMissingSage" runat="server" Visible="false" ForeColor="Red" Font-Bold="true" style="display:block; margin:.3em 0 .6em 0"></asp:Label>
+                                    <asp:Label ID="lblConsignNote" runat="server" Visible="false" style="display:block; margin:.3em 0 .6em 0; background:#eef5fb; border-left:3px solid #4282C1; padding:.4em .8em; font-size:.9em"></asp:Label>
                                     <asp:Label ID="lblDocID" runat="server" Text="" style="display:none"></asp:Label>
                                 </td>
                             </tr>

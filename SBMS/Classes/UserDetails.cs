@@ -64,6 +64,7 @@ namespace SBMS.Classes
         public bool InvoiceWhenSOComplete { get; set; }
         /// <summary>Slim manufacturing: stock lives in Sage only (WO/BOM/Items, Sage QOH, Sage costs, one SAGE store).</summary>
         public bool SageStockOnly { get; set; }
+        public bool UseConsignment { get; set; }
         public string LoggedInSessionID { get; set; }
         public bool UsePacks { get; set; }
         public DateTime ExpiryDate { get; set; }

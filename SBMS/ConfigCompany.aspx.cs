@@ -96,8 +96,11 @@ namespace SBMS
                lblGenPwdSaved.Text = string.IsNullOrEmpty(Comp.CoGenericLoginPwd) ? "" : " (saved)";
                if (Comp.Contact!= null) txtContPerson.Text = Comp.Contact ?? "";
                if (Comp.Contactemail != null) txtContemail.Text = Comp.Contactemail ?? "";
+               txtAddr1.Text = Comp.BillAddress1 ?? ""; txtAddr2.Text = Comp.BillAddress2 ?? "";
+               txtAddr3.Text = Comp.BillAddress3 ?? ""; txtAddr4.Text = Comp.BillAddress4 ?? "";
                chkNotifs.Checked = (bool)Comp.SendMessages;
                chkUAT.Checked = (bool)Comp.UATMode;
+               chkConsign.Checked = Comp.UseConsignment;
                chkPickSlip.Checked = (bool)Comp.UsePickSlipTracking;
                chkMobileModule.Checked = Comp.MobileModule;
                // Mobile Picking tab is only shown to companies that have the Mobile Module
@@ -228,9 +231,13 @@ namespace SBMS
                         Comp.CoGenericLoginPwd = new cTripleDES(Login.key, Login.iv).Encrypt(txtGenPwd.Text);
                     Comp.Contact = txtContPerson.Text.ToString();
                     Comp.Contactemail = txtContemail.Text.ToString();
+                    Comp.BillAddress1 = txtAddr1.Text.Trim(); Comp.BillAddress2 = txtAddr2.Text.Trim();
+                    Comp.BillAddress3 = txtAddr3.Text.Trim(); Comp.BillAddress4 = txtAddr4.Text.Trim();
                     Comp.SendMessages = chkNotifs.Checked;
                     CurrentUser.SendMessages = Comp.SendMessages;
                     Comp.UATMode = chkUAT.Checked;
+                    Comp.UseConsignment = chkConsign.Checked;
+                    CurrentUser.UseConsignment = Comp.UseConsignment;
                     Comp.UseLotTracking = uselotTrack;
                     // Serials are lots of quantity 1, so the module cannot outlive lot
                     // tracking - switching lots off switches serials off with them.

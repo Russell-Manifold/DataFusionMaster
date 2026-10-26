@@ -446,7 +446,8 @@ namespace SBMS
                             x.UseEndDate,
                             x.ShowManfCosts,
                             x.SageWeightField,
-                            x.SageStockOnly
+                            x.SageStockOnly,
+                            x.UseConsignment
                         })
                         .FirstOrDefault();
 
@@ -491,6 +492,7 @@ namespace SBMS
                     // Slim manufacturing: no roles or restrictions - every user gets everything.
                     // Set here, after the company row, because roles are read before it.
                     userDetails.SageStockOnly = GenLogIn.SageStockOnly;
+                    userDetails.UseConsignment = GenLogIn.UseConsignment && !GenLogIn.SageStockOnly;   // slim never runs consignment
                     if (userDetails.SageStockOnly)
                     {
                         userDetails.CanReceive = userDetails.CanTransfer = userDetails.CanViewPickSlips = userDetails.CanTrackPickSlips = true;
@@ -510,9 +512,9 @@ namespace SBMS
                         {
                             _db.Database.ExecuteSqlCommand(
                                 "UPDATE dbo.CompanyMaster SET UseModule2 = 0, UseModule3 = 1, UseAutoManf = 1, MobileModule = 1, UseLotTracking = 0, UseSerialNumbers = 0, UseBarcodes = 0, " +
-                                "UsePacks = 0, AllowScannerCount = 0, AllowScannerReceive = 0, AllowScannerPutAway = 0, UsePickSlipTracking = 0, LPNPickMode = 'off' " +
+                                "UsePacks = 0, AllowScannerCount = 0, AllowScannerReceive = 0, AllowScannerPutAway = 0, UsePickSlipTracking = 0, LPNPickMode = 'off', UseConsignment = 0 " +
                                 "WHERE SBCACoID = @p0 AND SageStockOnly = 1 AND (UseModule2 = 1 OR UseModule3 = 0 OR UseAutoManf = 0 OR MobileModule = 0 OR UseLotTracking = 1 OR UseSerialNumbers = 1 OR UseBarcodes = 1 " +
-                                "OR UsePacks = 1 OR AllowScannerCount = 1 OR AllowScannerReceive = 1 OR AllowScannerPutAway = 1 OR UsePickSlipTracking = 1 OR LPNPickMode <> 'off')",
+                                "OR UsePacks = 1 OR AllowScannerCount = 1 OR AllowScannerReceive = 1 OR AllowScannerPutAway = 1 OR UsePickSlipTracking = 1 OR LPNPickMode <> 'off' OR UseConsignment = 1)",
                                 userDetails.CoID);
                             // Items keep their own lot/serial flags (switching slim off restores them);
                             // slim simply ignores them.
