@@ -3361,6 +3361,8 @@ namespace SBMS
                 }
                 else
                 {
+                    // Was shown on screen only - a Sage refusal during Manufacture never reached the log.
+                    new ApiUrlCall().LogErrorToFile($"CoID:{CurrentUser.CoID} WO {woid} Manufacture failed [{CurrentUser.UserEmail}]: {Retstr}");
                     AlertHelper.ShowSweetAlert(this, "Error during transfer: " + Retstr, "error");
                     return;
                 }

@@ -24,6 +24,20 @@ namespace SBMS
             lblUserName.Text = $":.. { userDets.UserName} ..:";
             string expUrl = Request.QueryString["exp"];
             if (expUrl != null) if (expUrl.ToString() == "true") AlertHelper.ShowSweetAlert(this, "Your subscription has expired, please contact support.", "error", "Subscription Expired");
+            // Sent here by Global.asax after a crash on another page (err = that page's name, letters/digits/dot only).
+            string errPage = Request.QueryString["err"];
+            if (!string.IsNullOrEmpty(errPage))
+            {
+                errPage = System.Text.RegularExpressions.Regex.Match(errPage, @"^[A-Za-z0-9_.]+").Value;
+                string errMsg = Session["LastErrorMessage"] as string ?? "";
+                Session.Remove("LastErrorMessage");
+                // One line, no quotes/backslashes (it goes into a script string), at most 300 characters.
+                errMsg = new string(errMsg.Select(c => c == '"' || c == '\\' || char.IsControl(c) ? ' ' : c).ToArray()).Trim();
+                if (errMsg.Length > 300) errMsg = errMsg.Substring(0, 300) + "...";
+                AlertHelper.ShowSweetAlert(this,
+                    $"Something went wrong on {errPage}: {errMsg}",
+                    "warning", "Page Error");
+            }
 
             if (!IsPostBack)
             {

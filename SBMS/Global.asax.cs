@@ -78,15 +78,28 @@ namespace SBMS
             }
             catch { }   // logging must never mask the original error
 
-            if (ex is HttpException httpEx && httpEx.GetHttpCode() == 500)
+            // The app owns the crash redirect from here. It used to be left to Web.config
+            // customErrors, and the live server's copy pointed at an index.aspx that does not
+            // exist - users landed on a 404 and nobody knew. Local runs keep the full error page.
+            if (ex != null && HttpContext.Current != null && !HttpContext.Current.Request.IsLocal
+                && string.IsNullOrEmpty(HttpContext.Current.Request.Headers["X-MicrosoftAjax"]))   // UpdatePanel postbacks report through ScriptManager
             {
-                if (HttpContext.Current != null &&
-                    (HttpContext.Current.Session == null || HttpContext.Current.Session["UserDetails"] == null))
+                Server.ClearError();
+                string rawUrl = HttpContext.Current.Request.RawUrl ?? "";
+                if (HttpContext.Current.Session == null || HttpContext.Current.Session["UserDetails"] == null)
                 {
-                    string returnUrl = HttpUtility.UrlEncode(HttpContext.Current.Request.RawUrl);
-                    HttpContext.Current.Response.Redirect("~/Login.aspx?returnUrl=" + returnUrl, false);
-                    HttpContext.Current.ApplicationInstance.CompleteRequest();
+                    HttpContext.Current.Response.Redirect("~/Login.aspx?returnUrl=" + HttpUtility.UrlEncode(rawUrl), false);
                 }
+                else
+                {
+                    // Page name only (letters, digits, dot, underscore) - shown back to the user on the dashboard,
+                    // with the root error message (kept in Session, read once by the dashboard).
+                    string page = System.Text.RegularExpressions.Regex.Match(
+                        System.IO.Path.GetFileName(rawUrl.Split('?')[0]), @"^[A-Za-z0-9_.]+").Value;
+                    try { HttpContext.Current.Session["LastErrorMessage"] = ex.GetBaseException().Message; } catch { }
+                    HttpContext.Current.Response.Redirect("~/Dashboard.aspx?err=" + page, false);
+                }
+                HttpContext.Current.ApplicationInstance.CompleteRequest();
             }
         }
 
