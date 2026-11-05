@@ -135,7 +135,7 @@
             </div>
             <div class="conv-actions">
                 <asp:LinkButton ID="lbtnMakeHere" runat="server" OnClick="lbtnMakeHere_Click" CssClass="mob-btn-secondary">Make &amp; keep here</asp:LinkButton>
-                <asp:LinkButton ID="lbtnMakeMove" runat="server" OnClick="lbtnMakeMove_Click" CssClass="mob-btn-primary">Make &amp; move &#8594;</asp:LinkButton>
+                <asp:LinkButton ID="lbtnMakeMove" runat="server" OnClick="lbtnMakeMove_Click" CssClass="mob-btn-primary" OnClientClick="this.style.pointerEvents='none'; this.style.opacity='0.5'; return true;">Make &amp; move &#8594;</asp:LinkButton>
             </div>
         </asp:Panel>
 

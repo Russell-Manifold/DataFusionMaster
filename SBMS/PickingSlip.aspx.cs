@@ -1738,7 +1738,10 @@ namespace SBMS
                     #region HeaderRow
                     // Columns follow the company set-up: Bar Code only when UseBarcodes, Lot Number only when
                     // lot tracking is on. Item Code is 1.5x its old width; the lines table font is 9pt.
-                    bool showLot = CurrentUser.CompanyUseLotNumbers;
+                    // Lot Number column only when a line on THIS slip is lot tracked (Top Mount Plastics,
+                    // 2026-11-05: company uses lots, but the slip was all untracked items).
+                    bool showLot = CurrentUser.CompanyUseLotNumbers
+                                && _db.PickSlipLines.Any(x => x.PSID == PS.PSID && x.IsLotTracked);
                     bool showBc = _db.CompanyMasters.Where(x => x.SBCACoID == CurrentUser.CoID).Select(x => x.UseBarcodes).FirstOrDefault();
                     var tblfont = FontFactory.GetFont(Server.MapPath("~/fonts/Roboto-Regular.ttf"), 9, BaseColor.BLACK);
                     var colWidths = new List<int> { 75, 150 };
@@ -1796,13 +1799,13 @@ namespace SBMS
                     table4.AddCell(cell4);
                     }
 
-                    cell4 = new PdfPCell(new Phrase("Qty", tblfont));
+                    cell4 = new PdfPCell(new Phrase("Order Qty", tblfont));
                     cell4.HorizontalAlignment = 1;
                     cell4.BackgroundColor = BaseColor.LIGHT_GRAY;
                     cell4.BorderColor = new BaseColor(211, 211, 211);
                     table4.AddCell(cell4);
 
-                    cell4 = new PdfPCell(new Phrase("Picked", tblfont));
+                    cell4 = new PdfPCell(new Phrase("Picked Qty", tblfont));
                     cell4.HorizontalAlignment = 1;
                     cell4.BackgroundColor = BaseColor.LIGHT_GRAY;
                     cell4.BorderColor = new BaseColor(211, 211, 211);
@@ -1850,7 +1853,7 @@ namespace SBMS
 
                     if (showLot)
                     {
-                        cell4 = new PdfPCell(new Phrase(DL.LotNumber ?? "", tblfont));
+                        cell4 = new PdfPCell(new Phrase(DL.IsLotTracked ? (DL.LotNumber ?? "") : "", tblfont));
                         cell4.HorizontalAlignment = 1;
                         cell4.VerticalAlignment = Element.ALIGN_MIDDLE;
                         cell4.BorderColor = new BaseColor(211, 211, 211);  // RGB values for light gray
@@ -1864,7 +1867,15 @@ namespace SBMS
                         cell4.BorderColor = new BaseColor(211, 211, 211);  // RGB values for light gray
                         table4.AddCell(cell4);
 
-                        cell4 = new PdfPCell(new Phrase("", tblfont));
+                        // Picked quantity once the line has been picked; blank until then so it can be
+                        // written in by hand. Top Mount Plastics (2026-11-05): a partial pick of 2,000 on a
+                        // 10,000 order printed 10,000 under the only quantity column.
+                        string pickedTxt = (DL.PickQty ?? 0) != 0
+                            ? Convert.ToDecimal(ApiUrlCall.NumberToDecimal(DL.PickQty.ToString(), CurrentUser.CompanyDecPlaces)).ToString()
+                            : "";
+                        cell4 = new PdfPCell(new Phrase(pickedTxt, tblfont));
+                        cell4.HorizontalAlignment = 1;
+                        cell4.VerticalAlignment = Element.ALIGN_MIDDLE;
                         cell4.BorderColor = new BaseColor(211, 211, 211);  // RGB values for light gray
                         table4.AddCell(cell4);
 

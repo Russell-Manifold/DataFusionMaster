@@ -134,8 +134,7 @@
                                 <tr>
                                     <td>&nbsp;</td>
                                     <td>
-                                        <asp:LinkButton ID="lbtnSave" runat="server" OnClick="lbtnSave_Click" CssClass="fa fa-save buttonC"> Complete Adjustment</asp:LinkButton>
-                                        <cci:ConfirmButtonExtender ID="lbtnSave_ConfirmButtonExtender1" runat="server" ConfirmText="Complete Stock Adjustment? Are Your Sure?" Enabled="True" TargetControlID="lbtnSave"></cci:ConfirmButtonExtender>
+                                        <asp:LinkButton ID="lbtnSave" runat="server" OnClick="lbtnSave_Click" CssClass="fa fa-save buttonC" OnClientClick="if (!confirm('Complete Stock Adjustment? Are Your Sure?')) return false; this.style.pointerEvents='none'; this.style.opacity='0.5'; return true;"> Complete Adjustment</asp:LinkButton>
                                         <asp:Label ID="lblerr" runat="server" Text="" ForeColor="red"></asp:Label>
                                     </td>
                                 </tr>

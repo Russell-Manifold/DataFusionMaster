@@ -255,7 +255,9 @@ namespace SBMS
                             itm.TotQOH_MDF = qoh;
 
                             // remove all historic transactions
-                            var RemoveList = _db.ItemTransactions.Where(x => x.CompanyID == CurrentUser.CoID && x.ItemCode == itmCode).ToList();
+                            long itmIdDel = Convert.ToInt64(itm.ID);
+                            // By ItemID, not code: rows written with a chopped code (pre-21 Oct transfer slips) were left behind.
+                            var RemoveList = _db.ItemTransactions.Where(x => x.CompanyID == CurrentUser.CoID && x.ItemID == itmIdDel).ToList();
                             _db.ItemTransactions.RemoveRange(RemoveList);
                             // remove Lot Tracking history
                             var RemoveLots = _db.LotTrackingMasters.Where(x => x.CompanyID == CurrentUser.CoID && x.ItemCode == itmCode).ToList();
@@ -423,7 +425,8 @@ namespace SBMS
                     {
                         StorCode = itm.TextUserField1;
                         // remove all historic transactions
-                        var RemoveList = _db.ItemTransactions.Where(x => x.CompanyID == CurrentUser.CoID && x.ItemCode == itm.Code).ToList();
+                        long itmIdDel = Convert.ToInt64(itm.ID);
+                        var RemoveList = _db.ItemTransactions.Where(x => x.CompanyID == CurrentUser.CoID && x.ItemID == itmIdDel).ToList();
                         _db.ItemTransactions.RemoveRange(RemoveList);
                         _db.SaveChanges();
 

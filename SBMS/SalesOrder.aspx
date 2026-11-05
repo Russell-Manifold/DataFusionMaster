@@ -61,8 +61,7 @@
                         <table style="width:100%" class="soHeader">  
                             <tr>
                                 <td colspan="6">
-                                     <asp:LinkButton ID="lbtnDelSO" CssClass="icon fa-ban buttonTransparent" runat="server" ForeColor="Red" ToolTip="Delete Sales Order" OnClick="lbtnDelSO_Click" Style="margin-right: 2em; float:right"> Delete</asp:LinkButton>
-                                    <cci:ConfirmButtonExtender ID="ConfirmButtonExtender2" runat="server" ConfirmText="WARNING - Delete this Sales Order from Data Fusion? Are you sure?" Enabled="True" TargetControlID="lbtnDelSO"></cci:ConfirmButtonExtender>
+                                     <asp:LinkButton ID="lbtnDelSO" CssClass="icon fa-ban buttonTransparent" runat="server" ForeColor="Red" ToolTip="Delete Sales Order" OnClick="lbtnDelSO_Click" OnClientClick="if (!confirm('WARNING - Delete this Sales Order from Data Fusion? Are you sure?')) return false; this.style.pointerEvents='none'; this.style.opacity='0.5'; return true;" Style="margin-right: 2em; float:right"> Delete</asp:LinkButton>
                                     <h6>Sales Order Details: <asp:Label ID="lblDocNum" runat="server" Text=""></asp:Label>&nbsp;<asp:Label ID="lblSOStatus" runat="server" Text=""></asp:Label></h6>
                                     <asp:Label ID="lblMissingSage" runat="server" Visible="false" ForeColor="Red" Font-Bold="true" style="display:block; margin:.3em 0 .6em 0"></asp:Label>
                                     <asp:Label ID="lblConsignNote" runat="server" Visible="false" style="display:block; margin:.3em 0 .6em 0; background:#eef5fb; border-left:3px solid #4282C1; padding:.4em .8em; font-size:.9em"></asp:Label>
@@ -206,10 +205,8 @@
                              </span><br />
                              <asp:Label ID="lblErr" runat="server" Text="" style="margin:auto; color:red"></asp:Label><br />
                              <asp:LinkButton ID="lbtnPrintDN" runat="server" class="buttonRed icon fa-print" Width="200px" OnClick="lbtnPrintDN_Click" Style="display: none">&nbsp;Delivery Note</asp:LinkButton>
-                             <asp:LinkButton ID="lbtnPost" runat="server" class="buttonIndex icon fa-upload" Width="220px" OnClick="lbtnPost_Click" ToolTip="Updates Sales Order in Sage Accounting with picking details, Store, Lot number etc. Tax invoice to be generated In Sage Accounting.">&nbsp;Update Sage SO</asp:LinkButton>
-                             <cci:ConfirmButtonExtender ID="lbtnpost_ConfirmButtonExtender1" runat="server" ConfirmText="Confirm, Update this Sales Order in Sage?" Enabled="True" TargetControlID="lbtnPost"></cci:ConfirmButtonExtender>
-                             <asp:LinkButton ID="lbtnTaxInv" runat="server" class="buttonIndex icon fa-upload" Width="220px" OnClick="lbtnTaxInv_Click" ToolTip="Generate Tax invoice In Sage Accounting.">&nbsp;Create Sage Tax Invoice</asp:LinkButton>
-                             <cci:ConfirmButtonExtender ID="ConfirmButtonExtender3" runat="server" ConfirmText="Confirm, Create a Tax Invoice in Sage?" Enabled="True" TargetControlID="lbtnTaxInv"></cci:ConfirmButtonExtender>
+                             <asp:LinkButton ID="lbtnPost" runat="server" class="buttonIndex icon fa-upload" Width="220px" OnClick="lbtnPost_Click" OnClientClick="if (!confirm('Confirm, Update this Sales Order in Sage?')) return false; this.style.pointerEvents='none'; this.style.opacity='0.5'; return true;" ToolTip="Updates Sales Order in Sage Accounting with picking details, Store, Lot number etc. Tax invoice to be generated In Sage Accounting.">&nbsp;Update Sage SO</asp:LinkButton>
+                             <asp:LinkButton ID="lbtnTaxInv" runat="server" class="buttonIndex icon fa-upload" Width="220px" OnClick="lbtnTaxInv_Click" OnClientClick="if (!confirm('Confirm, Create a Tax Invoice in Sage?')) return false; this.style.pointerEvents='none'; this.style.opacity='0.5'; return true;" ToolTip="Generate Tax invoice In Sage Accounting.">&nbsp;Create Sage Tax Invoice</asp:LinkButton>
                              <asp:LinkButton ID="lbtnUndo" runat="server" class="buttonRed icon fa-undo" Width="200px" OnClick="lbtnUndo_Click">&nbsp;Re-open for editing</asp:LinkButton>
                              <cci:ConfirmButtonExtender ID="lbtnUndo_ConfirmButtonExtender1" runat="server" ConfirmText="Confirm, Re-open this Sales Order for editing?" Enabled="True" TargetControlID="lbtnUndo"></cci:ConfirmButtonExtender>
                          </asp:Panel>

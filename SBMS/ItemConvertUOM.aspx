@@ -127,8 +127,7 @@
                                     </tr>
                                     <tr>
                                     <td colspan="2" style="padding-top:2em">
-                                        <asp:LinkButton ID="lbtnConvert" runat="server" CssClass="buttonJC icon fa-refresh" style="width:100%" OnClick="lbtnConvert_Click">Convert Items</asp:LinkButton>
-                                        <cci:ConfirmButtonExtender ID="lbtnConvert_ConfirmButtonExtender1" runat="server" ConfirmText="You are about to convert items to different item code, are you sure?" Enabled="True" TargetControlID="lbtnConvert"></cci:ConfirmButtonExtender>
+                                        <asp:LinkButton ID="lbtnConvert" runat="server" CssClass="buttonJC icon fa-refresh" style="width:100%" OnClick="lbtnConvert_Click" OnClientClick="if (!confirm('You are about to convert items to different item code, are you sure?')) return false; this.style.pointerEvents='none'; this.style.opacity='0.5'; return true;">Convert Items</asp:LinkButton>
                                     </td>
                                 </tr>
                                     <tr>

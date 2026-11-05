@@ -174,11 +174,10 @@
                              <asp:LinkButton ID="LbtnSaveWO" runat="server" CssClass="icon fa-save buttonSage" OnClick="LbtnSaveWO_Click">&nbsp;Save Work Order</asp:LinkButton>
                             <asp:LinkButton ID="LbtnUpdateWO" runat="server" CssClass="icon fa-upload buttonIndex" 
                                     OnClick="LbtnUpdateWO_Click" 
-                                    OnClientClick="disableButtonsDuringProcess(); return true;"
+                                    OnClientClick="if (!confirm('Confirm, update Sage and carry out all stock adjustments?')) return false; disableButtonsDuringProcess(); return true;"
                                     ToolTip="Only completed lines can be transferred to stores and Quantity On Hand levels updated.">
                                     &nbsp;Transfer Items To Stores and Update Sage
                                 </asp:LinkButton>
-                            <cci:ConfirmButtonExtender ID="lbtnIssue_ConfirmButtonExtender1" runat="server" ConfirmText="Confirm, update Sage and carry out all stock adjustments?" Enabled="True" TargetControlID="LbtnUpdateWO"></cci:ConfirmButtonExtender>
                         </div>
                      </div>
                         <div class="1u 12u$(medium)">&nbsp;</div>

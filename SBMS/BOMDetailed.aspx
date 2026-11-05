@@ -168,8 +168,7 @@
                                 </asp:Panel><br /><br /><br />
                                 <asp:Panel ID="Pane32" runat="server">
                                 <div style="width:100%; text-align:center; margin-top:7em ">
-                                     <asp:LinkButton ID="lbtnSBCAUpdate" CssClass="icon fa-upload buttonIndex" runat="server" ToolTip="Update Sage with this BOM cost and new selling price?" OnClick="lbtnSBCAUpdate_Click" style="float:left"> Update Sage</asp:LinkButton>
-                                    <cci:ConfirmButtonExtender ID="lbtnSBCAUpdate_ConfirmButtonExtender1" runat="server" ConfirmText="Confirm, Update Sage Accounting Average Cost?" Enabled="True" TargetControlID="lbtnSBCAUpdate"></cci:ConfirmButtonExtender>
+                                     <asp:LinkButton ID="lbtnSBCAUpdate" CssClass="icon fa-upload buttonIndex" runat="server" ToolTip="Update Sage with this BOM cost and new selling price?" OnClick="lbtnSBCAUpdate_Click" style="float:left" OnClientClick="if (!confirm('Confirm, Update Sage Accounting Average Cost?')) return false; this.style.pointerEvents='none'; this.style.opacity='0.5'; return true;"> Update Sage</asp:LinkButton>
                                     <cci:ConfirmButtonExtender ID="lbtnDeleteBom_ConfirmButtonExtender1" runat="server" ConfirmText="Delete this BOM? Are you sure?" Enabled="True" TargetControlID="lbtnDeleteBom"></cci:ConfirmButtonExtender>
                                     <asp:LinkButton ID="lbtnDeleteBom" runat="server" style="color:red; font-size:.8em; padding-right:2em; float:right" CssClass="icon fa-ban button" OnClick="lbtnDeleteBom_Click" > Delete BOM</asp:LinkButton>
                                     <asp:LinkButton ID="LbtnSaveBOM" runat="server" style="font-size:1em" CssClass="icon fa-save buttonSage" OnClick="LbtnSaveBOM_Click"> SAVE BOM</asp:LinkButton>

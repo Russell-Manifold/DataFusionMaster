@@ -36,6 +36,7 @@ namespace SBMS
         protected void Application_Error(object sender, EventArgs e)
         {
             Exception ex = Server.GetLastError();
+            bool clientGone = false;
 
             // Log EVERY unhandled exception, not just 500s, and before any redirect.
             // This was commented out, so crashes left no trace at all - a receipt that
@@ -71,6 +72,15 @@ namespace SBMS
                         new SBMS.Classes.ApiUrlCall().LogErrorToFile(
                             "REJECTED POSTBACK on " + url + who + ip);
                     }
+                    else if (inner is System.Web.UI.ViewStateException)
+                    {
+                        // The browser stopped sending before the whole form arrived (user clicked
+                        // away / clicked again mid-save - Biz Afrika, Receiving, 26-29 Oct 2026).
+                        // Nothing was processed. One line; and no redirect - the client is gone.
+                        clientGone = ex.Message.IndexOf("client disconnected", StringComparison.OrdinalIgnoreCase) >= 0;
+                        new SBMS.Classes.ApiUrlCall().LogErrorToFile(
+                            (clientGone ? "CLIENT DISCONNECTED mid-post on " : "INVALID VIEWSTATE on ") + url + who + ip);
+                    }
                     else
                     new SBMS.Classes.ApiUrlCall().LogErrorToFile(
                         "UNHANDLED on " + url + who + ip + detail + " - " + ex.ToString());
@@ -81,7 +91,7 @@ namespace SBMS
             // The app owns the crash redirect from here. It used to be left to Web.config
             // customErrors, and the live server's copy pointed at an index.aspx that does not
             // exist - users landed on a 404 and nobody knew. Local runs keep the full error page.
-            if (ex != null && HttpContext.Current != null && !HttpContext.Current.Request.IsLocal
+            if (ex != null && !clientGone && HttpContext.Current != null && !HttpContext.Current.Request.IsLocal
                 && string.IsNullOrEmpty(HttpContext.Current.Request.Headers["X-MicrosoftAjax"]))   // UpdatePanel postbacks report through ScriptManager
             {
                 Server.ClearError();

@@ -136,7 +136,7 @@
                                     <div class="Controls">
                                         <input id="btnCancel5" type="button" class="fa fa-times-circle" value="" runat="server" style="display:none"/>
                                         <input id="btnOkay5" type="button" class="buttonYellow" value="OK" runat="server" style="display:none"/>
-                                        <asp:LinkButton ID="btnApprovYes" runat="server" CssClass="buttonC fa fa-thumbs-up" OnClick="btnApprovYes_Click" >&nbsp;OK&nbsp;</asp:LinkButton>
+                                        <asp:LinkButton ID="btnApprovYes" runat="server" CssClass="buttonC fa fa-thumbs-up" OnClick="btnApprovYes_Click" OnClientClick="this.style.pointerEvents='none'; this.style.opacity='0.5'; return true;">&nbsp;OK&nbsp;</asp:LinkButton>
                                     </div>
                                 </div>
                     </asp:Panel>

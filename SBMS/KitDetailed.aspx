@@ -98,8 +98,7 @@
                                          </tr>
                                         
                                         <tr>
-                                            <td colspan="2"><br /> <asp:LinkButton ID="lbtnSBCAUpdate" CssClass="icon fa-upload buttonIndex" runat="server" ToolTip="Update Sage with this unit cost?" OnClick="lbtnSBCAUpdate_Click">Update SBCA Average Unit Cost</asp:LinkButton></td>
-                                            <cci:ConfirmButtonExtender ID="lbtnSBCAUpdate_ConfirmButtonExtender1" runat="server" ConfirmText="Confirm, Update Sage Accounting Average Cost?" Enabled="True" TargetControlID="lbtnSBCAUpdate"></cci:ConfirmButtonExtender>
+                                            <td colspan="2"><br /> <asp:LinkButton ID="lbtnSBCAUpdate" CssClass="icon fa-upload buttonIndex" runat="server" ToolTip="Update Sage with this unit cost?" OnClick="lbtnSBCAUpdate_Click" OnClientClick="if (!confirm('Confirm, Update Sage Accounting Average Cost?')) return false; this.style.pointerEvents='none'; this.style.opacity='0.5'; return true;">Update SBCA Average Unit Cost</asp:LinkButton></td>
                                         </tr>
                                         </table>
                                 </asp:Panel>

@@ -1,4 +1,4 @@
-<%@ Page Language="C#" Async="true" AsyncTimeout="600" AutoEventWireup="true" CodeBehind="TransferSlip.aspx.cs" Inherits="SBMS.TransferSlip" %>
+﻿<%@ Page Language="C#" Async="true" AsyncTimeout="600" AutoEventWireup="true" CodeBehind="TransferSlip.aspx.cs" Inherits="SBMS.TransferSlip" %>
 <%@ Register Assembly="AjaxControlToolkit" Namespace="AjaxControlToolkit" TagPrefix="cci" %>
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -190,8 +190,7 @@
                              <asp:LinkButton ID="LbtnSaveEdits" runat="server" OnClick="LbtnSaveEdits_Click" CssClass=" icon fa-edit buttonSage" ToolTip="Save Edits"> Save Edits</asp:LinkButton>      
                              <asp:LinkButton ID="lbtnStart" runat="server" class="buttonIndex icon fa-upload" Width="220px" OnClick="lbtnStart_Click" ToolTip="Start Transfer">&nbsp;Start Transfer</asp:LinkButton>
                              <cci:ConfirmButtonExtender ID="ConfirmButtonExtender3" runat="server" ConfirmText="Confirm, Start Item Transfer?" Enabled="True" TargetControlID="lbtnStart"></cci:ConfirmButtonExtender>  
-                             <asp:LinkButton ID="lbtnCompleteTrf" runat="server" class="buttonSage icon fa-download" Width="220px" OnClick="lbtnCompleteTrf_Click" ToolTip="Complete Transfer">&nbsp;Complete Transfer</asp:LinkButton>
-                             <cci:ConfirmButtonExtender ID="ConfirmButtonExtender1" runat="server" ConfirmText="Confirm, Complete Item Transfer?" Enabled="True" TargetControlID="lbtnCompleteTrf"></cci:ConfirmButtonExtender>
+                             <asp:LinkButton ID="lbtnCompleteTrf" runat="server" class="buttonSage icon fa-download" Width="220px" OnClick="lbtnCompleteTrf_Click" ToolTip="Complete Transfer" OnClientClick="if (!confirm('Confirm, Complete Item Transfer?')) return false; this.style.pointerEvents='none'; this.style.opacity='0.5'; return true;">&nbsp;Complete Transfer</asp:LinkButton>
                              <asp:LinkButton ID="lbtnAddShip" CssClass="icon fa-truck buttonTransparent" runat="server"  ToolTip="Added shipping costs will be split accross each line item and the stock on hand value in the receiving warehouse will be adjusted accordingly." OnClick="lbtnAddShip_Click" Style="margin-right: 2em"> Add Shipping Costs</asp:LinkButton>
                          </asp:Panel>
                     </div>

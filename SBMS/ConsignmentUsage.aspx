@@ -1,4 +1,4 @@
-<%-- Consignment month end: pick the consignment location, count what the customer holds,
+﻿<%-- Consignment month end: pick the consignment location, count what the customer holds,
      check the statement, create the Sage sales order for what was used. Arithmetic and SQL in
      Classes/ConsignmentUsage.cs (raw SQL; tables from SQL/Add_ConsignmentUsage.sql).
      AsyncTimeout: creating the order posts to Sage. --%>
@@ -115,7 +115,7 @@
                                     <asp:LinkButton ID="lbtnSave" runat="server" CssClass="fa fa-save buttonC" OnClick="lbtnSave_Click"> Save counts</asp:LinkButton>
                                     <asp:LinkButton ID="lbtnStatement" runat="server" CssClass="fa fa-print buttonC" OnClick="lbtnStatement_Click" ToolTip="Print the usage statement to agree with the customer"> Print statement</asp:LinkButton>
                                     <asp:LinkButton ID="lbtnCreateSO" runat="server" CssClass="fa fa-file-invoice buttonC" OnClick="lbtnCreateSO_Click" ToolTip="Raise the Sage sales order for the used quantities and take them out of the location"
-                                        OnClientClick="return confirm('Create the Sage sales order for the used quantities and take them out of this location? Check the counts and prices first - this cannot be undone here.');"> Create Sales Order</asp:LinkButton>
+                                        OnClientClick="if (!confirm('Create the Sage sales order for the used quantities and take them out of this location? Check the counts and prices first - this cannot be undone here.')) return false; this.style.pointerEvents='none'; this.style.opacity='0.5'; return true;"> Create Sales Order</asp:LinkButton>
                                     <asp:LinkButton ID="lbtnDelete" runat="server" CssClass="fa fa-trash buttonCancel" OnClick="lbtnDelete_Click" ForeColor="Red"
                                         OnClientClick="return confirm('Discard this count? Nothing has been sent to Sage.');"> Discard</asp:LinkButton>
                                 </div>
