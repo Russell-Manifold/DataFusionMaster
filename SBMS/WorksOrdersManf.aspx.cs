@@ -5021,8 +5021,10 @@ namespace SBMS
                         // calculated off old numbers. Stop instead; the operator can retry.
                         if (!refreshed)
                         {
-                            return $"Could not refresh {(itm != null ? itm.Code : itmid.ToString())} from Sage - "
-                                 + "cost not updated and nothing was posted. Check the connection and try again.";
+                            string refCode = itm != null ? itm.Code : itmid.ToString();
+                            return api.LastNotFound
+                                ? $"Item {refCode} no longer exists in Sage (deleted or renumbered). Re-link this works order / BOM line to the current Sage item. Nothing was posted."
+                                : $"Could not reach Sage to refresh {refCode} - cost not updated and nothing was posted. Check the connection and try again.";
                         }
                         if (itm == null) return $"Item {itmid} not found - unable to continue.";
 

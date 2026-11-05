@@ -525,6 +525,9 @@ namespace SBMS.Classes
         /// sending the request." and tells you nothing. Empty when the call succeeded.
         /// </summary>
         public string LastValidationDetail { get; private set; }
+        /// <summary>True when the last ApiCallNA got a bare "null" back: Sage has no such record in this
+        /// company (item deleted or renumbered). Lets callers tell that apart from Sage being unreachable.</summary>
+        public bool LastNotFound { get; private set; }
 
         public async Task<string> ValidateUserAsync(string controller, string jsonStr, UserDetails userDetails)
         {
@@ -2198,6 +2201,7 @@ namespace SBMS.Classes
                 client.DefaultRequestHeaders.Authorization = SageAuthHeader(userDetails);
                 ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
                 JObject parsedJSON = new JObject();
+                LastNotFound = false;
 
                 try
                 {
@@ -2210,7 +2214,14 @@ namespace SBMS.Classes
                     if (response.IsSuccessStatusCode)
                     {
                         string content = response.Content.ReadAsStringAsync().Result; // Synchronous call
-                        if (!string.IsNullOrWhiteSpace(content))
+                        if (string.Equals((content ?? "").Trim(), "null", StringComparison.OrdinalIgnoreCase))
+                        {
+                            // 200 with a bare "null": the record does not exist in this Sage company.
+                            // Was logged as a JSON parse error and read as a connection problem (Home Seald, Oct/Nov 2026).
+                            LastNotFound = true;
+                            LogErrorToFile($"ApiCallNA: Sage has no such record in this company (deleted or renumbered) - URL: {requestUrl}");
+                        }
+                        else if (!string.IsNullOrWhiteSpace(content))
                         {
                             parsedJSON = JObject.Parse(content);
                         }
@@ -2657,6 +2668,12 @@ namespace SBMS.Classes
            DataSet ds = new DataSet();
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {
+                // Already known to be gone from Sage: stop asking. QSA Brands 2026-11-02 hit Sage 70 times
+                // in 16 minutes for orders it had already said did not exist. The daily SO reconcile is the
+                // one place that re-checks and clears the mark if the order comes back.
+                var dhKnown = _db.DocHeaders.FirstOrDefault(x => x.CompanyID == Userdetails.CoID && x.DocID == soid);
+                if (dhKnown != null && dhKnown.MissingInSage != null) return "notfound";
+
                 // get latest doclines
                 string requestUrl = sageurl + "SalesOrder/GET/" + soid + "?includeDetail={True}&includeCustomerDetails={True}&apikey={" + APIKey + "}&CompanyID=" + Userdetails.CoID;
                // JObject parsedJSON = await ApiCallAsync(requestUrl, Userdetails);
@@ -2682,6 +2699,8 @@ namespace SBMS.Classes
                                : outcome == "notfound" ? "empty body - Sage has no such order for this company"
                                : "no Lines array, keys: " + string.Join(",", parsedJSON.Properties().Select(pr => pr.Name));
                     LogErrorToFile($"CoID: {Userdetails.CoID} LoadSOLines {soid}: no lines returned - {why}");
+                    // Mark it now so the next caller (page open, sync loop) stops at the check above.
+                    if (outcome == "notfound" && dhKnown != null) { dhKnown.MissingInSage = DateTime.Now; try { _db.SaveChanges(); } catch { } }
                     return outcome;
                 }
                 if (parsedJSON.Count > 0)
@@ -2850,8 +2869,28 @@ namespace SBMS.Classes
                     log.LastSOReconcile = DateTime.Now;
                     log.LastSOReconcileDocID = open.Count > 0 ? open[open.Count - 1] : 0;
                     _db.SaveChanges();
-                    if (marked > 0 || restored > 0 || errors > 0)
-                        LogErrorToFile($"CoID:{coId} SO reconcile: {open.Count} of {allOpen.Count} open orders checked, {marked} not found in Sage (marked Missing in Sage), {restored} found again (mark cleared), {errors} skipped on Sage errors");
+
+                    // Self-cleaning: an order marked Missing in Sage for 30+ days that nothing hangs off
+                    // (no picking slip either way) is deleted - header and lines, same as the user's own
+                    // Delete button. 30 days gives the daily re-check above time to restore a mark that
+                    // was wrong. Anything with history stays for a human to decide.
+                    int swept = 0;
+                    DateTime cutoff = DateTime.Now.AddDays(-30);
+                    var stale = _db.DocHeaders
+                        .Where(x => x.CompanyID == coId && x.DocType == 5 && x.MissingInSage != null && x.MissingInSage < cutoff
+                                 && x.LinkedPSID == null
+                                 && !_db.PickingSlipMasters.Any(p => p.CustomerID == coId && p.LinkedSOrdID == x.DocID))
+                        .ToList();
+                    foreach (var dh in stale)
+                    {
+                        _db.DocLines.RemoveRange(_db.DocLines.Where(l => l.CompanyID == coId && l.DocID == dh.DocID));
+                        _db.DocHeaders.Remove(dh);
+                        swept++;
+                    }
+                    if (swept > 0) _db.SaveChanges();
+
+                    if (marked > 0 || restored > 0 || errors > 0 || swept > 0)
+                        LogErrorToFile($"CoID:{coId} SO reconcile: {open.Count} of {allOpen.Count} open orders checked, {marked} not found in Sage (marked Missing in Sage), {restored} found again (mark cleared), {errors} skipped on Sage errors, {swept} missing 30+ days with no picking slip deleted");
                 }
             }
             catch (Exception ex) { LogErrorToFile($"CoID:{coId} SO reconcile failed - {ex}"); }

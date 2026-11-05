@@ -410,7 +410,9 @@ namespace SBMS
                 ApiUrlCall api = new ApiUrlCall();
                 if (!api.LoadOneItemNA(fromItemId, CurrentUser) || !api.LoadOneItemNA(toItemId, CurrentUser))
                 {
-                    AlertHelper.ShowSweetAlert(this, "Could not refresh the items from Sage - nothing was converted. Check the connection and try again.", "error");
+                    AlertHelper.ShowSweetAlert(this, api.LastNotFound
+                        ? "One of these items no longer exists in Sage (deleted or renumbered). Nothing was converted."
+                        : "Could not reach Sage to refresh the items - nothing was converted. Check the connection and try again.", "error");
                     return;
                 }
                 using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))

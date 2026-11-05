@@ -174,7 +174,10 @@ namespace SBMS
                         lblErrDetail.Text = "<b>Diagnostic detail</b><br />" + Api.LastValidationDetail;
                         lblErrDetail.Visible = true;
                     }
-                    new ApiUrlCall().LogErrorToFile("Login validation failed. " + RetStr + " | " + Api.LastValidationDetail);
+                    // A plain wrong username/password is the user's problem, not ours - keep it out of the
+                    // log. Every other refusal (OAuth-only account, API key, network) is still written.
+                    if ((RetStr ?? "").IndexOf("Credentials incorrect", StringComparison.OrdinalIgnoreCase) < 0)
+                        new ApiUrlCall().LogErrorToFile("Login validation failed. " + RetStr + " | " + Api.LastValidationDetail);
                     return;
                 }
 
@@ -1200,7 +1203,10 @@ namespace SBMS
                         lblErrDetail.Text = "<b>Diagnostic detail</b><br />" + Api.LastValidationDetail;
                         lblErrDetail.Visible = true;
                     }
-                    new ApiUrlCall().LogErrorToFile("Login validation failed. " + RetStr + " | " + Api.LastValidationDetail);
+                    // A plain wrong username/password is the user's problem, not ours - keep it out of the
+                    // log. Every other refusal (OAuth-only account, API key, network) is still written.
+                    if ((RetStr ?? "").IndexOf("Credentials incorrect", StringComparison.OrdinalIgnoreCase) < 0)
+                        new ApiUrlCall().LogErrorToFile("Login validation failed. " + RetStr + " | " + Api.LastValidationDetail);
                     return;
                 }
 

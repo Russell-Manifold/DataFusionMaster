@@ -2029,6 +2029,12 @@ namespace SBMS
             {
 
                 var PSH = _db.PickingSlipMasters.Where(x => x.CustomerID == CurrentUser.CoID && x.PSID == psid).FirstOrDefault();
+                if (PSH == null)
+                {
+                    // Already deleted (second click / stale tab) - QSA Brands 2026-11-02 crashed on Remove(null).
+                    AlertHelper.ShowSweetAlert(this, "This picking slip has already been deleted.", "info");
+                    return;
+                }
                 _db.PickingSlipMasters.Remove(PSH);
 
                 var PSL = _db.PickSlipLines.Where(x => x.PSID == psid).OrderBy(x => x.LineID).ToList();       

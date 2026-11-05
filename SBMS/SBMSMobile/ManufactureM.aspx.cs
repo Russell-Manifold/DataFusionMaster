@@ -502,7 +502,9 @@ namespace SBMS
                 // The average below is derived from QuantityOnHand / AverageCost and pushed to Sage,
                 // which SETS the average. A failed refresh means those inputs are old.
                 if (!refreshed)
-                    return $"Could not refresh {code} from Sage - nothing posted. Check the connection and try again.";
+                    return api.LastNotFound
+                        ? $"Item {code} no longer exists in Sage (deleted or renumbered). Re-link this works order / BOM line to the current Sage item. Nothing was posted."
+                        : $"Could not reach Sage to refresh {code} - nothing posted. Check the connection and try again.";
 
                 if (unitcost == 0) unitcost = itm.AverageCost ?? 0;
 
