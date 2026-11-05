@@ -20,6 +20,8 @@ namespace SBMS
         protected void Page_Load(object sender, EventArgs e)
         {
             lblErr.Text = "";
+            if (!IsPostBack && Request.QueryString["expired"] == "1")
+                lblErr.Text = "The subscription for this company has expired and you have been logged out. Please contact support to renew.";
             // Mobile device detection (server-side)
             //string userAgent = Request.UserAgent ?? "";
             //bool isMobile = userAgent.ToLower().Contains("iphone") ||
@@ -231,11 +233,19 @@ namespace SBMS
                     // Multiple companies found for this user, show company selection modal
                     // Populate DDCompanyList with CompanyID and companyName from CompanyMaster
                     var companyIds = userList.Select(u => u.CompanyID).ToList();
-                    var companies = _db.CompanyMasters.Where(c => c.SBCACoID.HasValue && companyIds.Contains(c.SBCACoID.Value)).Select(c => new { c.SBCACoID, c.CompanyName }).ToList();
+                    // An expired company is listed but marked; picking it is refused in LinkCoGo so the
+                    // user can still get into the companies that are current.
+                    var companies = _db.CompanyMasters.Where(c => c.SBCACoID.HasValue && companyIds.Contains(c.SBCACoID.Value))
+                                       .Select(c => new { c.SBCACoID, c.CompanyName, c.UseEndDate }).ToList()
+                                       .Select(c => new { c.SBCACoID, CompanyName = c.UseEndDate != null && c.UseEndDate < DateTime.Now ? c.CompanyName + " (expired)" : c.CompanyName })
+                                       .ToList();
                     DDCompanyList.DataSource = companies;
                     DDCompanyList.DataTextField = "CompanyName";
                     DDCompanyList.DataValueField = "SBCACoID";
                     DDCompanyList.DataBind();
+                    // The password box is empty on the next postback (TextMode=Password never echoes),
+                    // so keep what was typed for the company pick. Read once in LinkCoGo.
+                    Session["PendingLoginPwd"] = pwd;
                     // Show the modal popup
                     ModalSelectCompany.Show();
                     return false;
@@ -563,6 +573,14 @@ namespace SBMS
                     }
                 }
                 catch { }
+
+                // Expired is expired: no log in. Checked here so every login path (single company,
+                // company picker, Sage SSO) is covered before anything lands in Session.
+                if (userDetails.ExpiryDate <= DateTime.Now)
+                {
+                    lblErr.Text = "The subscription for this company has expired. Please contact support to renew.";
+                    return false;
+                }
 
                 Session["UserDetails"] = userDetails;
                 Session["UserID"] = userDetails.UserGuiD;
@@ -1124,7 +1142,23 @@ namespace SBMS
         protected async void LinkCoGo()
         {
             string username = txtUsername.Text.Trim();
+            long pickedCo = Convert.ToInt64(DDCompanyList.SelectedValue);
+            using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+            {
+                var endDate = _db.CompanyMasters.Where(c => c.SBCACoID == pickedCo).Select(c => c.UseEndDate).FirstOrDefault();
+                if (endDate != null && endDate < DateTime.Now)
+                {
+                    lblMCErr.Text = "The subscription for this company has expired. Please choose another company, or contact support to renew.";
+                    ModalSelectCompany.Show();   // password stays in Session for the next pick
+                    return;
+                }
+            }
             string password = txtPwd.Text;
+            if (password == "")
+            {
+                password = Session["PendingLoginPwd"] as string ?? "";
+                Session.Remove("PendingLoginPwd");
+            }
             if (setUserDetails(username, password, Convert.ToInt64(DDCompanyList.SelectedValue)))
             {
 

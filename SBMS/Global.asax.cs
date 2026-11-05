@@ -159,6 +159,14 @@ namespace SBMS
                         ctx.Response.Redirect("~/Login.aspx?returnUrl=" + returnUrl, false);
                         ctx.ApplicationInstance.CompleteRequest();
                     }
+                    // Subscription ran out while logged in: end the session. Login refuses an expired
+                    // company, so this is the only way an expired company can still have a session.
+                    else if (ctx.Session["UserDetails"] is UserDetails ud && ud.ExpiryDate <= DateTime.Now)
+                    {
+                        ctx.Session.Clear();
+                        ctx.Response.Redirect("~/Login.aspx?expired=1", false);
+                        ctx.ApplicationInstance.CompleteRequest();
+                    }
                 }
             }
         }
