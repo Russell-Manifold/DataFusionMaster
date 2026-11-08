@@ -309,13 +309,13 @@ namespace SBMS
 
                 if (SBCAQty < MDFQty + PickQty + JCQty)
                 {
-                    e.Row.Cells[2].BackColor = System.Drawing.Color.Red;
-                    e.Row.Cells[2].ForeColor = System.Drawing.Color.White;
+                    e.Row.Cells[2].ForeColor = System.Drawing.Color.Red;
+                    e.Row.Cells[2].Font.Bold = true;
                 }
                 else if (SBCAQty > MDFQty + PickQty + JCQty)
                 {
-                    e.Row.Cells[3].BackColor = System.Drawing.Color.Red;
-                    e.Row.Cells[3].ForeColor = System.Drawing.Color.White;
+                    e.Row.Cells[3].ForeColor = System.Drawing.Color.Red;
+                    e.Row.Cells[3].Font.Bold = true;
                 }
             }
             if (e.Row.RowType != DataControlRowType.Pager)

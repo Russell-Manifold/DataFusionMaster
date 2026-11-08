@@ -195,8 +195,8 @@ namespace SBMS
 
                 if (SBCAQty != MDFQty)
                 {
-                    e.Row.Cells[4].BackColor = System.Drawing.Color.Red;
-                    e.Row.Cells[4].ForeColor = System.Drawing.Color.White;
+                    e.Row.Cells[4].ForeColor = System.Drawing.Color.Red;
+                    e.Row.Cells[4].Font.Bold = true;
                 }
             }
             //if (CurrentUser.UseModule2 == false)

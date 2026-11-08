@@ -109,10 +109,10 @@ namespace SBMS.Classes
         //public SBMSEntities(string connectionString) : base(connectionString) { }
 
         //  for demo version data
-      //public static string dbName = $"MyDataFusionDemo2";
+      public static string dbName = $"MyDataFusionDemo2";
        // LIVE data
       /// <summary>
-      public static string dbName = $"MyDataFusion";
+      //public static string dbName = $"MyDataFusion";
       /// </summary>
 
         public static string constr = $"Data Source=100.106.25.66;Initial Catalog={dbName};Persist Security Info=True;User ID=sa;Password=M@nif0LD";
@@ -123,11 +123,11 @@ namespace SBMS.Classes
         static DateTime CustDT = Convert.ToDateTime("01 Jan 2015"), SuppDT = Convert.ToDateTime("01 Jan 2015"), ItemDT = Convert.ToDateTime("01 Jan 2015"), PODT = Convert.ToDateTime("01 Jan 2015"), InvoiceDT = Convert.ToDateTime("01 Jan 2015"), CNoteDT = Convert.ToDateTime("01 Jan 2015");
         static DateTime SuppInvDT = Convert.ToDateTime("01 Jan 2015"), SuppRetDT = Convert.ToDateTime("01 Jan 2015"), JrnlDT = Convert.ToDateTime("01 Jan 2015"), QuoteDT = Convert.ToDateTime("01 Jan 2015"), SOrdDT = Convert.ToDateTime("01 Jan 2015"), GLegDT = Convert.ToDateTime("01 Jan 2015");
 
-      public static string sageurl = "https://accounting.sageone.co.za/api/2.0.0/";
-      public static string APIKey = "5850E392-0FE8-43B4-9EEB-18D2B28B115C";
+      //public static string sageurl = "https://accounting.sageone.co.za/api/2.0.0/";
+      //public static string APIKey = "5850E392-0FE8-43B4-9EEB-18D2B28B115C";
         
-      //public static string sageurl = "https://resellers.accounting.sageone.co.za/api/2.0.0/";
-      //public static string APIKey = "2B7B61BA-41B8-4212-B2A2-77B8734BA688";
+      public static string sageurl = "https://resellers.accounting.sageone.co.za/api/2.0.0/";
+      public static string APIKey = "2B7B61BA-41B8-4212-B2A2-77B8734BA688";
 
         // Syncflo SBCA profile - SANDBOX KEY
         //public static string APIKey = "934D4C3F-FF4D-4311-9380-F21ACB54DCBB";
@@ -1468,13 +1468,24 @@ namespace SBMS.Classes
             return summary;
         }
 
+        // One item sync per company at a time. Two logins (or a Cloudflare timeout + retry)
+        // running LoadItems together doubled the call rate and tripped Sage's 100/min limit.
+        private static readonly ConcurrentDictionary<long, byte> ItemSyncRunning = new ConcurrentDictionary<long, byte>();
+
         public async Task<List<string>> LoadItems(UserDetails Userdetails)
         {
             bool UpdateDate = false;
             int TotQty = 0, RetQty = 0, skipQty = 0;
             DateTime LastCallDt = DateTime.Now;
             var errorList = new List<string>();
-            
+
+            if (!ItemSyncRunning.TryAdd(Userdetails.CoID, 0))
+            {
+                LogErrorToFile($"CoID:{Userdetails.CoID} LoadItems skipped - an item sync for this company is already running");
+                return errorList;
+            }
+            try
+            {
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
             {
                 var LastItmCall = _db.LastCallLogs.Where(x => x.CompanyID == Userdetails.CoID).FirstOrDefault();
@@ -1500,6 +1511,14 @@ namespace SBMS.Classes
                     DateTime requestStart = DateTime.Now;
                     string requestUrl = sageurl + "Item/GET?apikey={" + APIKey + "}&CompanyID=" + Userdetails.CoID + "&$skip=" + skipQty + FiltDate(ItemDT.ToString()) + " and Active eq true)&includeAdditionalItemPrices=true&includeAttachments=false";
                     JObject parsedJSON = await ApiCallAsync(requestUrl, Userdetails);
+                    if (parsedJSON["error"] != null)
+                    {
+                        // A failed page (429 rate limit, timeout) used to read as TotalResults 0: the loop
+                        // ended, LastItemDate was stamped and the unfetched items were never pulled again.
+                        LogErrorToFile($"CoID:{Userdetails.CoID} LoadItems stopped at skip {skipQty} of {TotQty}: Sage returned {parsedJSON["error"]["statusCode"]} {parsedJSON["error"]["reason"]} - LastItemDate not updated, sync resumes on next login");
+                        UpdateDate = false;
+                        break;
+                    }
                     if (parsedJSON.Count > 0)
                     {
                         JArray items = (JArray)parsedJSON["Results"];
@@ -1530,6 +1549,12 @@ namespace SBMS.Classes
                                 var itm = _db.ItemsMasters.Where(x => x.ID == itemid).FirstOrDefault();
                                 if (itm != null)
                                 {
+                                    // A duplicate that slipped in before the renumber check existed: Sage lists this
+                                    // ID, so if another active row carries the same code it is the dead one.
+                                    string sageCode = (item["Code"] ?? "").ToString();
+                                    var olderDup = _db.ItemsMasters.FirstOrDefault(x => x.CompanyID == Userdetails.CoID && x.Code == sageCode && x.ID != itemid && x.Active == true);
+                                    if (olderDup != null) RepointRenumberedItem(_db, Userdetails, olderDup, itemid);
+
                                     if (item["Active"] != null) itm.Active = Convert.ToBoolean(item["Active"].ToString() ?? "");
                                     itm.AverageCost = Convert.ToDecimal(item["AverageCost"] ?? "", CultureInfo.InvariantCulture);
                                     itm.CategoryDescript = Categ;
@@ -1683,6 +1708,13 @@ namespace SBMS.Classes
                                 }
                                 catch { thisitm.GPPercentage = 0; }
                                 _db.ItemsMasters.Add(thisitm);
+
+                                // Same code already here under another Sage ID? Sage item codes are unique, so
+                                // the old one was deleted and re-created (Home Seald HSENVIRO/HSPA65, Nov 2026).
+                                // Confirm the old ID is gone from Sage, then move BOMs, WO lines, ledger and store
+                                // links onto the new ID and retire the old row - instead of a silent duplicate.
+                                var olderSame = _db.ItemsMasters.FirstOrDefault(x => x.CompanyID == Userdetails.CoID && x.Code == thisitm.Code && x.ID != itemid && x.Active == true);
+                                if (olderSame != null) RepointRenumberedItem(_db, Userdetails, olderSame, itemid);
                                 }
                               }
                               catch (Exception exItem)
@@ -1697,6 +1729,7 @@ namespace SBMS.Classes
                     }
                     parsedJSON.RemoveAll();
                     skipQty = skipQty + RetQty;
+                    if (RetQty == 0) break;   // nothing returned - do not loop on it
 
                     TimeSpan elapsed = DateTime.Now - requestStart;
                     if (elapsed.TotalMilliseconds < 1000)
@@ -1775,6 +1808,11 @@ namespace SBMS.Classes
                         api.LogErrorToFile("Ln1493 - Update Nett Mass error:- " + result2);
                     }
                 }
+            }
+            }
+            finally
+            {
+                ItemSyncRunning.TryRemove(Userdetails.CoID, out _);
             }
             return errorList;
         }
@@ -1964,6 +2002,45 @@ namespace SBMS.Classes
                     }
                     parsedJSON.RemoveAll();              
                 _db.SaveChanges();
+            }
+        }
+
+        /// <summary>
+        /// A new Sage ID arrived with a code we already hold under <paramref name="oldItem"/>. If Sage no
+        /// longer has the old ID, every reference moves to <paramref name="newId"/> and the old row is
+        /// set inactive (never deleted). If Sage still has both, nothing is changed - only logged.
+        /// </summary>
+        private void RepointRenumberedItem(SBMSEntities _db, UserDetails Userdetails, ItemsMaster oldItem, long newId)
+        {
+            long oldId = oldItem.ID;
+            try
+            {
+                string url = sageurl + "Item/GET/" + oldId + "?apikey={" + APIKey + "}&CompanyID=" + Userdetails.CoID;
+                JObject old = ApiCallNA(url, Userdetails);
+                if (!LastNotFound)
+                {
+                    LogErrorToFile($"CoID:{Userdetails.CoID} item {oldItem.Code}: new Sage ID {newId} but old ID {oldId} still answers in Sage ({(old.Count == 0 ? "call failed" : "exists")}) - left as is, check in Sage");
+                    return;
+                }
+                long co = Userdetails.CoID;
+                // Physical table names (EDMX storage model): BOMLines, WorksOrderRMLines, KitLines,
+                // ItemTransaction, ItemStoreLinkMaster.
+                int bom = _db.Database.ExecuteSqlCommand("UPDATE BOMLines SET ItemID = @p0 WHERE ItemID = @p1", newId, oldId);
+                int wo  = _db.Database.ExecuteSqlCommand("UPDATE WorksOrderRMLines SET SelectionId = @p0 WHERE SelectionId = @p1", newId, oldId);
+                int led = _db.Database.ExecuteSqlCommand("UPDATE ItemTransaction SET ItemID = @p0 WHERE ItemID = @p1 AND CompanyID = @p2", newId, oldId, co);
+                // Store links are unique per (company, item, store): drop the old link where the new item
+                // already has that store, then move the rest.
+                _db.Database.ExecuteSqlCommand(
+                    "DELETE s FROM ItemStoreLinkMaster s WHERE s.CompanyID = @p2 AND s.ItemID = @p1 " +
+                    "AND EXISTS (SELECT 1 FROM ItemStoreLinkMaster n WHERE n.CompanyID = @p2 AND n.ItemID = @p0 AND n.StoreID = s.StoreID)", newId, oldId, co);
+                int stl = _db.Database.ExecuteSqlCommand("UPDATE ItemStoreLinkMaster SET ItemID = @p0 WHERE ItemID = @p1 AND CompanyID = @p2", newId, oldId, co);
+                int kit = _db.Database.ExecuteSqlCommand("UPDATE KitLines SET ItemID = @p0 WHERE ItemID = @p1", newId, oldId);
+                oldItem.Active = false;
+                LogErrorToFile($"CoID:{co} item {oldItem.Code} renumbered in Sage: {oldId} -> {newId}. Moved BOM lines {bom}, WO lines {wo}, ledger {led}, store links {stl}, kit lines {kit}; old row set inactive");
+            }
+            catch (Exception ex)
+            {
+                LogErrorToFile($"CoID:{Userdetails.CoID} item {oldItem.Code} renumber {oldId} -> {newId} failed: {ex.Message}");
             }
         }
 
