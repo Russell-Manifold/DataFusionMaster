@@ -83,6 +83,8 @@ namespace SBMS
         {
             chkMobile.Visible = userDets.MobileModule;
             if (userDets.UATMode == false) lbluat.Style.Add("display", "none");
+            // Item sync rebuilt 2026-11-08 (every company re-pulls its full item list once) - notice runs 7 days.
+            divSyncNotice.Visible = DateTime.Today <= new DateTime(2026, 11, 15);
             if (userDets.CanReceive != true) ibtmWorksOrders.Style.Add("display", "none");
             if (userDets.CanViewPickSlips != true) ibtnPickSlips.Style.Add("display", "none");
             if (userDets.CanTrackPickSlips != true) ibtnPickTrack.Style.Add("display", "none");

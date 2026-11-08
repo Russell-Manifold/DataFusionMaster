@@ -147,6 +147,26 @@ namespace SBMS
 
             if (ctx?.Handler is Page page)
             {
+                // An exception inside an UpdatePanel (async) postback is caught by ScriptManager, so
+                // Application_Error never sees it - Biz Afrika's Receiving crash on 2026-11-06 left
+                // only the customErrors 404 that followed. Log it here; normal postbacks are unchanged.
+                if (!string.IsNullOrEmpty(ctx.Request.Headers["X-MicrosoftAjax"]))
+                {
+                    page.Error += (s, a) =>
+                    {
+                        try
+                        {
+                            Exception pex = ctx.Server.GetLastError();
+                            if (pex == null) return;
+                            string who = "";
+                            try { if (ctx.Session?["UserDetails"] is UserDetails u) who = $" [CoID:{u.CoID} {u.UserEmail ?? u.LoginName}]"; } catch { }
+                            string ip = " ip:" + (ctx.Request.Headers["CF-Connecting-IP"] ?? ctx.Request.UserHostAddress ?? "?");
+                            new SBMS.Classes.ApiUrlCall().LogErrorToFile("UNHANDLED in async postback on " + ctx.Request.RawUrl + who + ip + " - " + pex.ToString());
+                        }
+                        catch { }
+                    };
+                }
+
                 string path = ctx.Request.Url.AbsolutePath.ToLower();
 
                 // Skip check for login or public pages

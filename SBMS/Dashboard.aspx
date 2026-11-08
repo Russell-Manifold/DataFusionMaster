@@ -32,6 +32,20 @@
                                            </asp:DropDownList>    
                     </div>
                     <div class="5u 12u$(medium)">  
+                     <div id="divSyncNotice" runat="server" ClientIDMode="Static" visible="false" style="position:relative; color:#8a6d3b; background:#fcf8e3; border:1px solid #faebcc; border-radius:4px; padding:.6em 2.2em .6em 1em; margin-top:1em; font-size:0.9em; line-height:1.4; text-align:center">
+                         <a href="#" onclick="return hideSyncNotice(false);" title="Close" style="position:absolute; top:.2em; right:.6em; text-decoration:none; font-weight:bold; font-size:1.3em; color:#8a6d3b">&times;</a>
+                         <strong>Update: 08 November 2026:</strong> items sync with Sage has been improved and all items will be refreshed on first log in. If you have a high volume of items, please be patient while this completes.
+                         <br /><a href="#" onclick="return hideSyncNotice(true);" style="color:#8a6d3b">Don't show this again</a>
+                     </div>
+                     <script>
+                         function hideSyncNotice(remember) {
+                             var d = document.getElementById('divSyncNotice');
+                             if (d) d.style.display = 'none';
+                             if (remember) { try { localStorage.setItem('syncNotice20261108', '1'); } catch (e) { } }
+                             return false;
+                         }
+                         try { if (localStorage.getItem('syncNotice20261108') === '1') hideSyncNotice(false); } catch (e) { }
+                     </script>
                      <div id="lbluat" runat="server" style="color:green; font-size:0.6em; text-align:center">WARNING - Your profile is in <strong  style="color:red">User Acceptance Testing (UAT)</strong> status. <br /> This means data will come FROM SBCA, but NO data will be sent to or updated in SBCA. <br /> When you are ready, please email us with a request to activate full 2 way integration.</div>
                     <h4 style="padding-top:1em">Data Fusion <span style="font-size:.5em" >By Syncflo</span> for <asp:Label ID="lblCoName" runat="server" Text=""></asp:Label></h4> 
                     </div>
