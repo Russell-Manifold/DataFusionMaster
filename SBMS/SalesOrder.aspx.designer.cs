@@ -457,6 +457,11 @@ namespace SBMS
         protected global::System.Web.UI.WebControls.LinkButton lbtnPrintDN;
 
         /// <summary>
+        /// lbtnDeliveries control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.LinkButton lbtnDeliveries;
+
+        /// <summary>
         /// lbtnPost control.
         /// </summary>
         /// <remarks>

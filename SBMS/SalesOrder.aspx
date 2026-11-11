@@ -74,7 +74,7 @@
                                 <td style="width:10em">Address</td>
                                 <td><asp:TextBox ID="txtAddress1" runat="server" style="width:95%" ReadOnly="true"></asp:TextBox></td>
                                 <td>Picking Slip</td>
-                                <td><asp:TextBox ID="txtPSNum" runat="server" ReadOnly="true" ></asp:TextBox><asp:LinkButton ID="lbtnViewPS" runat="server" CssClass="buttonRed icon fa-search" ToolTip="View Picking Slip" OnClick="lbtnViewPS_Click"></asp:LinkButton></td>
+                                <td><asp:TextBox ID="txtPSNum" runat="server" ReadOnly="true" ></asp:TextBox><asp:LinkButton ID="lbtnViewPS" runat="server" CssClass="buttonRed icon fa-search" ToolTip="View Picking Slip" OnClick="lbtnViewPS_Click"></asp:LinkButton><asp:LinkButton ID="lbtnDeliveries" runat="server" CssClass="buttonRed icon fa-truck" ToolTip="All deliveries made against this Sales Order" OnClick="lbtnDeliveries_Click"></asp:LinkButton></td>
                             </tr>
                             <tr>
                                 <td>Due Date</td>

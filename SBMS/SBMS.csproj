@@ -634,6 +634,8 @@
     <Content Include="SBMSMobile\icons\icon-512.png" />
     <Content Include="SBMSMobile\install.html" />
     <Content Include="SBMSMobile\OSPurchaseOrdersM.aspx" />
+    <Content Include="SBMSMobile\ConfirmDeliveryM.aspx" />
+    <Content Include="SBMSMobile\ItemLookupM.aspx" />
     <Content Include="SBMSMobile\OSPickingSlipsM.aspx" />
     <Content Include="SBMSMobile\PickingSlipM.aspx" />
     <Content Include="SBMSMobile\StockCountsM.aspx" />
@@ -770,6 +772,7 @@
     <Content Include="niceadmin\assets\vendor\tinymce\package.json" />
     <Content Include="niceadmin\assets\vendor\tinymce\README.md" />
     <Content Include="SBMSMobile\manifest.json" />
+    <Content Include="SBMSMobile\sw.js" />
     <Content Include="SBMSMobile\js\sweetalert2.all.min.js" />
     <None Include="scripts\jquery-3.7.1.intellisense.js" />
     <Content Include="BundleHeaders.aspx" />
@@ -936,6 +939,7 @@
     <Content Include="StockMovement.aspx" />
     <Content Include="TransferSelect.aspx" />
     <Content Include="TransferHistory.aspx" />
+    <Content Include="Deliveries.aspx" />
     <Content Include="BOMHeaders.aspx" />
     <Content Include="assets\css\font-awesome.min.css" />
     <Content Include="assets\css\fontawesome-all.css" />
@@ -1548,6 +1552,20 @@
     <Compile Include="SBMSMobile\OSPurchaseOrdersM.aspx.designer.cs">
       <DependentUpon>OSPurchaseOrdersM.aspx</DependentUpon>
     </Compile>
+    <Compile Include="SBMSMobile\ConfirmDeliveryM.aspx.cs">
+      <DependentUpon>ConfirmDeliveryM.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="SBMSMobile\ConfirmDeliveryM.aspx.designer.cs">
+      <DependentUpon>ConfirmDeliveryM.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="SBMSMobile\ItemLookupM.aspx.cs">
+      <DependentUpon>ItemLookupM.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="SBMSMobile\ItemLookupM.aspx.designer.cs">
+      <DependentUpon>ItemLookupM.aspx</DependentUpon>
+    </Compile>
     <Compile Include="SBMSMobile\OSPickingSlipsM.aspx.cs">
       <DependentUpon>OSPickingSlipsM.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -1984,6 +2002,7 @@
     <Compile Include="Classes\JobCardHide.cs" />
     <Compile Include="Classes\SageCustomers.cs" />
     <Compile Include="Classes\PartDelivery.cs" />
+    <Compile Include="Classes\PickCloseOff.cs" />
     <Compile Include="Classes\Returnables.cs" />
     <Compile Include="Classes\ConsignmentUsage.cs" />
     <Compile Include="Classes\Simple3Des.cs" />
@@ -2043,6 +2062,13 @@
     </Compile>
     <Compile Include="TransferSelect.aspx.designer.cs">
       <DependentUpon>TransferSelect.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Deliveries.aspx.cs">
+      <DependentUpon>Deliveries.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Deliveries.aspx.designer.cs">
+      <DependentUpon>Deliveries.aspx</DependentUpon>
     </Compile>
     <Compile Include="TransferHistory.aspx.cs">
       <DependentUpon>TransferHistory.aspx</DependentUpon>

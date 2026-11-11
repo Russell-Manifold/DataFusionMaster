@@ -1,20 +1,22 @@
 {
   "name": "Data Fusion Mobile",
-  "short_name": "DFM",
+  "short_name": "Data Fusion",
   "description": "Barcode scanning WMS",
-  "start_url": "https://mydatafusion.online/zademo/Login.aspx",
+  "id": "DashboardM.aspx",
+  "start_url": "DashboardM.aspx",
+  "scope": "../",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#4282C1",
   "orientation": "portrait",
   "icons": [
     {
-      "src": "../SBMSMobile/icons/icon-192.png",
+      "src": "icons/icon-192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "../SBMSMobile/icons/icon-512.png",
+      "src": "icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png"
     }

@@ -1864,21 +1864,50 @@ namespace SBMS
         // ── Finalise ───────────────────────────────────────────────────────────────
         protected void lbtnFinalise_Click(object sender, EventArgs e)
         {
-            var unpicked = GetLines().Where(l => l.PickComplete != true).ToList();
-            if (unpicked.Any())
-            {
-                SetFeedback(false,
-                    $"&#9888; {unpicked.Count} line(s) not yet picked. " +
-                    "Pick all lines before closing off.");
-                return;
-            }
-
             if (LPNMode == "unit" && !string.IsNullOrEmpty(PendingLabel))
             {
                 SetFeedback(false,
                     $"&#9888; Sticker <strong>{HttpUtility.HtmlEncode(PendingLabel)}</strong> is ready but no " +
                     "stock item was scanned for it &mdash; scan the item or tap Discard first.");
                 return;
+            }
+
+            // Same questions as the web close-off (Classes/PickCloseOff.cs does the work for both).
+            PickCloseOff.SlipState st;
+            using (SBMSEntities db = new SBMSEntities(Config.GetConnectionString()))
+                st = PickCloseOff.Inspect(db, CurrentUser, PSID, DocID);
+
+            lbtnConfirmCancelBalance.Visible = false;
+            lbtnConfirmFinalise.Visible = true;
+            if (!st.HasShortfall)
+            {
+                lblFinaliseText.Text = "All lines are marked as picked. Confirm to close off this slip and update stock.";
+                lbtnConfirmFinalise.CommandArgument = "full";
+                lbtnConfirmFinalise.Text = "&#10003; Confirm Close Off";
+            }
+            else if (!st.AnyPicked && st.EarlierSlips.Count > 0)
+            {
+                // Part delivery: earlier deliveries exist, so the order can be completed with
+                // nothing more picked - the balance is cancelled, what was delivered is invoiced.
+                lblFinaliseText.Text = "Nothing is picked on this slip. Cancel the outstanding balance and complete the Sales Order with what has already been delivered?";
+                lbtnConfirmFinalise.Visible = false;
+                lbtnConfirmCancelBalance.Visible = true;
+                lbtnConfirmCancelBalance.Text = "Cancel balance &amp; complete order";
+            }
+            else if (!st.AnyPicked)
+            {
+                SetFeedback(false, "&#9888; No items have been picked yet. Pick at least one item before closing off.");
+                return;
+            }
+            else
+            {
+                lblFinaliseText.Text = st.PartDelivery
+                    ? "Some items are short-picked. Deliver what is picked and keep the balance on this Sales Order (a new picking slip is created for it), or cancel the balance and complete the order?"
+                    : "Some items are short-picked. Close off what is picked and put the balance on a back order (a new Sales Order when this one is updated to Sage), or cancel the balance?";
+                lbtnConfirmFinalise.CommandArgument = "backorder";
+                lbtnConfirmFinalise.Text = st.PartDelivery ? "Keep balance on this order" : "Put balance on back order";
+                lbtnConfirmCancelBalance.Visible = true;
+                lbtnConfirmCancelBalance.Text = "Cancel the balance";
             }
 
             lblFinaliseError.Visible = false;
@@ -1893,6 +1922,7 @@ namespace SBMS
         protected void lbtnConfirmFinalise_Click(object sender, EventArgs e)
         {
             if (IsProcessing) return;
+            string choice = ((LinkButton)sender).CommandArgument;
 
             // Authoritative double-finalise guard: a second tap, or a second picker
             // on another device, must not close off the slip twice (duplicate
@@ -1912,157 +1942,19 @@ namespace SBMS
                 }
             }
 
-            // Part delivery (Configuration -> Company): a short pick keeps the order open and
-            // creates the balance slip, and a later slip completes the order from all its
-            // deliveries. That logic lives in the web close-off; this screen always completes
-            // the order from ONE slip, so those two cases are sent to the web. A full first
-            // pick is unaffected.
-            if (CurrentUser.InvoiceWhenSOComplete)
-            {
-                using (SBMSEntities dbPd = new SBMSEntities(Config.GetConnectionString()))
-                {
-                    int pdSlip = PSID;
-                    var pdLines = dbPd.PickSlipLines.Where(x => x.PSID == pdSlip && x.CompanyID == CurrentUser.CoID).ToList();
-                    decimal pdOrdered = pdLines.Sum(l => l.Quantity ?? 0);
-                    decimal pdPicked = pdLines.Sum(l => l.PickQty ?? l.Quantity ?? 0);
-                    bool pdShort = (pdOrdered - pdPicked) > 0.0001m;
-                    bool pdLater = PartDelivery.EarlierSlipIds(dbPd, CurrentUser.CoID, DocID, pdSlip).Count > 0;
-                    if (pdShort || pdLater)
-                    {
-                        pnlFinalise.Visible = false;
-                        SetFeedback(false, "&#9888; This order is delivered in parts. Close off this picking slip on the web.");
-                        return;
-                    }
-                }
-            }
-
             IsProcessing                = true;
             lbtnConfirmFinalise.Enabled = false;
 
-            ApiUrlCall api = new ApiUrlCall();
-
             try
             {
-                int  slipId = PSID;
-                long docId  = DocID;
-
+                PickCloseOff.Result closed;
                 using (SBMSEntities db = new SBMSEntities(Config.GetConnectionString()))
+                    closed = PickCloseOff.Close(db, CurrentUser, PSID, DocID, choice);
+
+                if (closed.Error != null)
                 {
-                    var psLines = db.PickSlipLines
-                        .Where(x => x.PSID == slipId && x.CompanyID == CurrentUser.CoID)
-                        .OrderBy(x => x.LineID)
-                        .ToList();
-
-                    foreach (var psl in psLines)
-                    {
-                        decimal pickQty = psl.PickQty ?? psl.Quantity ?? 0;
-
-                        if (psl.SBCALineID != null && psl.SBCALineID != 0)
-                        {
-                            var soLine = db.DocLines
-                                .FirstOrDefault(x => x.CompanyID == CurrentUser.CoID && x.SBCALineID == psl.SBCALineID);
-
-                            if (soLine != null)
-                            {
-                                soLine.QtyLeft         = soLine.Quantity - pickQty;
-                                soLine.ReceiveQty      = pickQty;
-                                soLine.ReceiveComplete = true;
-                                soLine.StoreCode       = psl.StoreCodeFrom;
-                                soLine.LotNumber       = psl.LotNumber;
-                                soLine.Exclusive       = soLine.UnitPriceExclusive * pickQty;
-                                soLine.Discount        = (soLine.UnitPriceExclusive * pickQty)
-                                                         * soLine.DiscountPercentage;
-                                // VAT is charged on the discounted-NET amount, not the gross line value.
-                                soLine.Tax             = (soLine.Exclusive - soLine.Discount)
-                                                         * soLine.TaxPercentage;
-                                soLine.Total           = soLine.Exclusive - soLine.Discount + soLine.Tax;
-                                soLine.ExchRate        = 1;
-                                soLine.localCurrLineVal = soLine.Exclusive - soLine.Discount;
-                            }
-                        }
-                    }
-
-                    var docH = db.DocHeaders
-                        .FirstOrDefault(x => x.CompanyID == CurrentUser.CoID && x.DocID == docId);
-
-                    if (docH != null)
-                    {
-                        docH.Complete     = true;
-                        docH.Active       = true;
-                        docH.CompBy       = CurrentUser.RoleID;
-                        docH.CompleteDate = DateTime.Today;
-
-                        decimal docCost = db.ItemTransactions
-                            .Where(x => x.CompanyID == CurrentUser.CoID && x.DocumentID == slipId)
-                            .Select(x => (decimal?)x.TotalLineValExcl)
-                            .DefaultIfEmpty(0).Sum() ?? 0m;
-
-                        docH.DocCost = docCost != 0 ? Math.Abs(docCost) * -1 : 0;
-
-                        decimal docValue = db.DocLines
-                            .Where(x => x.CompanyID == CurrentUser.CoID && x.DocID == docId)
-                            .Select(x => (decimal?)x.Exclusive)
-                            .DefaultIfEmpty(0).Sum() ?? 0m;
-
-                        decimal cost = docH.DocCost ?? 0m;
-                        docH.DocGP = docValue != 0 ? (docValue - cost) / docValue : 0m;
-                    }
-
-                    var finalStat = db.PickSlipProcesses
-                        .Where(ws => ws.CompanyID == CurrentUser.CoID)
-                        .OrderByDescending(ws => ws.Seq)
-                        .Select(ws => new { ws.PSName, ws.PSPID })
-                        .FirstOrDefault();
-
-                    var psm = db.PickingSlipMasters
-                        .FirstOrDefault(x => x.CustomerID == CurrentUser.CoID && x.PSID == slipId);
-
-                    int fromStat = 0;
-                    if (psm != null && finalStat != null)
-                    {
-                        fromStat           = (int)(psm.PSStationID ?? 0);
-                        psm.PSStationID    = finalStat.PSPID;
-                        psm.PSStatus       = (CurrentUser.UsePickSlipTracking == true) ? finalStat.PSName : "Complete";
-                        psm.PSComplete     = true;
-                        psm.PSCompleteDate = DateTime.Now;
-                        psm.PSCompleteBy   = CurrentUser.RoleID;
-                        psm.PSActive       = false;
-                        psm.LinkedSOrdID   = docId;
-                    }
-
-                    if (finalStat != null)
-                    {
-                        db.PickSlipTransactions.Add(new PickSlipTransaction
-                        {
-                            PSID          = slipId,
-                            MoveQty       = 1,
-                            RejectQty     = 0,
-                            MoveDate      = DateTime.Now,
-                            FromStationID = fromStat,
-                            ToStationID   = finalStat.PSPID,
-                            CompanyID     = CurrentUser.CoID,
-                            MoveBy        = CurrentUser.RoleID
-                        });
-                    }
-
-                    var psUsers = db.RolesMasters
-                        .Where(x => x.CompanyID == CurrentUser.CoID && x.NotifyPSMove == true)
-                        .ToList();
-
-                    foreach (var usr in psUsers)
-                    {
-                        db.Notifications.Add(new Notification
-                        {
-                            Message    = (psm?.PSIntNumber ?? PSIntNumber) +
-                                         " Moved to " + (finalStat?.PSName ?? "Complete"),
-                            IsRead     = false,
-                            CreatedAt  = DateTime.Now,
-                            CompanyID  = CurrentUser.CoID,
-                            UserRoleID = usr.RoleID
-                        });
-                    }
-
-                    db.SaveChanges();
+                    SetFinaliseError(closed.Error);
+                    return;
                 }
 
                 pnlFinalise.Visible  = false;
@@ -2071,13 +1963,20 @@ namespace SBMS
                 SlipComplete         = true;   // hides + blocks Reset from here on
                 Session.Remove(PickedLineIDsKey);
 
-                SetFeedback(true, "&#10003; Picking slip closed off successfully.");
+                string msg = "&#10003; Picking slip closed off successfully.";
+                if (closed.StayOpen)
+                    msg = closed.BalanceSlip.Length > 0
+                        ? "&#10003; Delivery recorded. Picking slip " + HttpUtility.HtmlEncode(closed.BalanceSlip) + " has been created for the balance."
+                        : "&#9888; Delivery recorded, but the picking slip for the balance could not be created. Open the Sales Order on the web and use Create Picking Slip.";
+                else if (closed.HasBackOrder)
+                    msg = "&#10003; Closed off. A new Sales Order is created for the balance when this order is updated to Sage.";
+                SetFeedback(true, msg);
                 BindLines();
             }
             catch (Exception ex)
             {
                 SetFinaliseError($"An error occurred: {ex.Message}");
-                api.LogErrorToFile(
+                new ApiUrlCall().LogErrorToFile(
                     $"CoID:{CurrentUser.CoID} PickingSlipM lbtnConfirmFinalise – {ex}");
             }
             finally

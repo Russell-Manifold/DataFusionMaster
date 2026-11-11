@@ -101,6 +101,8 @@
         <symbol id="i-clipboard" viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M9 12l2 2 4-4"/></symbol>
         <symbol id="i-transfer" viewBox="0 0 24 24"><path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></symbol>
         <symbol id="i-chart" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></symbol>
+        <symbol id="i-truck" viewBox="0 0 24 24"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></symbol>
+        <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></symbol>
         <symbol id="i-convert" viewBox="0 0 24 24"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></symbol>
     </svg>
 
@@ -122,6 +124,20 @@
         </a>
         <div class="dash-welcome">Welcome, <asp:Label ID="lblUsername" runat="server" /></div>
     </div>
+
+    <%-- ══ Stock lookup ══ (hidden for slim manufacturing) --%>
+    <asp:PlaceHolder ID="phLookup" runat="server">
+    <div class="dash-section-head">Stock</div>
+    <div class="dash-grid">
+
+        <asp:LinkButton ID="ibtnItemLookup" runat="server" OnClick="ibtnItemLookup_Click"
+            CssClass="dash-tile" ToolTip="Scan or type an item - see stock on hand per store / bin">
+            <span class="dash-tile-ico"><svg class="mob-ico" aria-hidden="true"><use href="#i-search"/></svg></span>
+            <span class="dash-tile-label">Item Lookup</span>
+        </asp:LinkButton>
+
+    </div>
+    </asp:PlaceHolder>
 
     <%-- ══ Receiving & Put-away ══ (hidden for slim manufacturing) --%>
     <asp:PlaceHolder ID="phNotSlimTop" runat="server">
@@ -150,6 +166,7 @@
     </asp:PlaceHolder>
 
     <%-- ══ Manufacturing ══ --%>
+    <asp:PlaceHolder ID="phManufacture" runat="server">
     <div class="dash-section-head">Manufacturing</div>
     <div class="dash-grid">
 
@@ -160,9 +177,11 @@
         </asp:LinkButton>
 
     </div>
+    </asp:PlaceHolder>
 
     <%-- ══ Transfers, Picking, Stock counts ══ (hidden for slim manufacturing) --%>
     <asp:PlaceHolder ID="phNotSlimBottom" runat="server">
+    <asp:PlaceHolder ID="phTransfers" runat="server">
     <div class="dash-section-head">Transfers</div>
     <div class="dash-grid">
 
@@ -179,8 +198,10 @@
         </asp:LinkButton>
 
     </div>
+    </asp:PlaceHolder>
 
     <%-- ══ Picking / Packing ══ --%>
+    <asp:PlaceHolder ID="phPicking" runat="server">
     <div class="dash-section-head">Picking / Packing</div>
     <div class="dash-grid">
 
@@ -190,9 +211,17 @@
             <span class="dash-tile-label">Picking Slips</span>
         </asp:LinkButton>
 
+        <asp:LinkButton ID="ibtnConfirmDelivery" runat="server" OnClick="ibtnConfirmDelivery_Click"
+            CssClass="dash-tile" ToolTip="Confirm a delivery: who received it, and a comment">
+            <span class="dash-tile-ico"><svg class="mob-ico" aria-hidden="true"><use href="#i-truck"/></svg></span>
+            <span class="dash-tile-label">Confirm Delivery</span>
+        </asp:LinkButton>
+
     </div>
+    </asp:PlaceHolder>
 
     <%-- ══ Stock Reconciliations ══ --%>
+    <asp:PlaceHolder ID="phCount" runat="server">
     <div class="dash-section-head">Stock Reconciliations</div>
     <div class="dash-grid">
 
@@ -203,6 +232,7 @@
         </asp:LinkButton>
 
     </div>
+    </asp:PlaceHolder>
     </asp:PlaceHolder>
 
 </form>
@@ -231,6 +261,11 @@
 </div>
 
 <script>
+    // PWA: network-only service worker (sw.js) - makes the app installable and shows a
+    // "no connection" page offline. Scope is /SBMSMobile/ only.
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js').catch(function () { });
+    }
     let deferredPrompt;
     let pwaManualMode = false;
     window.addEventListener('beforeinstallprompt', function (e) {

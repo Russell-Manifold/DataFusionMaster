@@ -356,6 +356,9 @@ namespace SBMS
         /// </remarks>
         protected global::System.Web.UI.WebControls.LinkButton lbtnConfirmFinalise;
 
+        protected global::System.Web.UI.WebControls.Label lblFinaliseText;
+        protected global::System.Web.UI.WebControls.LinkButton lbtnConfirmCancelBalance;
+
         /// <summary>
         /// rptLines control.
         /// </summary>

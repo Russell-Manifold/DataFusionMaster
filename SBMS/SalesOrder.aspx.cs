@@ -317,6 +317,7 @@ namespace SBMS
                     else
                     {
                         lbtnViewPS.Style.Add("display", "none");
+                        lbtnDeliveries.Style.Add("display", "none");   // no picking slip = no deliveries
                     }
                     if (Convert.ToBoolean(thispo.Complete))
                     {
@@ -1886,6 +1887,11 @@ namespace SBMS
             if (hasStore) return "Store: " + storeCode + " : " + comments;
             if (hasLot) return "Lot # " + lotNumber + " : " + comments;
             return comments;
+        }
+
+        protected void lbtnDeliveries_Click(object sender, EventArgs e)
+        {
+            Response.Redirect("~/Deliveries.aspx?docid=" + lblDocID.Text, false);
         }
 
         protected async void lbtnPrintDN_Click(object sender, EventArgs e)

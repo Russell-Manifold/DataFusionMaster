@@ -67,8 +67,38 @@ namespace SBMS
                 imgbReceive.Visible = false;
             }
 
+            // Role (Configuration -> Roles): the same rights that show / hide the web dashboard buttons.
+            //   View Pick Slips -> Picking Slips, Confirm Delivery      (web: Sales Orders / Picking Slips button)
+            //   Fill Works Orders (Module 3 only) -> Manufacture        (web: Works Order filling button)
+            // Not Stock Control: the default "Stock Controller" role is seeded with it OFF, so it
+            // would hide Stock Count from the very people who count (checked 2026-11-11).
+            if (userDets.CanViewPickSlips != true)
+            {
+                ibtnPickSlips.Visible = ibtnConfirmDelivery.Visible = false;
+            }
+            if (userDets.UseModule3 && userDets.CanFillWorksOrders != true) imgbManufacture.Visible = false;
+
+            // First mobile release (agreed 2026-11-11): basics only - Item Lookup, Receive, Picking
+            // Slips, Confirm Delivery, Stock Count. The other tiles are HIDDEN, not removed:
+            // set ShowAdvancedTiles = true to bring them all back.
+            // Slim manufacturing keeps Manufacture - it is the only tile those companies have.
+            const bool ShowAdvancedTiles = false;
+            if (!ShowAdvancedTiles)
+            {
+                imgbCount.Visible = imgbRec.Visible = false;               // Count and Check, Put-away
+                lbtnBinTransfer.Visible = ibtnStockMove.Visible = false;   // Quick Move, Stock Move
+                if (!userDets.SageStockOnly) imgbManufacture.Visible = false;
+            }
+
             // Slim manufacturing: the Manufacturing tile only.
-            phNotSlimTop.Visible = phNotSlimBottom.Visible = !userDets.SageStockOnly;
+            phNotSlimTop.Visible = phNotSlimBottom.Visible = phLookup.Visible = !userDets.SageStockOnly;
+
+            // A section with no tiles left loses its heading too.
+            phNotSlimTop.Visible   &= imgbCount.Visible || imgbReceive.Visible || imgbRec.Visible;
+            phManufacture.Visible  = imgbManufacture.Visible;
+            phTransfers.Visible    = lbtnBinTransfer.Visible || ibtnStockMove.Visible;
+            phPicking.Visible      = ibtnPickSlips.Visible || ibtnConfirmDelivery.Visible;
+            phCount.Visible        = ibtnStockCount.Visible;
         }
         // Mode 1 — Count: pick a PO, scan accept/reject counts; the web posts the GRN.
         protected void imgbCount_Click(object sender, EventArgs e)
@@ -138,6 +168,24 @@ namespace SBMS
             {
                 Response.Redirect("~/Dashboard.aspx", true);
             }
+        }
+
+        // Read-only stock enquiry: item -> on hand per store / bin (and lot).
+        protected void ibtnItemLookup_Click(object sender, EventArgs e)
+        {
+            if (userDets != null)
+                Response.Redirect("~/SBMSMobile/ItemLookupM.aspx?user=" + userDets.UserGuiD, false);
+            else
+                Response.Redirect("~/Dashboard.aspx", true);
+        }
+
+        // After picking is closed off: who received the goods, and a comment.
+        protected void ibtnConfirmDelivery_Click(object sender, EventArgs e)
+        {
+            if (userDets != null)
+                Response.Redirect("~/SBMSMobile/ConfirmDeliveryM.aspx?user=" + userDets.UserGuiD, false);
+            else
+                Response.Redirect("~/Dashboard.aspx", true);
         }
 
         protected void ibtnStockCount_Click(object sender, EventArgs e)

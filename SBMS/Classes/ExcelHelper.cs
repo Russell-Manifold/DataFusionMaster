@@ -15,7 +15,8 @@ namespace SBMS.Classes
             using (XLWorkbook wb = new XLWorkbook())
             {
                 // Add DataTable as Worksheet
-                wb.Worksheets.Add(dt, wsName);
+                var ws = wb.Worksheets.Add(dt, wsName);
+                ws.Columns().AdjustToContents();   // fit columns to their contents (no ##### dates)
 
                 // Prepare the response for downloading the Excel file
                 HttpContext context = HttpContext.Current;

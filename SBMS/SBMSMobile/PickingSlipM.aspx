@@ -173,7 +173,7 @@
         <asp:Panel ID="pnlFinalise" runat="server" Visible="false" CssClass="mob-action-panel">
             <h4><svg class="mob-ico" aria-hidden="true"><use href="#i-clipboard"/></svg> Close Off Picking Slip</h4>
             <p style="font-size:.82em;color:#555;margin:0 0 .7em 0;line-height:1.4;">
-                All lines are marked as picked. Confirm to close off this slip and update stock.
+                <asp:Label ID="lblFinaliseText" runat="server" Text="All lines are marked as picked. Confirm to close off this slip and update stock." />
             </p>
             <asp:Label ID="lblFinaliseError" runat="server" CssClass="mob-panel-error" Visible="false" />
             <div class="mob-panel-buttons">
@@ -181,9 +181,16 @@
                     OnClick="lbtnCancelFinalise_Click"
                     CssClass="mob-btn-cancel">Cancel</asp:LinkButton>
                 <asp:LinkButton ID="lbtnConfirmFinalise" runat="server"
-                    OnClick="lbtnConfirmFinalise_Click"
+                    OnClick="lbtnConfirmFinalise_Click" CommandArgument="full"
                     CssClass="mob-btn-confirm"
-                    OnClientClick="return confirmCloseOff();">&#10003; Confirm Close Off</asp:LinkButton>
+                    OnClientClick="return confirmCloseOff(this);">&#10003; Confirm Close Off</asp:LinkButton>
+            </div>
+            <%-- Short pick: the second answer (cancel the balance). Shown by lbtnFinalise_Click. --%>
+            <div class="mob-panel-buttons" style="margin-top:.5em">
+                <asp:LinkButton ID="lbtnConfirmCancelBalance" runat="server" Visible="false"
+                    OnClick="lbtnConfirmFinalise_Click" CommandArgument="shortship"
+                    CssClass="mob-btn-confirm" style="background:var(--mob-danger-ink)"
+                    OnClientClick="return confirmCloseOff(this);">Cancel the balance</asp:LinkButton>
             </div>
         </asp:Panel>
 
@@ -303,8 +310,7 @@
         }
     };
 
-    function confirmCloseOff() {
-        var btn = document.getElementById('<%= lbtnConfirmFinalise.ClientID %>');
+    function confirmCloseOff(btn) {
         if (btn) { btn.disabled = true; btn.innerText = 'Processing…'; }
         return true;
     }

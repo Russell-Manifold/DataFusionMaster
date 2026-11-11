@@ -98,6 +98,15 @@ namespace SBMS
         /// </remarks>
         protected global::System.Web.UI.WebControls.LinkButton ibtnPickSlips;
 
+        protected global::System.Web.UI.WebControls.LinkButton ibtnConfirmDelivery;
+
+        protected global::System.Web.UI.WebControls.PlaceHolder phLookup;
+        protected global::System.Web.UI.WebControls.LinkButton ibtnItemLookup;
+        protected global::System.Web.UI.WebControls.PlaceHolder phManufacture;
+        protected global::System.Web.UI.WebControls.PlaceHolder phTransfers;
+        protected global::System.Web.UI.WebControls.PlaceHolder phPicking;
+        protected global::System.Web.UI.WebControls.PlaceHolder phCount;
+
         /// <summary>
         /// lbtnBinTransfer control.
         /// </summary>
