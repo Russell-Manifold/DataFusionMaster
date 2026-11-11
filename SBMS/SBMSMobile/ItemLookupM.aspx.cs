@@ -71,15 +71,16 @@ namespace SBMS
             if (item == null) { SetFeedback(false, "&#128683; Item not found."); return; }
 
             bool lots = CurrentUser.CompanyUseLotNumbers;
+            // One row per store (per store + lot when the company uses lots): the ledger keeps
+            // lot rows even when lots are off, which showed the same store twice.
             var stock = db.GetOpeningBalancesAllStores(co)
-                .Where(r => r.ItemCode == code && (r.QOH ?? 0) != 0)
-                .OrderBy(r => r.StoreCode).ThenBy(r => r.LotNumber)
-                .Select(r => new
-                {
-                    Where = r.StoreCode + (lots && !string.IsNullOrEmpty(r.LotNumber) ? "  -  lot " + r.LotNumber : ""),
-                    Qty = r.QOH ?? 0,
-                    QtyText = FormatQty(r.QOH ?? 0)
-                }).ToList();
+                .Where(r => r.ItemCode == code)
+                .GroupBy(r => r.StoreCode + (lots && !string.IsNullOrEmpty(r.LotNumber) ? "  -  lot " + r.LotNumber : ""))
+                .Select(g => new { Where = g.Key, Qty = g.Sum(r => r.QOH ?? 0) })
+                .Where(s => s.Qty != 0)
+                .OrderBy(s => s.Where)
+                .Select(s => new { s.Where, s.Qty, QtyText = FormatQty(s.Qty) })
+                .ToList();
 
             lblCode.Text = Server.HtmlEncode(item.Code);
             lblDescr.Text = Server.HtmlEncode(item.Description ?? "");

@@ -118,6 +118,24 @@ namespace SBMS.Classes
                 if (PsL.SBCALineID != 0)
                 {
                     var SOLine = db.DocLines.Where(x => x.CompanyID == user.CoID && x.DocID == docid && x.SBCALineID == PsL.SBCALineID).FirstOrDefault();
+                    // Edited in Sage after the slip was made: Sage gave the order line a new ID and the
+                    // sync replaced it. Same item on exactly one order line = that line; re-point the slip.
+                    if (SOLine == null)
+                    {
+                        long? itemId = PsL.SelectionId;
+                        var sameItem = db.DocLines.Where(x => x.CompanyID == user.CoID && x.DocID == docid && x.SBCALineID != 0 && x.SelectionId == itemId).ToList();
+                        if (sameItem.Count == 1)
+                        {
+                            SOLine = sameItem[0];
+                            PsL.SBCALineID = SOLine.SBCALineID;
+                        }
+                    }
+                    // Still no order line for a picked line (item removed in Sage, or on several lines):
+                    // closing off would move the stock but never invoice it - stop before anything is saved.
+                    if (SOLine == null && pickQty > 0)
+                    {
+                        return new Result { Error = $"Item {PsL.ItemCode} on this picking slip is no longer on the Sales Order as it was (the order was changed in Sage after the slip was made). Nothing has been closed off. Delete this picking slip and create a new one from the Sales Order." };
+                    }
                     if (SOLine != null)
                     {
                         FirstLineID = (long)PsL.SBCALineID;
