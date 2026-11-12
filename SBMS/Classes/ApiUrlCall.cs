@@ -109,10 +109,10 @@ namespace SBMS.Classes
         //public SBMSEntities(string connectionString) : base(connectionString) { }
 
         //  for demo version data
-      public static string dbName = $"MyDataFusionDemo2";
+      //public static string dbName = $"MyDataFusionDemo2";
        // LIVE data
       /// <summary>
-      //public static string dbName = $"MyDataFusion";
+      public static string dbName = $"MyDataFusion";
       /// </summary>
 
         //public static string constr = $"Data Source=100.106.25.66;Initial Catalog={dbName};Persist Security Info=True;User ID=sa;Password=M@nif0LD";
@@ -123,11 +123,11 @@ namespace SBMS.Classes
         static DateTime CustDT = Convert.ToDateTime("01 Jan 2015"), SuppDT = Convert.ToDateTime("01 Jan 2015"), ItemDT = Convert.ToDateTime("01 Jan 2015"), PODT = Convert.ToDateTime("01 Jan 2015"), InvoiceDT = Convert.ToDateTime("01 Jan 2015"), CNoteDT = Convert.ToDateTime("01 Jan 2015");
         static DateTime SuppInvDT = Convert.ToDateTime("01 Jan 2015"), SuppRetDT = Convert.ToDateTime("01 Jan 2015"), JrnlDT = Convert.ToDateTime("01 Jan 2015"), QuoteDT = Convert.ToDateTime("01 Jan 2015"), SOrdDT = Convert.ToDateTime("01 Jan 2015"), GLegDT = Convert.ToDateTime("01 Jan 2015");
 
-      //public static string sageurl = "https://accounting.sageone.co.za/api/2.0.0/";
-      //public static string APIKey = "5850E392-0FE8-43B4-9EEB-18D2B28B115C";
+      public static string sageurl = "https://accounting.sageone.co.za/api/2.0.0/";
+      public static string APIKey = "5850E392-0FE8-43B4-9EEB-18D2B28B115C";
         
-      public static string sageurl = "https://resellers.accounting.sageone.co.za/api/2.0.0/";
-      public static string APIKey = "2B7B61BA-41B8-4212-B2A2-77B8734BA688";
+      //public static string sageurl = "https://resellers.accounting.sageone.co.za/api/2.0.0/";
+      //public static string APIKey = "2B7B61BA-41B8-4212-B2A2-77B8734BA688";
 
         // Syncflo SBCA profile - SANDBOX KEY
         //public static string APIKey = "934D4C3F-FF4D-4311-9380-F21ACB54DCBB";
@@ -1310,6 +1310,17 @@ namespace SBMS.Classes
 
                 // Collect the set of Sage line IDs returned so we can detect deletions afterwards.
                 var sageLineIds = new HashSet<long>(myObjects.Select(o => o.ID));
+
+                // An item created in Sage after our last item sync is not in ItemsMasters yet, so its
+                // line below would default to service (ItemType 1): no stock booked on receiving and no
+                // Received Price box (Tecmo PO0000548, 2026-11-12). Fetch any such item first.
+                // Item lines only - an account line's SelectionId is a GL account, not an item.
+                foreach (long itemId in myObjects.Where(o => o.LineType == 0 && o.SelectionId > 0).Select(o => o.SelectionId).Distinct())
+                {
+                    if (_db.ItemsMasters.Any(x => x.ID == itemId)) continue;
+                    try { await LoadOneItem(itemId, Userdetails); }
+                    catch (Exception ex) { LogErrorToFile($"CoID:{Userdetails.CoID} PO {poid}: could not fetch new item {itemId} from Sage: {ex.Message}"); }
+                }
 
                 foreach (DocumentLine obj in myObjects)
                 {

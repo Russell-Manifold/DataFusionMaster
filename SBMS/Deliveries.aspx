@@ -59,13 +59,15 @@
                                     <PagerSettings Visible="true" Mode="Numeric" PageButtonCount="5" />
                                     <AlternatingRowStyle CssClass="gridViewAltRow" />
                                     <Columns>
-                                        <asp:TemplateField ItemStyle-Width="4em">
+                                        <asp:TemplateField ItemStyle-Width="1%" ItemStyle-Wrap="false">
                                             <ItemTemplate>
                                                 <asp:LinkButton ID="lbtnOpen" runat="server" CommandName="OpenPOD" CommandArgument='<%# Eval("PSID") %>' ToolTip="Add or change the POD number and comment"
                                                     style="color:#4A82AB; font-weight:600; padding: 0.5em; border:1px solid #4A82AB; border-radius:0.5em">Open</asp:LinkButton>
                                             </ItemTemplate>
                                         </asp:TemplateField>
                                         <asp:BoundField HeaderText="Delivered" DataField="Delivered" DataFormatString="{0:dd MMM yyyy}" HtmlEncode="false" ItemStyle-Width="7em" />
+                                        <asp:BoundField HeaderText="POD No" DataField="POD" ItemStyle-Width="7em" />
+                                        <asp:BoundField HeaderText="Received By" DataField="ReceivedBy" ItemStyle-HorizontalAlign="Left" />
                                         <asp:TemplateField HeaderText="Sales Order" ItemStyle-Width="8em">
                                             <ItemTemplate>
                                                 <asp:LinkButton ID="lbtnSO" runat="server" CommandName="OpenSO" CommandArgument='<%# Eval("SalesOrderGuid") %>' Text='<%#: Eval("SalesOrder") %>' ToolTip="View Sales Order"
@@ -74,16 +76,9 @@
                                         </asp:TemplateField>
                                         <asp:BoundField HeaderText="Customer" DataField="Customer" ItemStyle-HorizontalAlign="Left" />
                                         <asp:BoundField HeaderText="Picking Slip" DataField="PickingSlip" ItemStyle-Width="8em" />
-                                        <asp:BoundField HeaderText="POD No" DataField="POD" ItemStyle-Width="7em" />
-                                        <asp:BoundField HeaderText="Comment" DataField="Comment" ItemStyle-HorizontalAlign="Left" />
-                                        <asp:BoundField HeaderText="Received By" DataField="ReceivedBy" ItemStyle-HorizontalAlign="Left" />
-                                        <asp:BoundField HeaderText="Confirmed" DataField="Confirmed" DataFormatString="{0:dd MMM yyyy HH:mm}" HtmlEncode="false" ItemStyle-Width="8em" />                                        <asp:BoundField HeaderText="Code" DataField="ItemCode" ItemStyle-Width="8em" />
                                         <asp:BoundField HeaderText="Description" DataField="Description" ItemStyle-HorizontalAlign="Left" />
-                                        <asp:BoundField HeaderText="Lot" DataField="Lot" ItemStyle-Width="7em" />
-                                        <asp:BoundField HeaderText="Store" DataField="Store" ItemStyle-Width="5em" />
                                         <asp:BoundField HeaderText="On Slip" DataField="OnSlip" DataFormatString="{0:N2}" ItemStyle-Width="6em" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
                                         <asp:BoundField HeaderText="Delivered Qty" DataField="DeliveredQty" DataFormatString="{0:N2}" ItemStyle-Width="7em" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
-                                        <asp:BoundField HeaderText="Unit" DataField="Unit" ItemStyle-Width="5em" />
                                     </Columns>
                                 </asp:GridView>
                             </div>
