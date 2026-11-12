@@ -26,6 +26,8 @@ namespace SBMS
                 lbtnTrace.Visible = CurrentUser.CompanyUseLotNumbers;
                 lbtnExpiry.Visible = CurrentUser.CompanyUseLotNumbers;
                 tileConsign.Visible = CurrentUser.UseConsignment;
+                bool seeFinished, seeRaw;
+                lnkItemDemands.Visible = FGDemands.CanSee(CurrentUser, out seeFinished, out seeRaw);
                 lblUsername.Text = $":.. {CurrentUser.UserName} ..:";
                 string imgname = CurrentUser.CoID + ".png";
                 string imgPath = $"~/images/CoImages/{imgname}";

@@ -6,8 +6,6 @@ using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Text;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -16,17 +14,12 @@ namespace SBMS
 {
     public partial class StockEnquiry : BasePage
     {
-        static bool useLots = true;
         protected void Page_Load(object sender, EventArgs e)
         {
             if (CurrentUser == null)
             {
                 Response.Redirect("~/Login.aspx", false); Context.ApplicationInstance.CompleteRequest();
                 return;
-            }
-            if (CurrentUser.CompanyUseLotNumbers == false)
-            {
-                useLots = false;
             }
             if (!IsPostBack)
             {
@@ -43,7 +36,14 @@ namespace SBMS
                     imgCoImg.ImageUrl = ResolveUrl("~/images/CoImages/0000.png");
                 }
                 showhidebuttons();
-                lbtnViewAnalysis_Click(sender, EventArgs.Empty);
+
+                // Lots only for companies that use them. Categories come from the stock itself.
+                chkLots.Visible = CurrentUser.CompanyUseLotNumbers;
+                var rows = LoadRows();
+                ddlCategory.Items.Add(new ListItem("All", ""));
+                foreach (string c in rows.Select(r => r.CategoryDescript ?? "").Where(c => c != "").Distinct().OrderBy(c => c))
+                    ddlCategory.Items.Add(c);
+                BindStock(rows);
             }
         }
 
@@ -79,151 +79,59 @@ namespace SBMS
             }
         }
 
-        protected void lbtnViewAnalysis_Click(object sender, EventArgs e)
+        // One row per item (per item + lot when "Show lots" is ticked), one column per store, then a
+        // Total (Classes/QtyMatrix). Built from GetAllStockLevels - the same data the old pivot used.
+        private int firstQtyCol;
+
+        private List<GetAllStockLevels_Result> LoadRows()
         {
-            CollectData();
-            StringBuilder sb = new StringBuilder();
-            sb.Append("<script type=" + "\"text/javascript\">");
-            sb.Append("var derivers = $.pivotUtilities.derivers;");
-            sb.Append("var sortAs  = $.pivotUtilities.sortAs;");
-            sb.Append("var renderers = $.extend($.pivotUtilities.renderers,");
-            sb.Append("$.pivotUtilities.plotly_renderers,");
-            sb.Append(" $.pivotUtilities.export_renderers);");
-
-            sb.Append("function createPivotTable(abc){");
-            sb.Append("$(function () {");
-            sb.Append("$(\"#pivotoutput\").html(\"" + "<div style='text-align:center; background-color:#f9f9f9'><img src='images/tenorwait.gif' id='myAnimatedImage' align='absmiddle' class='funkygif'/></div>\");");
-            sb.Append("Papa.parse(abc,{");
-            sb.Append("download: true,");
-            sb.Append("skipEmptyLines: true,");
-            sb.Append("complete: function(parsed) {");
-
-            sb.Append("$('#pivotoutput').pivotUI(");
-            sb.Append("parsed.data,");
-            sb.Append("{");
-
-            sb.Append("rows: [");
-            sb.Append("\"ItemCode\"");
-            sb.Append(",");
-            sb.Append("\"Description\"");
-            sb.Append(",");
-            sb.Append("\"LotNumber\"");
-            sb.Append("],");
-            sb.Append("cols: [");
-            sb.Append("\"StoreCode\"");
-            sb.Append("],");
-            sb.Append("vals: [");
-            sb.Append("\"Sum_Qty\"");
-            sb.Append("],");
-            sb.Append("aggregatorName: [");
-            sb.Append("\"Sum\"");
-            sb.Append("],");
-            sb.Append("rendererName: [");
-            sb.Append("\"Table\"");
-            sb.Append("]");
-            sb.Append("});");
-            sb.Append("}");
-            sb.Append("});");
-            sb.Append("});");
-            sb.Append("};");
-            sb.Append("</script>");
-            Literal1.Text = sb.ToString();
-            string inputpath = "inputcsv/" + CurrentUser.UserGuiD.ToString().Replace(" ", "").Replace("-", "") + "-StkEnq.csv";
-            Page.ClientScript.RegisterStartupScript(this.GetType(), "CreatePivotTable", "createPivotTable('" + inputpath + "');", true);
-        }
-
-        protected string CollectData()
-        {
-            string filePath = Server.MapPath("~/inputcsv/"
-                + CurrentUser.UserGuiD.ToString().Replace(" ", "").Replace("-", "")
-                + "-StkEnq.csv");
-
+            string find = txtfind.Text.Trim();
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
-            {
-                string searchTerm = txtfind.Text.Trim().Length > 0
-                    ? txtfind.Text.Trim()
-                    : null;
-
-                int Coid = Convert.ToInt32(CurrentUser.CoID);
-                var CurrStock = _db.GetAllStockLevels(Coid, searchTerm).ToList();
-
-                WriteToCsv(CurrStock, filePath);
-            }
-
-            return "OK";
+                return _db.GetAllStockLevels(Convert.ToInt32(CurrentUser.CoID), find.Length > 0 ? find : null).ToList();
         }
 
-        //protected string CollectData()
-        //{
-        //    string filePath = Server.MapPath("~/inputcsv/" + CurrentUser.UserGuiD.ToString().Replace(" ", "").Replace("-", "") + "-StkEnq.csv");
-        //    using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
-        //    {
-        //       var CurrStock = _db.GetAllStockLevels(CurrentUser.CoID).ToList();
-        //       long itm = _db.ItemsMasters.Where(x => x.CompanyID == CurrentUser.CoID).Select(x => x.ID).FirstOrDefault(); // need to fix here.
-        //        if (txtfind.Text.Trim().Length > 0)
-        //        {
-        //            CurrStock = CurrStock.Where(x => x.ItemCode.ToLower().Contains(txtfind.Text.Trim().ToLower()) || (x.Description != null && x.Description.ToLower().Contains(txtfind.Text.Trim().ToLower()))).ToList();
-        //        }
-        //        WriteToCsv(CurrStock, filePath);
-        //    }
-        //    return "OK";
-        //}
-
-        public static void WriteToCsv<T>(List<T> items, string filePath, bool append = false)
+        private void BindStock(List<GetAllStockLevels_Result> rows)
         {
-            StringBuilder csvContent = new StringBuilder();
+            if (rows == null) rows = LoadRows();
+            string cat = ddlCategory.SelectedValue;
+            if (cat != "") rows = rows.Where(r => (r.CategoryDescript ?? "") == cat).ToList();
+            bool lots = CurrentUser.CompanyUseLotNumbers && chkLots.Checked;
 
-            // Get all the properties
-            var props = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance);
-
-            // Write the header if not appending
-            if (!append)
-            {
-                if ((bool)useLots)
-                {
-                    csvContent.AppendLine(string.Join(",", props.Select(p => p.Name)));
-                } else
-                {
-                    csvContent.AppendLine(string.Join(",", props.Select((p, index) => index != 5 ? p.Name : null).Where(name => name != null)));
-                }
-            }
-
-            // Write the data rows
-            foreach (var item in items)
-            {
-                if ((bool)useLots)
-                {
-                    var values = props.Select(p =>
-                    {
-                        var value = p.GetValue(item, null);
-                        return value?.ToString().Replace(",", " ");
-                    }).ToArray();
-                    csvContent.AppendLine(string.Join(",", values));
-                }
-                else
-                {
-                    var values = props.Select((p, index) =>
-                    {
-                        if (index == 5) return null;
-                        var value = p.GetValue(item, null);
-                        return value?.ToString().Replace(",", " ");
-                    })
-                    .Where(v => v != null) // Exclude null values
-                    .ToArray();
-                    csvContent.AppendLine(string.Join(",", values));
-                }
-            }
-
-            // Write to file
-            if (append)
-            {
-                File.AppendAllText(filePath, csvContent.ToString());
-            }
-            else
-            {
-                File.WriteAllText(filePath, csvContent.ToString());
-            }
+            DataTable dt = QtyMatrix.Build(
+                rows.Select(r => new QtyMatrix.Line { Code = r.ItemCode, Description = r.Description, Lot = r.LotNumber, Column = r.StoreCode, Qty = r.Sum_Qty ?? 0 }),
+                lots, chkHideZero.Checked, false, null, null, "Total", out firstQtyCol);
+            GridStock.DataSource = QtyMatrix.Sorted(dt, ViewState["SortCol"] as string, ViewState["SortDesc"] as bool? == true);
+            GridStock.DataBind();
+            lblInfo.Text = $"{dt.Rows.Count:N0} {(lots ? "item / lot row(s)" : "item(s)")} in {dt.Columns.Count - firstQtyCol - 1} store(s)";
         }
+
+        protected void GridStock_RowDataBound(object sender, GridViewRowEventArgs e)
+        {
+            QtyMatrix.FormatRow(e, firstQtyCol);
+        }
+
+        protected void GridStock_Sorting(object sender, GridViewSortEventArgs e)
+        {
+            // First click on a column sorts it ascending, the next click descending.
+            bool desc = ViewState["SortCol"] as string == e.SortExpression && ViewState["SortDesc"] as bool? != true;
+            ViewState["SortCol"] = e.SortExpression;
+            ViewState["SortDesc"] = desc;
+            GridStock.PageIndex = 0;
+            BindStock(null);
+        }
+
+        protected void GridStock_PageIndexChanging(object sender, GridViewPageEventArgs e)
+        {
+            GridStock.PageIndex = e.NewPageIndex;
+            BindStock(null);
+        }
+
+        protected void Filter_Changed(object sender, EventArgs e)
+        {
+            GridStock.PageIndex = 0;
+            BindStock(null);
+        }
+
         protected void lbtnHome_Click(object sender, EventArgs e)
         {
             if (CurrentUser != null)
@@ -424,7 +332,8 @@ namespace SBMS
 
         protected void lbtnfind_Click(object sender, EventArgs e)
         {
-            lbtnViewAnalysis_Click(sender, EventArgs.Empty);
+            GridStock.PageIndex = 0;
+            BindStock(null);
         }
     }
 }

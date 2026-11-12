@@ -213,12 +213,33 @@ namespace SBMS
         protected global::System.Web.UI.WebControls.LinkButton lbtnfind;
 
         /// <summary>
-        /// Literal1 control.
+        /// UpdatePanel1 control.
         /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal Literal1;
+        protected global::System.Web.UI.UpdatePanel UpdatePanel1;
+
+        /// <summary>
+        /// ddlCategory control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.DropDownList ddlCategory;
+
+        /// <summary>
+        /// chkHideZero control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.CheckBox chkHideZero;
+
+        /// <summary>
+        /// chkLots control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.CheckBox chkLots;
+
+        /// <summary>
+        /// lblInfo control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Label lblInfo;
+
+        /// <summary>
+        /// GridStock control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.GridView GridStock;
     }
 }

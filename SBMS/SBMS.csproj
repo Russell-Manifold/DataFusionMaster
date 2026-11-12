@@ -781,6 +781,8 @@
     <Content Include="prologue\assets\css\images\ie\grad0-15.svg" />
     <Content Include="prologue\assets\css\images\overlay.png" />
     <Content Include="prologue\assets\css\main.css" />
+    <Content Include="prologue\assets\css\qtygrid.css" />
+    <Content Include="prologue\assets\css\timeline.css" />
     <Content Include="prologue\assets\js\breakpoints.min.js" />
     <Content Include="prologue\assets\js\browser.min.js" />
     <Content Include="prologue\assets\js\jquery.min.js" />
@@ -2003,6 +2005,8 @@
     <Compile Include="Classes\SageCustomers.cs" />
     <Compile Include="Classes\PartDelivery.cs" />
     <Compile Include="Classes\PickCloseOff.cs" />
+    <Compile Include="Classes\QtyMatrix.cs" />
+    <Compile Include="Classes\StockTimeline.cs" />
     <Compile Include="Classes\Returnables.cs" />
     <Compile Include="Classes\ConsignmentUsage.cs" />
     <Compile Include="Classes\Simple3Des.cs" />

@@ -30,6 +30,10 @@ namespace SBMS
                 return;
             }
 
+            // Raw materials are part of Item Demands now (FGDemands.aspx, "Show: Raw materials").
+            Response.Redirect("~/FGDemands.aspx", false); Context.ApplicationInstance.CompleteRequest();
+            return;
+
             if (!IsPostBack)
             {
                 if (CurrentUser.UsePickSlipTracking != true) ibtnPickTrack.Style.Add("display", "none");

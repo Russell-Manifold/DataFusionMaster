@@ -1,0 +1,11 @@
+/* Quantity grid (Classes/QtyMatrix.cs): Stock Enquiry, FG Demands, Raw Materials Demands */
+.qtyFilter { margin-top: 0.5em; }
+.qtyFilter input[type=text], .qtyFilter select { display: inline-block; width: auto; height: 2.2em; vertical-align: middle; }
+.qtyFilter select { min-width: 12em; padding: 0 0.5em; }
+.qtyFilter input[type=checkbox] + label { margin-left: 1.5em; vertical-align: middle; }
+.qtyWrap { max-height: 70vh; overflow: auto; }
+.qtyWrap th { position: sticky; top: 0; z-index: 1; background-color: lightgray; white-space: nowrap; }
+/* Quantity columns: header and values right-aligned with the same right padding */
+.qtyWrap th.q, .qtyWrap td.q { white-space: nowrap; text-align: right; padding-right: 0.75em; }
+.qtyWrap td.neg { color: #c00000; font-weight: 600; }
+.qtyWrap td.tot, .qtyWrap th.tot { font-weight: 600; border-left: solid 1px #bbb; }

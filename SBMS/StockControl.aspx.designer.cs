@@ -291,6 +291,11 @@ namespace SBMS
         protected global::System.Web.UI.WebControls.LinkButton lbtnReOrder;
 
         /// <summary>
+        /// lnkItemDemands control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.HyperLink lnkItemDemands;
+
+        /// <summary>
         /// lbtnPickGP control.
         /// </summary>
         /// <remarks>

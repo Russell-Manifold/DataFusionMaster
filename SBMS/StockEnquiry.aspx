@@ -12,11 +12,7 @@
         <script  type="text/javascript" src="lib/jquery/dist/jquery.js"></script>
         <script  type="text/javascript" src="lib/jquery/dist/jquery.min.js"></script>
         <script  type="text/javascript" src="lib/jqueryui/jquery-ui.min.js"></script>
-        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/4.1.2/papaparse.min.js"></script>
-         <script  type="text/javascript" src="https://cdn.plot.ly/plotly-basic-latest.min.js"></script>
-         <script  type="text/javascript" src="pivot/pivot.js"></script>
-        <script  type="text/javascript" src="pivot/plotly_renderers.js"></script>
-         <link href="pivot/pivot.css" rel="stylesheet" />
+    <link rel="stylesheet" href="prologue/assets/css/qtygrid.css" />
 </head>
 <body>
     <form id="form1" runat="server">
@@ -40,12 +36,12 @@
                     <li>______________</li>
 	       
                     <li><asp:LinkButton ID="ibtnFCasts" runat="server" CssClass="buttonM" OnClick="ibtnFCasts_Click" ToolTip="Ensure greater stock accuracy with sales forecasting"> Sales Forecasts</asp:LinkButton></li>
-                    <li><asp:LinkButton ID="ibtnmrp" runat="server" CssClass="buttonM" OnClick="ibtnmrp_Click" ToolTip="View finished good demands based on PO's, Sales Orders, Forecasts etc" > Finished Goods Demands</asp:LinkButton></li>
+                    <asp:LinkButton ID="ibtnmrp" runat="server" CssClass="buttonM" OnClick="ibtnmrp_Click" ToolTip="What will run short, week by week, for finished goods and raw materials" Visible="false"></asp:LinkButton>
                     <li><asp:LinkButton ID="ibtnJobTrack" runat="server" CssClass="buttonM" OnClick="ibtnJobTrack_Click" ToolTip="Track all Job cards, simply drag and drop their change in status"> Job Card Tracking</asp:LinkButton></li>
                     <li>______________</li>
                     <li><asp:LinkButton ID="ibtmWorksOrders" runat="server" CssClass="buttonM" OnClick="ibtmWorksOrders_Click" ToolTip="Create and view works orders for manufacturing or production" > Works Orders</asp:LinkButton></li>		
                     <li><asp:LinkButton ID="ibtmWOrdMgment" runat="server" CssClass="buttonM" OnClick="ibtmWOrdMgment_Click" ToolTip="Allocate raw materials to works orders and update stock levels on order completion." > Works Order Fulfillment</asp:LinkButton></li>		
-                    <li><asp:LinkButton ID="ibtnRMD" runat="server" CssClass="buttonM" OnClick="ibtnRMD_Click" ToolTip="View RMD based on PO's, Sales orders, Works Orders." > Raw Materials Demands</asp:LinkButton></li>
+                    <asp:LinkButton ID="ibtnRMD" runat="server" CssClass="buttonM" OnClick="ibtnRMD_Click" ToolTip="View RMD based on PO's, Sales orders, Works Orders." Visible="false"></asp:LinkButton>
                         <li>______________</li>
                         <li><a href="https://mydatafusion.online/learningCenter.aspx" class="buttonM icon fa-lightbulb" target="_blank"> Learning Hub >></a></li>
                     </ul>
@@ -60,18 +56,39 @@
                                    <a href="https://mydatafusion.online" title="My Data Fusion website"><img src="images/Logo.png" style="border-radius:0.25em; float:left" class="logoImg" /></a>
                                    <asp:Image ID="imgCoImg" runat="server"  style="float:right" class="logoImg" /> 
                                    <asp:LinkButton ID="lbtnDownload" runat="server" class="buttonC fa fa-download" OnClick="lbtnDownload_Click" ToolTip="Download and analyse data using an excel pivot table." style="float:right; font-size:1em">&nbsp;Pivot In Excel</asp:LinkButton>
-                                   <asp:Panel ID="Panel1" runat="server" DefaultButton="lbtnfind">
-                                   <h3 style="padding-top:1em; line-height:1em">Stock/Lot Balances By Store</h3><br />
-                                             Find &nbsp;<asp:TextBox ID="txtfind" runat="server" placeholder="Code/Description"></asp:TextBox>&nbsp;<asp:LinkButton ID="lbtnfind" runat="server" CssClass="buttonC fa fa-search" OnClick="lbtnfind_Click" style="font-size:0.7em"></asp:LinkButton>
-                                       </asp:Panel>
+                                   <h3 style="padding-top:1em; line-height:1em">Stock/Lot Balances By Store</h3>
                                </div>
                                </div>
-                        <div class="row 150%">
-                            <div class="col-12 col-12-wide">    
-                              <div id="pivotoutput" style="overflow:auto;"></div>
-                            </div>
-                        </div>
-                        <asp:Literal ID="Literal1" runat="server"></asp:Literal>
+                        <asp:UpdatePanel ID="UpdatePanel1" runat="server">
+                            <ContentTemplate>
+                                <div class="row 150%">
+                                    <div class="col-12 col-12-wide qtyFilter" style="text-align:center">
+                                        <asp:Panel ID="Panel1" runat="server" DefaultButton="lbtnfind">
+                                            Find &nbsp;<asp:TextBox ID="txtfind" runat="server" placeholder="Code/Description" style="width:14em"></asp:TextBox>&nbsp;<asp:LinkButton ID="lbtnfind" runat="server" CssClass="buttonC fa fa-search" OnClick="lbtnfind_Click" style="font-size:0.7em"></asp:LinkButton>
+                                            &nbsp; Category <asp:DropDownList ID="ddlCategory" runat="server" AutoPostBack="true" OnSelectedIndexChanged="Filter_Changed"></asp:DropDownList>
+                                            <asp:CheckBox ID="chkHideZero" runat="server" Text="Hide zero stock" Checked="true" AutoPostBack="true" OnCheckedChanged="Filter_Changed" />
+                                            <asp:CheckBox ID="chkLots" runat="server" Text="Show lots" AutoPostBack="true" OnCheckedChanged="Filter_Changed" />
+                                        </asp:Panel>
+                                        <h4 style="margin-top:0.5em"><asp:Label ID="lblInfo" runat="server" Text=""></asp:Label></h4>
+                                    </div>
+                                </div>
+                                <div class="row 150%">
+                                    <div class="col-12 col-12-wide">
+                                        <div class="qtyWrap">
+                                            <asp:GridView ID="GridStock" runat="server" CssClass="gridview" AutoGenerateColumns="true" Width="100%"
+                                                AllowSorting="true" OnSorting="GridStock_Sorting" AllowPaging="true" PageSize="100" OnPageIndexChanging="GridStock_PageIndexChanging"
+                                                OnRowDataBound="GridStock_RowDataBound" EmptyDataText="No stock found for this selection.">
+                                                <HeaderStyle CssClass="gridViewHeader" />
+                                                <RowStyle CssClass="gridViewRow" />
+                                                <AlternatingRowStyle CssClass="gridViewAltRow" />
+                                                <PagerStyle CssClass="gridViewPager" />
+                                                <PagerSettings Mode="NumericFirstLast" PageButtonCount="10" />
+                                            </asp:GridView>
+                                        </div>
+                                    </div>
+                                </div>
+                            </ContentTemplate>
+                        </asp:UpdatePanel>
              </div>
         </div>
             </div>

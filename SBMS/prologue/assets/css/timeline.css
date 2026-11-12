@@ -1,0 +1,61 @@
+/* Item Demands (FGDemands.aspx, Classes/StockTimeline.cs): projected stock per week.
+   Ported from the Fuse Essentials theme (fuse-theme.css, "Stock timeline"). */
+
+.stl-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75em; margin: 0.5em 0 1em; }
+.stl-toolbar .stl-spacer { flex: 1; }
+.stl-toolbar select, .stl-toolbar input[type=text], .stl-toolbar input[type=date] { display: inline-block; width: auto; height: 2.2em; vertical-align: middle; }
+.stl-toolbar input[type=date] { border: solid 1px rgba(0,0,0,0.25); border-radius: 4px; padding: 0 0.5em; font-family: inherit; font-size: inherit; color: inherit; background: transparent; }
+.stl-toolbar select { min-width: 10em; padding: 0 0.5em; }
+.stl-toolbar input[type=text] { width: 12em; }
+
+.fuse-hint { color: #66756D; font-size: 0.9em; }
+.stl-sum--short { color: #C62828; font-weight: 650; }
+.stl-sum--low { color: #92400E; font-weight: 650; }
+
+.fuse-tablewrap { overflow: auto; max-height: 75vh; }
+
+/* Separate borders, or a sticky cell's border scrolls away from it. */
+table.stl { border-collapse: separate; border-spacing: 0; }
+table.stl tr[hidden] { display: none; }
+/* Pale grid lines: a row line under every row, a faint line between the week columns. */
+table.stl > tbody > tr > td, table.stl > thead > tr > th { border-bottom: 1px solid #dde3e8; border-right: 1px solid #edf0f3; }
+table.stl > tbody > tr.stl-detail > td { border-right: 0; }
+table.stl tr.stl-row { cursor: pointer; }
+table.stl tr.stl-row:hover td:not(.stl-short):not(.stl-low) { background: #eef4f9; }
+
+table.stl th.stl-num, table.stl td.stl-num { text-align: right; white-space: nowrap; padding-right: 0.75em; }
+
+/* The header stays in view while scrolling down, the item while the weeks scroll sideways. */
+table.stl thead th { position: sticky; top: 0; z-index: 2; background: lightgray; color: #3d4449; }
+table.stl td.stl-item {
+    position: sticky; left: 0; z-index: 1; min-width: 200px;
+    background: #fff; box-shadow: 1px 0 0 #DCE5E0;
+}
+table.stl thead th.stl-item { left: 0; z-index: 3; min-width: 200px; }
+
+table.stl td.stl-short { background: #FDECEC; color: #C62828; font-weight: 650; }
+table.stl td.stl-low { background: #FEF3C7; color: #92400E; }
+table.stl td.stl-when { color: #C62828; font-weight: 650; white-space: nowrap; }
+
+.stl-toggle { color: #4A82AB; font-weight: 650; text-decoration: none; white-space: nowrap; }
+.stl-toggle i { display: inline-block; width: 12px; transition: transform 0.15s; }
+.stl-open .stl-toggle i { transform: rotate(90deg); }
+
+.stl-type {
+    display: inline-block; margin-left: 6px; padding: 0 5px; border-radius: 3px;
+    background: #eef4f9; color: #3d4449; font-size: 10px; font-weight: 650; white-space: nowrap;
+}
+.stl-desc { display: block; margin-left: 12px; color: #66756D; font-size: 12px; }
+
+table.stl tr.stl-detail > td { padding: 8px 12px 12px; background: #FAFCFB; }
+
+/* Stays under the item when the table is scrolled sideways. */
+.stl-lines { position: sticky; left: 12px; width: 600px; max-width: calc(100vw - 48px); }
+.stl-lines table { width: 100%; }
+.stl-lines p { margin: 0 0 6px; }
+.stl-lines table + p { margin-top: 12px; }
+
+.stl-late {
+    display: inline-block; padding: 0 6px; border-radius: 3px;
+    background: #FDECEC; color: #C62828; font-size: 11px; font-weight: 600;
+}

@@ -186,12 +186,23 @@ namespace SBMS
         protected global::System.Web.UI.WebControls.LinkButton lbtnDownload;
 
         /// <summary>
-        /// Literal1 control.
+        /// phShow control.
         /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal Literal1;
+        protected global::System.Web.UI.WebControls.PlaceHolder phShow;
+
+        /// <summary>
+        /// litTimeline control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litTimeline;
+
+        /// <summary>
+        /// txtUpTo control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.TextBox txtUpTo;
+
+        /// <summary>
+        /// stlCat control.
+        /// </summary>
+        protected global::System.Web.UI.HtmlControls.HtmlSelect stlCat;
     }
 }

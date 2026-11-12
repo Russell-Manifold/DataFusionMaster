@@ -49,12 +49,12 @@
                         <li>______________</li>
 	       
                         <li><asp:LinkButton ID="ibtnFCasts" runat="server" CssClass="buttonM" OnClick="ibtnFCasts_Click" ToolTip="Ensure greater stock accuracy with sales forecasting"> Sales Forecasts</asp:LinkButton></li>
-                        <li><asp:LinkButton ID="ibtnmrp" runat="server" CssClass="buttonM" OnClick="ibtnmrp_Click" ToolTip="View finished good demands based on PO's, Sales Orders, Forecasts etc" > Finished Goods Demands</asp:LinkButton></li>
+                        <asp:LinkButton ID="ibtnmrp" runat="server" CssClass="buttonM" OnClick="ibtnmrp_Click" ToolTip="What will run short, week by week, for finished goods and raw materials" Visible="false"></asp:LinkButton>
                         <li><asp:LinkButton ID="ibtnJobTrack" runat="server" CssClass="buttonM" OnClick="ibtnJobTrack_Click" ToolTip="Track all Job cards, simply drag and drop their change in status"> Job Card Tracking</asp:LinkButton></li>
                         <li>______________</li>
                         <li><asp:LinkButton ID="ibtmWorksOrders" runat="server" CssClass="buttonM" OnClick="ibtmWorksOrders_Click" ToolTip="Create and view works orders for manufacturing or production" > Works Orders</asp:LinkButton></li>		
                         <li><asp:LinkButton ID="ibtmWOrdMgment" runat="server" CssClass="buttonM" OnClick="ibtmWOrdMgment_Click" ToolTip="Allocate raw materials to works orders and update stock levels on order completion." > Works Order Fulfillment</asp:LinkButton></li>		
-                        <li><asp:LinkButton ID="ibtnRMD" runat="server" CssClass="buttonM" OnClick="ibtnRMD_Click" ToolTip="View RMD based on PO's, Sales orders, Works Orders." > Raw Materials Demands</asp:LinkButton></li>
+                        <asp:LinkButton ID="ibtnRMD" runat="server" CssClass="buttonM" OnClick="ibtnRMD_Click" ToolTip="View RMD based on PO's, Sales orders, Works Orders." Visible="false"></asp:LinkButton>
                         <li>______________</li>
                         <li><a href="https://mydatafusion.online/learningCenter.aspx" class="buttonM icon fa-lightbulb" target="_blank"> Learning Hub >></a></li>
                     <%-- <li>______________</li>
@@ -122,6 +122,9 @@
                                 <asp:LinkButton ID="lbtnReOrder" runat="server" OnClick="lbtnReOrder_Click" CssClass="sc-tile" ToolTip="What to buy: on hand, on order, committed and recommended order quantity per item.">
                                     <i class="fa fa-shopping-cart sc-i"></i><span class="sc-t">Re-Order Report</span><span class="sc-d">What to buy, and how much</span>
                                 </asp:LinkButton>
+                                <asp:HyperLink ID="lnkItemDemands" runat="server" NavigateUrl="~/FGDemands.aspx" CssClass="sc-tile" ToolTip="What will run short, week by week, for finished goods and raw materials.">
+                                    <i class="fa fa-chart-area sc-i"></i><span class="sc-t">Item Demands</span><span class="sc-d">What will run short, week by week</span>
+                                </asp:HyperLink>
                                 <asp:LinkButton ID="lbtnTrace" runat="server" OnClick="lbtnTrace_Click" CssClass="sc-tile" ToolTip="Search a serial or batch: where it came from, where it went, and who has it.">
                                     <i class="fa fa-search sc-i"></i><span class="sc-t">Traceability &amp; Recall</span><span class="sc-d">Follow a serial or batch end to end</span>
                                 </asp:LinkButton>

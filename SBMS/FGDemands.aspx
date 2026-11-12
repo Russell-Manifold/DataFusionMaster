@@ -3,7 +3,7 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
-    <title>FG Demands Pivot</title>
+    <title>Item Demands</title>
     <link id="Link3" runat="server" rel="shortcut icon" href="images/datafusionicon.ico" type="image/x-icon" />
     <link id="Link4" runat="server" rel="icon" href="images/datafusionicon.ico" type="image/ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -13,12 +13,7 @@
         <script  type="text/javascript" src="lib/jquery/dist/jquery.js"></script>
         <script  type="text/javascript" src="lib/jquery/dist/jquery.min.js"></script>
         <script  type="text/javascript" src="lib/jqueryui/jquery-ui.min.js"></script>
-        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/4.1.2/papaparse.min.js"></script>
-
-         <script  type="text/javascript" src="https://cdn.plot.ly/plotly-basic-latest.min.js"></script>
-         <script  type="text/javascript" src="pivot/pivot.js"></script>
-        <script  type="text/javascript" src="pivot/plotly_renderers.js"></script>
-         <link href="pivot/pivot.css" rel="stylesheet" />
+        <link rel="stylesheet" href="prologue/assets/css/timeline.css" />
   </head>
 <body>
     <form id="form1" runat="server">
@@ -41,12 +36,12 @@
                         <li>______________</li>
 	       
                         <li><asp:LinkButton ID="ibtnFCasts" runat="server" CssClass="buttonM" OnClick="ibtnFCasts_Click" ToolTip="Ensure greater stock accuracy with sales forecasting"> Sales Forecasts</asp:LinkButton></li>
-                        <li><asp:LinkButton ID="ibtnmrp" runat="server" CssClass="buttonM" OnClick="ibtnmrp_Click" ToolTip="View finished good demands based on PO's, Sales Orders, Forecasts etc" > Finished Goods Demands</asp:LinkButton></li>
+                        <asp:LinkButton ID="ibtnmrp" runat="server" CssClass="buttonM" OnClick="ibtnmrp_Click" ToolTip="What will run short, week by week, for finished goods and raw materials" Visible="false"></asp:LinkButton>
                         <li><asp:LinkButton ID="ibtnJobTrack" runat="server" CssClass="buttonM" OnClick="ibtnJobTrack_Click" ToolTip="Track all Job cards, simply drag and drop their change in status"> Job Card Tracking</asp:LinkButton></li>
                         <li>______________</li>
                         <li><asp:LinkButton ID="ibtmWorksOrders" runat="server" CssClass="buttonM" OnClick="ibtmWorksOrders_Click" ToolTip="Create and view works orders for manufacturing or production" > Works Orders</asp:LinkButton></li>		
                         <li><asp:LinkButton ID="ibtmWOrdMgment" runat="server" CssClass="buttonM" OnClick="ibtmWOrdMgment_Click" ToolTip="Allocate raw materials to works orders and update stock levels on order completion." > Works Order Fulfillment</asp:LinkButton></li>		
-                        <li><asp:LinkButton ID="ibtnRMD" runat="server" CssClass="buttonM" OnClick="ibtnRMD_Click" ToolTip="View RMD based on PO's, Sales orders, Works Orders." > Raw Materials Demands</asp:LinkButton></li>
+                        <asp:LinkButton ID="ibtnRMD" runat="server" CssClass="buttonM" OnClick="ibtnRMD_Click" ToolTip="View RMD based on PO's, Sales orders, Works Orders." Visible="false"></asp:LinkButton>
                     <li>______________</li>
                         <li><a href="https://mydatafusion.online/learningCenter.aspx" class="buttonM icon fa-lightbulb" target="_blank"> Learning Hub >></a></li>
   	            </ul>
@@ -60,97 +55,82 @@
                             <div class="col-12 col-12-wide" style="text-align:center">
                                 <a href="https://mydatafusion.online" title="My Data Fusion website"><img src="images/Logo.png" style="border-radius:0.25em; float:left" class="logoImg" /></a>
                                 <asp:Image ID="imgCoImg" runat="server"  style="float:right" class="logoImg" /> 
-                                <asp:LinkButton ID="lbtnDownload" runat="server" class="buttonC fa fa-download" OnClick="lbtnDownload_Click" ToolTip="Download and analyse data using an excel pivot table." style="float:right; font-size:1em">&nbsp;Pivot In Excel</asp:LinkButton>
-                                <h3 style="padding-top:2em; line-height:1em">MRP: Finished Goods Demands</h3>
+                                <h3 style="padding-top:2em; line-height:1em">Item Demands</h3>
+                                <p class="fuse-hint">Stock left at the end of each week, after everything due in and out. Click an item to see why.</p>
                             </div>
                             </div>
-                           <div class="row 150%">
-                               <div class="col-4-mobile col-12-mobile">
-                                   <br />
-                                   <ul style="font-size: .9em; line-height:1.2em">
-                                        <li>Filter and sort by selectors.</li>
-                                        <li>Drag and Drop columns and rows to slice and dice your data.</li>
-                                        <li>If in doubt, click the Refresh button above to recollect all data.</li>
-                                    </ul>
-                                   </div>
-                               <div class="col-4-mobile col-12-mobile"> 
-                                   <span style="text-decoration: underline">Increase Stock</span>
-                                   <ul style="font-size: .9em; line-height:1.2em">
-                                        <li>OH = Qty On Hand</li>
-                                        <li>PO = Purchase Orders</li>
-                                        <%--<li>PP = Planned For Production</li>--%>
-                                    </ul>
-                                   </div>
-                                 <div class="col-4-mobile col-12-mobile">
-                                <span style="text-decoration: underline">Decrease Stock</span>
-                                   <ul style="font-size: .9em; line-height:1.2em">
-                                    <li>PS = Picking Slips</li>
-                                    <li>JC = Open Job Cards</li>
-                                    <li>FC = Sales Forecasts</li>
-                                </ul>
-                               </div>
-                           </div>       
-                        <div class="row 150%">
-                            <div class="col-12 col-12-wide">
-                            <div id="pivotoutput" style="overflow:auto;"></div> 
-                                </div>
+                        <div class="stl-toolbar">
+                            <span id="stlSummary" class="fuse-hint"></span>
+                            <span class="stl-spacer"></span>
+                            <asp:PlaceHolder ID="phShow" runat="server">
+                                <label for="stlShow" style="display:inline; margin:0">Show</label>
+                                <select id="stlShow" runat="server" ClientIDMode="Static">
+                                    <option value="">All</option>
+                                    <option value="g">Finished goods</option>
+                                    <option value="f">Made from a BOM</option>
+                                    <option value="r">BOM components</option>
+                                </select>
+                            </asp:PlaceHolder>
+                            <label for="stlCat" style="display:inline; margin:0">Category</label>
+                            <select id="stlCat" runat="server" ClientIDMode="Static"></select>
+                            <input type="checkbox" id="stlShort" runat="server" ClientIDMode="Static" /><label for="stlShort" style="margin:0">Short only</label>
+                            <label for="txtUpTo" style="display:inline; margin:0">Up to</label>
+                            <asp:TextBox ID="txtUpTo" runat="server" TextMode="Date" AutoPostBack="true" OnTextChanged="txtUpTo_TextChanged" ClientIDMode="Static" ToolTip="Leave out everything due after this date"></asp:TextBox>
+                            <input type="text" id="stlFind" runat="server" ClientIDMode="Static" placeholder="Find" aria-label="Find an item" autocomplete="off" />
+                            <asp:LinkButton ID="lbtnDownload" runat="server" class="buttonC fa fa-download" OnClick="lbtnDownload_Click" ToolTip="Download every item and its weekly stock to Excel" style="font-size:1em">&nbsp;Download</asp:LinkButton>
                         </div>
-                        <asp:Literal ID="Literal1" runat="server"></asp:Literal>
+                        <asp:Literal ID="litTimeline" runat="server" EnableViewState="false"></asp:Literal>
                        </div>
                     </div>
 </div>
     <script type="text/javascript">
         (function () {
-            function cellValue(td) {
-                var raw = td.getAttribute("data-value");
-                var s = (raw !== null && raw !== "") ? raw : td.textContent;
-                if (s == null) return null;
-                s = String(s).replace(/,/g, "").replace(/[^0-9.\-]/g, "");
-                if (s === "" || s === "-" || s === ".") return null;
-                var n = parseFloat(s);
-                return isFinite(n) ? n : null;
+            var table = document.getElementById('stlTable');
+            var find = document.getElementById('stlFind');
+            var show = document.getElementById('stlShow');
+            var cat = document.getElementById('stlCat');
+            var shortOnly = document.getElementById('stlShort');
+            var summary = document.getElementById('stlSummary');
+            if (!table) { if (find) find.disabled = true; if (show) show.disabled = true; if (cat) cat.disabled = true; if (shortOnly) shortOnly.disabled = true; return; }
+
+            table.addEventListener('click', function (e) {
+                var row = e.target.closest('tr.stl-row');
+                if (!row) return;
+                e.preventDefault();
+                var open = row.classList.toggle('stl-open');
+                row.nextElementSibling.hidden = !open;
+                row.querySelector('.stl-toggle').setAttribute('aria-expanded', open ? 'true' : 'false');
+            });
+
+            // Enter must not submit the form: the list is already filtered as you type.
+            find.addEventListener('keydown', function (e) { if (e.key === 'Enter') e.preventDefault(); });
+            function applyFilters() {
+                var term = find.value.trim().toLowerCase();
+                var type = show ? show.value : '';
+                var category = cat ? cat.value.trim().toLowerCase() : '';
+                var shortCount = 0, lowCount = 0, total = 0;
+                table.querySelectorAll('tr.stl-row').forEach(function (row) {
+                    var match = row.getAttribute('data-find').indexOf(term) !== -1
+                        && row.getAttribute('data-type').indexOf(type) !== -1
+                        && (category === '' || row.getAttribute('data-cat') === category)
+                        && (!shortOnly || !shortOnly.checked || row.getAttribute('data-attn') === '0');
+                    row.hidden = !match;
+                    row.nextElementSibling.hidden = !match || !row.classList.contains('stl-open');
+                    if (!match) return;
+                    total++;
+                    var attention = row.getAttribute('data-attn');
+                    if (attention === '0') shortCount++;
+                    else if (attention === '1') lowCount++;
+                });
+                summary.innerHTML = '<span class="stl-sum--short">' + shortCount + ' short</span>, <span class="stl-sum--low">' + lowCount
+                    + ' below minimum</span>, of ' + total + (total === 1 ? ' item' : ' items');
             }
-            function shadeTotals() {
-                var root = document.getElementById("pivotoutput");
-                if (!root) return;
-                var cells = root.querySelectorAll("td.rowTotal");
-                if (!cells.length) return;
-                var minv = 0, i, v;
-                for (i = 0; i < cells.length; i++) {
-                    v = cellValue(cells[i]);
-                    cells[i]._val = v;
-                    if (v !== null && v < minv) minv = v;
-                }
-                for (i = 0; i < cells.length; i++) {
-                    v = cells[i]._val;
-                    if (v !== null && v < 0 && minv < 0) {
-                        var t = v / minv;
-                        var c = Math.round(255 * (1 - t));
-                        cells[i].style.backgroundColor = "rgb(255," + c + "," + c + ")";
-                        cells[i].style.color = t > 0.6 ? "#fff" : "";
-                    } else {
-                        cells[i].style.backgroundColor = "";
-                        cells[i].style.color = "";
-                    }
-                }
-            }
-            var scheduled = false;
-            function schedule() {
-                if (scheduled) return;
-                scheduled = true;
-                setTimeout(function () { scheduled = false; shadeTotals(); }, 50);
-            }
-            function init() {
-                var root = document.getElementById("pivotoutput");
-                if (!root) { setTimeout(init, 200); return; }
-                new MutationObserver(schedule).observe(root, { childList: true, subtree: true });
-                schedule();
-            }
-            if (document.readyState === "loading") {
-                document.addEventListener("DOMContentLoaded", init);
-            } else {
-                init();
-            }
+
+            find.addEventListener('input', applyFilters);
+            if (show) show.addEventListener('change', applyFilters);
+            if (cat) cat.addEventListener('change', applyFilters);
+            if (shortOnly) shortOnly.addEventListener('change', applyFilters);
+            applyFilters();
         })();
     </script>
     </form>

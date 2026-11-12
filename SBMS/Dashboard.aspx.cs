@@ -120,6 +120,10 @@ namespace SBMS
                 PnlProduction.Style.Add("display", "none");
             }
 
+            // Finished goods and raw materials demands are one page now (Item Demands), opened from
+            // Stock Control. The old buttons are hidden, not removed.
+            ibtnmrp.Visible = ibtnmrp2.Visible = ibtnRMD.Visible = false;
+
             // Slim manufacturing: Works Orders only - everything else lives in Sage.
             if (userDets.SageStockOnly)
             {
