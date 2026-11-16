@@ -1,4 +1,4 @@
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Specialized;
@@ -76,7 +76,7 @@ An ASP.NET web-based warehouse management and manufacturing ERP that integrates 
 ### BOMs and Kits (Desktop: BOMHeaders.aspx, BOMCreate.aspx, BOMDetailed.aspx, KitHeaders.aspx, KitCreate.aspx)
 - Bills of Materials define manufacturing recipes. Kits are bundled items sold as a unit. BOMs can be multi-level.
 
-### Production and Works Orders (Desktop: Production.aspx, ProdPlanning.aspx, WorksOrdersHeaders.aspx, WorksOrdersManf.aspx)
+### Production and Works Orders (Desktop: WorksOrdersHeaders.aspx, WorksOrdersManf.aspx)
 - Manufacturing workflow. Works orders consume raw materials from BOMs. Production tracking records output.
 
 ### Sales Orders (Desktop: SalesOrder.aspx, OSSalesOrders.aspx)

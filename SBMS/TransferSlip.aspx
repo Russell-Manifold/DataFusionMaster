@@ -7,62 +7,19 @@
 <link id="Link3" runat="server" rel="shortcut icon" href="images/datafusionicon.ico" type="image/x-icon" />
 <link id="Link4" runat="server" rel="icon" href="images/datafusionicon.ico" type="image/ico" />
 <link rel="stylesheet" href="assets/css/main.css" />
-<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
-<script type="text/javascript">
-    // Enhance all ddlGridItem dropdowns in the GridView with Select2 and a search delay
-    function initializeGridTrfLinesSelect2() {
-        $("select[id$='ddlGridItem']").select2({
-            minimumInputLength: 1,
-            placeholder: "- Select -",
-            allowClear: true,
-            width: 'style',
-            dropdownAutoWidth: true,
-            delay: 1250, // 1.25 s delay before searching
-            maximumSelectionLength: 100,
-            matcher: function (params, data) {
-                if ($.trim(params.term) === '') return data;
-                var term = params.term.toLowerCase();
-                if (data.text && data.text.toLowerCase().indexOf(term) > -1 ||
-                    data.id && data.id.toLowerCase().indexOf(term) > -1) {
-                    return data;
-                }
-                return null;
-            },
-            templateResult: function (item) {
-                if (!item.id) return item.text;
-                var $result = $('<span></span>');
-                if (item.text && item.text.includes(' - ')) {
-                    var parts = item.text.split(' - ');
-                    $result.append('<strong style="font-weight: bold;">' + parts[0] + '</strong> - ' + parts[1]);
-                } else {
-                    $result.text(item.text);
-                }
-                return $result;
-            },
-            templateSelection: function (item) {
-                return item.text;
-            }
-        });
-        // Ensure dropdown width matches the control width
-        $("select[id$='ddlGridItem']").on('select2:open', function () {
-            var dropdown = $('.select2-container--open .select2-dropdown');
-            dropdown.css('min-width', $(this).outerWidth() + 'px');
-        });
-    }
-    $(document).ready(function () {
-        initializeGridTrfLinesSelect2();
-    });
-    // Reinitialize after UpdatePanel partial postback
-    if (typeof (Sys) !== 'undefined') {
-        var prm = Sys.WebForms.PageRequestManager.getInstance();
-        prm.add_endRequest(function () {
-            initializeGridTrfLinesSelect2();
-        });
-    }
-</script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<style>
+    /* Add bar - boxed and labelled so users of the old per-line dropdowns spot where items go now */
+    .addbar { max-width: 64em; margin: 1.5em auto 1em; padding: .9em 1.2em 1.1em; border: 2px solid #4A82AB; border-radius: .6em; background: #f3f8fc; }
+    .addbar-title { font-weight: 600; color: #4A82AB; }
+    .addbar-hint { font-size: .8em; color: #555; margin-bottom: .7em; }
+    .addbar table { width: calc(100% + 2em); margin: 0 -1em; border-collapse: separate; border-spacing: 1em 0; }   /* -1em: edges line up with the box text */
+    .addbar td { vertical-align: bottom; text-align: center; font-size: .9em; white-space: nowrap; }
+    .addbar .qoh { display: inline-block; min-width: 5em; padding: .35em 0; font-weight: 600; }
+    /* Less empty space above the title: the 6em logos set the height of the top row */
+    .logoImg { max-height: 4.5em; }
+    h2 { line-height: 1.2em; margin-bottom: .6em; }
+</style>
 </head>
 <body>
     <form id="form1" runat="server">
@@ -98,7 +55,7 @@
                                 <td style="text-align:left">From Warehouse: &nbsp;</td>
                                 <td><asp:DropDownList ID="ddlFromWarehouse" runat="server" AutoPostBack="true" OnSelectedIndexChanged="ddlFromWarehouse_SelectedIndexChanged" style="width:10em; margin-top:0.25em"/></td>
                                 <td>To Warehouse:&nbsp;</td>
-                                <td><asp:DropDownList ID="ddlToWarehouse" runat="server" style="width:10em; margin-top:0.25em" /></td>
+                                <td><asp:DropDownList ID="ddlToWarehouse" runat="server" AutoPostBack="true" OnSelectedIndexChanged="ddlToWarehouse_SelectedIndexChanged" style="width:10em; margin-top:0.25em" /></td>
                                 <td>Status:&nbsp;</td>
                                  <td><asp:DropDownList ID="DDStatus" runat="server" style="width:10em" Enabled="false">
                                      <asp:ListItem>New</asp:ListItem>
@@ -126,52 +83,46 @@
                              <tr>
                                 <td colspan="2"></td>
                                 <td>Notes:&nbsp;</td>
-                                <td colspan="5"><asp:TextBox ID="txtNotes" runat="server" style="width:100%; margin-top:0.25em" TextMode="MultiLine"></asp:TextBox></td>
+                                <td colspan="5"><asp:TextBox ID="txtNotes" runat="server" style="width:100%; margin-top:0.25em; height:2.2em; padding:0.25em 0.5em; resize:vertical" TextMode="MultiLine" Rows="1"></asp:TextBox></td>
                             </tr>
                          </table>
                      </div>
                  </div>
 
+                 <%-- One add bar instead of a dropdown on every line: pick item (same searchable picker
+                      as Item Adjustment), lot, qty, Add. Enter in the qty box adds the line. --%>
+                 <asp:Panel ID="PnlAddLine" runat="server" DefaultButton="lbtnAddLine" CssClass="addbar">
+                     <div class="addbar-title"><i class="fa fa-plus-circle"></i>&nbsp;Add items to this transfer</div>
+                     <div class="addbar-hint">Pick an item, enter the quantity, then click <b>Add</b> (or press Enter). Each item appears as a line below.</div>
+                     <table>
+                         <tr>
+                             <td style="text-align:left">Item<br />
+                                 <asp:DropDownList ID="DDAddItem" runat="server" CssClass="item-search" AutoPostBack="true" OnSelectedIndexChanged="DDAddItem_SelectedIndexChanged" style="width:28em; max-width:90vw"></asp:DropDownList></td>
+                             <asp:PlaceHolder ID="phAddLot" runat="server">
+                             <td>Lot Number<br />
+                                 <asp:DropDownList ID="DDAddLot" runat="server" AutoPostBack="true" OnSelectedIndexChanged="DDAddLot_SelectedIndexChanged" style="width:10em"></asp:DropDownList></td>
+                             </asp:PlaceHolder>
+                             <td>On Hand<br />(From)<br /><asp:Label ID="lblAddFrom" runat="server" CssClass="qoh" /></td>
+                             <td>On Hand<br />(To)<br /><asp:Label ID="lblAddTo" runat="server" CssClass="qoh" /></td>
+                             <td>Qty To Trf<br />
+                                 <asp:TextBox ID="txtAddQty" runat="server" style="text-align:center; width:6em"></asp:TextBox>
+                                 <cci:FilteredTextBoxExtender ID="ftbeAddQty" runat="server" TargetControlID="txtAddQty" FilterType="Custom, Numbers" ValidChars="." /></td>
+                             <td><asp:LinkButton ID="lbtnAddLine" runat="server" CssClass="buttonC icon fa-plus" OnClick="lbtnAddLine_Click">&nbsp;Add</asp:LinkButton></td>
+                         </tr>
+                     </table>
+                 </asp:Panel>
+
                  <div class="row 150%">
                      <div class="12u 12u$(medium)">
-                         <asp:GridView ID="GridTrfLines" runat="server" AutoGenerateColumns="false" CssClass="gridviewS" OnRowDataBound="GridTrfLines_RowDataBound">
+                         <asp:GridView ID="GridTrfLines" runat="server" AutoGenerateColumns="false" CssClass="gridviewS" OnRowDataBound="GridTrfLines_RowDataBound" EmptyDataText="No lines yet - pick an item above and click Add.">
                              <HeaderStyle CssClass="gridViewHeaderS" />
                              <RowStyle CssClass="gridViewRowS" />
                              <AlternatingRowStyle CssClass="gridViewAltRowS" />
                              <Columns>
-                                 <asp:TemplateField HeaderText="Select Item">
-                                     <ItemTemplate>
-                                         <asp:DropDownList ID="ddlGridItem" runat="server" AutoPostBack="true" OnSelectedIndexChanged="ddlGridItem_SelectedIndexChanged"></asp:DropDownList>
-                                     </ItemTemplate>
-                                 </asp:TemplateField>
-                                 <asp:TemplateField HeaderText="On Hand </br> (From Store)" ItemStyle-Width="8em" ItemStyle-HorizontalAlign="Center" HeaderStyle-HorizontalAlign="Center">
-                                    <ItemTemplate>
-                                        <asp:Label ID="lblAvailQty" runat="server" style="text-align:center"></asp:Label>       
-                                    </ItemTemplate>
-                                     </asp:TemplateField>
-                                  <asp:TemplateField HeaderText="Lot Number" ItemStyle-Width="5em">
-                                    <ItemTemplate>
-                                        <asp:DropDownList ID="DDlotNum" runat="server" Style="width: 8em; text-align: center" AutoPostBack="true" OnSelectedIndexChanged="DDlotNum_SelectedIndexChanged">
-                                            <asp:ListItem Value="0">- Lot Number-</asp:ListItem>
-                                        </asp:DropDownList>
-                                    </ItemTemplate>
-                                </asp:TemplateField>
-                                 <asp:TemplateField HeaderText="On Hand </br> (To Store)" ItemStyle-Width="8em" ItemStyle-HorizontalAlign="Center" HeaderStyle-HorizontalAlign="Center">
-                                   <ItemTemplate>
-                                       <asp:Label ID="lblToStoreQty" runat="server" style="text-align:center"></asp:Label>       
-                                   </ItemTemplate>
-                                    </asp:TemplateField>
-                                 <asp:TemplateField HeaderText="Qty_To_Trf" ItemStyle-Width="6em" ItemStyle-HorizontalAlign="Center" HeaderStyle-HorizontalAlign="Center">
-                                     <ItemTemplate>
-                                         <asp:TextBox ID="txtQty" runat="server" Text='<%# Eval("TrfOutQty") %>' style="text-align:center; width:6em"></asp:TextBox>
-                                     </ItemTemplate>
-                                 </asp:TemplateField>
-                                 
-                                  <asp:TemplateField ItemStyle-HorizontalAlign="Right" ItemStyle-Width="2em" >
-                                     <ItemTemplate>
-                                          <asp:LinkButton ID="lbtnLineSave" CommandArgument='<%# Eval("TrfLID") %>' CommandName="lbtnLineSave" runat="server" CssClass="fa fa-save buttonRed" ToolTip="Save Line" OnClick="lbtnLineSave_Click"> </asp:LinkButton>
-                                     </ItemTemplate>
-                                 </asp:TemplateField>
+                                 <asp:BoundField HeaderText="Code" DataField="ItemCode" ItemStyle-Width="10em" />
+                                 <asp:BoundField HeaderText="Description" DataField="ItemDescription" ItemStyle-HorizontalAlign="Left" />
+                                 <asp:BoundField HeaderText="Lot Number" DataField="LotNumber" ItemStyle-Width="8em" ItemStyle-HorizontalAlign="Center" HeaderStyle-HorizontalAlign="Center" />
+                                 <asp:BoundField HeaderText="Qty To Trf" DataField="TrfOutQty" ItemStyle-Width="6em" ItemStyle-HorizontalAlign="Center" HeaderStyle-HorizontalAlign="Center" />
                                   <asp:TemplateField ItemStyle-HorizontalAlign="Right" ItemStyle-Width="2em" >
                                      <ItemTemplate>
                                           <asp:LinkButton ID="lbtnDeleteLine" CommandArgument='<%# Eval("TrfLID") %>' CommandName="lbtnDeleteLine" runat="server" CssClass="fa fa-ban" ToolTip="Delete Line" style="color:red" OnClick="lbtnDeleteLine_Click"> </asp:LinkButton>
@@ -235,5 +186,6 @@
      </div>
  </div>
     </form>
+    <script src="<%= ResolveUrl("~/scripts/itemSearch.js") %>"></script>
 </body>
 </html>

@@ -19,28 +19,6 @@ namespace SBMS
     public partial class TransferSlip : BasePage
     {
         int TrfThisID;
-       
-// DTO for dropdown items
-[Serializable]
-        public class ItemDropDownDto
-        {
-            public long CompanyID { get; set; }
-            public long ItemID { get; set; }
-            public string Item { get; set; }
-            public string ItemCode { get; set; }
-            public long StoreID { get; set; }
-            public decimal QOH { get; set; } // Quantity on hand
-            public string LotNum { get; set; }
-            public decimal? PriceExclusive { get; set; }
-            public decimal? TotalUnitPriceExclInclAdd { get; set; }
-            public string Unit { get; set; }
-        }
-            // Class-level list for dropdown data
-            private List<ItemDropDownDto> _itemDropDownList
-            {
-                get { return ViewState["ItemDropDownList"] as List<ItemDropDownDto>; }
-                set { ViewState["ItemDropDownList"] = value; }
-            }
 
         [Serializable]
         public class StoresDto
@@ -64,10 +42,13 @@ namespace SBMS
                 return;
             }
             TrfThisID = Convert.ToInt32(Request.QueryString["trfid"]);
+            string imgPath = $"~/images/CoImages/{CurrentUser.CoID}.png";
+            imgCoImg.ImageUrl = ResolveUrl(File.Exists(Server.MapPath(imgPath)) ? imgPath : "~/images/CoImages/0000.png");
             if (!IsPostBack)
             {
                 LoadWarehouses();
                 LoadTransfer();
+                if (PnlAddLine.Visible) LoadAddItems();
             }
         }
 
@@ -115,21 +96,6 @@ namespace SBMS
                     else
                         ddlToWarehouse.SelectedIndex = 0; // or handle as needed
 
-                    var TrfLines = _db.ItemTransferLines.Where(x => x.CompanyID == CurrentUser.CoID && x.TrfID == Trf.TrfID).OrderBy(x => x.TrfLID).ToList();
-                    if (Trf.TrfStarted == true)
-                    {
-                        TrfLines = TrfLines.Where(x => x.TrfOutQty > 0).ToList();
-                    }
-                    
-                    foreach (var Trl in TrfLines)
-                    {
-                        if (Trl.TrfOutQty != null && Trl.TrfOutQty > 0)
-                        {
-                            string TrfQty = ApiUrlCall.NumberToDecimal(Trl.TrfOutQty.ToString(), CurrentUser.CompanyDecPlaces);
-                            Trl.TrfOutQty = Convert.ToDecimal(TrfQty);
-                        }
-                    }
-
                     DDStatus.Text = Trf.TrfStatus;
                     if (Trf.TrfStatus == "Started")
                     {
@@ -152,9 +118,34 @@ namespace SBMS
                         LbtnSaveEdits.Style.Add("display", "inline-block");
                         lbtnCompleteTrf.Style.Add("display", "none");
                     }
-                    GridTrfLines.DataSource = TrfLines;
-                    GridTrfLines.DataBind();
+                    PnlAddLine.Visible = Trf.TrfStatus != "Started" && Trf.TrfStatus != "Complete" && Trf.TrfStatus != "Deleted";
+                    BindLines();
                 }
+            }
+        }
+
+        // The slip's lines. Blank lines (the empty row TransferHeaders creates with a new slip,
+        // and old slips' unsaved rows) are skipped - lines are only created by Add now.
+        private void BindLines()
+        {
+            using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+            {
+                var TrfLines = _db.ItemTransferLines.Where(x => x.CompanyID == CurrentUser.CoID && x.TrfID == TrfThisID && x.ItemSelectionId != null).OrderBy(x => x.TrfLID).ToList();
+                if (DDStatus.Text != "New")
+                {
+                    TrfLines = TrfLines.Where(x => x.TrfOutQty > 0).ToList();
+                }
+
+                foreach (var Trl in TrfLines)
+                {
+                    if (Trl.TrfOutQty != null && Trl.TrfOutQty > 0)
+                    {
+                        string TrfQty = ApiUrlCall.NumberToDecimal(Trl.TrfOutQty.ToString(), CurrentUser.CompanyDecPlaces);
+                        Trl.TrfOutQty = Convert.ToDecimal(TrfQty);
+                    }
+                }
+                GridTrfLines.DataSource = TrfLines;
+                GridTrfLines.DataBind();
             }
         }
         private void LoadWarehouses()
@@ -182,150 +173,184 @@ namespace SBMS
             }
         }
 
-        private void LoadActiveItems()
+        protected void GridTrfLines_RowDataBound(object sender, GridViewRowEventArgs e)
         {
-            if (_itemDropDownList == null || _itemDropDownList.Count == 0)
+            if (e.Row.RowType != DataControlRowType.Header && e.Row.RowType != DataControlRowType.DataRow) return;
+            if (CurrentUser.CompanyUseLotNumbers == false) e.Row.Cells[2].Visible = false;
+            if (DDStatus.Text != "New") e.Row.Cells[4].Visible = false;   // delete only while the slip is New
+        }
+
+        // ---- Add bar ---------------------------------------------------------------------------
+        // Stock is read for the one warehouse (and item) needed, when needed. This page used to run
+        // GetOpeningBalancesAllStores - every item, every store, every lot - and carry the result in
+        // ViewState on every click, plus a full item dropdown on every line. That was the minute-long load.
+
+        // Items with stock in the From warehouse.
+        private void LoadAddItems()
+        {
+            DDAddItem.Items.Clear();
+            DDAddLot.Items.Clear();
+            lblAddFrom.Text = lblAddTo.Text = "";
+            txtAddQty.Text = "";
+            phAddLot.Visible = CurrentUser.CompanyUseLotNumbers;
+
+            if (!long.TryParse(ddlFromWarehouse.SelectedValue, out long fromId))
             {
-                using (SBMSEntities db = new SBMSEntities(Config.GetConnectionString()))
-                {
-                    _itemDropDownList = db.GetOpeningBalancesAllStores(CurrentUser.CoID)
-                        .Select(x => new ItemDropDownDto
-                        {
-                            CompanyID = CurrentUser.CoID,
-                            ItemID = (long)x.ItemID,
-                            Item = (x.ItemCode ?? "") + (string.IsNullOrWhiteSpace(x.ItemCode) ? "" : " - ") + (x.ItemDescription ?? ""),
-                            ItemCode = x.ItemCode,
-                            StoreID = (long)x.StoreID,
-                            QOH = x.QOH ?? 0,
-                            LotNum = x.LotNumber,
-                            PriceExclusive = (decimal)x.PriceExclusive,
-                            TotalUnitPriceExclInclAdd = (decimal)x.TotalUnitPriceExclInclAdd,
-                            Unit = x.Unit ?? ""
-                        }).ToList();
-                }
+                DDAddItem.Items.Add(new System.Web.UI.WebControls.ListItem("- Select the From warehouse first -", ""));
+                return;
+            }
+
+            long co = CurrentUser.CoID;
+            using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+            {
+                // Same rule as the proc: listed when any of the item's lots has a non-zero balance here.
+                var stocked = _db.ItemTransactions
+                    .Where(t => t.CompanyID == co && t.ToID == fromId)
+                    .GroupBy(t => new { t.ItemID, t.LotNumber })
+                    .Where(g => g.Sum(t => t.Qty) != 0)
+                    .Select(g => g.Key.ItemID)
+                    .Distinct();
+
+                var items = _db.ItemsMasters
+                    .Where(im => im.CompanyID == co && stocked.Contains((long?)im.ID))
+                    .Select(im => new { im.ID, im.Code, im.Description })
+                    .ToList();
+
+                DDAddItem.DataSource = items
+                    .OrderBy(x => x.Code)
+                    .Select(x => new { x.ID, Text = (x.Code ?? "") + (string.IsNullOrWhiteSpace(x.Code) ? "" : " - ") + (x.Description ?? "") })
+                    .ToList();
+                DDAddItem.DataTextField = "Text";
+                DDAddItem.DataValueField = "ID";
+                DDAddItem.DataBind();
+            }
+            DDAddItem.Items.Insert(0, new System.Web.UI.WebControls.ListItem("- Select -", ""));
+        }
+
+        // Stock on hand for one item in one store, optionally one lot: the proc's sum (ToID = store),
+        // for just that item. Uses IX_ItemTransaction_Co_Item_To_Qty.
+        private decimal StoreQty(SBMSEntities _db, long itemId, long storeId, string lot)
+        {
+            long co = CurrentUser.CoID;
+            var q = _db.ItemTransactions.Where(t => t.CompanyID == co && t.ItemID == itemId && t.ToID == storeId);
+            if (lot != null) q = q.Where(t => t.LotNumber == lot);
+            return q.Sum(t => t.Qty) ?? 0m;
+        }
+
+        // On-hand figures for the item in the add bar (lot-specific on the From side once a lot is picked).
+        private void ShowAddStock()
+        {
+            lblAddFrom.Text = lblAddTo.Text = "";
+            if (!long.TryParse(DDAddItem.SelectedValue, out long itemId)) return;
+            string lot = DDAddLot.SelectedIndex > 0 ? DDAddLot.SelectedValue : null;
+
+            using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+            {
+                if (long.TryParse(ddlFromWarehouse.SelectedValue, out long fromId))
+                    lblAddFrom.Text = ApiUrlCall.NumberToDecimal(StoreQty(_db, itemId, fromId, lot).ToString(), CurrentUser.CompanyDecPlaces);
+                if (long.TryParse(ddlToWarehouse.SelectedValue, out long toId))
+                    lblAddTo.Text = ApiUrlCall.NumberToDecimal(StoreQty(_db, itemId, toId, null).ToString(), CurrentUser.CompanyDecPlaces);
             }
         }
 
-        protected void GridTrfLines_RowDataBound(object sender, GridViewRowEventArgs e)
+        protected void DDAddItem_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (CurrentUser.CompanyUseLotNumbers == false)
+            DDAddLot.Items.Clear();
+            if (CurrentUser.CompanyUseLotNumbers && long.TryParse(DDAddItem.SelectedValue, out long itemId)
+                && long.TryParse(ddlFromWarehouse.SelectedValue, out long fromId))
             {
-                e.Row.Cells[2].Visible = false;
-            }
-            if (e.Row.RowType == DataControlRowType.DataRow)
-            {
-                if (ddlFromWarehouse.SelectedIndex <= 0)
+                long co = CurrentUser.CoID;
+                using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
                 {
-                    return;
-                }
-
-                if (DDStatus.Text == "Complete" || DDStatus.Text == "Deleted")
-                {
-                    var lbtnDeleteLine = e.Row.FindControl("lbtnDeleteLine");
-                    lbtnDeleteLine.Visible = false;
-                    var lbtnLineSave = e.Row.FindControl("lbtnLineSave");
-                    lbtnLineSave.Visible = false;
-                    TextBox txtQty = (TextBox)e.Row.FindControl("txtQty");
-                    txtQty.ReadOnly = true;
-                } else
-                if (DDStatus.Text == "Started")
-                {
-                    var lbtnDeleteLine = e.Row.FindControl("lbtnDeleteLine");
-                    lbtnDeleteLine.Visible = false;
-                    var lbtnLineSave = e.Row.FindControl("lbtnLineSave");
-                    lbtnLineSave.Visible = false;
-                    TextBox txtQty = (TextBox)e.Row.FindControl("txtQty");
-                    txtQty.ReadOnly = true;
-                }
-                else
-                if (DDStatus.Text == "New")
-                {
-                    var lbtnDeleteLine = e.Row.FindControl("lbtnDeleteLine");
-                    lbtnDeleteLine.Visible = true;
-                    var lbtnLineSave = e.Row.FindControl("lbtnLineSave");
-                    lbtnLineSave.Visible = true;
-                    TextBox txtQty = (TextBox)e.Row.FindControl("txtQty");
-                    txtQty.ReadOnly = false;
-                }
-
-                long Storeid = Convert.ToInt64(ddlFromWarehouse.SelectedValue);
-                var ddlGridItem = (DropDownList)e.Row.FindControl("ddlGridItem");
-                var DDlotNum = (DropDownList)e.Row.FindControl("DDlotNum");
-                var lblAvailQty = (Label)e.Row.FindControl("lblAvailQty");
-                var lblToStoreQty = (Label)e.Row.FindControl("lblToStoreQty");
-
-                if (ddlGridItem != null)
-                {
-                    LoadActiveItems();
-                    // Use distinct items by ItemID and Item
-                    ddlGridItem.DataSource = _itemDropDownList
-                        .Where(x => x.StoreID == Storeid)
-                        .GroupBy(x => new { x.ItemID, x.Item })
-                        .Select(g => g.First())
+                    // Lots of this item with a non-zero balance in the From store.
+                    DDAddLot.DataSource = _db.ItemTransactions
+                        .Where(t => t.CompanyID == co && t.ItemID == itemId && t.ToID == fromId
+                                 && t.LotNumber != null && t.LotNumber != "" && t.LotNumber != "N/A")
+                        .GroupBy(t => t.LotNumber)
+                        .Where(g => g.Sum(t => t.Qty) != 0)
+                        .Select(g => g.Key)
+                        .OrderBy(l => l)
                         .ToList();
-                    ddlGridItem.DataTextField = "Item";
-                    ddlGridItem.DataValueField = "ItemID";
-                    ddlGridItem.DataBind();
-                    ddlGridItem.Items.Insert(0, new System.Web.UI.WebControls.ListItem("-Select-", ""));
-
-                    // Set selected value based on the row's ItemSelectionId
-                    var dataItem = e.Row.DataItem;
-                    long? itemid = null;
-                    if (dataItem != null)
-                    {
-                        var itemSelectionIdProp = dataItem.GetType().GetProperty("ItemSelectionId");
-                        if (itemSelectionIdProp != null)
-                        {
-                            var itemSelectionId = itemSelectionIdProp.GetValue(dataItem, null);
-                            if (itemSelectionId != null)
-                            {
-                                itemid = Convert.ToInt64(itemSelectionId);
-                                System.Web.UI.WebControls.ListItem li = ddlGridItem.Items.FindByValue(itemid.ToString());
-                                if (li != null) ddlGridItem.SelectedValue = itemid.ToString();
-                            }
-                        }
-                        // Set QOH for the selected item
-                        if (itemid != null)
-                        {
-                            var qoh = _itemDropDownList.Where(x => x.StoreID == Storeid && x.ItemID == itemid).Sum(x => x.QOH);
-                            lblAvailQty.Text = ApiUrlCall.NumberToDecimal(qoh.ToString(), CurrentUser.CompanyDecPlaces);
-                            if (ddlToWarehouse.SelectedIndex <= 0)
-                            {
-                                return;
-                            }
-                            long StoreidTo = Convert.ToInt64(ddlToWarehouse.SelectedValue);
-                            var qohTo = _itemDropDownList.Where(x => x.StoreID == StoreidTo && x.ItemID == itemid).Sum(x => x.QOH);
-                            lblToStoreQty.Text = ApiUrlCall.NumberToDecimal(qohTo.ToString(), CurrentUser.CompanyDecPlaces);
-
-                            if (DDlotNum != null)
-                            {
-                                DDlotNum.DataSource = _itemDropDownList
-                                    .Where(x => x.StoreID == Storeid && x.ItemID == itemid && !string.IsNullOrEmpty(x.LotNum))
-                                    .Select(x => x.LotNum)
-                                    .Distinct()
-                                    .ToList();
-                                DDlotNum.DataBind();
-                                DDlotNum.Items.Insert(0, new System.Web.UI.WebControls.ListItem("-Select-", ""));
-                                // Set selected value to the LotNumber from the data item
-                                var lotNumberProp = dataItem.GetType().GetProperty("LotNumber");
-                                if (lotNumberProp != null)
-                                {
-                                    var lotNumberValue = lotNumberProp.GetValue(dataItem, null) as string;
-                                    if (!string.IsNullOrEmpty(lotNumberValue) && DDlotNum.Items.FindByValue(lotNumberValue) != null)
-                                    {
-                                        DDlotNum.SelectedValue = lotNumberValue;
-                                    }
-                                }      
-                            }
-                        }
-                        else
-                        {
-                            lblAvailQty.Text = "0";
-                            lblToStoreQty.Text = "0";
-                        }
-                    }
+                    DDAddLot.DataBind();
                 }
+                DDAddLot.Items.Insert(0, new System.Web.UI.WebControls.ListItem("-Select-", ""));
             }
+            ShowAddStock();
+            ScriptManager1.SetFocus(CurrentUser.CompanyUseLotNumbers ? (System.Web.UI.Control)DDAddLot : txtAddQty);
+        }
+
+        protected void DDAddLot_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            ShowAddStock();
+            ScriptManager1.SetFocus(txtAddQty);
+        }
+
+        protected void lbtnAddLine_Click(object sender, EventArgs e)
+        {
+            string err = AddLine();
+            if (err != null)
+            {
+                AlertHelper.ShowSweetAlert(this, err, "error");
+                return;
+            }
+            ScriptManager1.SetFocus(DDAddItem);
+        }
+
+        // Adds the item / lot / qty in the add bar as a line. Returns the error, or null when added.
+        private string AddLine()
+        {
+            if (!long.TryParse(ddlFromWarehouse.SelectedValue, out long fromId) || !long.TryParse(ddlToWarehouse.SelectedValue, out long toId))
+                return "Please select both From and To warehouses before continuing.";
+            if (fromId == toId) return "From and To Warehouses cannot be the same.";
+            if (!long.TryParse(DDAddItem.SelectedValue, out long itemId)) return "Please select an item.";
+            if (!decimal.TryParse(txtAddQty.Text, out decimal qty)) qty = 0;
+            qty = Convert.ToDecimal(ApiUrlCall.NumberToDecimal(qty.ToString(), CurrentUser.CompanyDecPlaces));
+            if (qty <= 0) return "Enter a transfer quantity greater than zero.";
+            string lot = DDAddLot.SelectedIndex > 0 ? DDAddLot.SelectedValue : null;
+
+            long co = CurrentUser.CoID;
+            using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+            {
+                if (qty > StoreQty(_db, itemId, fromId, lot)) return "Insufficient stock available for this item.";
+
+                // Code and description from the item record, not from splitting the dropdown text
+                // on "-": codes like SG7011-81 would print as code SG7011, description 81.
+                var item = _db.ItemsMasters.Where(x => x.CompanyID == co && x.ID == itemId)
+                                           .Select(x => new { x.Code, x.Description }).FirstOrDefault();
+
+                // Unit and prices from the latest movement of this item (and lot) in the From store -
+                // the row the proc took them from. Information only: Complete costs at the store average.
+                var last = _db.ItemTransactions
+                    .Where(t => t.CompanyID == co && t.ItemID == itemId && t.ToID == fromId && (lot == null || t.LotNumber == lot))
+                    .OrderByDescending(t => t.TrnID)
+                    .Select(t => new { t.Unit, t.PriceExclusive, t.TotalUnitPriceExclInclAdd })
+                    .FirstOrDefault();
+                decimal unitCost = last?.TotalUnitPriceExclInclAdd ?? 0m;
+
+                _db.ItemTransferLines.Add(new ItemTransferLine
+                {
+                    CompanyID = co,
+                    TrfID = TrfThisID,
+                    ItemSelectionId = itemId,
+                    ItemCode = item?.Code,
+                    ItemDescription = item?.Description ?? DDAddItem.SelectedItem.Text,
+                    LotNumber = lot,
+                    TrfOutQty = qty,
+                    Unit = last?.Unit,
+                    PriceExclusive = last?.PriceExclusive ?? 0m,
+                    TotalUnitPriceExclInclAdd = unitCost,
+                    TotalLineValExcl = unitCost * qty,
+                    TransactionReference = txtxTrfRef.Text.Trim()
+                });
+                _db.SaveChanges();
+            }
+
+            DDAddItem.SelectedIndex = 0;
+            DDAddLot.Items.Clear();
+            txtAddQty.Text = "";
+            lblAddFrom.Text = lblAddTo.Text = "";
+            BindLines();
+            return null;
         }
 
         protected void ddlFromWarehouse_SelectedIndexChanged(object sender, EventArgs e)
@@ -351,8 +376,25 @@ namespace SBMS
                     }
                 }
             }
-            LoadActiveItems();
-            LoadTransfer();
+            // Only the add bar depends on From. Reloading the whole header here also reset the
+            // To warehouse and any unsaved Reference / Notes back to what was in the database.
+            LoadAddItems();
+        }
+
+        // Saved the moment it's picked, the same as From. It used to wait for Save Edits / Start,
+        // so leaving the slip - or changing From, which reloaded the header - lost it.
+        protected void ddlToWarehouse_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+            {
+                var header = _db.ItemTransferHeaders.FirstOrDefault(x => x.CompanyID == CurrentUser.CoID && x.TrfID == TrfThisID);
+                if (header != null)
+                {
+                    header.TrfToID = long.TryParse(ddlToWarehouse.SelectedValue, out long toId) ? toId : (long?)null;
+                    _db.SaveChanges();
+                }
+            }
+            ShowAddStock();
         }
 
         protected void lbtnHome_Click(object sender, EventArgs e)
@@ -367,226 +409,6 @@ namespace SBMS
             }
         }
 
-        protected void lbtnLineSave_Click(object sender, EventArgs e)
-        {
-            LinkButton lbtn = sender as LinkButton;
-            if (lbtn == null) return;
-
-            GridViewRow row = lbtn.NamingContainer as GridViewRow;
-            if (row == null) return;
-
-            long Lid = Convert.ToInt32(lbtn.CommandArgument);
-            DropDownList ddlGridItem = row.FindControl("ddlGridItem") as DropDownList;
-            TextBox txtQty = row.FindControl("txtQty") as TextBox;
-            DropDownList DDlotNum = row.FindControl("DDlotNum") as DropDownList;
-            Label lblAvailQty = row.FindControl("lblAvailQty") as Label;
-
-            // Check for insufficient stock
-            if (lblAvailQty != null && txtQty != null)
-            {
-                decimal availQty = 0;
-                decimal reqQty = 0;
-                decimal.TryParse(lblAvailQty.Text, out availQty);
-                decimal.TryParse(txtQty.Text, out reqQty);
-                if (reqQty > availQty)
-                {
-                    AlertHelper.ShowSweetAlert(this, "Insufficient stock available for this item.", "error");
-                    return;
-                }
-            }
-
-            if (ddlGridItem.SelectedIndex <= 0) return;
-
-            using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
-            {
-                var lines = _db.ItemTransferLines.Where(x => x.CompanyID == CurrentUser.CoID && x.TrfID == TrfThisID).ToList();
-                if (lines == null) return;
-
-                var Ln = lines.FirstOrDefault(x => x.TrfLID == Lid);
-                if (Ln != null)
-                {
-                    Ln.ItemSelectionId = Convert.ToInt64(ddlGridItem.SelectedValue);
-                    // Code and description come from the item record, not from splitting the
-                    // dropdown text on "-": codes like SG7011-81 printed as code SG7011, description 81.
-                    long selId = Ln.ItemSelectionId ?? 0;
-                    var selItem = _db.ItemsMasters.Where(x => x.CompanyID == CurrentUser.CoID && x.ID == selId)
-                                     .Select(x => new { x.Code, x.Description }).FirstOrDefault();
-                    if (selItem != null)
-                    {
-                        Ln.ItemCode = selItem.Code;
-                        Ln.ItemDescription = selItem.Description;
-                    }
-                    else
-                    {
-                        Ln.ItemDescription = ddlGridItem.SelectedItem.Text;
-                    }
-                    
-                    try
-                    {
-                        Ln.TrfOutQty = Convert.ToDecimal(txtQty.Text);
-                        Ln.TrfOutQty = Convert.ToDecimal(ApiUrlCall.NumberToDecimal(Ln.TrfOutQty.ToString(), CurrentUser.CompanyDecPlaces)); ;
-                    }
-                    // set price and total values
-                    //Ln.u
-                    catch { Ln.TrfOutQty = 0; }
-                    if (DDlotNum.SelectedIndex > 0 && DDlotNum.Text != "") Ln.LotNumber = DDlotNum.Text;
-
-                    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                    /// GET ITEM AND EXTRACT PRICING DETAILS
-                    /// 
-                    var thisrowItem = _itemDropDownList.FirstOrDefault(x => x.ItemID == Ln.ItemSelectionId && x.StoreID == Convert.ToInt64(ddlFromWarehouse.SelectedValue));
-                    Ln.Unit = thisrowItem.Unit;
-                    Ln.TotalUnitPriceExclInclAdd = thisrowItem.TotalUnitPriceExclInclAdd ?? 0m;
-                    Ln.PriceExclusive = thisrowItem.PriceExclusive ?? 0m;
-                    Ln.TotalLineValExcl = Ln.TotalUnitPriceExclInclAdd * Ln.TrfOutQty;
-                    Ln.TransactionReference = txtxTrfRef.Text.ToString().Trim();
-                    _db.SaveChanges();
-                    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////                
-                }
-
-            // If all lines have ItemSelectionId, add a new blank line
-                if (lines.All(x => x.ItemSelectionId != null))
-                {
-                    var newLine = new ItemTransferLine
-                    {
-                        CompanyID = CurrentUser.CoID,
-                        TrfID = TrfThisID,
-                        TransactionReference = txtxTrfRef.Text.ToString().Trim()
-                    };
-                    _db.ItemTransferLines.Add(newLine);
-
-                    _db.SaveChanges();
-                }
-            GridTrfLines.DataSource = _db.ItemTransferLines.Where(x => x.CompanyID == CurrentUser.CoID && x.TrfID == TrfThisID).ToList();
-            GridTrfLines.DataBind();
-            }
-         }
-
-        protected void ddlGridItem_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            long Storeid, itemid;
-            DropDownList ddlGridItem = sender as DropDownList;
-            if (ddlGridItem == null) return;
-
-            if (ddlFromWarehouse.SelectedIndex == 0 || ddlToWarehouse.SelectedIndex == 0)
-            {
-                ddlGridItem.SelectedIndex = 0;
-                AlertHelper.ShowSweetAlert(this, "Please select both From and To warehouses before continuing.", "error");
-                return;
-            }
-              
-            GridViewRow row = ddlGridItem.NamingContainer as GridViewRow;
-            if (row == null) return;
-
-            // Get the TrfLID for this row
-            long? trfLid = null;
-            var grid = row.NamingContainer as GridView;
-            if (grid != null && grid.DataKeys != null && grid.DataKeys.Count > row.RowIndex)
-            {
-                trfLid = Convert.ToInt64(grid.DataKeys[row.RowIndex].Value);
-            }
-
-        using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
-        {
-            var lines = _db.ItemTransferLines.Where(x => x.CompanyID == CurrentUser.CoID && x.TrfID == TrfThisID).ToList();
-
-            // Set SelectionId in the in-memory line
-            //var lines = Session["CurrentTransferLines"] as List<ItemTransferLine>;
-            if (lines != null && trfLid != null)
-            {
-                var line = lines.FirstOrDefault(x => x.TrfLID == trfLid);
-                if (line != null && ddlGridItem.SelectedIndex > 0)
-                {
-                    line.ItemSelectionId = Convert.ToInt64(ddlGridItem.SelectedValue);
-                    line.ItemDescription = ddlGridItem.SelectedItem.Text;
-                }
-            }
-        }
-            // Populate DDlotNum for the selected item
-            var DDlotNum = row.FindControl("DDlotNum") as DropDownList;
-            if (DDlotNum != null && ddlGridItem.SelectedIndex > 0)
-            {
-                Storeid = Convert.ToInt64(ddlFromWarehouse.SelectedValue);
-                itemid = Convert.ToInt64(ddlGridItem.SelectedValue);
-                var lotList = _itemDropDownList
-                    .Where(x => x.StoreID == Storeid && x.ItemID == itemid && !string.IsNullOrEmpty(x.LotNum))
-                    .Select(x => x.LotNum)
-                    .Distinct()
-                    .ToList();
-                DDlotNum.DataSource = lotList;
-                DDlotNum.DataBind();
-                DDlotNum.Items.Insert(0, new System.Web.UI.WebControls.ListItem("-Select-", ""));
-            }
-
-            var lblAvailQty = row.FindControl("lblAvailQty") as Label;
-            Storeid = Convert.ToInt64(ddlFromWarehouse.SelectedValue);
-            itemid = Convert.ToInt64(ddlGridItem.SelectedValue);
-
-            var qoh = _itemDropDownList.Where(x => x.StoreID == Storeid && x.ItemID == itemid).Sum(x => x.QOH);
-            lblAvailQty.Text = ApiUrlCall.NumberToDecimal(qoh.ToString(), CurrentUser.CompanyDecPlaces);
-        // Optionally, update QOH display here if needed
-
-                // Get TO Store Q O H before transfer
-                var lblToStoreQty = row.FindControl("lblToStoreQty") as Label;
-                int ToStoreID = Convert.ToInt32(ddlToWarehouse.SelectedValue);
-                var qohTo = _itemDropDownList.Where(x => x.StoreID == ToStoreID && x.ItemID == itemid).Sum(x => x.QOH);
-                lblToStoreQty.Text = ApiUrlCall.NumberToDecimal(qohTo.ToString(), CurrentUser.CompanyDecPlaces);
-         }
-
-        protected void DDlotNum_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            if (ddlFromWarehouse.SelectedIndex <= 0)
-            {
-                return;
-            }
-
-            DropDownList dd = sender as DropDownList;
-            if (dd == null) return;
-
-            GridViewRow row = dd.NamingContainer as GridViewRow;
-            if (row == null) return;
-            DropDownList DDlotNum = row.FindControl("DDlotNum") as DropDownList;
-            long Storeid = Convert.ToInt64(ddlFromWarehouse.SelectedValue);
-            var ddlGridItem = (DropDownList)row.FindControl("ddlGridItem");
-            var lblAvailQty = (Label)row.FindControl("lblAvailQty");
-
-            long itemid = Convert.ToInt64(ddlGridItem.SelectedValue);
-            string selectedLot = DDlotNum.SelectedItem.Text;
-
-        // Set LotNumber in the in-memory line
-        using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
-        {
-            var lines = _db.ItemTransferLines.Where(x => x.CompanyID == CurrentUser.CoID && x.TrfID == TrfThisID).ToList();
-
-            // var lines = Session["CurrentTransferLines"] as List<ItemTransferLine>;
-            if (lines != null)
-            {
-                // Find the line by TrfLID (from DataKeys or CommandArgument)
-                int rowIndex = row.RowIndex;
-                var grid = row.NamingContainer as GridView;
-                long? trfLid = null;
-                if (grid != null && grid.DataKeys != null && grid.DataKeys.Count > rowIndex)
-                {
-                    trfLid = Convert.ToInt64(grid.DataKeys[rowIndex].Value);
-                }
-                else
-                {
-                    // fallback: try to get from a hidden field or other means if available
-                }
-                if (trfLid != null)
-                {
-                    var line = lines.FirstOrDefault(x => x.TrfLID == trfLid);
-                    if (line != null)
-                    {
-                        line.LotNumber = selectedLot;
-                    }
-                }
-            }
-        }
-            var qoh = _itemDropDownList.Where(x => x.StoreID == Storeid && x.ItemID == itemid && x.LotNum == selectedLot).Sum(x => x.QOH);
-            lblAvailQty.Text = ApiUrlCall.NumberToDecimal(qoh.ToString(), CurrentUser.CompanyDecPlaces);
-        }
-
         protected void lbtnDeleteLine_Click(object sender, EventArgs e)
         {
             using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
@@ -595,13 +417,13 @@ namespace SBMS
                 int Lid = Convert.ToInt32(lbtn.CommandArgument);
                 _db.ItemTransferLines.RemoveRange(_db.ItemTransferLines.Where(x => x.CompanyID == CurrentUser.CoID && x.TrfLID == Lid));
                 _db.SaveChanges();
-                LoadTransfer();
+                BindLines();
             }
         }
 
         protected void lbtnPrintDN_Click(object sender, EventArgs e)
         {
-        SaveLastFilledLine();  // <-- NEW
+        if (!SaveLastFilledLine()) return;
         CreatePDF();
         Response.Redirect($"~/ViewPDF.aspx?doc=" + CurrentUser.UserGuiD.ToString() + "\\Trf_" + lblDocNum.Text, false);
     }
@@ -613,7 +435,7 @@ namespace SBMS
 
         protected void lbtnStart_Click(object sender, EventArgs e)
         {
-            SaveLastFilledLine();  // <-- NEW
+            if (!SaveLastFilledLine()) return;
 
             string result = SaveTransfer();
             if (result != "OK")
@@ -624,24 +446,20 @@ namespace SBMS
             {
                 using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
                 {
-                    var lines = _db.ItemTransferLines.Where(x => x.CompanyID == CurrentUser.CoID && x.TrfID == TrfThisID).ToList();
-                    if (lines.Count == 1)
+                    // Lines only exist once added now, so a slip can have none at all - the old
+                    // "Count == 1" test relied on the grid always holding one blank row.
+                    var lines = _db.ItemTransferLines.Where(x => x.CompanyID == CurrentUser.CoID && x.TrfID == TrfThisID && x.ItemSelectionId != null).ToList();
+                    if (lines.Count == 0)
                     {
-                        if (lines[0].ItemSelectionId == null || (lines[0].TrfOutQty == null || (lines[0].TrfOutQty < 1)))
-                        {
-                            AlertHelper.ShowSweetAlert(this, "No Lines Saved. Please add lines to transfer.", "error");
-                            return;
-                        }
+                        AlertHelper.ShowSweetAlert(this, "No Lines Saved. Please add lines to transfer.", "error");
+                        return;
                     }
-                    else
+                    foreach (var ln in lines)
                     {
-                        foreach (var ln in lines)
+                        if (ln.TrfOutQty == null || ln.TrfOutQty < 1)
                         {
-                            if (ln.ItemSelectionId > 0 && (ln.TrfOutQty == null || (ln.TrfOutQty < 1)))
-                            {
-                                AlertHelper.ShowSweetAlert(this, "Not All Lines Saved. Please save each line to ensure a successful transfer.", "error");
-                                return;
-                            }
+                            AlertHelper.ShowSweetAlert(this, "A line has a quantity below 1. Delete it and add it again.", "error");
+                            return;
                         }
                     }
 
@@ -682,7 +500,7 @@ namespace SBMS
 
         protected void LbtnSaveEdits_Click(object sender, EventArgs e)
         {
-            SaveLastFilledLine();  // <-- NEW
+            if (!SaveLastFilledLine()) return;
 
             string result = SaveTransfer();
             if (result != "OK")
@@ -695,36 +513,15 @@ namespace SBMS
             }           
         }
 
-        private void SaveLastFilledLine()
+        // An item + qty still sitting in the add bar is added before Start / Save / Print so it
+        // isn't silently dropped. False (reason shown) when that add fails - the caller stops.
+        private bool SaveLastFilledLine()
         {
-            GridViewRow lastFilledRow = null;
-
-            foreach (GridViewRow row in GridTrfLines.Rows)
-            {
-                TextBox txtQty = row.FindControl("txtQty") as TextBox;
-                DropDownList ddlItem = row.FindControl("ddlGridItem") as DropDownList;
-
-                if (txtQty != null && ddlItem != null)
-                {
-                    bool hasQty = !string.IsNullOrWhiteSpace(txtQty.Text);
-                    bool hasItem = ddlItem.SelectedIndex > 0;
-
-                    if (hasQty && hasItem)
-                    {
-                        lastFilledRow = row; // overwrites until the LAST one
-                    }
-                }
-            }
-
-            if (lastFilledRow != null)
-            {
-                LinkButton btnSave = lastFilledRow.FindControl("lbtnLineSave") as LinkButton;
-                if (btnSave != null)
-                {
-                    // Trigger the same logic as a real click
-                    lbtnLineSave_Click(btnSave, EventArgs.Empty);
-                }
-            }
+            if (!PnlAddLine.Visible || DDAddItem.SelectedIndex <= 0 || string.IsNullOrWhiteSpace(txtAddQty.Text)) return true;
+            string err = AddLine();
+            if (err == null) return true;
+            AlertHelper.ShowSweetAlert(this, err, "error");
+            return false;
         }
 
 

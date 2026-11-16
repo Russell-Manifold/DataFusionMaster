@@ -640,7 +640,7 @@ namespace SBMS
             PnlNewUser.Style.Add("display", "none");
         }
 
-        protected async void btnSaveYes_Click(object sender, EventArgs e)
+        protected void btnSaveYes_Click(object sender, EventArgs e)
         {
             userDets = Session["UserDetails"] as UserDetails;
             long superuserid;
@@ -910,95 +910,13 @@ namespace SBMS
                     //}
                 }
 
-                ApiUrlCall api = new ApiUrlCall();
-                var errors = await api.LoadItems(userDets);
-                if (errors.Count > 0)
-                {
-                    string message = string.Join("\n", errors);
-                    ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", $"alert('{message}');", true);
-                }
-                else
-                {
-                    ScriptManager.RegisterStartupScript(this, this.GetType(), "alertSuccess", "alert('All items successfully sync\\'ed with Sage successfully');", true);
-                }
-
-                var LastItmCall = _db.LastCallLogs.FirstOrDefault(x => x.CompanyID == userDets.CoID);
-                if (LastItmCall != null)
-                {
-                    LastItmCall.LastItemDate = DateTime.Now.AddYears(-6);
-                }
-                else
-                {
-                    LastCallLog LCall = new LastCallLog();
-                    LCall.LastItemDate = DateTime.Now.AddYears(-6);
-                    LCall.LastSODate = DateTime.Now.AddYears(-6);
-                    LCall.LastPODate = DateTime.Now.AddYears(-6);
-                    LCall.CompanyID = userDets.CoID;
-
-                    _db.LastCallLogs.Add(LCall);
-                }
-                _db.SaveChanges();
-
-                JObject GLResult = await api.LoadGLAccounts(userDets);
-                if (GLResult != null && GLResult["error"] != null)
-                {
-                    // Handle the error
-                    lblErr.Text = $"Error loadingGLAccounts: {GLResult["error"]}";
-                }
-
-                JObject SOResult = await api.LoadSalesOrders(userDets);
-                if (SOResult != null && SOResult["error"] != null)
-                {
-                    lblErr.Text = $"Error loading Sales Orders: {SOResult["error"]}";
-                }
-
-                JObject POResult = await api.LoadPurchaseOrders(userDets);
-                if (POResult != null && POResult["error"] != null)
-                {
-                    lblErr.Text = $"Error loading Sales Orders: {POResult["error"]}";
-                }
-
-                JObject taxTypeResult = await api.GetTaxType(userDets);
-                if (taxTypeResult != null && taxTypeResult["error"] != null)
-                {
-                    // Handle the error
-                    lblErr.Text = $"Error loading tax types: {taxTypeResult["error"]}";
-                }
-
-                var Accts = _db.AccountsMasters.Where(x => x.CompanyID == userDets.CoID && x.AccountName.ToLower().Contains("unallocated expense")).FirstOrDefault();
-                if (Accts != null)
-                {
-                    Accts.AccountAddCosts = true;
-                    _db.SaveChanges();
-                }
-
-                var itemslist = _db.ItemsMasters.Where(x => x.CompanyID == userDets.CoID && x.QuantityOnHand != 0).ToList();
-                // link all items to all stores
-                var stores = _db.Stores.Where(x => x.CompanyID == userDets.CoID && x.AllowReceiving == true).ToList();
-                List<ItemStoreLinkMaster> bulkInsertList = new List<ItemStoreLinkMaster>();
-                foreach (var store in stores)
-                {
-                    foreach (var item in itemslist)
-                    {
-                        bulkInsertList.Add(new ItemStoreLinkMaster
-                        {
-                            CompanyID = userDets.CoID,
-                            ItemID = item.ID,
-                            StoreID = store.StoreID,
-                            Active = true
-                        });
-                    }
-                }
-                // Use AddRange to insert all at once
-                _db.ItemStoreLinkMasters.AddRange(bulkInsertList);
-                try
-                {
-                    _db.SaveChanges(); // One save operation instead of multiple calls
-                }
-                catch (Exception ex)
-                {
-                    lblErr.Text = $"Error linking items to stores, unable to continue: {ex.Message}";
-                }
+                // The Sage pulls (items, GL accounts, orders, tax types, item/store links) ran inside this
+                // click. Sage allows 100 calls a minute, so a big company sat on a spinner for many
+                // minutes and Cloudflare could time the request out. They now run in the background
+                // (app-driven, no server settings) and the user is told to log back in later.
+                // If the app restarts mid-load, the dashboard's 60-second item sync still pulls the items.
+                UserDetails dets = userDets;
+                System.Web.Hosting.HostingEnvironment.QueueBackgroundWorkItem(ct => FirstUseSageLoad(dets));
 
                 // get RM store ID
                 //int rmstore = _db.Stores.Where(x => x.AllowReceiving == true && x.CompanyID == userDets.CoID).Select(x => x.StoreID).FirstOrDefault();
@@ -1057,10 +975,100 @@ namespace SBMS
                 //    return;
                 //}
             }
-            lblErr.Text = $"Data Update Successful, Log in";
+            lblErr.Text = "Setup complete. Your items may still be updating in the background.";
+            AlertHelper.ShowSweetAlert(this, "Your items may still be updating in the background.", "success", "Setup complete");
             PnlNewUser.Style.Add("display", "inline-block");
             Panel1.Style.Add("display", "none");
             PnlNewP.Style.Add("display", "none");
+        }
+
+        // First-use Sage pull, run in the background from btnSaveYes_Click. Same steps, same order as
+        // before. The page has gone by the time this runs, so nothing here may touch it - problems go
+        // to the App_Data error log instead of an alert.
+        private static async System.Threading.Tasks.Task FirstUseSageLoad(UserDetails userDets)
+        {
+            ApiUrlCall api = new ApiUrlCall();
+            try
+            {
+                var errors = await api.LoadItems(userDets);
+                foreach (string err in errors)
+                    api.LogErrorToFile($"CoID:{userDets.CoID} first-use setup - item load: {err}");
+
+                using (SBMSEntities _db = new SBMSEntities(Config.GetConnectionString()))
+                {
+                    var LastItmCall = _db.LastCallLogs.FirstOrDefault(x => x.CompanyID == userDets.CoID);
+                    if (LastItmCall != null)
+                    {
+                        LastItmCall.LastItemDate = DateTime.Now.AddYears(-6);
+                    }
+                    else
+                    {
+                        LastCallLog LCall = new LastCallLog();
+                        LCall.LastItemDate = DateTime.Now.AddYears(-6);
+                        LCall.LastSODate = DateTime.Now.AddYears(-6);
+                        LCall.LastPODate = DateTime.Now.AddYears(-6);
+                        LCall.CompanyID = userDets.CoID;
+
+                        _db.LastCallLogs.Add(LCall);
+                    }
+                    _db.SaveChanges();
+
+                    JObject GLResult = await api.LoadGLAccounts(userDets);
+                    if (GLResult != null && GLResult["error"] != null)
+                        api.LogErrorToFile($"CoID:{userDets.CoID} first-use setup - GL accounts: {GLResult["error"]}");
+
+                    JObject SOResult = await api.LoadSalesOrders(userDets);
+                    if (SOResult != null && SOResult["error"] != null)
+                        api.LogErrorToFile($"CoID:{userDets.CoID} first-use setup - sales orders: {SOResult["error"]}");
+
+                    JObject POResult = await api.LoadPurchaseOrders(userDets);
+                    if (POResult != null && POResult["error"] != null)
+                        api.LogErrorToFile($"CoID:{userDets.CoID} first-use setup - purchase orders: {POResult["error"]}");
+
+                    JObject taxTypeResult = await api.GetTaxType(userDets);
+                    if (taxTypeResult != null && taxTypeResult["error"] != null)
+                        api.LogErrorToFile($"CoID:{userDets.CoID} first-use setup - tax types: {taxTypeResult["error"]}");
+
+                    var Accts = _db.AccountsMasters.Where(x => x.CompanyID == userDets.CoID && x.AccountName.ToLower().Contains("unallocated expense")).FirstOrDefault();
+                    if (Accts != null)
+                    {
+                        Accts.AccountAddCosts = true;
+                        _db.SaveChanges();
+                    }
+
+                    var itemslist = _db.ItemsMasters.Where(x => x.CompanyID == userDets.CoID && x.QuantityOnHand != 0).ToList();
+                    // link all items to all stores
+                    var stores = _db.Stores.Where(x => x.CompanyID == userDets.CoID && x.AllowReceiving == true).ToList();
+                    List<ItemStoreLinkMaster> bulkInsertList = new List<ItemStoreLinkMaster>();
+                    foreach (var store in stores)
+                    {
+                        foreach (var item in itemslist)
+                        {
+                            bulkInsertList.Add(new ItemStoreLinkMaster
+                            {
+                                CompanyID = userDets.CoID,
+                                ItemID = item.ID,
+                                StoreID = store.StoreID,
+                                Active = true
+                            });
+                        }
+                    }
+                    // Use AddRange to insert all at once
+                    _db.ItemStoreLinkMasters.AddRange(bulkInsertList);
+                    try
+                    {
+                        _db.SaveChanges(); // One save operation instead of multiple calls
+                    }
+                    catch (Exception ex)
+                    {
+                        api.LogErrorToFile($"CoID:{userDets.CoID} first-use setup - linking items to stores failed: {ex.Message}");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                api.LogErrorToFile($"CoID:{userDets.CoID} first-use background load stopped: {ex}");
+            }
         }
 
         protected int GetLotNum(long CoID)

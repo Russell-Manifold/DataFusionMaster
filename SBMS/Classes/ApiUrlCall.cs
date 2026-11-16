@@ -109,10 +109,10 @@ namespace SBMS.Classes
         //public SBMSEntities(string connectionString) : base(connectionString) { }
 
         //  for demo version data
-      public static string dbName = $"MyDataFusionDemo2";
+      //public static string dbName = $"MyDataFusionDemo2";
        // LIVE data
       /// <summary>
-      //public static string dbName = $"MyDataFusion";
+      public static string dbName = $"MyDataFusion";
       /// </summary>
 
         //public static string constr = $"Data Source=100.106.25.66;Initial Catalog={dbName};Persist Security Info=True;User ID=sa;Password=M@nif0LD";
@@ -123,11 +123,11 @@ namespace SBMS.Classes
         static DateTime CustDT = Convert.ToDateTime("01 Jan 2015"), SuppDT = Convert.ToDateTime("01 Jan 2015"), ItemDT = Convert.ToDateTime("01 Jan 2015"), PODT = Convert.ToDateTime("01 Jan 2015"), InvoiceDT = Convert.ToDateTime("01 Jan 2015"), CNoteDT = Convert.ToDateTime("01 Jan 2015");
         static DateTime SuppInvDT = Convert.ToDateTime("01 Jan 2015"), SuppRetDT = Convert.ToDateTime("01 Jan 2015"), JrnlDT = Convert.ToDateTime("01 Jan 2015"), QuoteDT = Convert.ToDateTime("01 Jan 2015"), SOrdDT = Convert.ToDateTime("01 Jan 2015"), GLegDT = Convert.ToDateTime("01 Jan 2015");
 
-      //public static string sageurl = "https://accounting.sageone.co.za/api/2.0.0/";
-      //public static string APIKey = "5850E392-0FE8-43B4-9EEB-18D2B28B115C";
+      public static string sageurl = "https://accounting.sageone.co.za/api/2.0.0/";
+      public static string APIKey = "5850E392-0FE8-43B4-9EEB-18D2B28B115C";
         
-      public static string sageurl = "https://resellers.accounting.sageone.co.za/api/2.0.0/";
-      public static string APIKey = "2B7B61BA-41B8-4212-B2A2-77B8734BA688";
+      //public static string sageurl = "https://resellers.accounting.sageone.co.za/api/2.0.0/";
+      //public static string APIKey = "2B7B61BA-41B8-4212-B2A2-77B8734BA688";
 
         // Syncflo SBCA profile - SANDBOX KEY
         //public static string APIKey = "934D4C3F-FF4D-4311-9380-F21ACB54DCBB";
@@ -1483,6 +1483,11 @@ namespace SBMS.Classes
         // running LoadItems together doubled the call rate and tripped Sage's 100/min limit.
         private static readonly ConcurrentDictionary<long, byte> ItemSyncRunning = new ConcurrentDictionary<long, byte>();
 
+        // Companies Sage is refusing (401/403 - e.g. a changed Sage password or lapsed access), and until
+        // when the dashboard's 60-second poll leaves them alone. Without this it retried every minute all
+        // day (CoID 869817, 13 Nov: 67 refusals in an hour). Pages and logins still call Sage as normal.
+        public static readonly ConcurrentDictionary<long, DateTime> SageRefusedUntil = new ConcurrentDictionary<long, DateTime>();
+
         public async Task<List<string>> LoadItems(UserDetails Userdetails)
         {
             bool UpdateDate = false;
@@ -1526,6 +1531,9 @@ namespace SBMS.Classes
                         // A failed page (429 rate limit, timeout) used to read as TotalResults 0: the loop
                         // ended, LastItemDate was stamped and the unfetched items were never pulled again.
                         LogErrorToFile($"CoID:{Userdetails.CoID} LoadItems stopped at skip {skipQty} of {TotQty}: Sage returned {parsedJSON["error"]["statusCode"]} {parsedJSON["error"]["reason"]} - LastItemDate not updated, sync resumes on next login");
+                        int sageStatus = (int?)parsedJSON["error"]["statusCode"] ?? 0;
+                        if (sageStatus == 401 || sageStatus == 403)
+                            SageRefusedUntil[Userdetails.CoID] = DateTime.Now.AddMinutes(30);
                         UpdateDate = false;
                         break;
                     }

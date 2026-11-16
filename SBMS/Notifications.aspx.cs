@@ -98,6 +98,10 @@ namespace SBMS
             if (currentUser == null)
                 return "Session expired";
 
+            // Sage refused this company's login recently (401/403): don't ask again every minute.
+            if (ApiUrlCall.SageRefusedUntil.TryGetValue(currentUser.CoID, out DateTime refusedUntil) && refusedUntil > DateTime.Now)
+                return "Sage refused - paused";
+
             return Task.Run(async () =>
             {
                 try

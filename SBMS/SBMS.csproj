@@ -617,7 +617,6 @@
     <Content Include="OSPurchaseOrdersPartial.aspx" />
     <Content Include="Receiving.aspx" />
     <Content Include="ReceivingRecovery.aspx" />
-    <Content Include="Reporting.aspx" />
     <Content Include="PurchaseOrdersIncomplete.aspx" />
     <Content Include="DashboardSales.aspx" />
     <Content Include="SalesOrdersIncomplete.aspx" />
@@ -796,7 +795,6 @@
     <Content Include="BespokeReports.aspx" />
     <Content Include="TransferSlip.aspx" />
     <Content Include="WorksOrderPDFCreate.aspx" />
-    <Content Include="ProdPlanningC.aspx" />
     <Content Include="scripts\jquery-3.7.1.js" />
     <Content Include="scripts\jquery-3.7.1.min.js" />
     <Content Include="scripts\jquery-3.7.1.slim.js" />
@@ -818,7 +816,6 @@
       <LastGenOutput>SBMS1.cs</LastGenOutput>
     </Content>
     <Content Include="Notifications.aspx" />
-    <Content Include="ProdLineTrackingHistory.aspx" />
     <Content Include="JobTrackingStatic.aspx" />
     <Content Include="js\ProdPlankanbanscript.js" />
     <Content Include="Helper.aspx" />
@@ -848,11 +845,7 @@
     <Content Include="lib\toastr\toastr.min.css" />
     <Content Include="lib\toastr\toastr.min.js" />
     <Content Include="ProductionTrackingStatic.aspx" />
-    <Content Include="ProductionTracking.aspx" />
     <Content Include="js\kanbanscript.js" />
-    <Content Include="Planning.aspx" />
-    <Content Include="Production.aspx" />
-    <Content Include="ProdPlanning.aspx" />
     <Content Include="ProductionRMD.aspx" />
     <Content Include="FGDemands.aspx" />
     <Content Include="JobTracking.aspx" />
@@ -1512,13 +1505,6 @@
     <Compile Include="ReceivingRecovery.aspx.designer.cs">
       <DependentUpon>ReceivingRecovery.aspx</DependentUpon>
     </Compile>
-    <Compile Include="Reporting.aspx.cs">
-      <DependentUpon>Reporting.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="Reporting.aspx.designer.cs">
-      <DependentUpon>Reporting.aspx</DependentUpon>
-    </Compile>
     <Compile Include="PurchaseOrdersIncomplete.aspx.cs">
       <DependentUpon>PurchaseOrdersIncomplete.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -1661,13 +1647,6 @@
       <DependentUpon>SalesGP.aspx</DependentUpon>
     </Compile>
     <Compile Include="Models\SalesOrderHeader.cs" />
-    <Compile Include="ProdPlanningC.aspx.cs">
-      <DependentUpon>ProdPlanningC.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="ProdPlanningC.aspx.designer.cs">
-      <DependentUpon>ProdPlanningC.aspx</DependentUpon>
-    </Compile>
     <Compile Include="StockCountCreate.aspx.cs">
       <DependentUpon>StockCountCreate.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -1712,13 +1691,6 @@
     </Compile>
     <Compile Include="Notifications.aspx.designer.cs">
       <DependentUpon>Notifications.aspx</DependentUpon>
-    </Compile>
-    <Compile Include="ProdLineTrackingHistory.aspx.cs">
-      <DependentUpon>ProdLineTrackingHistory.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="ProdLineTrackingHistory.aspx.designer.cs">
-      <DependentUpon>ProdLineTrackingHistory.aspx</DependentUpon>
     </Compile>
     <Compile Include="JobTrackingStatic.aspx.cs">
       <DependentUpon>JobTrackingStatic.aspx</DependentUpon>
@@ -1783,38 +1755,10 @@
     <Compile Include="ProductionTrackingStatic.aspx.designer.cs">
       <DependentUpon>ProductionTrackingStatic.aspx</DependentUpon>
     </Compile>
-    <Compile Include="ProductionTracking.aspx.cs">
-      <DependentUpon>ProductionTracking.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="ProductionTracking.aspx.designer.cs">
-      <DependentUpon>ProductionTracking.aspx</DependentUpon>
-    </Compile>
     <Compile Include="Models\Document.cs" />
     <Compile Include="Models\ItemAdjustment.cs" />
     <Compile Include="Models\SupplierInvoiceHeader.cs" />
     <Compile Include="Models\DocumentLine.cs" />
-    <Compile Include="Planning.aspx.cs">
-      <DependentUpon>Planning.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="Planning.aspx.designer.cs">
-      <DependentUpon>Planning.aspx</DependentUpon>
-    </Compile>
-    <Compile Include="Production.aspx.cs">
-      <DependentUpon>Production.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="Production.aspx.designer.cs">
-      <DependentUpon>Production.aspx</DependentUpon>
-    </Compile>
-    <Compile Include="ProdPlanning.aspx.cs">
-      <DependentUpon>ProdPlanning.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="ProdPlanning.aspx.designer.cs">
-      <DependentUpon>ProdPlanning.aspx</DependentUpon>
-    </Compile>
     <Compile Include="ProductionRMD.aspx.cs">
       <DependentUpon>ProductionRMD.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>

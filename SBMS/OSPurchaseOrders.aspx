@@ -100,7 +100,7 @@
                                             <asp:BoundField HeaderText="Due_Date" DataField="DueDelDate" ReadOnly="True" DataFormatString="{0:dd MMM yyyy}" ItemStyle-Width="8em" SortExpression="DueDelDate" />
                                             <asp:BoundField HeaderText="Total" DataField="Total" ReadOnly="True" DataFormatString="{0:N2}" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" ItemStyle-Width="10em" />
                                             <asp:BoundField HeaderText="Status" DataField="Status" ReadOnly="True" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" ItemStyle-Width="8em" SortExpression="Status" />
-                                            <asp:TemplateField HeaderText="Started" ItemStyle-HorizontalAlign="Center" ItemStyle-Width="5em" SortExpression="RecStarted">
+                                            <asp:TemplateField HeaderText="Started" ItemStyle-HorizontalAlign="Center" ItemStyle-Width="5em" SortExpression="Started">
                                                 <ItemTemplate>
                                                     <asp:CheckBox ID="chkstarted" runat="server" Checked='<%# Eval("Started")%>' Enabled="false" Text=" " />
                                                 </ItemTemplate>
